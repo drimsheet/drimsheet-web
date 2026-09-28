@@ -23,6 +23,17 @@ Test each ownership layer at the boundary it is responsible for.
 - Assert the orchestration contract between the external boundary and rendered
   component.
 
+## Page-Owned Support Files
+
+- Test private page UI and containers with the same Vitest boundaries as their
+  component-owned counterparts. Import private modules explicitly, not through
+  the page barrel.
+- Mirror part tests under the page owner's `__tests__/parts/` directory.
+- Keep page hook tests in `hooks/__tests__/` and deterministic helper tests in
+  the page's `__tests__/helper.test.ts`.
+- Test page entries and complete journeys with Playwright; moving a container
+  into a page does not change the container's unit-test boundary.
+
 ## Browser Integration
 
 - Test dialogs, pages, and frontend route behavior with Playwright integration
@@ -73,3 +84,9 @@ and focused verification commands.
 Vitest must not discover or execute `playwright/**/*.spec.ts`, and Playwright
 must not discover `src/**/__tests__/**/*.test.ts` or
 `src/**/__tests__/**/*.test.tsx` files.
+
+## Dialog-Owned Support Files
+
+- Apply page-owned support-file test placement and isolation to dialog owners.
+- Test complete `.dialog.tsx` workflows with Playwright; test private parts,
+  containers, hooks, and helpers with Vitest.

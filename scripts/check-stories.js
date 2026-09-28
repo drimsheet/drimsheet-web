@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getOrchestrationOwner } from './orchestration-ownership.js';
 
 function walk(dir, visitor) {
   if (!fs.existsSync(dir)) {
@@ -65,7 +66,15 @@ export function findMissingStories(dir) {
       return;
     }
 
-    const componentOwner = getComponentOwner(filePath);
+    const ownerPath = getOrchestrationOwner(dir, filePath);
+    // Page and dialog entries orchestrate UI; only presentation parts need stories.
+    if (
+      ownerPath &&
+      path.relative(ownerPath, filePath).split(path.sep)[0] !== 'parts'
+    ) {
+      return;
+    }
+    const componentOwner = ownerPath ?? getComponentOwner(filePath);
     if (!componentOwner) {
       return;
     }
@@ -76,6 +85,7 @@ export function findMissingStories(dir) {
       'icons.stories.tsx'
     );
     if (
+      !ownerPath &&
       path.basename(componentOwner) === 'icons' &&
       fs.existsSync(aggregateIconsStory)
     ) {
@@ -106,7 +116,7 @@ function run() {
     });
     console.error(
       '\x1b[33m%s\x1b[0m',
-      "Please create each story in its component owner's __stories__ directory before pushing."
+      "Please create each story in its component, page, or dialog owner's __stories__ directory before pushing."
     );
     process.exitCode = 1;
     return;

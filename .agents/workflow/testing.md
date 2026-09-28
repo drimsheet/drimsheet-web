@@ -50,6 +50,16 @@ npm test -- --run src/<feature>/components/<name>/__tests__/<name>.test.tsx
 
 Run a focused container test with the same Vitest command used for components.
 
+## Page-Owned Tests and Stories
+
+Private page parts and containers use the component/container test boundaries
+above. Place their tests in `pages/<page>/__tests__/parts/`, hook tests in
+`pages/<page>/hooks/__tests__/`, and helper tests in
+`pages/<page>/__tests__/helper.test.ts`. Import private modules through explicit
+implementation paths. Pure part stories mirror `parts/` under the page owner's
+`__stories__/`; page entries and containers are exempt from required stories.
+Keep complete page and route journeys in Playwright.
+
 ## Browser Integration Tests
 
 1. Identify one frontend-owned user outcome.
@@ -157,3 +167,9 @@ Verify runner separation with `npx playwright test --list`: Playwright should
 list only `playwright/**/*.spec.ts`, and Vitest should not discover those
 specs. Report checks that cannot run because the required browser binary or
 environment capability is unavailable.
+
+## Dialog-Owned Support
+
+Apply the page-owned support layout to `dialogs/<dialog>/`: private UI tests
+under `__tests__/parts/`, hook tests under `hooks/__tests__/`, and helper tests
+under `__tests__/helper.test.ts`. Test dialog entries through Playwright.

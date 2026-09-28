@@ -52,9 +52,9 @@ Every form component must keep its types outside the component file:
 
 ## Stories
 
-- Add one story under the owning component's `__stories__/` directory for every
-  UI `.tsx`; containers are exempt. Mirror private part stories under
-  `__stories__/parts/`.
+- Add one story under the owning component, page, or dialog's `__stories__/` directory
+  for every presentation UI `.tsx`; containers and page/dialog entries are exempt.
+  Mirror private part stories under `__stories__/parts/`.
 - Use `satisfies Meta<typeof Component>` and `StoryObj<typeof meta>`.
 - Add `tags: ['autodocs']` unless the nearby Storybook convention requires
   otherwise.
@@ -86,3 +86,12 @@ Every form component must keep its types outside the component file:
 - Test dialogs and pages under `playwright/tests/<feature>/`, not through
   component Testing Library tests. Use
   `$write-playwright-integration-tests` for that coverage.
+- Page-private parts and containers follow the same Vitest contracts above;
+  mirror their tests under the page's `__tests__/parts/`. Page hook tests belong
+  in `hooks/__tests__/`, and helper tests in `__tests__/helper.test.ts`.
+
+## Dialog Support Files
+
+Dialog-private presentation parts require mirrored stories and follow the same
+Vitest boundaries as page-private parts. Dialog entries and containers are
+exempt from stories. Test complete dialog workflows with Playwright.

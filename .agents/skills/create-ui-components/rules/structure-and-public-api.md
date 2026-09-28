@@ -2,7 +2,18 @@
 
 ## Ownership
 
-- Put feature-owned UI in `src/<feature>/components/<component-name>/`.
+- Put independently reusable feature UI in `src/<feature>/components/<component-name>/`.
+- Put page-private UI in `src/<feature>/pages/<page>/parts/`; use
+  `<page>.page.tsx` for the page entry and export only that component from the
+  page's `index.ts`. Page parts inherit page dependency permissions.
+- Keep page-only hooks in the page's `hooks/`, helpers in its root `helper.ts`,
+  and shared private types in its `types.ts`. Apply the same helper contract as
+  components. These modules are private to the page directory.
+- Mirror page part tests and stories under the page's `__tests__/parts/` and
+  `__stories__/parts/`. Hook tests belong in `hooks/__tests__/`.
+- Page entries and containers do not require stories; pure page parts do.
+- The component file set below applies to component owners. Page owners follow
+  the page folder layout in `.agents/rules/folder-structure.md`.
 - Put reusable, feature-agnostic UI in
   `src/shared/components/<component-name>/`.
 - Use kebab-case for the component directory and owner-scoped file names.
@@ -88,7 +99,7 @@ cohesive on its own.
 
 Private parts follow these ownership rules:
 
-- Only files within the owning component directory may import them.
+- Only files within the owning component, page, or dialog directory may import them.
 - Import them through explicit relative paths such as `./parts/header-actions`;
   do not create `parts/index.ts`.
 - A part that needs an owner-level type imports it relatively, such as
@@ -136,3 +147,10 @@ Private parts follow these ownership rules:
 - Use `Readonly<Props>` for component parameters.
 - Preserve native element props when that improves composition, and omit or
   override conflicting fields explicitly.
+
+## Dialog Ownership
+
+Apply the page ownership and private support conventions to
+`dialogs/<dialog>/<dialog>.dialog.tsx`, using dialog dependency permissions.
+The public barrel exports the dialog component and optional public props types
+only. Other owners must not import private dialog implementations.

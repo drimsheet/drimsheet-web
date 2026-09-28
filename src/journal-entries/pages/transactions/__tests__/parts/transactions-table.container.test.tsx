@@ -1,7 +1,7 @@
-import { TransactionsTableContainer } from '@/journal-entries/components/transactions-table';
 import { useArchiveJournalEntry } from '@/journal-entries/hooks/use-archive-journal-entry';
 import { useDeleteJournalEntry } from '@/journal-entries/hooks/use-delete-journal-entry';
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
+import { TransactionsTableContainer } from '@/journal-entries/pages/transactions/parts/transactions-table.container';
 import {
   EJournalEntrySourceType,
   EJournalEntryStatus,

@@ -41,6 +41,16 @@ export default defineConfig([
     },
   },
   {
+    files: ['src/*/{pages,dialogs}/*/{parts,hooks}/*.{ts,tsx}'],
+    rules: {
+      // Direct page and dialog parts and hooks may import their owner's private contracts.
+      'no-relative-import-paths/no-relative-import-paths': [
+        'warn',
+        { allowSameFolder: true, allowedDepth: 1, rootDir: 'src', prefix: '@' },
+      ],
+    },
+  },
+  {
     files: ['playwright/**/*.ts', 'playwright*.config.ts'],
     languageOptions: {
       globals: globals.node,

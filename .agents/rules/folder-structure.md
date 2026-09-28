@@ -67,7 +67,7 @@ src/<feature>/
 - `__docs__/` contains feature-specific documentation, decisions, examples, and diagrams.
 - `components/` contains pure presentation components with no external side effects.
 - `hooks/` contains feature-scoped hooks for UI behavior, data access, and API integration.
-- `pages/` contains page composition and orchestration only.
+- `pages/` contains named page owners for composition, orchestration, and private support files.
 - `layouts/` contains reusable layout wrappers for that feature.
 - `dialogs/` contains dialog orchestrators and dialog-specific composition.
 - `lib/` is the container for reusable feature logic. Group files into
@@ -77,6 +77,104 @@ src/<feature>/
 - Do not create empty responsibility directories or a feature-level generic
   `helpers/` directory; use the narrowest descriptive responsibility.
 - `routes/` contains route definitions that render pages only.
+
+## Page Folder Layout
+
+Every application page lives in `pages/<page>/<page>.page.tsx`. Its directory
+owns all UI and logic consumed exclusively by that page:
+
+```text
+pages/<page>/
+  <page>.page.tsx
+  index.ts
+  parts/
+    <part>.tsx
+    <part>.container.tsx
+  hooks/
+    use-<behavior>.ts
+    __tests__/
+      use-<behavior>.test.ts
+  helper.ts
+  types.ts
+  __tests__/
+    helper.test.ts
+    parts/
+      <part>.container.test.tsx
+  __stories__/
+    parts/
+      <part>.stories.tsx
+```
+
+- Export only the page component through `index.ts`, using an explicit named
+  re-export from `./<page>.page`. Consumers import the page directory.
+- Keep private UI in `parts/`, including error views, skeletons, and containers.
+  Use `skeleton.tsx` for one page-owned skeleton, with a descriptive React name.
+  Skeletons owned by reusable components stay with those components.
+- Pure parts remain presentation-only; `.container.tsx` parts may orchestrate
+  hooks, services, navigation, dialogs, and errors with page permissions.
+- Page-only hooks belong in `hooks/`; deterministic non-UI helpers belong in one
+  root `helper.ts`, following the component helper contract below with a frozen
+  `<pageName>Helpers` default object (for example, `accountDashboardHelpers`).
+  Types belong in `types.ts` when shared within the owner.
+- Mirror part tests and stories under `__tests__/parts/` and `__stories__/parts/`.
+  Hook tests belong in `hooks/__tests__/`; helper tests in `__tests__/helper.test.ts`.
+- Pure UI parts require stories. Page entries and containers are exempt.
+  Test complete page journeys with Playwright, and private modules with Vitest.
+- Only files within the page owner may import its private implementations. Do
+  not create private barrels or export private support files from the page API.
+- Promote UI to feature `components/` and logic to feature `hooks/` or `lib/`
+  when another owner needs it. Create support files and directories only as needed.
+
+## Dialog Folder Layout
+
+Every application dialog lives in `dialogs/<dialog>/<dialog>.dialog.tsx`.
+Its directory owns all UI and logic consumed exclusively by that dialog:
+
+```text
+dialogs/<dialog>/
+  <dialog>.dialog.tsx
+  index.ts
+  parts/
+    <part>.tsx
+    <part>.container.tsx
+  hooks/
+    use-<behavior>.ts
+    __tests__/
+      use-<behavior>.test.ts
+  helper.ts
+  types.ts
+  __tests__/
+    helper.test.ts
+    parts/
+      <part>.container.test.tsx
+  __stories__/
+    parts/
+      <part>.stories.tsx
+```
+
+- Export the dialog component through `index.ts`, using an explicit named
+  re-export from `./<dialog>.dialog`. Public dialog props may be re-exported
+  with `export type` from the entry or `types.ts`; all other support code stays
+  private. Consumers import the dialog directory.
+- Keep private UI in `parts/`, including error views, skeletons, and containers.
+  Use `skeleton.tsx` for one dialog-owned skeleton, with a descriptive React name.
+  Skeletons owned by reusable components stay with those components.
+- The `.dialog.tsx` entry may orchestrate effects directly and does not require
+  a separate container. Pure parts remain presentation-only; `.container.tsx`
+  parts may orchestrate hooks, services, navigation, dialogs, and errors with
+  dialog permissions.
+- Dialog-only hooks belong in `hooks/`; deterministic non-UI helpers belong in one
+  root `helper.ts`, following the component helper contract below with a frozen
+  `<dialogName>Helpers` default object (for example, `accountCreationHelpers`).
+  Types belong in `types.ts` when shared within the owner.
+- Mirror part tests and stories under `__tests__/parts/` and `__stories__/parts/`.
+  Hook tests belong in `hooks/__tests__/`; helper tests in `__tests__/helper.test.ts`.
+- Pure UI parts require stories. Dialog entries and containers are exempt.
+  Test complete dialog journeys with Playwright, and private modules with Vitest.
+- Only files within the dialog owner may import its private implementations. Do
+  not create private barrels or export private support files from the dialog API.
+- Promote UI to feature `components/` and logic to feature `hooks/` or `lib/`
+  when another owner needs it. Create support files and directories only as needed.
 
 ## Component Folder Layout
 
@@ -243,4 +341,4 @@ components/<name>/
 - Use directory names that are stable and descriptive.
 - Keep file names consistent with the exported component or hook name.
 - Prefer one responsibility per file and one public entry point per folder.
-- Do not use redundant suffixes (like `.page.tsx`, `.dialog.tsx`, or `.route.tsx`) for files that already live in role-specific directories (e.g., `pages/`, `dialogs/`, `routes/`). Use suffixes only for cohabiting files like `.container.tsx`, `.stories.tsx`, or `.test.tsx`.
+- Use `<page>.page.tsx` for page entries to distinguish them from page support files. Use `<dialog>.dialog.tsx` for dialog entries. Do not add `.route.tsx` suffixes in `routes/`. Keep role suffixes for cohabiting files such as `.container.tsx`, `.stories.tsx`, and `.test.tsx`.

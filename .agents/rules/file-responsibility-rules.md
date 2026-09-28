@@ -21,7 +21,7 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
 ## `parts/`
 
 - Use `parts/` only for UI subcomponents owned by and private to one component
-  directory.
+  or page/dialog directory.
 - Keep each part focused on one recognizable section of the owning UI.
 - Do not use `parts/` as a general bucket for hooks, services, utilities, or
   reusable components.
@@ -29,7 +29,7 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
   API.
 - Promote a part when it gains a consumer outside its owner.
 - Keep part tests and stories out of `parts/`; mirror them under the component
-  owner's `__tests__/parts/` and `__stories__/parts/` directories.
+  or page/dialog owner's `__tests__/parts/` and `__stories__/parts/` directories.
 
 ## Component `helper.ts`
 
@@ -128,8 +128,32 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
 
 ## `pages/`
 
-- Pages should orchestrate feature pieces and own page composition.
+- Each page lives in `pages/<page>/<page>.page.tsx` and orchestrates feature
+  pieces and page composition. Its `index.ts` exports only the page component.
+- Private UI belongs in `parts/`; effects belong in the page entry, private
+  `.container.tsx` parts, or page-owned hooks under `hooks/`.
+- Page helpers follow the component `helper.ts` contract: one root module,
+  one frozen `<pageName>Helpers` default object, and a matching
+  `__tests__/helper.test.ts`.
+- Keep page types in `types.ts` when shared by files in that owner. Private
+  modules must not be exported through the page API.
+- Presentation parts require mirrored stories; entries and containers do not.
 - Pages should not contain reusable business logic that belongs in `lib/` or hooks.
+
+## `dialogs/`
+
+- Each dialog lives in `dialogs/<dialog>/<dialog>.dialog.tsx` and orchestrates
+  feature pieces and dialog composition. Its `index.ts` exports the dialog
+  component and optional public props types.
+- Private UI belongs in `parts/`; effects belong in the dialog entry, private
+  `.container.tsx` parts, or dialog-owned hooks under `hooks/`.
+- Dialog helpers follow the component `helper.ts` contract: one root module,
+  one frozen `<dialogName>Helpers` default object, and a matching
+  `__tests__/helper.test.ts`.
+- Keep dialog types in `types.ts` when shared by files in that owner. Private
+  modules must not be exported through the dialog API.
+- Presentation parts require mirrored stories; entries and containers do not.
+- Dialogs should not contain reusable business logic that belongs in `lib/` or hooks.
 
 ## `routes/`
 

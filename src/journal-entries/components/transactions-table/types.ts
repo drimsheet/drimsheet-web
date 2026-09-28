@@ -48,7 +48,3 @@ export interface TransactionsTableProps {
   searchValue?: string;
   onSearchChange: (value: string) => void;
 }
-
-export interface TransactionsTableContainerProps {
-  actionButton?: ReactNode;
-}
