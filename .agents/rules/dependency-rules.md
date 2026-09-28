@@ -16,11 +16,40 @@ Make imports predictable so the agent can change one part of the app without cau
 
 ### Counterparty detail composition exception
 
-`src/counterparty/pages/counterparty-details.tsx` may import the public
+`src/counterparty/pages/counterparty-details/counterparty-details.page.tsx` may import the public
 `TransactionsTable` from `@/journal-entries/components/transactions-table`.
 The page supplies data and presentation props; it must not import the transaction
 container or private helpers. This exception does not extend to feature hooks,
 services, or components.
+
+## Page Ownership Boundaries
+
+- A page directory is an orchestration owner. Its parts, hooks, helpers, types,
+  tests, and stories inherit page dependency permissions.
+- Only files inside that page directory may import private implementations,
+  including parts, hooks, helpers, and types. Other owners import the page through
+  its page-only `index.ts`; do not import its implementation file directly.
+- Feature components must not import pages or their private modules.
+- Import private parts and owner types explicitly and relatively from production
+  files; support files may use explicit aliased implementation paths.
+- Do not add barrels inside private page directories or re-export private files
+  from the page barrel. Promote support code when another owner needs it.
+
+## Dialog Ownership Boundaries
+
+- A dialog directory is an orchestration owner. Its parts, hooks, helpers, types,
+  tests, and stories inherit dialog dependency permissions.
+- Only files inside that dialog directory may import private implementations,
+  including parts, hooks, helpers, and internal types. Public dialog props may
+  be exported with `export type` through the barrel. Other owners import the
+  dialog through its public `index.ts`; do not import its implementation file directly.
+- Pure feature components must not import dialogs. Existing orchestration
+  containers may compose public dialog APIs but must never import private
+  dialog modules. This does not grant new cross-feature import permissions.
+- Import private parts and owner types explicitly and relatively from production
+  files; support files may use explicit aliased implementation paths.
+- Do not add barrels inside private dialog directories or re-export private files
+  from the dialog barrel. Promote support code when another owner needs it.
 
 ## Dependency Boundaries
 

@@ -1,6 +1,6 @@
 ---
 name: create-ui-components
-description: Create, refactor, or review React components under this repository's src/**/components directories. Use for component folders, pure presentation components, side-effect containers, forms, component types, validation, Storybook stories, Vitest tests, and index.ts public exports, including when deciding whether UI belongs to a feature or src/shared.
+description: Create, refactor, or review React components under this repository's src/**/components directories and private page or dialog parts directories. Use for component folders, pure presentation components, side-effect containers, forms, component types, validation, Storybook stories, Vitest tests, and index.ts public exports, including when deciding whether UI belongs to a page, a dialog, a feature, or src/shared.
 ---
 
 # Create UI Components
@@ -37,7 +37,9 @@ are useful examples, but some predate the current rules.
    identify their conventions for naming, styling, translations, stories, and
    tests.
 3. Choose the owner:
-   - Put feature-specific UI in `src/<feature>/components`.
+   - Put UI private to a page in `src/<feature>/pages/<page>/parts` and keep
+     page-only hooks, helpers, and types with that page owner.
+   - Put independently reusable feature-specific UI in `src/<feature>/components`.
    - Put genuinely feature-agnostic UI in `src/shared/components`.
    - Do not move code to shared merely because it has one possible reuse.
 4. Define the component contract before implementation. Pass data, status, and
@@ -83,7 +85,8 @@ or risk warrants them. Report any check that could not be run.
 - The UI file remains presentation-only.
 - Side effects and orchestration live in a container, hook, page, dialog, or
   `lib`, according to ownership.
-- Every UI `.tsx` file has a story in the owner's `__stories__/` directory.
+- Every presentation UI `.tsx` file has a mirrored story in the owner's
+  `__stories__/` directory; page/dialog entries and containers are exempt.
 - A single owner-local loading skeleton uses `skeleton.tsx` with a descriptive
   exported symbol and matching `skeleton.*` support filenames.
 - Behavior and user outcomes have focused tests.
@@ -102,3 +105,10 @@ or risk warrants them. Report any check that could not be run.
   named handlers; short single-expression adapters may remain inline.
 - Component code contains no nested ternaries.
 - No internal helper is exported accidentally.
+
+## Dialog Owners
+
+Choose `src/<feature>/dialogs/<dialog>/parts/` for dialog-private UI and keep
+private hooks, helpers, and types with that owner. Follow the dialog folder
+layout in `.agents/rules/folder-structure.md`. The `.dialog.tsx` entry may
+orchestrate effects directly without a separate container.

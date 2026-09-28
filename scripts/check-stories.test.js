@@ -87,3 +87,115 @@ describe('findMissingStories', () => {
     expect(findMissingStories(srcPath)).toEqual([sourcePath]);
   });
 });
+
+describe('findMissingStories page owners', () => {
+  function createPageFixture(files) {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'page-stories-'));
+    fixtureRoots.push(root);
+    const srcPath = path.join(root, 'src');
+    const pagePath = path.join(srcPath, 'feature', 'pages', 'example');
+    for (const [name, content] of Object.entries(files)) {
+      const filePath = path.join(pagePath, name);
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(filePath, content);
+    }
+    return { srcPath, pagePath };
+  }
+
+  it('exempts page entries, containers, hooks, and tests', () => {
+    const { srcPath } = createPageFixture({
+      'example.page.tsx': 'export function ExamplePage() {}',
+      'parts/table.container.tsx': 'export function TableContainer() {}',
+      'hooks/use-example.ts': 'export function useExample() {}',
+      '__tests__/parts/table.container.test.tsx': 'export {};',
+    });
+    expect(findMissingStories(srcPath)).toEqual([]);
+  });
+
+  it.each(['error', 'skeleton', 'details'])(
+    'requires a mirrored story for the %s part',
+    (name) => {
+      const { srcPath, pagePath } = createPageFixture({
+        [`parts/${name}.tsx`]: 'export {};',
+        [`parts/${name}.stories.tsx`]: 'export default {};',
+        [`__stories__/${name}.stories.tsx`]: 'export default {};',
+      });
+      expect(findMissingStories(srcPath)).toEqual([
+        path.join(pagePath, 'parts', `${name}.tsx`),
+      ]);
+      fs.mkdirSync(path.join(pagePath, '__stories__', 'parts'));
+      fs.writeFileSync(
+        path.join(pagePath, '__stories__', 'parts', `${name}.stories.tsx`),
+        'export default {};'
+      );
+      expect(findMissingStories(srcPath)).toEqual([]);
+    }
+  );
+
+  it('does not treat Playwright pages as application UI owners', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'playwright-pages-'));
+    fixtureRoots.push(root);
+    fs.mkdirSync(path.join(root, 'playwright', 'pages'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'playwright', 'pages', 'example.ts'),
+      'export class ExamplePage {}'
+    );
+    expect(findMissingStories(path.join(root, 'src'))).toEqual([]);
+  });
+});
+
+describe('findMissingStories dialog owners', () => {
+  function createDialogFixture(files) {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'dialog-stories-'));
+    fixtureRoots.push(root);
+    const srcPath = path.join(root, 'src');
+    const dialogPath = path.join(srcPath, 'feature', 'dialogs', 'example');
+    for (const [name, content] of Object.entries(files)) {
+      const filePath = path.join(dialogPath, name);
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(filePath, content);
+    }
+    return { srcPath, dialogPath };
+  }
+
+  it('exempts dialog entries, containers, hooks, and tests', () => {
+    const { srcPath } = createDialogFixture({
+      'example.dialog.tsx': 'export function ExampleDialog() {}',
+      'parts/table.container.tsx': 'export function TableContainer() {}',
+      'hooks/use-example.ts': 'export function useExample() {}',
+      '__tests__/parts/table.container.test.tsx': 'export {};',
+    });
+    expect(findMissingStories(srcPath)).toEqual([]);
+  });
+
+  it.each(['error', 'skeleton', 'details'])(
+    'requires a mirrored story for the %s part',
+    (name) => {
+      const { srcPath, dialogPath } = createDialogFixture({
+        [`parts/${name}.tsx`]: 'export {};',
+        [`parts/${name}.stories.tsx`]: 'export default {};',
+        [`__stories__/${name}.stories.tsx`]: 'export default {};',
+      });
+      expect(findMissingStories(srcPath)).toEqual([
+        path.join(dialogPath, 'parts', `${name}.tsx`),
+      ]);
+      fs.mkdirSync(path.join(dialogPath, '__stories__', 'parts'));
+      fs.writeFileSync(
+        path.join(dialogPath, '__stories__', 'parts', `${name}.stories.tsx`),
+        'export default {};'
+      );
+      expect(findMissingStories(srcPath)).toEqual([]);
+    }
+  );
+
+  it('does not treat Playwright dialogs as application UI owners', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'playwright-dialogs-'));
+    fixtureRoots.push(root);
+    fs.mkdirSync(path.join(root, 'playwright', 'dialogs'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'playwright', 'dialogs', 'example.ts'),
+      'export class ExampleDialog {}'
+    );
+    expect(findMissingStories(path.join(root, 'src'))).toEqual([]);
+  });
+});

@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import ts from 'typescript';
+import { getOrchestrationOwner } from './orchestration-ownership.js';
 
 const obsoleteSharedDirs = ['config', 'context', 'services', 'ui', 'utils'];
 const obsoleteSharedComponentDirs = ['ui', 'lib'];
@@ -105,6 +106,7 @@ function indexReferencesPrivateModule(indexPath) {
     }
 
     return (
+      statement.moduleSpecifier &&
       ts.isStringLiteral(statement.moduleSpecifier) &&
       (statement.moduleSpecifier.text === './helper' ||
         statement.moduleSpecifier.text.startsWith('./parts/'))
@@ -112,7 +114,11 @@ function indexReferencesPrivateModule(indexPath) {
   });
 }
 
-function validateComponentHelpers(componentPath, relative) {
+function validateComponentHelpers(
+  componentPath,
+  relative,
+  ownerKind = 'component'
+) {
   const errors = [];
   const expectedHelperPath = path.join(componentPath, 'helper.ts');
   const expectedTestPath = path.join(
@@ -125,7 +131,7 @@ function validateComponentHelpers(componentPath, relative) {
 
   if (fs.existsSync(legacyHelpersPath)) {
     errors.push(
-      `Replace component helpers directory with ${relative(expectedHelperPath)}: ${relative(legacyHelpersPath)}`
+      `Replace ${ownerKind} helpers directory with ${relative(expectedHelperPath)}: ${relative(legacyHelpersPath)}`
     );
   }
 
@@ -143,7 +149,7 @@ function validateComponentHelpers(componentPath, relative) {
   for (const helperFile of helperFiles) {
     if (helperFile !== expectedHelperPath && helperFile !== expectedTestPath) {
       errors.push(
-        `Rename component helper to ${relative(expectedHelperPath)} or its matching test: ${relative(helperFile)}`
+        `Rename ${ownerKind} helper to ${relative(expectedHelperPath)} or its matching test: ${relative(helperFile)}`
       );
     }
   }
@@ -153,13 +159,13 @@ function validateComponentHelpers(componentPath, relative) {
 
   if (helperExists && !testExists) {
     errors.push(
-      `Add consolidated component helper test: ${relative(expectedTestPath)}`
+      `Add consolidated ${ownerKind} helper test: ${relative(expectedTestPath)}`
     );
   }
 
   if (!helperExists && testExists) {
     errors.push(
-      `Remove orphan component helper test or add ${relative(expectedHelperPath)}: ${relative(expectedTestPath)}`
+      `Remove orphan ${ownerKind} helper test or add ${relative(expectedHelperPath)}: ${relative(expectedTestPath)}`
     );
   }
 
@@ -177,7 +183,7 @@ function validateComponentHelpers(componentPath, relative) {
   const indexPath = path.join(componentPath, 'index.ts');
   if (indexReferencesPrivateModule(indexPath)) {
     errors.push(
-      `Keep component helpers and parts private; remove the index reference: ${relative(indexPath)}`
+      `Keep ${ownerKind} helpers and parts private; remove the index reference: ${relative(indexPath)}`
     );
   }
 
@@ -240,6 +246,229 @@ function validateComponentSkeletonNames(componentPath, relative) {
   return errors;
 }
 
+function readSource(filePath) {
+  return ts.createSourceFile(
+    filePath,
+    fs.readFileSync(filePath, 'utf8'),
+    ts.ScriptTarget.Latest,
+    true
+  );
+}
+
+function hasFrozenOwnerHelper(ownerPath) {
+  const source = readSource(path.join(ownerPath, 'helper.ts'));
+  const helperName = `${path.basename(ownerPath).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())}Helpers`;
+  const defaultExport = source.statements.find(ts.isExportAssignment);
+  if (
+    !defaultExport ||
+    !ts.isIdentifier(defaultExport.expression) ||
+    defaultExport.expression.text !== helperName
+  )
+    return false;
+
+  return source.statements.some((statement) => {
+    if (!ts.isVariableStatement(statement)) return false;
+    return statement.declarationList.declarations.some((declaration) => {
+      const initializer = declaration.initializer;
+      return (
+        ts.isIdentifier(declaration.name) &&
+        declaration.name.text === helperName &&
+        initializer &&
+        ts.isCallExpression(initializer) &&
+        ts.isPropertyAccessExpression(initializer.expression) &&
+        ts.isIdentifier(initializer.expression.expression) &&
+        initializer.expression.expression.text === 'Object' &&
+        initializer.expression.name.text === 'freeze' &&
+        initializer.arguments.length === 1 &&
+        ts.isObjectLiteralExpression(initializer.arguments[0])
+      );
+    });
+  });
+}
+
+function validateOrchestrationOwner(ownerPath, relative) {
+  const errors = [];
+  const kind =
+    path.basename(path.dirname(ownerPath)) === 'dialogs' ? 'dialog' : 'page';
+  const suffix = kind === 'dialog' ? 'Dialog' : 'Page';
+  const name = path.basename(ownerPath);
+  const entryPath = path.join(ownerPath, `${name}.${kind}.tsx`);
+  const indexPath = path.join(ownerPath, 'index.ts');
+  if (!fs.existsSync(entryPath)) {
+    errors.push(`Add matching ${kind} entry: ${relative(entryPath)}`);
+  }
+  if (!fs.existsSync(indexPath)) {
+    errors.push(`Add ${kind} public entry point: ${relative(indexPath)}`);
+  } else {
+    const statements = readSource(indexPath).statements;
+    const statement = statements[0];
+    const publicPropsOnly =
+      kind === 'dialog' &&
+      statements
+        .slice(1)
+        .every(
+          (item) =>
+            ts.isExportDeclaration(item) &&
+            item.isTypeOnly &&
+            item.moduleSpecifier &&
+            ts.isStringLiteral(item.moduleSpecifier) &&
+            [`./${name}.dialog`, './types'].includes(
+              item.moduleSpecifier.text
+            ) &&
+            item.exportClause &&
+            ts.isNamedExports(item.exportClause) &&
+            item.exportClause.elements.length === 1 &&
+            item.exportClause.elements[0].name.text ===
+              `${statement?.exportClause?.elements?.[0]?.name?.text}Props` &&
+            !item.exportClause.elements[0].propertyName
+        );
+    // An explicit, single component export prevents the owner API leaking support code.
+    if (
+      (statements.length !== 1 && !publicPropsOnly) ||
+      !statement ||
+      !ts.isExportDeclaration(statement) ||
+      statement.isTypeOnly ||
+      !statement.moduleSpecifier ||
+      !ts.isStringLiteral(statement.moduleSpecifier) ||
+      statement.moduleSpecifier.text !== `./${name}.${kind}` ||
+      !statement.exportClause ||
+      !ts.isNamedExports(statement.exportClause) ||
+      statement.exportClause.elements.length !== 1 ||
+      statement.exportClause.elements[0].isTypeOnly ||
+      !statement.exportClause.elements[0].name.text.endsWith(suffix)
+    ) {
+      errors.push(
+        `Export only the ${kind} component from ./${name}.${kind}: ${relative(indexPath)}`
+      );
+    }
+  }
+
+  errors.push(...validateComponentHelpers(ownerPath, relative, kind));
+  if (
+    fs.existsSync(path.join(ownerPath, 'helper.ts')) &&
+    !hasFrozenOwnerHelper(ownerPath)
+  ) {
+    errors.push(
+      `Export a frozen <${kind}Name>Helpers object as the ${kind} helper default: ${relative(path.join(ownerPath, 'helper.ts'))}`
+    );
+  }
+  walk(ownerPath, (fullPath, entry) => {
+    if (!entry.isFile()) return;
+    const localPath = path.relative(ownerPath, fullPath);
+    const segments = localPath.split(path.sep);
+    const basename = path.basename(fullPath);
+    const isSupport =
+      segments.includes('__tests__') || segments.includes('__stories__');
+    if (basename === 'index.ts' && fullPath !== indexPath && !isSupport) {
+      errors.push(`Remove private ${kind} barrel: ${relative(fullPath)}`);
+    }
+    if (basename.endsWith(`.${kind}.tsx`) && fullPath !== entryPath) {
+      errors.push(
+        `Use matching ${kind} entry ${relative(entryPath)}: ${relative(fullPath)}`
+      );
+    }
+    if (
+      !isSupport &&
+      basename.endsWith('.tsx') &&
+      fullPath !== entryPath &&
+      segments[0] !== 'parts'
+    ) {
+      errors.push(`Move private ${kind} UI into parts: ${relative(fullPath)}`);
+    }
+    if (
+      !isSupport &&
+      segments[0] === 'parts' &&
+      /\.(?:ts|tsx)$/.test(basename) &&
+      !basename.endsWith('.tsx')
+    ) {
+      errors.push(
+        `Keep ${kind} parts for UI; move logic to hooks, helper.ts, or types.ts: ${relative(fullPath)}`
+      );
+    }
+  });
+  return errors;
+}
+
+function moduleReferences(sourceFile) {
+  const references = [];
+  function visit(node) {
+    if (
+      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+      node.moduleSpecifier
+    ) {
+      if (ts.isStringLiteral(node.moduleSpecifier))
+        references.push(node.moduleSpecifier.text);
+    } else if (
+      ts.isImportTypeNode(node) &&
+      ts.isLiteralTypeNode(node.argument) &&
+      ts.isStringLiteral(node.argument.literal)
+    ) {
+      references.push(node.argument.literal.text);
+    } else if (
+      ts.isImportEqualsDeclaration(node) &&
+      ts.isExternalModuleReference(node.moduleReference) &&
+      node.moduleReference.expression &&
+      ts.isStringLiteral(node.moduleReference.expression)
+    ) {
+      references.push(node.moduleReference.expression.text);
+    } else if (
+      ts.isCallExpression(node) &&
+      (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+        (ts.isIdentifier(node.expression) &&
+          node.expression.text === 'require')) &&
+      node.arguments.length &&
+      (ts.isStringLiteral(node.arguments[0]) ||
+        ts.isNoSubstitutionTemplateLiteral(node.arguments[0]))
+    ) {
+      references.push(node.arguments[0].text);
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(sourceFile);
+  return references;
+}
+
+function validateOrchestrationImports(srcRoot, filePath, relative) {
+  const errors = [];
+  const sourceOwner = getOrchestrationOwner(srcRoot, filePath);
+  const sourceSegments = path.relative(srcRoot, filePath).split(path.sep);
+  for (const specifier of moduleReferences(readSource(filePath))) {
+    let target;
+    if (specifier.startsWith('@/')) {
+      target = path.resolve(srcRoot, specifier.slice(2));
+    } else if (specifier.startsWith('.')) {
+      target = path.resolve(path.dirname(filePath), specifier);
+    } else {
+      continue;
+    }
+    const targetOwner = getOrchestrationOwner(srcRoot, target);
+    if (!targetOwner) continue;
+    const kind =
+      path.basename(path.dirname(targetOwner)) === 'dialogs'
+        ? 'dialog'
+        : 'page';
+
+    if (
+      sourceSegments[1] === 'components' &&
+      (kind === 'page' || !filePath.endsWith('.container.tsx'))
+    ) {
+      errors.push(
+        `Components must not import ${kind}s: ${relative(filePath)} -> ${specifier}`
+      );
+    }
+    const targetRelative = path.relative(targetOwner, target);
+    const isPublic =
+      targetRelative === '' ||
+      /^index(?:\.(?:ts|tsx|js|jsx))?$/.test(targetRelative);
+    if (targetOwner !== sourceOwner && !isPublic) {
+      errors.push(
+        `Keep ${kind} implementations private: ${relative(filePath)} -> ${specifier}`
+      );
+    }
+  }
+  return errors;
+}
+
 function validateSupportArtifactPlacement(srcRoot, fullPath, entry, relative) {
   if (!entry.isFile()) {
     return [];
@@ -283,7 +512,8 @@ function validateSupportArtifactPlacement(srcRoot, fullPath, entry, relative) {
   }
 
   const componentsIndex = segments.indexOf('components');
-  if (isStory && componentsIndex === -1) {
+  const ownerPath = getOrchestrationOwner(srcRoot, fullPath);
+  if (isStory && componentsIndex === -1 && !ownerPath) {
     errors.push(
       `Place Storybook files under a component owner's __stories__ directory: ${relative(fullPath)}`
     );
@@ -302,6 +532,39 @@ function validateSupportArtifactPlacement(srcRoot, fullPath, entry, relative) {
       errors.push(
         `Place component story directly under the owner's __stories__ tree: ${relative(fullPath)}`
       );
+    }
+  }
+
+  if (ownerPath) {
+    const kind =
+      path.basename(path.dirname(ownerPath)) === 'dialogs' ? 'dialog' : 'page';
+    const ownerArtifactPath = path
+      .relative(ownerPath, fullPath)
+      .split(path.sep);
+    const isHookTest =
+      ownerArtifactPath[0] === 'hooks' && ownerArtifactPath[1] === '__tests__';
+    if (isTest && ownerArtifactPath[0] !== '__tests__' && !isHookTest) {
+      errors.push(
+        `Place ${kind} test under __tests__ or hooks/__tests__: ${relative(fullPath)}`
+      );
+    }
+    if (isStory && ownerArtifactPath[0] !== '__stories__') {
+      errors.push(
+        `Place ${kind} story under the owner's __stories__ tree: ${relative(fullPath)}`
+      );
+    }
+    if (
+      (isStory || isTest) &&
+      ['__stories__', '__tests__'].includes(ownerArtifactPath[0])
+    ) {
+      const sourcePath = path
+        .join(ownerPath, ...ownerArtifactPath.slice(1))
+        .replace(/\.(?:test|stories)(?=\.(?:ts|tsx)$)/, '');
+      if (!fs.existsSync(sourcePath)) {
+        errors.push(
+          `Mirror ${kind} support artifact to an existing source: ${relative(fullPath)}`
+        );
+      }
     }
   }
 
@@ -388,6 +651,21 @@ export function checkStructure(root = process.cwd()) {
     errors.push(
       ...validateSupportArtifactPlacement(srcRoot, fullPath, entry, relative)
     );
+
+    const segments = path.relative(srcRoot, fullPath).split(path.sep);
+    if (['pages', 'dialogs'].includes(segments[1]) && segments.length === 3) {
+      const kind = segments[1] === 'dialogs' ? 'dialog' : 'page';
+      if (entry.isFile() && /\.(?:ts|tsx|js|jsx)$/.test(entry.name)) {
+        errors.push(
+          `Move flat ${kind} into ${kind}s/<${kind}>/<${kind}>.${kind}.tsx: ${relative(fullPath)}`
+        );
+      } else if (entry.isDirectory() && !entry.name.startsWith('__')) {
+        errors.push(...validateOrchestrationOwner(fullPath, relative));
+      }
+    }
+    if (entry.isFile() && /\.(?:ts|tsx|js|jsx)$/.test(entry.name)) {
+      errors.push(...validateOrchestrationImports(srcRoot, fullPath, relative));
+    }
 
     if (
       entry.isDirectory() &&

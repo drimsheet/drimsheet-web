@@ -42,6 +42,10 @@ workflow is triggered during render.
 When side effects or orchestration are necessary, add
 `<component-name>.container.tsx`.
 
+A container private to one page belongs in that page's `parts/`, inherits page
+permissions, and is not exported from the page barrel. It may consume reusable
+feature presentation components through their public APIs.
+
 The container may:
 
 - call query and mutation hooks;
@@ -82,3 +86,9 @@ A genuine effect synchronizes with an external system. That makes it
 orchestration for this project, so place it in the container or an appropriately
 owned hook. Add a short comment only when the external synchronization purpose
 is not obvious.
+
+## Dialog Orchestration
+
+A `.dialog.tsx` entry may orchestrate effects directly without an additional
+container. Dialog-private containers belong in the owner's `parts/`, inherit
+dialog permissions, and remain absent from the public barrel.

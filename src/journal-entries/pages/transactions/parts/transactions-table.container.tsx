@@ -1,5 +1,4 @@
-// TODO: remove and let each page handle it's fetching logic, etc.
-// https://drimsheet-app.atlassian.net/browse/ENG-139
+import { TransactionsTable } from '@/journal-entries/components/transactions-table';
 import { useArchiveJournalEntry } from '@/journal-entries/hooks/use-archive-journal-entry';
 import { useDeleteJournalEntry } from '@/journal-entries/hooks/use-delete-journal-entry';
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
@@ -15,8 +14,7 @@ import {
 } from '@/shared/lib/api/Api';
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TransactionsTable } from './transactions-table';
-import type { TransactionsTableContainerProps } from './types';
+import type { TransactionsTableContainerProps } from '../types';
 
 const TRANSACTIONS_PAGE_SIZE = 10;
 
