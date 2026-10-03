@@ -15,6 +15,8 @@ const meta = {
     counterparty: {
       id: 'counterparty-1',
       accountingEntityId: 'entity-1',
+      createdBy: '00000000-0000-4000-8000-000000000100',
+      version: 1,
       name: 'Adenike Supplies Ltd',
       type: 'organization',
       status: 'active',

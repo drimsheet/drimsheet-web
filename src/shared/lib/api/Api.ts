@@ -201,6 +201,33 @@ export const EAccountingEntityType = {
 export type UAccountingEntityType =
   (typeof EAccountingEntityType)[keyof typeof EAccountingEntityType];
 
+export const ETSupportedExpenseAccountBehavior = {
+  DefaultDirectCost: 'default_direct_cost',
+  Cogs: 'cogs',
+  CostOfServices: 'cost_of_services',
+  CostOfRevenue: 'cost_of_revenue',
+  RentAndUtilities: 'rent_and_utilities',
+  BankCharge: 'bank_charge',
+  FinanceCost: 'finance_cost',
+  Interest: 'interest',
+  TaxExpense: 'tax_expense',
+  UnrealizedLoss: 'unrealized_loss',
+  AssetDisposalLoss: 'asset_disposal_loss',
+} as const;
+export type TSupportedExpenseAccountBehavior =
+  (typeof ETSupportedExpenseAccountBehavior)[keyof typeof ETSupportedExpenseAccountBehavior];
+
+export const ETSupportedRevenueAccountBehavior = {
+  Services: 'services',
+  EmploymentIncome: 'employment_income',
+  GainOnAssetSale: 'gain_on_asset_sale',
+  UnrealizedGains: 'unrealized_gains',
+  Grants: 'grants',
+  Gifts: 'gifts',
+} as const;
+export type TSupportedRevenueAccountBehavior =
+  (typeof ETSupportedRevenueAccountBehavior)[keyof typeof ETSupportedRevenueAccountBehavior];
+
 export const ECounterpartySortBy = {
   CreatedAt: 'createdAt',
   Name: 'name',
@@ -215,13 +242,6 @@ export const ECounterpartyRole = {
 } as const;
 export type UCounterpartyRole =
   (typeof ECounterpartyRole)[keyof typeof ECounterpartyRole];
-
-export const ECounterpartyStatus = {
-  Active: 'active',
-  Archived: 'archived',
-} as const;
-export type UCounterpartyStatus =
-  (typeof ECounterpartyStatus)[keyof typeof ECounterpartyStatus];
 
 export const EFileUploadPurpose = {
   JournalEntryAttachment: 'journal_entry_attachment',
@@ -250,6 +270,14 @@ export const EJournalEntrySortBy = {
 } as const;
 export type UJournalEntrySortBy =
   (typeof EJournalEntrySortBy)[keyof typeof EJournalEntrySortBy];
+
+export const ECounterpartyStatus = {
+  Active: 'active',
+  Archived: 'archived',
+  Draft: 'draft',
+} as const;
+export type UCounterpartyStatus =
+  (typeof ECounterpartyStatus)[keyof typeof ECounterpartyStatus];
 
 export const EJournalSide = {
   Debit: 'debit',
@@ -281,6 +309,14 @@ export const EExchangeRateType = {
 } as const;
 export type UExchangeRateType =
   (typeof EExchangeRateType)[keyof typeof EExchangeRateType];
+
+/** Status accepted when proposing or creating a ledger subaccount. */
+export const ELedgerAccountCreationStatus = {
+  Active: 'active',
+  Draft: 'draft',
+} as const;
+export type ULedgerAccountCreationStatus =
+  (typeof ELedgerAccountCreationStatus)[keyof typeof ELedgerAccountCreationStatus];
 
 export const EJournalEntrySourceType = {
   Expense: 'expense',
@@ -386,6 +422,7 @@ export type UContraAccountRule =
 export const ELedgerAccountStatus = {
   Active: 'active',
   Archived: 'archived',
+  Draft: 'draft',
 } as const;
 export type ULedgerAccountStatus =
   (typeof ELedgerAccountStatus)[keyof typeof ELedgerAccountStatus];
@@ -485,6 +522,7 @@ export interface IUserAppPreferences {
 }
 
 export interface IUserPreferences {
+  createdBy: TEntityId;
   userId: TEntityId;
   lastActiveAccountingEntityId: TEntityId | null;
   appPreferences: IUserAppPreferences;
@@ -563,6 +601,33 @@ export interface ILedgerAccountDto {
   functionalBalance: IMoneyDto;
 }
 
+export interface IHeaderAccountNameAliasesReq {
+  cash_and_cash_equivalent?: string;
+  receivables?: string;
+  short_term_debt?: string;
+  payable?: string;
+  retained_earnings?: string;
+  opening_balance?: string;
+  services?: string;
+  employment_income?: string;
+  gain_on_asset_sale?: string;
+  unrealized_gains?: string;
+  grants?: string;
+  gifts?: string;
+  direct_costs?: string;
+  rent_and_utilities?: string;
+  bank_charge?: string;
+  finance_cost?: string;
+  interest?: string;
+  income_tax_expense?: string;
+  unrealized_loss?: string;
+  loss_on_asset_disposal?: string;
+  trade_receivables?: string;
+  statutory_receivables?: string;
+  trade_payables?: string;
+  statutory_payables?: string;
+}
+
 export interface IPaginationResponseMeta {
   /** @format double */
   page: number;
@@ -633,6 +698,8 @@ export interface IOpeningBalanceDto {
 
 export interface IPettyCashAccountCreationReq {
   name: string;
+  /** Defaults to active when omitted. */
+  status?: ULedgerAccountCreationStatus;
   currencyCode: string;
   isControlAccount: boolean;
   controlAccountId?: string;
@@ -652,7 +719,7 @@ export interface IJournalHeaderDto {
   voidingEntryId: string | null;
   /** @format double */
   version: number;
-  createdBy: string;
+  createdBy: TEntityId;
   /** @format date-time */
   createdAt: string;
   /** @format date-time */
@@ -674,6 +741,7 @@ export interface IExchangeRate {
 }
 
 export interface IAccountTransactionRes {
+  createdBy: TEntityId;
   id: string;
   entryId: string;
   accountId: string;
@@ -726,6 +794,7 @@ export interface IJournalLineListDto {
     id: string;
   };
   counterparty: {
+    status: UCounterpartyStatus;
     name: string;
     id: string;
   } | null;
@@ -757,7 +826,7 @@ export interface IJournalEntryListDto {
   voidingEntryId: string | null;
   /** @format double */
   version: number;
-  createdBy: string;
+  createdBy: TEntityId;
   /** @format date-time */
   createdAt: string;
   /** @format date-time */
@@ -787,6 +856,7 @@ export interface IGetJournalEntriesQuery {
 }
 
 export interface IJournalLineDto {
+  createdBy: TEntityId;
   id: string;
   entryId: string;
   accountId: string;
@@ -819,7 +889,7 @@ export interface IJournalEntryDto {
   voidingEntryId: string | null;
   /** @format double */
   version: number;
-  createdBy: string;
+  createdBy: TEntityId;
   /** @format date-time */
   createdAt: string;
   /** @format date-time */
@@ -1094,6 +1164,9 @@ export interface ICounterpartyMetaDto {
 }
 
 export interface ICounterpartyDto {
+  /** @format double */
+  version: number;
+  createdBy: string;
   id: string;
   accountingEntityId: string;
   name: string;
@@ -1118,6 +1191,20 @@ export interface ICounterpartyCreateMetaReq {
   contractor?: {
     address: IAddressDto;
   };
+}
+
+export interface ICounterpartyUpdateReq {
+  /**
+   * Version returned by the last read; stale writes fail with HTTP 409.
+   * @format double
+   */
+  expectedVersion: number;
+  name?: string;
+  type?: UCounterpartyType;
+  /** Omit for ordinary edits; Active explicitly requests Draft activation. */
+  status?: 'active';
+  /** Complete role replacement when supplied; {} clears all roles. */
+  meta?: ICounterpartyCreateMetaReq;
 }
 
 export interface ICounterpartyCreateReq {
@@ -1185,6 +1272,25 @@ export interface IResetPasswordReq {
   confirmPassword: string;
 }
 
+export interface IRecommendedBootstrapAccountDto {
+  key: string;
+  name: string;
+  type: string;
+  subType: string;
+  behavior: string;
+  isControlAccount: boolean;
+  controlAccountCode?: string;
+  meta?: null;
+}
+
+export interface IRecommendedBootstrapDto {
+  receivables: IRecommendedBootstrapAccountDto[];
+  payables: IRecommendedBootstrapAccountDto[];
+  revenue: IRecommendedBootstrapAccountDto[];
+  expense: IRecommendedBootstrapAccountDto[];
+  suspense: IRecommendedBootstrapAccountDto[];
+}
+
 export interface IBankDetailsCreationReq {
   bankName: string;
   accountName: string;
@@ -1193,13 +1299,93 @@ export interface IBankDetailsCreationReq {
 
 export interface IBankAccountCreationReq {
   name: string;
+  /** Defaults to active when omitted. */
+  status?: ULedgerAccountCreationStatus;
   currencyCode: string;
   controlAccountId?: string;
   bankAccount: IBankDetailsCreationReq;
   openingBalance: IOpeningBalanceDto | null;
 }
 
+export interface ICreateRevenueAccountDto {
+  name: string;
+  /** Defaults to active when omitted. */
+  status?: ULedgerAccountCreationStatus;
+  isControlAccount: boolean;
+  /** @format uuid */
+  controlAccountId?: string;
+  behavior: TSupportedRevenueAccountBehavior;
+}
+
+export interface ICreateExpenseAccountDto {
+  name: string;
+  /** Defaults to active when omitted. */
+  status?: ULedgerAccountCreationStatus;
+  isControlAccount: boolean;
+  /** @format uuid */
+  controlAccountId?: string;
+  behavior: TSupportedExpenseAccountBehavior;
+}
+
+export interface ICreateTradeReceivableAccountDto {
+  name: string;
+  /** Defaults to active when omitted. */
+  status?: ULedgerAccountCreationStatus;
+  isControlAccount: boolean;
+  /** @format uuid */
+  controlAccountId?: string;
+  currencyCode: string;
+}
+
+export interface ICreateStatutoryReceivableAccountDto {
+  name: string;
+  /** Defaults to active when omitted. */
+  status?: ULedgerAccountCreationStatus;
+  isControlAccount: boolean;
+  /** @format uuid */
+  controlAccountId?: string;
+  currencyCode: string;
+}
+
+export interface ICreateTradePayableAccountDto {
+  name: string;
+  /** Defaults to active when omitted. */
+  status?: ULedgerAccountCreationStatus;
+  isControlAccount: boolean;
+  /** @format uuid */
+  controlAccountId?: string;
+  meta?: {
+    /** @format uuid */
+    invoiceId: string;
+    /** @format uuid */
+    counterpartyId: string;
+  } | null;
+}
+
+export interface IStatutoryPayableAccountMeta {
+  taxAuthority: string;
+  taxType: string;
+}
+
+export interface ICreateStatutoryPayableAccountDto {
+  name: string;
+  /** Defaults to active when omitted. */
+  status?: ULedgerAccountCreationStatus;
+  isControlAccount: boolean;
+  /** @format uuid */
+  controlAccountId?: string;
+  currencyCode: string;
+  meta?: IStatutoryPayableAccountMeta | null;
+}
+
+export interface ICreateSuspenseAccountDto {
+  name: string;
+  type: 'asset' | 'liability';
+  currencyCode: string;
+}
+
 export interface IAccountingEntity {
+  createdBy: TEntityId;
   id: TEntityId;
   name: string;
   type: UAccountingEntityType;
@@ -1514,6 +1700,26 @@ export class Api<
   };
   ledger = {
     /**
+     * @description Set up all 24 header, equity, and standard receivable/payable control accounts atomically, with optional translated names.
+     *
+     * @tags Ledger
+     * @name SetupHeaderAccounts
+     * @request POST:/ledger/header-accounts/setup
+     */
+    setupHeaderAccounts: (
+      data?: IHeaderAccountNameAliasesReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerAccountDto[], IHttpErrorDto>({
+        path: `/ledger/header-accounts/setup`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
      * @description Get paginated ledger accounts with optional filters
      *
      * @tags Ledger
@@ -1573,7 +1779,7 @@ export class Api<
       }),
 
     /**
-     * @description Create a new petty cash sub account
+     * @description Create an Active or Draft petty-cash subaccount; status defaults to Active.
      *
      * @tags Asset Accounts, Ledger
      * @name CreatePettyCashAccount
@@ -1859,6 +2065,42 @@ export class Api<
   };
   counterparties = {
     /**
+     * @description Update details and optionally activate a Draft. Supplied metadata replaces all roles. A type change after transaction use returns 409 with field=type, reason=transaction_usage and nextAction=create_counterparty. This counterparty's type cannot be changed because it has been used in a transaction. Create a new counterparty if a different type is required.
+     *
+     * @tags Counterparty
+     * @name UpdateCounterparty
+     * @request PATCH:/counterparties/{id}
+     */
+    updateCounterparty: (
+      id: string,
+      data: ICounterpartyUpdateReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<ICounterpartyDto, IHttpErrorDto>({
+        path: `/counterparties/${id}`,
+        method: 'PATCH',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Get a counterparty by id
+     *
+     * @tags Counterparty
+     * @name GetCounterparty
+     * @request GET:/counterparties/{id}
+     */
+    getCounterparty: (id: string, params: RequestParams = {}) =>
+      this.request<ICounterpartyDto, IHttpErrorDto>({
+        path: `/counterparties/${id}`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
      * @description Create a new counterparty
      *
      * @tags Counterparty
@@ -1904,21 +2146,6 @@ export class Api<
         path: `/counterparties`,
         method: 'GET',
         query: query,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * @description Get a counterparty by id
-     *
-     * @tags Counterparty
-     * @name GetCounterparty
-     * @request GET:/counterparties/{id}
-     */
-    getCounterparty: (id: string, params: RequestParams = {}) =>
-      this.request<ICounterpartyDto, IHttpErrorDto>({
-        path: `/counterparties/${id}`,
-        method: 'GET',
         format: 'json',
         ...params,
       }),
@@ -2096,7 +2323,22 @@ export class Api<
   };
   accounts = {
     /**
-     * @description Create a new asset bank sub account
+     * @description Get recommended posting account setup, grouped with nested sub accounts.
+     *
+     * @tags Accounts
+     * @name GetRecommendedBootstrap
+     * @request GET:/accounts/recommended-bootstrap
+     */
+    getRecommendedBootstrap: (params: RequestParams = {}) =>
+      this.request<IRecommendedBootstrapDto, IHttpErrorDto>({
+        path: `/accounts/recommended-bootstrap`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Create an Active or Draft bank subaccount; status defaults to Active.
      *
      * @tags Asset Accounts, Accounts
      * @name CreateBankAccount
@@ -2108,6 +2350,146 @@ export class Api<
     ) =>
       this.request<ILedgerAccountDto, IHttpErrorDto>({
         path: `/accounts/asset/bank`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Create an Active or Draft revenue subaccount; status defaults to Active.
+     *
+     * @tags Revenue Accounts, Accounts
+     * @name CreateRevenueAccount
+     * @request POST:/accounts/revenues
+     */
+    createRevenueAccount: (
+      data: ICreateRevenueAccountDto,
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerAccountDto, IHttpErrorDto>({
+        path: `/accounts/revenues`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Create an Active or Draft expense subaccount; status defaults to Active.
+     *
+     * @tags Expense Accounts, Accounts
+     * @name CreateExpenseAccount
+     * @request POST:/accounts/expenses
+     */
+    createExpenseAccount: (
+      data: ICreateExpenseAccountDto,
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerAccountDto, IHttpErrorDto>({
+        path: `/accounts/expenses`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Create an Active or Draft trade receivable subaccount; status defaults to Active.
+     *
+     * @tags Asset Accounts, Accounts
+     * @name CreateTradeReceivableAccount
+     * @request POST:/accounts/asset/receivables/trade
+     */
+    createTradeReceivableAccount: (
+      data: ICreateTradeReceivableAccountDto,
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerAccountDto, IHttpErrorDto>({
+        path: `/accounts/asset/receivables/trade`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Create an Active or Draft statutory receivable subaccount; status defaults to Active.
+     *
+     * @tags Asset Accounts, Accounts
+     * @name CreateStatutoryReceivableAccount
+     * @request POST:/accounts/asset/receivables/statutory
+     */
+    createStatutoryReceivableAccount: (
+      data: ICreateStatutoryReceivableAccountDto,
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerAccountDto, IHttpErrorDto>({
+        path: `/accounts/asset/receivables/statutory`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Create an Active or Draft trade payable subaccount; status defaults to Active.
+     *
+     * @tags Liability Accounts, Accounts
+     * @name CreateTradePayableAccount
+     * @request POST:/accounts/liability/payables/trade
+     */
+    createTradePayableAccount: (
+      data: ICreateTradePayableAccountDto,
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerAccountDto, IHttpErrorDto>({
+        path: `/accounts/liability/payables/trade`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Create an Active or Draft statutory payable subaccount; status defaults to Active.
+     *
+     * @tags Liability Accounts, Accounts
+     * @name CreateStatutoryPayableAccount
+     * @request POST:/accounts/liability/payables/statutory
+     */
+    createStatutoryPayableAccount: (
+      data: ICreateStatutoryPayableAccountDto,
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerAccountDto, IHttpErrorDto>({
+        path: `/accounts/liability/payables/statutory`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Create one asset or liability suspense account for the selected currency.
+     *
+     * @tags Accounts
+     * @name CreateSuspenseAccount
+     * @request POST:/accounts/suspense
+     */
+    createSuspenseAccount: (
+      data: ICreateSuspenseAccountDto,
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerAccountDto, IHttpErrorDto>({
+        path: `/accounts/suspense`,
         method: 'POST',
         body: data,
         type: EContentType.Json,

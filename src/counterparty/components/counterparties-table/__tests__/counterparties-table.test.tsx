@@ -16,6 +16,8 @@ const mockCounterparties: ICounterpartyDto[] = [
   {
     id: '1' as TEntityId,
     accountingEntityId: 'entity-1' as TEntityId,
+    createdBy: '00000000-0000-4000-8000-000000000100',
+    version: 1,
     name: 'Alice Smith',
     status: ECounterpartyStatus.Active,
     type: ECounterpartyType.Individual,
@@ -27,6 +29,8 @@ const mockCounterparties: ICounterpartyDto[] = [
   {
     id: '2' as TEntityId,
     accountingEntityId: 'entity-1' as TEntityId,
+    createdBy: '00000000-0000-4000-8000-000000000100',
+    version: 1,
     name: 'Acme Supplies Ltd',
     status: ECounterpartyStatus.Active,
     type: ECounterpartyType.Organization,
@@ -38,6 +42,8 @@ const mockCounterparties: ICounterpartyDto[] = [
   {
     id: '3' as TEntityId,
     accountingEntityId: 'entity-1' as TEntityId,
+    createdBy: '00000000-0000-4000-8000-000000000100',
+    version: 1,
     name: 'Bob Johnson',
     status: ECounterpartyStatus.Archived,
     type: ECounterpartyType.Individual,

@@ -48,9 +48,7 @@ function AccountingEntityCreationForm({
       accountingStandardCode: 'IFRS',
     },
     validationSchema,
-    onSubmit: (values) => {
-      onSubmit(values);
-    },
+    onSubmit: (values) => onSubmit(values),
   });
 
   const getErrorMessage = useFieldErrorMessage({

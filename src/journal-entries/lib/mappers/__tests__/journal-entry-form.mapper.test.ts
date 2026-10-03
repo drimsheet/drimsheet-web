@@ -1,11 +1,13 @@
 import { journalEntryFormMapper } from '@/journal-entries/lib/mappers/journal-entry-form.mapper';
 import {
+  ECounterpartyStatus,
   EExchangeRateType,
   EJournalEntrySourceType,
   EJournalEntryStatus,
   EJournalSide,
   type IJournalEntryListDto,
   type IJournalLineListDto,
+  type TEntityId,
 } from '@/shared/lib/api/Api';
 import { describe, expect, it } from 'vitest';
 
@@ -19,7 +21,11 @@ function createLine(
     id,
     entryId: 'entry-1',
     account: { id: accountId, name: accountId },
-    counterparty: { id: 'counterparty-1', name: 'Acme' },
+    counterparty: {
+      id: 'counterparty-1',
+      name: 'Acme',
+      status: ECounterpartyStatus.Active,
+    },
     sequenceOrder,
     amount: { amount, currencyCode: 'NGN', isMinorUnit: false },
     exchangeRate: null,
@@ -47,7 +53,7 @@ function createEntry(
     voidedAt: null,
     voidingEntryId: null,
     version: 3,
-    createdBy: 'user-1',
+    createdBy: '00000000-0000-4000-8000-000000000100' as TEntityId,
     createdAt: '2026-09-21T10:00:00.000Z',
     updatedAt: '2026-09-21T10:00:00.000Z',
     attachments: [],

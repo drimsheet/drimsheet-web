@@ -1,11 +1,13 @@
 import { TransactionsTable } from '@/journal-entries/components/transactions-table';
 import {
+  ECounterpartyStatus,
   EJournalEntrySourceType,
   EJournalEntryStatus,
   EJournalSide,
   type IJournalEntryListDto,
   type IJournalLineListDto,
   type IMoneyDto,
+  type TEntityId,
   type UJournalEntrySourceType,
 } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -50,6 +52,7 @@ function createLine({
     counterparty: {
       id: counterpartyId,
       name: counterpartyNamesById[counterpartyId],
+      status: ECounterpartyStatus.Active,
     },
     sequenceOrder,
     amount,
@@ -85,7 +88,7 @@ function createEntry({
     voidedAt: null,
     voidingEntryId: null,
     version: 1,
-    createdBy: 'user-1',
+    createdBy: '00000000-0000-4000-8000-000000000100' as TEntityId,
     createdAt: '2026-09-16T10:00:00Z',
     updatedAt: '2026-09-16T10:00:00Z',
     attachments: [],

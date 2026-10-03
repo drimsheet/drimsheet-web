@@ -10,6 +10,7 @@ const activeEntity = {
   name: 'Drimsheet',
   type: 'private_company',
   ownerId,
+  createdBy: ownerId,
   functionalCurrencyCode: 'NGN',
   jurisdictionCode: 'NG',
   createdAt: timestamp,

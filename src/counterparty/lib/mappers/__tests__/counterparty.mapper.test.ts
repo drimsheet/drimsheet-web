@@ -14,6 +14,11 @@ import { describe, expect, it } from 'vitest';
 
 describe('counterparty.mapper', () => {
   describe('mapStatusToBadgeProps', () => {
+    it('maps draft status to neutral badge props', () => {
+      const result = counterpartyMapper.mapStatusToBadgeProps('draft');
+      expect(result).toEqual({ variant: 'neutral', label: 'Draft' });
+    });
+
     it('maps active status to success badge props', () => {
       const result = counterpartyMapper.mapStatusToBadgeProps('active');
       expect(result).toEqual({ variant: 'success', label: 'Active' });

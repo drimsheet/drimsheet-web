@@ -15,6 +15,8 @@ const mockCounterparties: ICounterpartyDto[] = [
   {
     id: 'cp-1',
     accountingEntityId: '00000000-0000-4000-8000-000000000002',
+    createdBy: authenticatedUser.id,
+    version: 1,
     name: 'Alice Vendor',
     status: 'active',
     type: 'organization',
@@ -26,6 +28,8 @@ const mockCounterparties: ICounterpartyDto[] = [
   {
     id: 'cp-2',
     accountingEntityId: '00000000-0000-4000-8000-000000000002',
+    createdBy: authenticatedUser.id,
+    version: 1,
     name: 'Bob Contractor',
     status: 'active',
     type: 'individual',
@@ -37,6 +41,8 @@ const mockCounterparties: ICounterpartyDto[] = [
   {
     id: 'cp-3',
     accountingEntityId: '00000000-0000-4000-8000-000000000002',
+    createdBy: authenticatedUser.id,
+    version: 1,
     name: 'Charlie Employer',
     status: 'active',
     type: 'individual',
@@ -48,6 +54,8 @@ const mockCounterparties: ICounterpartyDto[] = [
   {
     id: 'cp-4',
     accountingEntityId: '00000000-0000-4000-8000-000000000002',
+    createdBy: authenticatedUser.id,
+    version: 1,
     name: 'Dave Archived',
     status: 'archived',
     type: 'organization',

@@ -1,5 +1,6 @@
 import transactionsTableHelpers from '@/journal-entries/components/transactions-table/helper';
 import {
+  ECounterpartyStatus,
   EExchangeRateType,
   EJournalEntrySourceType,
   EJournalEntryStatus,
@@ -9,6 +10,7 @@ import {
   type IJournalEntryListDto,
   type IJournalLineListDto,
   type IMoneyDto,
+  type TEntityId,
   type UJournalEntrySourceType,
 } from '@/shared/lib/api/Api';
 import { describe, expect, it } from 'vitest';
@@ -71,6 +73,7 @@ function createLine({
       ? {
           id: counterpartyId,
           name: counterpartyNamesById[counterpartyId],
+          status: ECounterpartyStatus.Active,
         }
       : null,
     sequenceOrder,
@@ -104,7 +107,7 @@ function createEntry(
     voidedAt: null,
     voidingEntryId: null,
     version: 1,
-    createdBy: 'user-1',
+    createdBy: '00000000-0000-4000-8000-000000000100' as TEntityId,
     createdAt: '2026-09-16T10:00:00Z',
     updatedAt: '2026-09-16T10:00:00Z',
     attachments,

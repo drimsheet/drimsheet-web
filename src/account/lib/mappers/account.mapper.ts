@@ -9,6 +9,8 @@ function mapStatusToBadgeProps(
   status: ULedgerAccountStatus
 ): TStatusBadgeValue {
   switch (status) {
+    case ELedgerAccountStatus.Draft:
+      return { variant: 'neutral', label: t('shared:draft') };
     case ELedgerAccountStatus.Active:
       return { variant: 'success', label: t('shared:active') };
     case ELedgerAccountStatus.Archived:

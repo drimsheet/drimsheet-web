@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
 const party: ICounterpartyDto = {
   id: 'one',
   accountingEntityId: 'entity',
+  createdBy: '00000000-0000-4000-8000-000000000100',
+  version: 1,
   name: 'Adenike Supplies Ltd',
   type: 'organization',
   status: 'active',
@@ -16,6 +18,13 @@ const party: ICounterpartyDto = {
 };
 
 describe('CounterpartyDetails', () => {
+  it('shows the localized draft status', () => {
+    render(
+      <CounterpartyDetails counterparty={{ ...party, status: 'draft' }} />
+    );
+    expect(screen.getByText('Draft')).toBeVisible();
+  });
+
   it('shows the profile with an edit placeholder and supplied content', () => {
     render(
       <CounterpartyDetails counterparty={party}>

@@ -21,6 +21,7 @@ vi.mock('@/shared/lib/api', () => ({
 
 const preferences = {
   userId: '00000000-0000-4000-8000-000000000001' as TEntityId,
+  createdBy: '00000000-0000-4000-8000-000000000001' as TEntityId,
   lastActiveAccountingEntityId: null,
   appPreferences: {
     theme: EAppThemePreference.Light,
