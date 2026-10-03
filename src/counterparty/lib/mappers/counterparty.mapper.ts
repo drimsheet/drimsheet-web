@@ -29,6 +29,8 @@ interface ICounterpartyTableQueryState {
 export const counterpartyMapper = {
   mapStatusToBadgeProps(status: UCounterpartyStatus): TStatusBadgeValue {
     switch (status) {
+      case ECounterpartyStatus.Draft:
+        return { variant: 'neutral', label: t('shared:draft') };
       case ECounterpartyStatus.Active:
         return { variant: 'success', label: t('shared:active') };
       case ECounterpartyStatus.Archived:

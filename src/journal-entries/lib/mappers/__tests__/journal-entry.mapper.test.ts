@@ -2,11 +2,13 @@ import type { ICashTransactionFormValues } from '@/journal-entries/components/ca
 import type { ICashTransferFormValues } from '@/journal-entries/components/cash-transfer-form';
 import { journalEntryMapper } from '@/journal-entries/lib/mappers/journal-entry.mapper';
 import {
+  ECounterpartyStatus,
   EExchangeRateType,
   EJournalEntrySourceType,
   EJournalEntryStatus,
   EJournalSide,
   type IJournalEntryListDto,
+  type TEntityId,
 } from '@/shared/lib/api/Api';
 import { describe, expect, it } from 'vitest';
 
@@ -66,7 +68,7 @@ const paymentJournalEntry = {
   voidedAt: null,
   voidingEntryId: null,
   version: 4,
-  createdBy: 'user-1',
+  createdBy: '00000000-0000-4000-8000-000000000100' as TEntityId,
   createdAt: occurredAt,
   updatedAt: occurredAt,
   attachments: [
@@ -82,7 +84,11 @@ const paymentJournalEntry = {
       id: 'cash-line',
       entryId: 'payment-entry',
       account: { id: 'ngn-bank', name: 'Bank' },
-      counterparty: { id: 'vendor-1', name: 'Vendor' },
+      counterparty: {
+        id: 'vendor-1',
+        name: 'Vendor',
+        status: ECounterpartyStatus.Active,
+      },
       sequenceOrder: 1,
       amount: { amount: 250000, currencyCode: 'NGN', isMinorUnit: false },
       exchangeRate: null,
@@ -101,7 +107,11 @@ const paymentJournalEntry = {
       id: 'office-line',
       entryId: 'payment-entry',
       account: { id: 'office-expense', name: 'Office expense' },
-      counterparty: { id: 'vendor-1', name: 'Vendor' },
+      counterparty: {
+        id: 'vendor-1',
+        name: 'Vendor',
+        status: ECounterpartyStatus.Active,
+      },
       sequenceOrder: 2,
       amount: { amount: 250000, currencyCode: 'NGN', isMinorUnit: false },
       exchangeRate: null,

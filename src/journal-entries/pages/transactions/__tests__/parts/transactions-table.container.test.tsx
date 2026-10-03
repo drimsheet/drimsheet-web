@@ -3,10 +3,12 @@ import { useDeleteJournalEntry } from '@/journal-entries/hooks/use-delete-journa
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
 import { TransactionsTableContainer } from '@/journal-entries/pages/transactions/parts/transactions-table.container';
 import {
+  ECounterpartyStatus,
   EJournalEntrySourceType,
   EJournalEntryStatus,
   EJournalSide,
   type IJournalEntryListDto,
+  type TEntityId,
 } from '@/shared/lib/api/Api';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -29,7 +31,7 @@ const paymentEntry = {
   voidedAt: null,
   voidingEntryId: null,
   version: 1,
-  createdBy: 'user-1',
+  createdBy: '00000000-0000-4000-8000-000000000100' as TEntityId,
   createdAt: '2026-09-16T10:00:00Z',
   updatedAt: '2026-09-16T10:00:00Z',
   attachments: [],
@@ -38,7 +40,11 @@ const paymentEntry = {
       id: 'cash-line',
       entryId: 'payment-entry',
       account: { id: 'cash-main', name: 'Main checking' },
-      counterparty: { id: 'counterparty-1', name: 'Osahon Oboite' },
+      counterparty: {
+        id: 'counterparty-1',
+        name: 'Osahon Oboite',
+        status: ECounterpartyStatus.Active,
+      },
       sequenceOrder: 1,
       amount: money,
       exchangeRate: null,
@@ -53,7 +59,11 @@ const paymentEntry = {
       id: 'category-line',
       entryId: 'payment-entry',
       account: { id: 'gift', name: 'Gift' },
-      counterparty: { id: 'counterparty-1', name: 'Osahon Oboite' },
+      counterparty: {
+        id: 'counterparty-1',
+        name: 'Osahon Oboite',
+        status: ECounterpartyStatus.Active,
+      },
       sequenceOrder: 2,
       amount: money,
       exchangeRate: null,

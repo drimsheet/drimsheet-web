@@ -27,6 +27,7 @@ const firstEntity = {
   name: 'First Account',
   type: 'individual',
   ownerId: '00000000-0000-4000-8000-000000000100' as TEntityId,
+  createdBy: '00000000-0000-4000-8000-000000000100' as TEntityId,
   functionalCurrencyCode: 'NGN',
   jurisdictionCode: 'NG',
   createdAt: timestamp,

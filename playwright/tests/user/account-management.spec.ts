@@ -148,6 +148,7 @@ test('opens account management with active and alternate account details', async
 test('persists a selected color theme preference', async ({ page }) => {
   await signIn(page);
   const updatedPreferences = {
+    createdBy: authenticatedUser.id,
     userId: authenticatedUser.id as TEntityId,
     lastActiveAccountingEntityId: authenticatedAccountingEntity.id,
     appPreferences: {
@@ -283,4 +284,83 @@ test('opens the existing accounting entity creation dialog', async ({
       name: 'Open account management for Integration Entity',
     })
   ).toBeVisible();
+});
+
+test('creates an additional entity without running initial bootstrap', async ({
+  page,
+}) => {
+  await registerConfigurationRoutes(page);
+  await signIn(page);
+  let created = false;
+  const additional = {
+    ...alternateAccountingEntity,
+    id: '00000000-0000-4000-8000-000000000004' as TEntityId,
+    name: 'Additional Entity',
+    createdBy: authenticatedUser.id,
+  };
+  const bootstrapRequests: string[] = [];
+  await page.route(activeEntityEndpoint, async (route) => {
+    if (route.request().method() === 'POST') {
+      created = true;
+      await route.fulfill({ status: 201, json: additional });
+      return;
+    }
+    if (!created) {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ json: additional });
+  });
+  await page.route(entityListEndpoint, async (route) => {
+    await route.fulfill({
+      json: [
+        authenticatedAccountingEntity,
+        alternateAccountingEntity,
+        ...(created ? [additional] : []),
+      ],
+    });
+  });
+  for (const endpoint of [
+    '**/api/v1/accounts/**',
+    '**/api/v1/ledger/header-accounts/setup',
+  ]) {
+    await page.route(endpoint, async (route) => {
+      bootstrapRequests.push(route.request().url());
+      await route.fulfill({ status: 400, json: {} });
+    });
+  }
+  await page
+    .getByRole('button', {
+      name: 'Open account management for Integration Entity',
+    })
+    .click();
+  await page.getByRole('button', { name: 'Add a new account' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Account setup' });
+  await dialog
+    .getByRole('combobox', { name: 'Who is this account for?' })
+    .click();
+  await page.getByRole('option', { name: 'A Company' }).click();
+  await dialog.getByRole('textbox', { name: 'Name' }).fill(additional.name);
+  await dialog.getByRole('button', { name: 'Next' }).click();
+  await dialog.getByRole('button', { name: 'Next' }).click();
+  const requestPromise = page.waitForRequest(
+    (request) =>
+      request.url().includes('/api/v1/accounting/accounting-entity') &&
+      request.method() === 'POST'
+  );
+  await dialog.getByRole('button', { name: 'Complete setup' }).click();
+  const request = await requestPromise;
+  expect(request.postDataJSON()).toEqual(
+    expect.objectContaining({
+      name: additional.name,
+      appPreferences: { appUsageMode: 'non_power_user' },
+    })
+  );
+  await expect(
+    page.getByRole('button', {
+      name: 'Open account management for Additional Entity',
+    })
+  ).toBeVisible();
+  await expect(dialog).not.toBeVisible();
+  expect(bootstrapRequests).toHaveLength(0);
 });

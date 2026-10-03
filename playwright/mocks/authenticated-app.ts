@@ -22,6 +22,7 @@ export const authenticatedAccountingEntity = {
   name: 'Integration Entity',
   type: 'individual',
   ownerId: authenticatedUser.id,
+  createdBy: authenticatedUser.id,
   functionalCurrencyCode: 'NGN',
   jurisdictionCode: 'NG',
   createdAt: timestamp,

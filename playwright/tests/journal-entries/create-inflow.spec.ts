@@ -338,7 +338,7 @@ test.describe('Inflow receipt creation', () => {
     await page
       .getByRole('button', {
         name: new RegExp(
-          `${previousWeekday}, ${previousMonth} ${previousDate.getUTCDate()}`
+          `^${previousWeekday}, ${previousMonth} ${previousDate.getUTCDate()}(?:st|nd|rd|th), ${previousDate.getUTCFullYear()}$`
         ),
       })
       .click();

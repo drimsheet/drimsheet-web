@@ -6,11 +6,13 @@ import { useCreatePayment } from '@/journal-entries/hooks/use-create-payment';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useExchangeRates } from '@/shared/hooks/use-exchange-rates';
 import {
+  ECounterpartyStatus,
   EJournalEntrySourceType,
   EJournalEntryStatus,
   EJournalSide,
   type IJournalEntryListDto,
   type ILedgerAccountDto,
+  type TEntityId,
 } from '@/shared/lib/api/Api';
 import { fileUploadService } from '@/shared/lib/services/file-upload.service';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -85,7 +87,7 @@ const journalEntry = {
   voidedAt: null,
   voidingEntryId: null,
   version: 2,
-  createdBy: 'user-1',
+  createdBy: '00000000-0000-4000-8000-000000000100' as TEntityId,
   createdAt: timestamp,
   updatedAt: timestamp,
   attachments: [],
@@ -94,7 +96,11 @@ const journalEntry = {
       id: 'cash-line',
       entryId: 'payment-entry',
       account: { id: 'bank-account', name: 'Operating account' },
-      counterparty: { id: 'vendor-1', name: 'Acme' },
+      counterparty: {
+        id: 'vendor-1',
+        name: 'Acme',
+        status: ECounterpartyStatus.Active,
+      },
       sequenceOrder: 1,
       amount: transactionMoney,
       exchangeRate: null,
@@ -109,7 +115,11 @@ const journalEntry = {
       id: 'category-line',
       entryId: 'payment-entry',
       account: { id: 'office-expense', name: 'Office expense' },
-      counterparty: { id: 'vendor-1', name: 'Acme' },
+      counterparty: {
+        id: 'vendor-1',
+        name: 'Acme',
+        status: ECounterpartyStatus.Active,
+      },
       sequenceOrder: 2,
       amount: transactionMoney,
       exchangeRate: null,
