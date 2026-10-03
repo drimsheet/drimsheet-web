@@ -56,6 +56,16 @@ async function syncErrorKeys() {
       throw new Error(`Invalid JSON in ${TRANSLATION_FILE_PATH}`);
     }
 
+    // Remove keys that no longer exist in the source
+    const sourceKeys = new Set(errorKeys);
+    let removedKeysCount = 0;
+    Object.keys(translations).forEach((key) => {
+      if (!sourceKeys.has(key)) {
+        delete translations[key];
+        removedKeysCount++;
+      }
+    });
+
     // Append missing keys
     let addedKeysCount = 0;
     errorKeys.forEach((key) => {
@@ -66,14 +76,23 @@ async function syncErrorKeys() {
     });
 
     // Write back updated translations
-    if (addedKeysCount > 0) {
+    if (addedKeysCount > 0 || removedKeysCount > 0) {
       fs.writeFileSync(
         TRANSLATION_FILE_PATH,
         JSON.stringify(translations, null, 2) + '\n',
         'utf-8'
       );
+    }
+
+    if (addedKeysCount > 0) {
       console.log(
         `✅ Added ${addedKeysCount} new error key(s) to ${TRANSLATION_FILE_PATH}`
+      );
+    }
+
+    if (removedKeysCount > 0) {
+      console.log(
+        `✅ Removed ${removedKeysCount} obsolete error key(s) from ${TRANSLATION_FILE_PATH}`
       );
     }
 
