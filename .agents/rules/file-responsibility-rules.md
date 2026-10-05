@@ -17,6 +17,26 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
   may remain inline.
 - Do not use nested ternaries. Prefer guard clauses, `if`/`else`, nullish
   coalescing when it preserves semantics, or a named resolver.
+- Render simple conditional UI directly in JSX with `&&` and named boolean
+  predicates when useful. Do not assign JSX to a mutable `let` variable through
+  `if`/`else` merely to insert that variable into the returned markup.
+- Keep loading and content conditions mutually exclusive, and retain TypeScript
+  narrowing with a local immutable value when a predicate checks optional data.
+  For complex render branches, use guard returns or a focused presentation part.
+
+## Statement Spacing
+
+- Separate logical groups with one blank line: hooks, derived values, handlers,
+  guard clauses, and returned UI. Keep related simple declarations together.
+- Put a blank line around multiline declarations and function declarations, and
+  after block-like statements or `if` guard clauses when another statement
+  follows in the same block.
+- Put a blank line before a return that follows another statement in the same
+  block. Do not add padding at the start or end of a block.
+- Run ESLint fixes before Prettier. ESLint enforces statement separation;
+  Prettier handles indentation, wrapping, and ordinary whitespace.
+- When asked to format staged changes, apply fixes only to staged files and
+  preserve unstaged work. Do not run a codebase-wide formatting command.
 
 ## `parts/`
 
@@ -87,7 +107,8 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
 
 ## `types.ts`
 
-- Put public component or feature types here when they are shared by more than one file in the same folder.
+- Put public component or feature types here. Do not declare or re-export public
+  types from component, container, page, or dialog implementation files.
 - Keep types small, explicit, and local to the owning folder.
 
 ## `validation.ts`
@@ -100,6 +121,8 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
 
 - Export only the folder’s public API.
 - Barrel files should re-export the component, types, and validation entry points that are meant for consumption.
+- Re-export public types directly from `./types` with `export type`; do not
+  forward them through an implementation file.
 - Do not export private components from `parts/`.
 - Avoid exporting internal helpers from the barrel.
 

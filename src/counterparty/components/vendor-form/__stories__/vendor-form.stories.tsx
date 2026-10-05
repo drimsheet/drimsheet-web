@@ -72,3 +72,23 @@ export const Disabled: Story = {
     },
   },
 };
+
+export const Update: Story = {
+  args: {
+    showPostalCode: true,
+    showDisplayName: false,
+    submitLabel: 'Save changes',
+    onCancel: () => {},
+    initialValues: { name: 'Existing counterparty', type: 'organization' },
+  },
+};
+export const TypeLocked: Story = {
+  args: {
+    ...Update.args,
+    typeRestriction: {
+      value: 'organization',
+      description:
+        'This counterparty’s type cannot be changed because it has been used in a transaction. Create a new counterparty if a different type is required.',
+    },
+  },
+};

@@ -65,6 +65,7 @@ describe('EmployerForm', () => {
     const displayNameInput = screen.getByLabelText(
       /Display name \(Optional\)/i
     );
+
     await user.type(displayNameInput, 'Mega');
 
     const addressInput = screen.getByLabelText('Address');
@@ -95,4 +96,43 @@ describe('EmployerForm', () => {
       },
     });
   });
+});
+
+it('supports update actions and preserves the locked type when submitting other edits', async () => {
+  const user = userEvent.setup();
+  const onSubmit = vi.fn();
+  const onCancel = vi.fn();
+  render(
+    <EmployerForm
+      onSubmit={onSubmit}
+      onCancel={onCancel}
+      submitLabel="Save changes"
+      showPostalCode
+      typeRestriction={{
+        value: 'organization',
+        description: 'Already used in a transaction.',
+      }}
+      initialValues={{
+        name: 'Original',
+        type: 'individual',
+        displayName: 'Display',
+        address: {
+          line1: 'Street',
+          city: 'Lagos',
+          countryCode: 'NG',
+          postalCode: '100001',
+        },
+      }}
+    />
+  );
+  expect(screen.getByRole('combobox', { name: 'Type' })).toBeDisabled();
+  expect(
+    screen.getByRole('combobox', { name: 'Type' })
+  ).toHaveAccessibleDescription('Already used in a transaction.');
+  await user.click(screen.getByRole('button', { name: 'Save changes' }));
+  expect(onSubmit).toHaveBeenCalledWith(
+    expect.objectContaining({ name: 'Original', type: 'organization' })
+  );
+  await user.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(onCancel).toHaveBeenCalledOnce();
 });

@@ -10,13 +10,17 @@ import type { CounterpartyDetailsProps } from './types';
 export function CounterpartyDetails({
   counterparty,
   children,
+  onEdit,
+  editDisabled = false,
 }: Readonly<CounterpartyDetailsProps>) {
   const { t } = useTranslation(['counterparty', 'shared']);
   const addresses = counterpartyDetailsHelpers.getAddresses(counterparty);
+
   const TypeIcon =
     counterparty.type === ECounterpartyType.Organization
       ? Building2
       : UserRound;
+
   const status_label = t('shared:status');
   const status_text = t(`shared:${counterparty.status}`);
   const type_label = t('type_label');
@@ -35,7 +39,11 @@ export function CounterpartyDetails({
         <h1 className="min-w-0 break-words text-3xl font-semibold">
           {counterparty.name}
         </h1>
-        <Button variant="outline" disabled>
+        <Button
+          variant="outline"
+          onClick={onEdit}
+          disabled={editDisabled || !onEdit}
+        >
           {edit_label}
         </Button>
       </div>

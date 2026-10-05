@@ -68,3 +68,31 @@ describe('CounterpartyForm', () => {
     expect(screen.getByRole('button', { name: /Continue/i })).toBeDisabled();
   });
 });
+
+it('supports update actions and preserves the locked type when submitting other edits', async () => {
+  const user = userEvent.setup();
+  const onSubmit = vi.fn();
+  const onCancel = vi.fn();
+  render(
+    <CounterpartyForm
+      onSubmit={onSubmit}
+      onCancel={onCancel}
+      submitLabel="Save changes"
+      typeRestriction={{
+        value: 'organization',
+        description: 'Already used in a transaction.',
+      }}
+      initialValues={{ name: 'Original', type: 'individual' }}
+    />
+  );
+  expect(screen.getByRole('combobox', { name: 'Type' })).toBeDisabled();
+  expect(
+    screen.getByRole('combobox', { name: 'Type' })
+  ).toHaveAccessibleDescription('Already used in a transaction.');
+  await user.click(screen.getByRole('button', { name: 'Save changes' }));
+  expect(onSubmit).toHaveBeenCalledWith(
+    expect.objectContaining({ name: 'Original', type: 'organization' })
+  );
+  await user.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(onCancel).toHaveBeenCalledOnce();
+});

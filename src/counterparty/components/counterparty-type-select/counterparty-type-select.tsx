@@ -8,29 +8,23 @@ import {
   SelectValue,
 } from '@/shared/components/select';
 import { useTranslation } from 'react-i18next';
-
-export interface CounterpartyTypeSelectProps {
-  value: string;
-  onChange: (value: string) => void;
-  error?: Array<{ message?: string } | undefined>;
-  disabled?: boolean;
-}
+import type { CounterpartyTypeSelectProps } from './types';
 
 export function CounterpartyTypeSelect({
   value,
   onChange,
   error,
   disabled = false,
+  description,
 }: Readonly<CounterpartyTypeSelectProps>) {
   const { t } = useTranslation(['counterparty']);
 
+  const descriptionId = 'counterparty-type-description';
   const errorId = 'counterparty-type-error';
   const hasError = Boolean(error?.some((item) => item?.message));
 
   const type_label = t('counterparty:type_label');
-  const select_placeholder = t('counterparty:select_placeholder', {
-    defaultValue: 'Select type',
-  });
+  const select_placeholder = t('counterparty:select_placeholder');
   const individual_label = t('counterparty:individual_label');
   const organization_label = t('counterparty:organization_label');
 
@@ -41,7 +35,11 @@ export function CounterpartyTypeSelect({
         <SelectTrigger
           id="counterparty-type"
           aria-invalid={hasError}
-          aria-describedby={hasError ? errorId : undefined}
+          aria-describedby={
+            [hasError ? errorId : '', description ? descriptionId : '']
+              .filter(Boolean)
+              .join(' ') || undefined
+          }
           className="w-full"
         >
           <SelectValue placeholder={select_placeholder} />
@@ -51,6 +49,11 @@ export function CounterpartyTypeSelect({
           <SelectItem value="organization">{organization_label}</SelectItem>
         </SelectContent>
       </Select>
+      {description && (
+        <p id={descriptionId} className="text-sm text-muted-foreground">
+          {description}
+        </p>
+      )}
       <FieldError id={errorId} errors={error} />
     </Field>
   );

@@ -4,28 +4,18 @@ import { Input } from '@/shared/components/input';
 import countries from '@/shared/configs/countries.json';
 import currencies from '@/shared/configs/currencies.json';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
-
-export type UMoneyInputDecimalType = 'money' | 'number';
-
-export interface MoneyInputProps extends Omit<
-  React.ComponentProps<'input'>,
-  'value' | 'onChange'
-> {
-  currencyCode?: string;
-  decimalType?: UMoneyInputDecimalType;
-  locale?: string;
-  value?: string | number;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
+import type { MoneyInputProps } from './types';
 
 const parseRawValue = (val: string | number | undefined | null) => {
   if (val === null || val === undefined || val === '') return '';
+
   const strVal = String(val);
   const isNegative = strVal.startsWith('-');
   const rawNumeric = strVal.replace(/[^0-9.]/g, '');
   if (!rawNumeric) return isNegative ? '-' : '';
 
   const parts = rawNumeric.split('.');
+
   const cleanNumeric =
     parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : rawNumeric;
 
@@ -47,10 +37,12 @@ const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
 
     const resolvedLocale = useMemo(() => {
       if (locale) return locale;
+
       if (currencyCode) {
         const country = countries.find((c) => c.currencyCode === currencyCode);
         if (country?.locale) return country.locale;
       }
+
       return undefined;
     }, [locale, currencyCode]);
 
@@ -59,9 +51,10 @@ const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
     const maxDecimals = useMemo(() => {
       if (currencyCode) {
         const currency = currencies.find((c) => c.code === currencyCode);
-        if (currency && currency.minorUnit !== undefined) {
+        if (currency?.minorUnit !== undefined) {
           return currency.minorUnit;
         }
+
         return (
           new Intl.NumberFormat(undefined, {
             style: 'currency',
@@ -69,6 +62,7 @@ const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
           }).resolvedOptions().maximumFractionDigits ?? 2
         );
       }
+
       return 2;
     }, [currencyCode]);
 
@@ -101,7 +95,7 @@ const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
         }
 
         const num = Number(integerPart);
-        if (isNaN(num)) return isNegative ? '-' : '';
+        if (Number.isNaN(num)) return isNegative ? '-' : '';
 
         const formattedInteger = intFormatter.format(num);
 
@@ -112,9 +106,11 @@ const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
 
     const [prevValueProp, setPrevValueProp] = useState(value);
     const [prevFormatVal, setPrevFormatVal] = useState(() => formatVal);
+
     const [localValue, setLocalValue] = useState(() =>
       formatVal(parseRawValue(value))
     );
+
     const shouldSyncLocalValue =
       !Object.is(value, prevValueProp) || formatVal !== prevFormatVal;
 
@@ -128,14 +124,17 @@ const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
       const numLocal = Number(
         rawLocal === '-' || rawLocal === '' ? '0' : rawLocal
       );
+
       const numProps = Number(
         rawProps === '-' || rawProps === '' ? '0' : rawProps
       );
 
       const isNumericallyEqual = numLocal === numProps;
+
       const isOneEmpty =
         (rawLocal === '' && rawProps !== '') ||
         (rawLocal !== '' && rawProps === '');
+
       const needsReformat = localValue !== formatVal(rawLocal);
 
       if (!isNumericallyEqual || isOneEmpty || needsReformat) {
@@ -178,9 +177,11 @@ const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
             ...e,
             target: { ...e.target, value: '' },
           } as React.ChangeEvent<HTMLInputElement>;
+
           onChange(syntheticEvent);
         }
       }
+
       if (onBlur) {
         onBlur(e);
       }
@@ -199,6 +200,7 @@ const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
     );
   }
 );
+
 MoneyInput.displayName = 'MoneyInput';
 
 export { MoneyInput };

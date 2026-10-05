@@ -1,5 +1,4 @@
 import { TransactionDetails } from '@/journal-entries/components/transaction-details';
-import type { UTransactionDetails } from '@/journal-entries/lib/types/transaction-details';
 import { Button } from '@/shared/components/button';
 import {
   Sheet,
@@ -14,17 +13,7 @@ import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { TransactionArchiveAction } from './parts/transaction-archive-action';
 import { TransactionDeleteAction } from './parts/transaction-delete-action';
-
-export interface TransactionDetailsDrawerProps {
-  archiving?: boolean;
-  onArchive?: () => Promise<void>;
-  onDelete?: () => Promise<void> | void;
-  details?: UTransactionDetails;
-  editDisabled?: boolean;
-  onEdit: () => void;
-  onOpenChange: (open: boolean) => void;
-  open: boolean;
-}
+import type { TransactionDetailsDrawerProps } from './types';
 
 export function TransactionDetailsDrawer({
   archiving = false,
@@ -40,6 +29,7 @@ export function TransactionDetailsDrawer({
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (archiving) return;
+
     onOpenChange(nextOpen);
   };
 

@@ -19,10 +19,7 @@ import {
 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-
-export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  currentPath: string;
-}
+import type { AppSidebarProps } from './types';
 
 function isRouteActive(currentPath: string, itemUrl: string) {
   return (

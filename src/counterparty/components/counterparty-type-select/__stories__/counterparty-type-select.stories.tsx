@@ -51,3 +51,11 @@ export const WithError: Story = {
     error: [{ message: 'Type is required' }],
   },
 };
+export const TransactionRestricted: Story = {
+  args: {
+    value: 'organization',
+    disabled: true,
+    description:
+      'This counterparty’s type cannot be changed because it has been used in a transaction. Create a new counterparty if a different type is required.',
+  },
+};

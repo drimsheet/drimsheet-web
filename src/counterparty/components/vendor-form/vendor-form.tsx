@@ -23,6 +23,12 @@ export function VendorForm({
   loading = false,
   disabled = false,
   className,
+  submitLabel,
+  onCancel,
+  typeRestriction,
+  fieldErrors = {},
+  showPostalCode = false,
+  showDisplayName = true,
 }: Readonly<VendorFormProps>) {
   const { t } = useTranslation(['counterparty']);
   const validationSchema = useVendorFormValidation();
@@ -43,14 +49,19 @@ export function VendorForm({
     },
     validationSchema,
     onSubmit: (values) => {
-      onSubmit(values);
+      onSubmit({ ...values, type: typeRestriction?.value ?? values.type });
     },
   });
 
-  const getErrorMessage = useFieldErrorMessage({
+  const getLocalErrorMessage = useFieldErrorMessage({
     errors: formik.errors,
     touched: formik.touched,
   });
+
+  const getErrorMessage = (field: string) =>
+    fieldErrors[field]
+      ? [{ message: fieldErrors[field] }]
+      : getLocalErrorMessage(field);
 
   const handleTypeChange = (value: string) => {
     void formik.setFieldValue('type', value);
@@ -63,7 +74,15 @@ export function VendorForm({
   const legal_name_label = t('counterparty:legal_name_label');
   const display_name_label = t('counterparty:display_name_label');
   const optional_fields_separator = t('counterparty:optional_fields_separator');
-  const create_button_label = t('counterparty:create_button_label');
+
+  const submit_button_label =
+    submitLabel ?? t('counterparty:create_button_label');
+
+  const pending_button_label = submitLabel
+    ? t('counterparty:saving_label')
+    : t('counterparty:continue');
+
+  const cancel_label = t('counterparty:cancel_label');
 
   return (
     <form onSubmit={formik.handleSubmit} className={className} noValidate>
@@ -84,49 +103,67 @@ export function VendorForm({
           </Field>
 
           <CounterpartyTypeSelect
-            value={formik.values.type}
+            value={typeRestriction?.value ?? formik.values.type}
             onChange={handleTypeChange}
             error={getErrorMessage('type')}
-            disabled={disabled || loading}
+            description={typeRestriction?.description}
+            disabled={Boolean(typeRestriction) || disabled || loading}
           />
 
           <FieldSeparator className="my-3">
             {optional_fields_separator}
           </FieldSeparator>
 
-          <Field data-invalid={Boolean(getErrorMessage('displayName').length)}>
-            <Label htmlFor="vendor-display-name">{display_name_label}</Label>
-            <Input
-              id="vendor-display-name"
-              name="displayName"
-              value={formik.values.displayName}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              aria-invalid={Boolean(getErrorMessage('displayName').length)}
-              disabled={disabled || loading}
-            />
-            <FieldError errors={getErrorMessage('displayName')} />
-          </Field>
+          {showDisplayName && (
+            <Field
+              data-invalid={Boolean(getErrorMessage('displayName').length)}
+            >
+              <Label htmlFor="vendor-display-name">{display_name_label}</Label>
+              <Input
+                id="vendor-display-name"
+                name="displayName"
+                value={formik.values.displayName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                aria-invalid={Boolean(getErrorMessage('displayName').length)}
+                disabled={disabled || loading}
+              />
+              <FieldError errors={getErrorMessage('displayName')} />
+            </Field>
+          )}
 
           <CounterpartyAddressFields
             values={formik.values.address}
             errors={formik.errors}
+            fieldErrors={fieldErrors}
             touched={formik.touched}
+            submitted={formik.submitCount > 0}
             jurisdictions={jurisdictions}
             onChange={handleAddressChange}
             onBlur={formik.handleBlur}
             disabled={disabled || loading}
+            showPostalCode={showPostalCode}
             countryRequired={false}
             showOptionalSuffix={false}
           />
 
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end gap-2 pt-2">
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={disabled || loading}
+                onClick={onCancel}
+              >
+                {cancel_label}
+              </Button>
+            )}
             <Button
               type="submit"
               disabled={disabled || loading}
               className="min-w-[100px]"
             >
-              {loading ? t('counterparty:continue') : create_button_label}
+              {loading ? pending_button_label : submit_button_label}
             </Button>
           </div>
         </FieldGroup>

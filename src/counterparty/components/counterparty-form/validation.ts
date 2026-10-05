@@ -10,7 +10,10 @@ export function useCounterpartyFormValidation() {
       name: yup.string().required(t('counterparty:name_required')),
       type: yup
         .string()
-        .oneOf(['individual', 'organization'])
+        .oneOf(
+          ['individual', 'organization'],
+          t('counterparty:type_invalid_text')
+        )
         .required(t('counterparty:type_required')),
     });
   }, [t]);

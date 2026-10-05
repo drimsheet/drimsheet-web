@@ -153,9 +153,9 @@ dialogs/<dialog>/
 ```
 
 - Export the dialog component through `index.ts`, using an explicit named
-  re-export from `./<dialog>.dialog`. Public dialog props may be re-exported
-  with `export type` from the entry or `types.ts`; all other support code stays
-  private. Consumers import the dialog directory.
+  re-export from `./<dialog>.dialog`. Define public dialog props in `types.ts`
+  and re-export them directly from `./types` with `export type`; all other
+  support code stays private. Consumers import the dialog directory.
 - Keep private UI in `parts/`, including error views, skeletons, and containers.
   Use `skeleton.tsx` for one dialog-owned skeleton, with a descriptive React name.
   Skeletons owned by reusable components stay with those components.

@@ -18,9 +18,17 @@ const meta = {
   parameters: { layout: 'centered' },
   args: { onChange: () => {} },
 } satisfies Meta<typeof CountryComboBox>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: { label: 'Country', value: '', jurisdictions: dummyjurisdictions },
+};
+
+export const Disabled: Story = {
+  args: { ...Default.args, disabled: true, value: 'NG' },
+};
+export const Clearable: Story = {
+  args: { ...Default.args, value: 'NG', clearable: true },
 };

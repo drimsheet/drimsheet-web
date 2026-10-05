@@ -10,7 +10,10 @@ export function useVendorFormValidation() {
       name: yup.string().required(t('counterparty:legal_name_required')),
       type: yup
         .string()
-        .oneOf(['individual', 'organization'])
+        .oneOf(
+          ['individual', 'organization'],
+          t('counterparty:type_invalid_text')
+        )
         .required(t('counterparty:type_required')),
       displayName: yup.string().optional(),
       address: yup
@@ -24,14 +27,17 @@ export function useVendorFormValidation() {
         })
         .test(
           'address-partial-validation',
-          'Address validation failed',
+          t('counterparty:address_invalid_text'),
           function (value) {
             if (!value) return true;
+
             const { line1, line2, city, region, postalCode, countryCode } =
               value;
+
             const hasAny = Boolean(
               line1 || line2 || city || region || postalCode || countryCode
             );
+
             if (hasAny) {
               const errors: yup.ValidationError[] = [];
               if (!line1) {
@@ -42,6 +48,7 @@ export function useVendorFormValidation() {
                   })
                 );
               }
+
               if (!city) {
                 errors.push(
                   this.createError({
@@ -50,6 +57,7 @@ export function useVendorFormValidation() {
                   })
                 );
               }
+
               if (!countryCode) {
                 errors.push(
                   this.createError({
@@ -58,10 +66,12 @@ export function useVendorFormValidation() {
                   })
                 );
               }
+
               if (errors.length > 0) {
                 return new yup.ValidationError(errors);
               }
             }
+
             return true;
           }
         ),

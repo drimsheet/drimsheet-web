@@ -2,8 +2,10 @@ import {
   CounterpartyDetails,
   CounterpartyDetailsSkeleton,
 } from '@/counterparty/components/counterparty-details';
+import { CounterpartyUpdateDialog } from '@/counterparty/dialogs/counterparty-update';
 import { useCounterparty } from '@/counterparty/hooks/use-counterparty';
 import { useCounterpartyTransactions } from '@/counterparty/hooks/use-counterparty-transactions';
+import { getCounterpartyFormRole } from '@/counterparty/lib/utils/counterparty-form';
 import { TransactionsTable } from '@/journal-entries/components/transactions-table';
 import { AppBody, AppHeader } from '@/shared/components/app';
 import { PageBreadcrumbs } from '@/shared/components/page-breadcrumbs';
@@ -15,17 +17,21 @@ import {
 import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 
 export function CounterpartyDetailsPage() {
   const { counterpartyId } = useParams();
+  const [, setSearchParams] = useSearchParams();
   const { t } = useTranslation(['counterparty', 'shared']);
   const [search, setSearch] = useState('');
+
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(
     EPaginationSortDirection.Desc
   );
+
   const debouncedSearch = useDebounce(search, 300);
   const { data: counterparty, isPending } = useCounterparty(counterpartyId);
+
   const transactions = useCounterpartyTransactions(
     {
       counterpartyId,
@@ -38,6 +44,35 @@ export function CounterpartyDetailsPage() {
     Boolean(counterparty)
   );
 
+  const handleEdit = () => {
+    if (!counterparty || counterparty.status === 'archived') return;
+
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set('edit', 'true');
+      next.delete('id');
+      next.delete('type');
+      next.delete('editCounterpartyRole');
+
+      return next;
+    });
+  };
+
+  const handleCloseEdit = () => {
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete('edit');
+        next.delete('id');
+        next.delete('type');
+        next.delete('editCounterpartyRole');
+
+        return next;
+      },
+      { replace: true }
+    );
+  };
+
   const handleSortChange = (
     _key: 'effectiveDate',
     direction: 'asc' | 'desc' | null
@@ -46,6 +81,7 @@ export function CounterpartyDetailsPage() {
   };
 
   if (!counterpartyId) return <Navigate replace to="/counterparties" />;
+
   if (isPending) return <CounterpartyDetailsPending />;
 
   // TODO: create a shared 404 component
@@ -57,6 +93,7 @@ export function CounterpartyDetailsPage() {
   const all_counterparties_label = t('all_counterparties_label');
   const recent_transactions_title = t('recent_transactions_title');
   const view_transactions_label = t('view_transactions_label');
+
   const count_text = t('transactions_count_text', {
     count: transactions.data?.data.length ?? 0,
     total: transactions.data?.meta.total ?? 0,
@@ -73,7 +110,11 @@ export function CounterpartyDetailsPage() {
             next: { label: counterparty.name },
           }}
         />
-        <CounterpartyDetails counterparty={counterparty}>
+        <CounterpartyDetails
+          counterparty={counterparty}
+          onEdit={handleEdit}
+          editDisabled={counterparty.status === 'archived'}
+        >
           <section
             className="min-w-0 flex flex-col gap-6"
             aria-labelledby="recent-transactions-title"
@@ -107,6 +148,12 @@ export function CounterpartyDetailsPage() {
           </section>
         </CounterpartyDetails>
       </AppBody>
+      <CounterpartyUpdateDialog
+        counterpartyId={counterpartyId}
+        type={counterparty.type}
+        role={getCounterpartyFormRole(counterparty)}
+        onClose={handleCloseEdit}
+      />
     </>
   );
 }

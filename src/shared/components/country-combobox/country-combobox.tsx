@@ -10,17 +10,10 @@ import { Field, FieldError } from '@/shared/components/field';
 import { InputGroupAddon } from '@/shared/components/input-group';
 import { Label } from '@/shared/components/label';
 import countries from '@/shared/configs/countries.json' with { type: 'json' };
-import { type IJurisdictionDto } from '@/shared/lib/api/Api';
 import { GlobeIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-
-export interface CountryComboBoxProps {
-  label: string;
-  value: string;
-  jurisdictions: IJurisdictionDto[];
-  onChange: (value: string) => void;
-  error?: Array<{ message?: string } | undefined>;
-}
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { CountryComboBoxProps } from './types';
 
 interface ICountry {
   code: string;
@@ -30,14 +23,22 @@ interface ICountry {
 
 export function CountryComboBox({
   label,
+  id = 'country-select',
+  disabled = false,
+  description,
+  clearable = false,
   value,
   jurisdictions,
   onChange,
   error,
 }: Readonly<CountryComboBoxProps>) {
+  const { t } = useTranslation('shared');
+  const [search, setSearch] = useState('');
+
   const mappedCountries = useMemo(() => {
     return jurisdictions.map((c) => {
       const uiCountry = countries.find((uc) => uc.code === c.code);
+
       return {
         ...c,
         flag: uiCountry?.flag || '🏳️',
@@ -45,34 +46,44 @@ export function CountryComboBox({
     });
   }, [jurisdictions]);
 
-  const [options, setOptions] = useState(mappedCountries);
-
-  useEffect(() => {
-    setOptions(mappedCountries);
-  }, [mappedCountries]);
+  const options = mappedCountries.filter((country) =>
+    country.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   const selectedCountry = mappedCountries.find(
     (country) => country.code === value
   );
 
+  const placeholder_text = t('country_select_placeholder');
+  const empty_text = t('countries_empty_text');
+  const hasError = Boolean(error?.some((item) => item?.message));
+  const descriptionId = `${id}-description`;
+  const errorId = `${id}-error`;
+
   return (
     <Field>
-      <Label htmlFor="country-select">{label}</Label>
+      <Label htmlFor={id}>{label}</Label>
       <Combobox
         items={options}
+        disabled={disabled}
         autoHighlight
         value={selectedCountry ?? null}
         onValueChange={(val: ICountry | null) => onChange(val ? val.code : '')}
         itemToStringLabel={(item: ICountry | null) => item?.name || ''}
-        onInputValueChange={(val) => {
-          setOptions(
-            mappedCountries.filter((country) =>
-              country.name.toLowerCase().includes(val.toLowerCase())
-            )
-          );
-        }}
+        onInputValueChange={setSearch}
       >
-        <ComboboxInput id="country-select" placeholder="Select a country">
+        <ComboboxInput
+          id={id}
+          disabled={disabled}
+          showClear={clearable}
+          placeholder={placeholder_text}
+          aria-invalid={hasError}
+          aria-describedby={
+            [hasError ? errorId : '', description ? descriptionId : '']
+              .filter(Boolean)
+              .join(' ') || undefined
+          }
+        >
           <InputGroupAddon>
             {selectedCountry ? (
               <span className="text-xl leading-none">
@@ -84,7 +95,7 @@ export function CountryComboBox({
           </InputGroupAddon>
         </ComboboxInput>
         <ComboboxContent alignOffset={-28} className="w-60">
-          <ComboboxEmpty>No countries found.</ComboboxEmpty>
+          <ComboboxEmpty>{empty_text}</ComboboxEmpty>
           <ComboboxList>
             {options.map((item) => (
               <ComboboxItem key={item.code} value={item} className="z-400">
@@ -95,7 +106,8 @@ export function CountryComboBox({
           </ComboboxList>
         </ComboboxContent>
       </Combobox>
-      <FieldError errors={error} />
+      {description && <p id={descriptionId}>{description}</p>}
+      <FieldError id={errorId} errors={error} />
     </Field>
   );
 }

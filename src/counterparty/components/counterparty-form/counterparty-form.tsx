@@ -20,6 +20,10 @@ export function CounterpartyForm({
   loading = false,
   disabled = false,
   className,
+  submitLabel,
+  onCancel,
+  typeRestriction,
+  fieldErrors = {},
 }: Readonly<CounterpartyFormProps>) {
   const { t } = useTranslation(['counterparty']);
   const validationSchema = useCounterpartyFormValidation();
@@ -32,21 +36,34 @@ export function CounterpartyForm({
     },
     validationSchema,
     onSubmit: (values) => {
-      onSubmit(values);
+      onSubmit({ ...values, type: typeRestriction?.value ?? values.type });
     },
   });
 
-  const getErrorMessage = useFieldErrorMessage({
+  const getLocalErrorMessage = useFieldErrorMessage({
     errors: formik.errors,
     touched: formik.touched,
   });
+
+  const getErrorMessage = (field: string) =>
+    fieldErrors[field]
+      ? [{ message: fieldErrors[field] }]
+      : getLocalErrorMessage(field);
 
   const handleTypeChange = (value: string) => {
     void formik.setFieldValue('type', value);
   };
 
   const name_label = t('counterparty:name_label');
-  const create_button_label = t('counterparty:create_button_label');
+
+  const submit_button_label =
+    submitLabel ?? t('counterparty:create_button_label');
+
+  const pending_button_label = submitLabel
+    ? t('counterparty:saving_label')
+    : t('counterparty:continue');
+
+  const cancel_label = t('counterparty:cancel_label');
 
   return (
     <form onSubmit={formik.handleSubmit} className={className} noValidate>
@@ -67,19 +84,30 @@ export function CounterpartyForm({
           </Field>
 
           <CounterpartyTypeSelect
-            value={formik.values.type}
+            value={typeRestriction?.value ?? formik.values.type}
             onChange={handleTypeChange}
             error={getErrorMessage('type')}
-            disabled={disabled || loading}
+            description={typeRestriction?.description}
+            disabled={Boolean(typeRestriction) || disabled || loading}
           />
 
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end gap-2 pt-2">
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={disabled || loading}
+                onClick={onCancel}
+              >
+                {cancel_label}
+              </Button>
+            )}
             <Button
               type="submit"
               disabled={disabled || loading}
               className="min-w-[100px]"
             >
-              {loading ? t('counterparty:continue') : create_button_label}
+              {loading ? pending_button_label : submit_button_label}
             </Button>
           </div>
         </FieldGroup>

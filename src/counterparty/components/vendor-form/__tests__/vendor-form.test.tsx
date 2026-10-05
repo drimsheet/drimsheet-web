@@ -83,3 +83,43 @@ describe('VendorForm', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 });
+
+it('supports update actions and preserves the locked type when submitting other edits', async () => {
+  const user = userEvent.setup();
+  const onSubmit = vi.fn();
+  const onCancel = vi.fn();
+  render(
+    <VendorForm
+      onSubmit={onSubmit}
+      onCancel={onCancel}
+      submitLabel="Save changes"
+      showPostalCode
+      showDisplayName={false}
+      typeRestriction={{
+        value: 'organization',
+        description: 'Already used in a transaction.',
+      }}
+      initialValues={{
+        name: 'Original',
+        type: 'individual',
+        displayName: 'Display',
+        address: {
+          line1: 'Street',
+          city: 'Lagos',
+          countryCode: 'NG',
+          postalCode: '100001',
+        },
+      }}
+    />
+  );
+  expect(screen.getByRole('combobox', { name: 'Type' })).toBeDisabled();
+  expect(
+    screen.getByRole('combobox', { name: 'Type' })
+  ).toHaveAccessibleDescription('Already used in a transaction.');
+  await user.click(screen.getByRole('button', { name: 'Save changes' }));
+  expect(onSubmit).toHaveBeenCalledWith(
+    expect.objectContaining({ name: 'Original', type: 'organization' })
+  );
+  await user.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(onCancel).toHaveBeenCalledOnce();
+});

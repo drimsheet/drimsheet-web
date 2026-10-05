@@ -7,11 +7,13 @@ const address = {
   region: 'Lagos',
   countryCode: 'NG',
 };
+
 const meta = {
   title: 'Counterparty/CounterpartyDetails',
   component: CounterpartyDetails,
   tags: ['autodocs'],
   args: {
+    onEdit: () => {},
     counterparty: {
       id: 'counterparty-1',
       accountingEntityId: 'entity-1',
@@ -27,6 +29,7 @@ const meta = {
     },
   },
 } satisfies Meta<typeof CounterpartyDetails>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
@@ -52,7 +55,10 @@ export const DistinctAddresses: Story = {
   },
 };
 export const Archived: Story = {
-  args: { counterparty: { ...meta.args.counterparty, status: 'archived' } },
+  args: {
+    editDisabled: true,
+    counterparty: { ...meta.args.counterparty, status: 'archived' },
+  },
 };
 export const LongName: Story = {
   args: {

@@ -1,12 +1,8 @@
 import { CounterpartiesTableContainer } from '@/counterparty/components/counterparties-table';
-import type { UCounterpartyRoleSelectValue } from '@/counterparty/components/counterparty-role-select/types';
-import { ContractorCreationDialog } from '@/counterparty/dialogs/contractor-creation';
+import type { UCounterpartyRoleSelectValue } from '@/counterparty/components/counterparty-role-select';
 import { CounterpartyCreationDialog } from '@/counterparty/dialogs/counterparty-creation';
 import { CounterpartyRoleSelectionDialog } from '@/counterparty/dialogs/counterparty-role-selection';
-import { EmployerCreationDialog } from '@/counterparty/dialogs/employer-creation';
-import { VendorCreationDialog } from '@/counterparty/dialogs/vendor-creation';
 import { AppBody, AppHeader } from '@/shared/components/app';
-import { ECounterpartyRole } from '@/shared/lib/api/Api';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -14,6 +10,7 @@ export function CounterpartiesPage() {
   const { t } = useTranslation(['counterparty', 'shared']);
 
   const [showRoleSelection, setShowRoleSelection] = useState(false);
+
   const [selectedRole, setSelectedRole] =
     useState<UCounterpartyRoleSelectValue | null>(null);
 
@@ -39,25 +36,13 @@ export function CounterpartiesPage() {
           onSubmit={handleRoleSelected}
         />
 
-        <CounterpartyCreationDialog
-          open={selectedRole === 'default'}
-          onClose={() => setSelectedRole(null)}
-        />
-
-        <VendorCreationDialog
-          open={selectedRole === ECounterpartyRole.Vendor}
-          onClose={() => setSelectedRole(null)}
-        />
-
-        <ContractorCreationDialog
-          open={selectedRole === ECounterpartyRole.Contractor}
-          onClose={() => setSelectedRole(null)}
-        />
-
-        <EmployerCreationDialog
-          open={selectedRole === ECounterpartyRole.Employer}
-          onClose={() => setSelectedRole(null)}
-        />
+        {selectedRole && (
+          <CounterpartyCreationDialog
+            open
+            role={selectedRole}
+            onClose={() => setSelectedRole(null)}
+          />
+        )}
       </AppBody>
     </>
   );

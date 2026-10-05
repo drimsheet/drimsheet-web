@@ -1,7 +1,8 @@
 import { CounterpartyDetails } from '@/counterparty/components/counterparty-details';
 import type { ICounterpartyDto } from '@/shared/lib/api/Api';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 
 const party: ICounterpartyDto = {
   id: 'one',
@@ -50,4 +51,11 @@ describe('CounterpartyDetails', () => {
     expect(screen.getByText('No relationships')).toBeVisible();
     expect(screen.getByText('Archived')).toBeVisible();
   });
+});
+
+it('emits the edit intent without owning the update workflow', async () => {
+  const onEdit = vi.fn();
+  render(<CounterpartyDetails counterparty={party} onEdit={onEdit} />);
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Edit' }));
+  expect(onEdit).toHaveBeenCalledOnce();
 });

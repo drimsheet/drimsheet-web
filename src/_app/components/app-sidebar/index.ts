@@ -1,1 +1,2 @@
-export * from './app-sidebar';
+export { AppSidebar } from './app-sidebar';
+export type { AppSidebarProps } from './types';

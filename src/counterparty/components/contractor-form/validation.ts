@@ -10,7 +10,10 @@ export function useContractorFormValidation() {
       name: yup.string().required(t('counterparty:legal_name_required')),
       type: yup
         .string()
-        .oneOf(['individual', 'organization'])
+        .oneOf(
+          ['individual', 'organization'],
+          t('counterparty:type_invalid_text')
+        )
         .required(t('counterparty:type_required')),
       displayName: yup.string().optional(),
       address: yup.object({
@@ -18,6 +21,7 @@ export function useContractorFormValidation() {
         line2: yup.string().optional(),
         city: yup.string().required(t('counterparty:city_required')),
         region: yup.string().optional(),
+        postalCode: yup.string().optional(),
         countryCode: yup.string().required(t('counterparty:country_required')),
       }),
     });

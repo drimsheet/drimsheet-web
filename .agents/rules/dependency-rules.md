@@ -40,9 +40,10 @@ services, or components.
 - A dialog directory is an orchestration owner. Its parts, hooks, helpers, types,
   tests, and stories inherit dialog dependency permissions.
 - Only files inside that dialog directory may import private implementations,
-  including parts, hooks, helpers, and internal types. Public dialog props may
-  be exported with `export type` through the barrel. Other owners import the
-  dialog through its public `index.ts`; do not import its implementation file directly.
+  including parts, hooks, helpers, and internal types. Public dialog props live
+  in `types.ts` and are exported directly from there with `export type` through
+  the barrel. Other owners import the dialog through its public `index.ts`; do
+  not import its implementation file directly.
 - Pure feature components must not import dialogs. Existing orchestration
   containers may compose public dialog APIs but must never import private
   dialog modules. This does not grant new cross-feature import permissions.
