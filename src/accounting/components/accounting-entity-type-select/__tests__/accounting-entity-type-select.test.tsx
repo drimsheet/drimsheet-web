@@ -39,6 +39,7 @@ describe('AccountingEntityTypeSelect', () => {
     const option = await screen.findByRole('option', {
       name: /An Individual/i,
     });
+
     expect(option).toBeInTheDocument();
 
     await user.click(option);

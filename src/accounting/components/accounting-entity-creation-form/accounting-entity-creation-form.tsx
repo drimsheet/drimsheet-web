@@ -22,6 +22,7 @@ function AccountingEntityCreationForm({
   const { t } = useTranslation('accounting');
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState<'right' | 'left'>('right');
+
   const validationSchema =
     useAccountingEntityCreationFormValidation(jurisdictions);
 
@@ -60,6 +61,7 @@ function AccountingEntityCreationForm({
     const err = formik.errors.fiscalYearStart;
     const touch = formik.touched.fiscalYearStart;
     if (touch && typeof err === 'string') return err;
+
     return undefined;
   };
 
@@ -67,6 +69,7 @@ function AccountingEntityCreationForm({
     const err = formik.errors.fiscalYearEnd;
     const touch = formik.touched.fiscalYearEnd;
     if (touch && typeof err === 'string') return err;
+
     return undefined;
   };
 

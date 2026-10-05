@@ -12,6 +12,7 @@ export function useUpdatePreferences() {
   return useMutation({
     mutationFn: (theme: UAppThemePreference) => {
       const payload: IUserPreferencesUpdateDto = { theme };
+
       return userService.updatePreferences(payload);
     },
     onSuccess: (preferences) => {

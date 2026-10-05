@@ -1,22 +1,7 @@
 import { useGetBankByCountry } from '@/account/hooks/use-get-bank-by-country';
 import { useState } from 'react';
 import { BankAccountForm } from './bank-account-form';
-import type { BankAccountFormProps } from './types';
-
-export type BankAccountFormContainerProps = Pick<
-  BankAccountFormProps,
-  | 'accountingCurrencyCode'
-  | 'currencies'
-  | 'bankLocations'
-  | 'initialValues'
-  | 'loading'
-  | 'disabled'
-  | 'officialExchangeRate'
-  | 'onExchangeRateContextChange'
-  | 'onSubmit'
-> & {
-  initialBankLocation?: string;
-};
+import type { BankAccountFormContainerProps } from './types';
 
 export function BankAccountFormContainer({
   accountingCurrencyCode,

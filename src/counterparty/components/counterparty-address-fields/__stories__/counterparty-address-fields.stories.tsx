@@ -60,3 +60,14 @@ export const CountryRequired: Story = {
     countryRequired: true,
   },
 };
+export const UpdateAddress: Story = {
+  args: {
+    showPostalCode: true,
+    values: {
+      line1: '123 Tech Lane',
+      city: 'Yaba',
+      countryCode: 'NG',
+      postalCode: '100001',
+    },
+  },
+};

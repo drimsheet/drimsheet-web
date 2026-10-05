@@ -183,6 +183,7 @@ describe('SignupForm', () => {
     const submitButton = screen.getByRole('button', {
       name: /Create account/i,
     });
+
     expect(submitButton).toBeDisabled();
   });
 

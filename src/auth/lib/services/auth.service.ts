@@ -15,6 +15,7 @@ async function executeRefresh(): Promise<string> {
   try {
     const { data } = await drimsheetApi.auth.refreshAccessToken();
     authService.setToken(data.accessToken);
+
     return data.accessToken;
   } catch (error) {
     authService.removeToken();
@@ -99,6 +100,7 @@ export const authService = {
 
   decodeToken(token?: string | null) {
     if (!token) return null;
+
     try {
       return jwtDecode(token) as IUserProfileDto;
     } catch {

@@ -34,11 +34,14 @@ function AccountOverview({
 }: Readonly<AccountOverviewProps>) {
   const { t } = useTranslation(['shared']);
   const AccountIcon = mapAccountTypeToIcon(account);
+
   const accountIcon = createElement(AccountIcon, {
     className: 'size-5',
     'aria-hidden': true,
   });
+
   const settingsLabel = settingsTooltipLabel ?? t('shared:settings');
+
   const shouldShowFunctionalBalance =
     account.functionalBalance.currencyCode !== account.balance.currencyCode;
 

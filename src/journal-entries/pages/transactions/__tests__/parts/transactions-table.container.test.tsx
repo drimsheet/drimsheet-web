@@ -20,6 +20,7 @@ vi.mock('@/journal-entries/hooks/use-archive-journal-entry');
 vi.mock('@/journal-entries/hooks/use-delete-journal-entry');
 
 const money = { amount: 125_000, currencyCode: 'NGN', isMinorUnit: false };
+
 const paymentEntry = {
   id: 'payment-entry',
   accountingEntityId: 'entity-1',
@@ -182,9 +183,11 @@ describe('TransactionsTableContainer', () => {
 
     await user.click(screen.getByRole('button', { name: 'Open transaction' }));
     await user.click(screen.getByRole('button', { name: 'Delete' }));
+
     const confirmationDialog = screen.getByRole('alertdialog', {
       name: 'Delete this transaction?',
     });
+
     await user.type(
       within(confirmationDialog).getByLabelText('Type "delete" to confirm'),
       'delete'

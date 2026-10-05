@@ -18,36 +18,11 @@ import {
   ECounterpartyStatus,
   ECounterpartyType,
   type ICounterpartyDto,
-  type IPaginationResponseMeta,
   type UCounterpartyStatus,
   type UCounterpartyType,
 } from '@/shared/lib/api/Api';
 import { cn } from '@/shared/lib/utils/cn';
-
-export interface CounterpartiesTableProps {
-  data: ICounterpartyDto[];
-  getCounterpartyHref?: (id: string) => string;
-  loading?: boolean;
-  selectable?: boolean;
-  selectedRowIds?: (string | number)[];
-  onRowSelectionChange?: (selectedIds: (string | number)[]) => void;
-  pagination?: IPaginationResponseMeta;
-  onPageChange?: (page: number) => void;
-  stickyHeader?: boolean;
-  onSortChange: (
-    key: keyof ICounterpartyDto,
-    direction: 'asc' | 'desc' | null
-  ) => void;
-  onFilterChange: (filters: Record<string, (string | number)[]>) => void;
-  currentSortKey?: string;
-  currentSortDirection?: 'asc' | 'desc' | null;
-  className?: string;
-  'data-testid'?: string;
-  searchValue?: string;
-  onSearchChange: (value: string) => void;
-  filters: Record<string, (string | number)[]>;
-  onAddCounterparty: () => void;
-}
+import type { CounterpartiesTableProps } from './types';
 
 export function CounterpartiesTable({
   data,
@@ -117,6 +92,7 @@ export function CounterpartiesTable({
         ],
         render: (value) => {
           const statusVal = value as UCounterpartyStatus;
+
           return (
             <StatusBadge
               {...counterpartyMapper.mapStatusToBadgeProps(statusVal)}
@@ -135,6 +111,7 @@ export function CounterpartiesTable({
         ],
         render: (value) => {
           const typeVal = value as UCounterpartyType;
+
           return <span>{getCounterpartyTypeLabel(typeVal)}</span>;
         },
       },
@@ -152,6 +129,7 @@ export function CounterpartiesTable({
           if (!row.roles || row.roles.length === 0) {
             return <span className="text-muted-foreground text-xs">—</span>;
           }
+
           return (
             <div className="flex flex-wrap gap-1">
               {row.roles.map((role) => (
@@ -169,7 +147,9 @@ export function CounterpartiesTable({
         sortable: true,
         render: (value) => {
           if (!value) return '';
+
           const date = new Date(String(value));
+
           return (
             <span className="text-xs text-muted-foreground font-medium">
               <FormattedDate value={date} />

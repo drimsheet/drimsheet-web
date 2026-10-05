@@ -27,12 +27,15 @@ function getFiscalYearDateRange(
   day: number
 ): { startDate: Date; endDate: Date } {
   const currentYear = new Date().getFullYear();
+
   const isLeapYear =
     (currentYear % 4 === 0 && currentYear % 100 !== 0) ||
     currentYear % 400 === 0;
+
   const actualDay = month === 2 && day === 29 && !isLeapYear ? 28 : day;
   const startDate = new Date(currentYear, month - 1, actualDay);
   const endDate = dayjs(startDate).add(1, 'year').subtract(1, 'day').toDate();
+
   return { startDate, endDate };
 }
 

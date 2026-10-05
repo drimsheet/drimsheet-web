@@ -29,12 +29,15 @@ export function LaunchDarklyContextSynchronizerContainer({
   const ldClient = useLDClient();
   const location = useLocation();
   const isAuthenticated = authService.isLoggedIn();
+
   const { data: profile, error: profileError } = useProfile({
     enabled: isAuthenticated,
   });
+
   const feature_flag_synchronization_error = t(
     'feature_flag_synchronization_error'
   );
+
   const [synchronizationRecord, setSynchronizationRecord] =
     useState<ISynchronizationRecord>({
       state: launchDarklySynchronizationState,
@@ -48,6 +51,7 @@ export function LaunchDarklyContextSynchronizerContainer({
   }
 
   const renderedContext = ldClient.getContext();
+
   const renderedContextMatches = !isAuthenticated
     ? Boolean(
         renderedContext &&
@@ -121,6 +125,7 @@ export function LaunchDarklyContextSynchronizerContainer({
             fingerprint: expectedFingerprint,
             state: { status: 'failed', error: result.error },
           });
+
           return;
         }
 

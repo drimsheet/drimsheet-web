@@ -29,6 +29,7 @@ describe('fileUploadService', () => {
     const file = new File(['file-content'], 'receipt.png', {
       type: 'image/png',
     });
+
     vi.mocked(drimsheetApi.files.preSignUploads).mockResolvedValue({
       data: [uploadInstruction],
     } as never);
@@ -54,6 +55,7 @@ describe('fileUploadService', () => {
     const file = new File(['file-content'], 'receipt.png', {
       type: 'image/png',
     });
+
     vi.mocked(drimsheetApi.files.preSignUploads).mockResolvedValue({
       data: [uploadInstruction],
     } as never);

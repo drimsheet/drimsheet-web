@@ -362,5 +362,10 @@
   "repo_error_transaction_inactive_unexpected": "An error occurred.",
   "repo_error_transaction_required_unexpected": "An error occurred.",
   "user_error_actor_id_invalid": "Invalid user actor ID.",
-  "user_error_created_by_invalid": "Invalid user creator."
+  "user_error_created_by_invalid": "Invalid user creator.",
+  "counterparty_error_deletion_with_transaction_references_conflict": "You are trying to delete a stale version of this transaction. Refresh and try again.",
+  "journal_entry_error_archived_ledger_account_not_allowed_invalid": "You cannot associate an archived account to this transaction.",
+  "ledger_error_archived_control_account_invalid": "Invalid account.",
+  "ledger_error_header_account_archive_invalid": "Header account cannot be archived.",
+  "ledger_error_ledger_account_not_found": "Account not found."
 }

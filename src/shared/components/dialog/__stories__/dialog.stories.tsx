@@ -13,6 +13,7 @@ const meta = {
   component: Dialog,
   tags: ['autodocs'],
 } satisfies Meta<typeof Dialog>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 

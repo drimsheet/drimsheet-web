@@ -39,6 +39,7 @@ export function TransactionsTable({
   onSearchChange,
 }: Readonly<TransactionsTableProps>) {
   const { t } = useTranslation(['journal-entries', 'shared']);
+
   const [selectedTransaction, setSelectedTransaction] =
     useState<IJournalEntryListDto | null>(null);
 
@@ -46,6 +47,7 @@ export function TransactionsTable({
     () => transactionsTableHelpers.createRows({ entries: data }),
     [data]
   );
+
   const selectedDetails = useMemo(
     () =>
       selectedTransaction
@@ -80,12 +82,14 @@ export function TransactionsTable({
 
   const handleSelectedTransactionArchive = async () => {
     if (!selectedTransaction || !onArchiveTransaction || archiving) return;
+
     await onArchiveTransaction(selectedTransaction);
     setSelectedTransaction(null);
   };
 
   const handleSelectedTransactionDelete = async () => {
     if (!selectedTransaction || !onDeleteTransaction) return;
+
     await onDeleteTransaction(selectedTransaction);
     setSelectedTransaction(null);
   };

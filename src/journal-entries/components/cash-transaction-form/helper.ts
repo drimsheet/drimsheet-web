@@ -203,6 +203,7 @@ function normalizeValues(
   if (values.counterparty.id !== undefined) {
     counterparty.id = values.counterparty.id;
   }
+
   if (values.counterparty.type !== undefined) {
     counterparty.type = values.counterparty.type;
   }
@@ -210,6 +211,7 @@ function normalizeValues(
   const amount = values.isItemized
     ? getItemTotal(values.items)
     : values.amount.amount;
+
   let exchangeRate: ICashTransactionFormValues['exchangeRate'] = null;
 
   if (exchangeRateRequired) {

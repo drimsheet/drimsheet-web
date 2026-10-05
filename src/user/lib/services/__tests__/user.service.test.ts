@@ -52,6 +52,7 @@ describe('userService preferences', () => {
     const payload = {
       theme: EAppThemePreference.Light,
     } satisfies IUserPreferencesUpdateDto;
+
     vi.mocked(drimsheetApi.users.updateUserPreferences).mockResolvedValue({
       data: preferences,
     } as never);

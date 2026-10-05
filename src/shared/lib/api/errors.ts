@@ -42,6 +42,7 @@ export const parseApiError = (error: unknown): TApiError => {
   }
 
   const correlationIdHeader = response.headers['x-correlation-id'];
+
   const correlationId = isValidUUID(correlationIdHeader)
     ? correlationIdHeader
     : undefined;

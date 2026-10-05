@@ -17,6 +17,48 @@ const dummyJurisdictions: IJurisdictionDto[] = uiCountries.map((c) => ({
 }));
 
 describe('CountryComboBox', () => {
+  it('disables selection and associates its description with its unique ID', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <CountryComboBox
+        id="employer-country"
+        label="Employer country"
+        value="NG"
+        disabled
+        description="Saving address changes"
+        onChange={onChange}
+        jurisdictions={dummyJurisdictions}
+      />
+    );
+    const input = screen.getByRole('combobox', { name: 'Employer country' });
+    expect(input).toBeDisabled();
+    expect(input).toHaveAttribute('id', 'employer-country');
+    expect(input).toHaveAccessibleDescription('Saving address changes');
+    await user.click(input);
+    expect(screen.queryByRole('option')).not.toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('links validation errors to the input alongside its description', () => {
+    render(
+      <CountryComboBox
+        id="vendor-country"
+        label="Vendor country"
+        value=""
+        description="Vendor address"
+        error={[{ message: 'Country is required' }]}
+        onChange={vi.fn()}
+        jurisdictions={dummyJurisdictions}
+      />
+    );
+    const input = screen.getByRole('combobox', { name: 'Vendor country' });
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAccessibleDescription(
+      'Country is required Vendor address'
+    );
+  });
+
   it('renders correctly with no initial value', () => {
     const onChange = vi.fn();
     render(
@@ -129,27 +171,21 @@ describe('CountryComboBox', () => {
     expect(await screen.findByText('No countries found.')).toBeInTheDocument();
   });
 
-  it('calls onChange with empty string if value is cleared', async () => {
+  it('calls onChange with empty string when an optional selection is cleared', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
       <CountryComboBox
         label="Country"
         value="US"
+        clearable
         onChange={onChange}
         jurisdictions={dummyJurisdictions}
       />
     );
 
-    const input = screen.getByPlaceholderText('Select a country');
-    // Clear the input
-    await user.clear(input);
-    // Try to blur the input to commit the cleared value
-    await user.tab();
-
-    // Depending on the Combobox implementation, clearing and blurring might not trigger onValueChange.
-    // If it does, we expect onChange to be called with "".
-    // To ensure coverage, if it doesn't do it via userEvent naturally here, we will just have this test.
+    await user.click(screen.getByRole('button', { name: 'Clear selection' }));
+    expect(onChange).toHaveBeenCalledWith('');
   });
 
   it('handles invalid initial value gracefully', () => {

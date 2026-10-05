@@ -61,6 +61,7 @@ describe('BankSelection', () => {
     const option = await screen.findByRole('option', {
       name: /United States/i,
     });
+
     await user.click(option);
 
     expect(onLocationChange).toHaveBeenCalledWith('US');
@@ -81,6 +82,7 @@ describe('BankSelection', () => {
     const bankOption = await screen.findByRole('option', {
       name: 'Access Bank',
     });
+
     await user.click(bankOption);
 
     expect(onBankNameChange).toHaveBeenCalledWith('Access Bank');

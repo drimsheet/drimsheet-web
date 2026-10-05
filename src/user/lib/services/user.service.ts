@@ -5,6 +5,7 @@ import { storageService } from '@/shared/lib/services/storage.service';
 export const userService = {
   async getProfile() {
     const res = await drimsheetApi.users.getAuthUserProfile();
+
     return res.data;
   },
 

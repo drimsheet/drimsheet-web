@@ -19,6 +19,7 @@ describe('GoogleAuthButtonContainer', () => {
     const button = screen.getByRole('button', {
       name: /Continue with Google/i,
     });
+
     expect(button).toBeInTheDocument();
 
     await user.click(button);

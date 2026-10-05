@@ -41,6 +41,7 @@ export function TableFilter({
 
   const filteredOptions = React.useMemo(() => {
     if (!searchQuery) return options;
+
     return options.filter((option) =>
       option.label.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -62,6 +63,7 @@ export function TableFilter({
   const filter_label = title
     ? t('shared:filter_by', { title })
     : t('shared:filter');
+
   const clear_label = t('shared:clear');
   const search_placeholder_text = t('shared:search');
   const no_results_text = t('shared:no_results_found');
@@ -142,6 +144,7 @@ export function TableFilter({
           ) : (
             filteredOptions.map((option) => {
               const isChecked = selectedValues.includes(option.value);
+
               return (
                 <button
                   key={option.value}

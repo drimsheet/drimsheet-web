@@ -26,14 +26,17 @@ export function AccountManagement({
   titleId,
 }: Readonly<AccountManagementProps>) {
   const { t } = useTranslation(['user', 'auth']);
+
   const otherEntities = accountingEntities.filter(
     (entity) => entity.id !== activeEntity.id
   );
+
   const entityTypeLabels: Record<UAccountingEntityType, string> = {
     [EAccountingEntityType.Individual]: t('individual_entity_type'),
     [EAccountingEntityType.SoleTrader]: t('sole_trader_entity_type'),
     [EAccountingEntityType.PrivateCompany]: t('private_company_entity_type'),
   };
+
   const account_management_title = t('account_management_title');
   const drop_feedback_action = t('drop_feedback_action');
   const profile_settings_action = t('profile_settings_action');

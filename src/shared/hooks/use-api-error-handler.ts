@@ -73,6 +73,7 @@ export function useApiErrorHandler() {
 
       if (isAuthActionFailure) {
         apiErrorHandlerConfig.handleUnauthorized?.();
+
         return;
       }
 
@@ -93,6 +94,7 @@ export function useApiErrorHandler() {
         const validationToastMessages = getValidationToastMessages(
           error.validationErrors ?? []
         );
+
         const errorKey = error.errorKey;
 
         if (validationToastMessages.length > 0) {

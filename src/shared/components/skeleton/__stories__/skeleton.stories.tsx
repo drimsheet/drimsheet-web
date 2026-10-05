@@ -7,6 +7,7 @@ const meta = {
   tags: ['autodocs'],
   parameters: { layout: 'centered' },
 } satisfies Meta<typeof Skeleton>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 

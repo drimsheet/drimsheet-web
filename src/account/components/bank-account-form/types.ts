@@ -36,3 +36,18 @@ export interface BankAccountFormProps {
   disabled?: boolean;
   onSubmit: (values: IBankAccountFormValues) => void | Promise<void>;
 }
+
+export type BankAccountFormContainerProps = Pick<
+  BankAccountFormProps,
+  | 'accountingCurrencyCode'
+  | 'currencies'
+  | 'bankLocations'
+  | 'initialValues'
+  | 'loading'
+  | 'disabled'
+  | 'officialExchangeRate'
+  | 'onExchangeRateContextChange'
+  | 'onSubmit'
+> & {
+  initialBankLocation?: string;
+};

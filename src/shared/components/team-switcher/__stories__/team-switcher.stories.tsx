@@ -17,6 +17,7 @@ const meta = {
     ),
   ],
 } satisfies Meta<typeof TeamSwitcher>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 

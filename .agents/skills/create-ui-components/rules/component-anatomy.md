@@ -44,6 +44,12 @@ provides.
 ## Derived state guidance
 
 - Calculate cheap derived state directly during render.
+- Keep simple conditional rendering in JSX. Use a named boolean such as
+  `shouldRenderForm` for a compound condition, then render loading and content
+  with mutually exclusive `&&` expressions. Do not use a mutable JSX variable
+  populated by `if`/`else` as a substitute for straightforward conditional JSX.
+- When a rendering predicate checks optional data, use a local immutable value
+  so TypeScript can narrow it in the guarded JSX without a non-null assertion.
 - Use `useMemo` only for expensive calculation or referential stability that a
   consumer actually requires.
 - Do not mirror props, query results, or other state with `useState` plus

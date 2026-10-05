@@ -25,6 +25,7 @@ const DefaultErrorFallback = ({
     // This is to prevent the error boundary from immediately showing the error fallback
     // for a split second before the full page loader is shown.
     const timer = setTimeout(() => setShow(true), 200);
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -61,6 +62,7 @@ export const DefaultErrorBoundary = ({
   fallback,
 }: Readonly<DefaultErrorBoundaryProps>) => {
   const handleApiError = useApiErrorHandler();
+
   const renderFallback = (errorData: IErrorBoundaryFallbackData) => {
     if (isFeatureFlagApiError(errorData.error)) {
       return <FeatureNotAvailable />;

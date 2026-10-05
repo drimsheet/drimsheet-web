@@ -188,6 +188,7 @@ function DocumentUploadContent({
   const inputRef = useRef<HTMLInputElement>(null);
   const hasFiles = value.length > 0;
   const acceptLabel = mapAcceptToLabel(accept, (key) => t(key), i18n.language);
+
   const acceptText = acceptLabel
     ? t('file_upload_accepts', { types: acceptLabel })
     : undefined;

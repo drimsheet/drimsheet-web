@@ -3,11 +3,13 @@ import { registerAuthenticatedAppRoutes } from '@integration/mocks/authenticated
 
 const callbackUrl = '/auth/oauth-confirmation';
 const refreshEndpoint = '**/api/v1/auth/refresh-access-token';
+
 const failureMessage =
   "We couldn't complete your Google sign-in. Please try again.";
 
 function createResponseGate() {
   let resolve = () => {};
+
   const promise = new Promise<void>((complete) => {
     resolve = complete;
   });

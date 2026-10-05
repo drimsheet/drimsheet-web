@@ -19,6 +19,7 @@ export function CounterpartyRoleSelect({
   className,
 }: Readonly<CounterpartyRoleSelectProps>) {
   const { t } = useTranslation(['counterparty']);
+
   const [internalSelected, setInternalSelected] = useState(
     value ?? defaultValue
   );
@@ -67,6 +68,7 @@ export function CounterpartyRoleSelect({
 
   const handleSelect = (optionValue: UCounterpartyRoleSelectValue) => {
     if (disabled) return;
+
     if (value === undefined) {
       setInternalSelected(optionValue);
     }
@@ -74,6 +76,7 @@ export function CounterpartyRoleSelect({
 
   const handleSubmit = () => {
     if (!canSubmit || !selectedValue) return;
+
     onSubmit(selectedValue);
   };
 

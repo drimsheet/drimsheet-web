@@ -14,6 +14,7 @@ export function CurrencyLogo({
   if (!url) {
     return <CoinsIcon />;
   }
+
   return (
     <div
       {...props}

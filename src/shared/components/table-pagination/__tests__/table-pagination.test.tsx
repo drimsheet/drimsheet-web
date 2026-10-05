@@ -45,6 +45,7 @@ describe('TablePagination', () => {
         onPageChange={() => {}}
       />
     );
+
     expect(container.firstChild).toBeNull();
   });
 });

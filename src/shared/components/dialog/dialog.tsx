@@ -71,6 +71,7 @@ function DialogContent({
           ) {
             e.preventDefault();
           }
+
           props.onPointerDownOutside?.(e);
         }}
         onInteractOutside={(e) => {
@@ -80,6 +81,7 @@ function DialogContent({
           ) {
             e.preventDefault();
           }
+
           props.onInteractOutside?.(e);
         }}
         {...props}

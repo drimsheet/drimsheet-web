@@ -70,7 +70,9 @@ drimsheetApi.instance.interceptors.response.use(
       if (!newAccessToken) {
         throw error;
       }
+
       originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
       return drimsheetApi.instance(originalRequest);
     }
 

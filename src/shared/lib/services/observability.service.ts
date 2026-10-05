@@ -18,6 +18,7 @@ const SAFE_ROUTE_PATTERN = /^(?:[A-Z]+ )?\/[A-Za-z0-9_:/.*-]*$/;
 const TRACE_ID_PATTERN = /^[0-9a-f]{32}$/;
 const SPAN_ID_PATTERN = /^[0-9a-f]{16}$/;
 const EVENT_ID_PATTERN = /^[0-9a-f]{32}$/;
+
 const DEBUG_ID_PATTERN =
   /^(?:[0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
 
@@ -55,6 +56,7 @@ function safeHttpMethod(value: unknown) {
   if (typeof value !== 'string') return undefined;
 
   const method = value.toUpperCase();
+
   return /^(DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT)$/.test(method)
     ? method
     : undefined;
@@ -81,9 +83,13 @@ function projectReportContext(context: IObservabilityReportContext) {
   const statusCode = safeStatusCode(context.statusCode);
 
   if (source) projected.source = source;
+
   if (operation) projected.operation = operation;
+
   if (errorKey) projected.errorKey = errorKey;
+
   if (statusCode) projected.statusCode = statusCode;
+
   if (isValidUUID(context.correlationId)) {
     projected.correlationId = context.correlationId;
   }
@@ -148,6 +154,7 @@ function projectException(exception: Event['exception']): Event['exception'] {
 
   const type = safeLabel(sourceException.type) ?? 'UnknownError';
   const stacktrace = projectStacktrace(sourceException.stacktrace);
+
   const mechanism = sourceException.mechanism
     ? {
         type: safeLabel(sourceException.mechanism.type) ?? 'generic',
@@ -199,9 +206,12 @@ function projectBreadcrumbData(data: Breadcrumb['data']) {
 
   const projected: Record<string, string | number> = {};
   const method = safeHttpMethod(data.method);
+
   const statusCode =
     safeStatusCode(data.statusCode) ?? safeStatusCode(data.status_code);
+
   const errorKey = safeLabel(data.errorKey);
+
   const kind =
     data.kind === 'server-response' ||
     data.kind === 'network' ||
@@ -210,9 +220,13 @@ function projectBreadcrumbData(data: Breadcrumb['data']) {
       : undefined;
 
   if (method) projected.method = method;
+
   if (statusCode) projected.statusCode = statusCode;
+
   if (errorKey) projected.errorKey = errorKey;
+
   if (kind) projected.kind = kind;
+
   if (isValidUUID(data.correlationId)) {
     projected.correlationId = data.correlationId;
   }
@@ -223,6 +237,7 @@ function projectBreadcrumbData(data: Breadcrumb['data']) {
 function scrubBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb | null {
   const category = breadcrumb.category;
   const isApiFailure = category === 'api.failure';
+
   const isHttpBreadcrumb =
     breadcrumb.type === 'http' || category === 'fetch' || category === 'xhr';
 
@@ -247,6 +262,7 @@ function projectBreadcrumbs(breadcrumbs: Event['breadcrumbs']) {
 
   const projected = breadcrumbs.flatMap((breadcrumb) => {
     const safeBreadcrumb = scrubBreadcrumb(breadcrumb);
+
     return safeBreadcrumb ? [safeBreadcrumb] : [];
   });
 
@@ -277,18 +293,24 @@ function normalizeTransaction(
 
 function projectSpanData(data: TSentrySpan['data']) {
   const projected: TSentrySpan['data'] = {};
+
   const method = safeHttpMethod(
     data?.['http.request.method'] ?? data?.['http.method']
   );
+
   const statusCode = safeStatusCode(
     data?.['http.response.status_code'] ?? data?.['http.status_code']
   );
+
   const sentryOrigin = safeLabel(data?.['sentry.origin']);
   const sentryOperation = safeLabel(data?.['sentry.op']);
 
   if (method) projected['http.request.method'] = method;
+
   if (statusCode) projected['http.response.status_code'] = statusCode;
+
   if (sentryOrigin) projected['sentry.origin'] = sentryOrigin;
+
   if (sentryOperation) projected['sentry.op'] = sentryOperation;
 
   return projected;
@@ -299,7 +321,9 @@ function normalizeSpanDescription(
   operation: string | undefined
 ) {
   if (operation?.startsWith('http')) return 'http.request';
+
   if (operation?.startsWith('resource')) return 'resource.request';
+
   if (operation === 'pageload' || operation === 'navigation') {
     return description && SAFE_ROUTE_PATTERN.test(description)
       ? description
@@ -312,10 +336,13 @@ function normalizeSpanDescription(
 function scrubSpan(span: TSentrySpan): TSentrySpan {
   const operation = safeLabel(span.op);
   const description = normalizeSpanDescription(span.description, operation);
+
   const traceId =
     safeIdentifier(span.trace_id, TRACE_ID_PATTERN) ?? '0'.repeat(32);
+
   const spanId =
     safeIdentifier(span.span_id, SPAN_ID_PATTERN) ?? '0'.repeat(16);
+
   const parentSpanId = safeIdentifier(span.parent_span_id, SPAN_ID_PATTERN);
   const status = safeLabel(span.status);
   const origin = safeLabel(span.origin);
@@ -347,6 +374,7 @@ function scrubErrorEvent(event: ErrorEvent, release: string): ErrorEvent {
     const extra = projectReportContext(event.extra ?? {});
     const requestMethod = safeHttpMethod(event.request?.method);
     const debugMeta = projectDebugMeta(event.debug_meta);
+
     const transaction =
       event.transaction_info?.source === 'route'
         ? normalizeTransaction(event.transaction, event.transaction_info.source)
@@ -403,6 +431,7 @@ function scrubTransaction(
     const contexts = projectTraceContext(event.contexts);
     const requestMethod = safeHttpMethod(event.request?.method);
     const eventId = safeIdentifier(event.event_id, EVENT_ID_PATTERN);
+
     const transaction = normalizeTransaction(
       event.transaction,
       event.transaction_info?.source
@@ -443,6 +472,7 @@ let telemetryEnabled = false;
 
 function initialize(config: IObservabilityConfig = observabilityConfig) {
   if (initializationAttempted) return;
+
   initializationAttempted = true;
 
   if (!config.enabled || !config.dsn) return;
@@ -497,8 +527,11 @@ function addApiFailureBreadcrumb(context: IApiFailureBreadcrumbContext) {
     const data: Record<string, string | number> = { kind: context.kind };
 
     if (statusCode) data.statusCode = statusCode;
+
     if (method) data.method = method;
+
     if (errorKey) data.errorKey = errorKey;
+
     if (isValidUUID(context.correlationId)) {
       data.correlationId = context.correlationId;
     }

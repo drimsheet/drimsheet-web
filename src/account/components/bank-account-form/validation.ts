@@ -25,6 +25,7 @@ const optionalNumber = (typeErrorMessage: string) =>
     .number()
     .transform((value, originalValue) => {
       if (originalValue === null || originalValue === '') return undefined;
+
       return value;
     })
     .typeError(typeErrorMessage);
@@ -67,6 +68,7 @@ export function createBankAccountFormValidation(
           createWithoutOpeningBalance: boolean;
           currencyCode: string;
         };
+
         const required =
           !values.createWithoutOpeningBalance &&
           Boolean(values.currencyCode) &&
@@ -100,9 +102,11 @@ export function useBankAccountFormValidation(
   const currency_required_text = t('currency_required_text');
   const bank_location_required_text = t('bank_location_required_text');
   const bank_name_required_text = t('bank_name_required_text');
+
   const bank_account_number_required_text = t(
     'bank_account_number_required_text'
   );
+
   const bank_account_name_required_text = t('bank_account_name_required_text');
   const opening_balance_required_text = t('opening_balance_required_text');
   const opening_balance_number_text = t('opening_balance_number_text');

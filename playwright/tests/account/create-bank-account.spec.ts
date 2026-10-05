@@ -109,6 +109,7 @@ test.describe('Bank Account Creation Flow', () => {
     const selectionDialog = page.getByRole('dialog').filter({
       has: page.getByRole('heading', { name: /select account type/i }),
     });
+
     await expect(selectionDialog).toBeVisible();
 
     await selectionDialog.getByRole('radio', { name: /bank account/i }).click();
@@ -116,6 +117,7 @@ test.describe('Bank Account Creation Flow', () => {
     const continueButton = selectionDialog.getByRole('button', {
       name: /continue/i,
     });
+
     await expect(continueButton).toBeEnabled();
     await continueButton.click();
 
@@ -124,6 +126,7 @@ test.describe('Bank Account Creation Flow', () => {
     const bankDialog = page.getByRole('dialog').filter({
       has: page.getByRole('heading', { name: /create bank account/i }),
     });
+
     await expect(bankDialog).toBeVisible();
 
     // Verify default jurisdiction NG triggered automatic bank loading without manual country reselection
@@ -182,6 +185,7 @@ test.describe('Bank Account Creation Flow', () => {
     const createButton = bankDialog.getByRole('button', {
       name: /create account/i,
     });
+
     await expect(createButton).toBeEnabled();
     await createButton.click();
 
@@ -225,9 +229,11 @@ test.describe('Bank Account Creation Flow', () => {
     });
 
     await page.getByRole('button', { name: 'Add account' }).click();
+
     const selectionDialog = page.getByRole('dialog').filter({
       has: page.getByRole('heading', { name: /select account type/i }),
     });
+
     await selectionDialog.getByRole('radio', { name: /bank account/i }).click();
     await selectionDialog.getByRole('button', { name: /continue/i }).click();
 
@@ -284,9 +290,11 @@ test.describe('Bank Account Creation Flow', () => {
     await signInAndNavigateToAccounts(page);
 
     await page.getByRole('button', { name: 'Add account' }).click();
+
     const selectionDialog = page.getByRole('dialog').filter({
       has: page.getByRole('heading', { name: /select account type/i }),
     });
+
     await selectionDialog.getByRole('radio', { name: /bank account/i }).click();
     await selectionDialog.getByRole('button', { name: /continue/i }).click();
 

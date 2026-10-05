@@ -29,6 +29,7 @@ function AccountingEntityCreationFormStep1({
 
   const nameErrors = getErrorMessage('name');
   const isNameInvalid = Boolean(nameErrors?.length);
+
   const isComplete =
     !!formik.values.name.trim() &&
     !!formik.values.entityType &&
@@ -41,8 +42,10 @@ function AccountingEntityCreationFormStep1({
     const selectedCountry = jurisdictions.find(
       (jurisdiction) => jurisdiction.code === formik.values.countryCode
     );
+
     const standards = selectedCountry?.accountingStandards[entityType];
     const accountingStandardCode = standards?.[0] || 'IFRS';
+
     const name =
       entityType === EAccountingEntityType.Individual ? individualName : '';
 
@@ -57,6 +60,7 @@ function AccountingEntityCreationFormStep1({
 
   const handleCountryChange = (val: string) => {
     const selectedCountry = jurisdictions.find((c) => c.code === val);
+
     const expectedStart = FISCAL_YEAR_STARTS[val as UJurisdictionCode] || {
       month: 1,
       day: 1,
@@ -64,6 +68,7 @@ function AccountingEntityCreationFormStep1({
 
     const functionalCurrency =
       selectedCountry?.currencyCode || formik.values.functionalCurrency;
+
     const reportingCurrency =
       selectedCountry?.currencyCode || formik.values.reportingCurrency;
 
@@ -75,6 +80,7 @@ function AccountingEntityCreationFormStep1({
     const standards = formik.values.entityType
       ? selectedCountry?.accountingStandards[formik.values.entityType]
       : undefined;
+
     const accountingStandardCode = standards?.[0] || 'IFRS';
 
     formik.setValues({
@@ -92,12 +98,15 @@ function AccountingEntityCreationFormStep1({
 
   const showTaxWarning =
     formik.values.countryCode && formik.values.countryCode !== 'NG';
+
   const showStandardsWarning = !accountingStandard.includes('IFRS');
 
   const residence_country_label = t('residence_country_label');
+
   const unsupported_standard_warning = t('unsupported_standard_warning', {
     standard: accountingStandard,
   });
+
   const nigerian_tax_only_warning = t('nigerian_tax_only_warning');
   const next_button_label = t('next_button_label');
   const entity_name_label = t('entity_name_label');

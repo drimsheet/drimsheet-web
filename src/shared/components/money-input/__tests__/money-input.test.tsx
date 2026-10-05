@@ -8,6 +8,7 @@ const ControlledMoneyInput = (
   props: React.ComponentProps<typeof MoneyInput>
 ) => {
   const [val, setVal] = useState(props.value || '');
+
   return (
     <MoneyInput
       {...props}

@@ -30,14 +30,17 @@ export function CurrencyExchangeRateInput({
   const inverted = value?.inverted ?? false;
   const displayedBaseCurrency = inverted ? targetCurrency : baseCurrency;
   const displayedTargetCurrency = inverted ? baseCurrency : targetCurrency;
+
   const displayedOfficialRate = inverted
     ? currencyService.invertRate(officialRate?.rate)
     : officialRate?.rate;
+
   const resolvedValue = helpers.getValue(value?.value, displayedOfficialRate);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.value) {
       onChange(null);
+
       return;
     }
 
@@ -51,6 +54,7 @@ export function CurrencyExchangeRateInput({
 
     if (invertedRate === undefined) {
       onChange(null);
+
       return;
     }
 
@@ -60,9 +64,11 @@ export function CurrencyExchangeRateInput({
   const official_rate_available_text = t(
     'official_exchange_rate_available_text'
   );
+
   const official_rate_unavailable_text = t(
     'official_exchange_rate_unavailable_text'
   );
+
   const invert_exchange_rates_action = t('invert_exchange_rates_action');
 
   return (

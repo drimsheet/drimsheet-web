@@ -10,6 +10,7 @@ import {
 import type { Page } from '@playwright/test';
 
 const timestamp = '2026-09-18T10:00:00.000Z';
+
 const counterparty: ICounterpartyDto = {
   id: '00000000-0000-4000-8000-000000000010',
   accountingEntityId: '00000000-0000-4000-8000-000000000002',
@@ -32,14 +33,17 @@ const counterparty: ICounterpartyDto = {
   createdAt: '2026-01-12T00:00:00.000Z',
   updatedAt: timestamp,
 };
+
 const detailUrl = `/counterparties/${counterparty.id}`;
 const detailEndpoint = `**/api/v1/counterparties/${counterparty.id}`;
 const transactionsEndpoint = '**/api/v1/journal-entries?*';
+
 const entries: IJournalEntryListDto[] = Array.from(
   { length: 5 },
   (_, index) => {
     const id = `payment-${index}`;
     const amount = { amount: 245000, currencyCode: 'NGN', isMinorUnit: false };
+
     return {
       id,
       accountingEntityId: counterparty.accountingEntityId,
@@ -109,6 +113,7 @@ async function setup(page: Page) {
       route.fulfill({ json: { accessToken: 'integration-test-token' } })
     );
   }
+
   await page.route('**/api/v1/counterparties?*', (route) =>
     route.fulfill({
       json: {
@@ -124,6 +129,7 @@ async function setup(page: Page) {
     const params = new URL(route.request().url()).searchParams;
     const pageNumber = Number(params.get('page')) || 1;
     const limit = Number(params.get('limit')) || 10;
+
     return route.fulfill({
       json: {
         data: entries,
@@ -154,9 +160,11 @@ test('opens the linked profile, supplies scoped data to the existing table, and 
 }) => {
   await setup(page);
   await page.goto('/counterparties');
+
   const requestPromise = page.waitForRequest((request) =>
     request.url().includes('/api/v1/journal-entries?')
   );
+
   await page
     .getByRole('link', { name: counterparty.name, exact: true })
     .click();
@@ -175,7 +183,7 @@ test('opens the linked profile, supplies scoped data to the existing table, and 
   await expect(page.getByText('Nigeria', { exact: true })).toBeVisible();
   await expect(
     page.getByRole('button', { name: 'Edit', exact: true })
-  ).toBeDisabled();
+  ).toBeEnabled();
   await expect(page.getByRole('table').getByRole('row')).toHaveCount(6);
   await expect(page.getByText('Showing 5 of 18')).toBeVisible();
   await page.reload();
@@ -190,20 +198,24 @@ test('supplies counterparty-scoped search and sorting from the detail page', asy
   await setup(page);
   await page.goto(detailUrl);
   await expectProfile(page);
+
   const searchRequest = page.waitForRequest(
     (request) =>
       request.url().includes('/api/v1/journal-entries?') &&
       new URL(request.url()).searchParams.get('search') === 'supplies'
   );
+
   await page.getByPlaceholder(/Search transactions/i).fill('supplies');
   expect(
     new URL((await searchRequest).url()).searchParams.get('counterpartyId')
   ).toBe(counterparty.id);
+
   const sortRequest = page.waitForRequest(
     (request) =>
       request.url().includes('/api/v1/journal-entries?') &&
       new URL(request.url()).searchParams.get('sortDirection') === 'asc'
   );
+
   await page.getByRole('columnheader', { name: 'Date', exact: true }).click();
   expect(
     Object.fromEntries(new URL((await sortRequest).url()).searchParams)
@@ -213,11 +225,13 @@ test('supplies counterparty-scoped search and sorting from the detail page', asy
     orderBy: 'effectiveDate',
     sortDirection: 'asc',
   });
+
   const descendingRequest = page.waitForRequest(
     (request) =>
       request.url().includes('/api/v1/journal-entries?') &&
       new URL(request.url()).searchParams.get('sortDirection') === 'desc'
   );
+
   await page.getByRole('columnheader', { name: 'Date', exact: true }).click();
   expect(
     Object.fromEntries(new URL((await descendingRequest).url()).searchParams)
@@ -301,9 +315,11 @@ test('shows loading before data arrives and remains usable at mobile width', asy
 }) => {
   await setup(page);
   let release!: () => void;
+
   const ready = new Promise<void>((resolve) => {
     release = resolve;
   });
+
   await page.route(detailEndpoint, async (route) => {
     await ready;
     await route.fulfill({ json: counterparty });

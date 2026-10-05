@@ -23,11 +23,7 @@ import { useExchangeRates } from '@/shared/hooks/use-exchange-rates';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-
-export interface BankAccountCreationDialogProps {
-  open: boolean;
-  onClose: () => void;
-}
+import type { BankAccountCreationDialogProps } from './types';
 
 const defaultExchangeRateContext: IOpeningBalanceExchangeRateContext = {
   currencyCode: '',
@@ -43,11 +39,13 @@ export function BankAccountCreationDialog({
   const handleApiError = useApiErrorHandler();
 
   const [statementFiles, setStatementFiles] = useState<File[]>([]);
+
   const [exchangeRateContext, setExchangeRateContext] =
     useState<IOpeningBalanceExchangeRateContext>(defaultExchangeRateContext);
 
   const { data: currencies = [], isPending: isCurrenciesPending } =
     useCurrencies();
+
   const { data: accountingEntity, isPending: isAccountingEntityPending } =
     useAccountingEntity();
 
@@ -60,6 +58,7 @@ export function BankAccountCreationDialog({
       accountingCurrencyCode
     )
   );
+
   const officialExchangeRate = officialExchangeRates?.[0];
 
   const { mutateAsync: createBankAccount, isPending: isCreating } =
@@ -87,6 +86,7 @@ export function BankAccountCreationDialog({
         accountingCurrencyCode,
         officialExchangeRate
       );
+
       await createBankAccount(request);
       toast.success(t('ledger-accounts:bank_account_created_success_text'));
       handleClose();
@@ -96,15 +96,19 @@ export function BankAccountCreationDialog({
   };
 
   const create_bank_account_title = t('ledger-accounts:create_bank_account');
+
   const create_bank_account_description = t(
     'ledger-accounts:create_bank_account_description'
   );
+
   const upload_bank_statement_title = t(
     'ledger-accounts:upload_bank_statement_title'
   );
+
   const upload_bank_statement_description = t(
     'ledger-accounts:upload_bank_statement_description'
   );
+
   const upload_bank_statement_action = t(
     'ledger-accounts:upload_bank_statement_action'
   );

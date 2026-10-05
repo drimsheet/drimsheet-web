@@ -9,7 +9,6 @@ import { useCreateRevenueAccount } from '@/accounting/hooks/use-create-revenue-a
 import { useCreateStatutoryPayableAccount } from '@/accounting/hooks/use-create-statutory-payable-account';
 import { useCreateStatutoryReceivableAccount } from '@/accounting/hooks/use-create-statutory-receivable-account';
 import { useCreateSuspenseAccount } from '@/accounting/hooks/use-create-suspense-account';
-import { useJurisdictions } from '@/accounting/hooks/use-jurisdictions';
 import { useRecommendedBootstrap } from '@/accounting/hooks/use-recommended-bootstrap';
 import { useSetupHeaderAccounts } from '@/accounting/hooks/use-setup-header-accounts';
 import { accountingBootstrapMapper } from '@/accounting/lib/mappers/accounting-bootstrap.mapper';
@@ -23,6 +22,7 @@ import {
 } from '@/shared/components/dialog';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useCurrencies } from '@/shared/hooks/use-currencies';
+import { useJurisdictions } from '@/shared/hooks/use-jurisdictions';
 import type {
   IAccountingEntityCreationDto,
   IRecommendedBootstrapAccountDto,
@@ -56,12 +56,16 @@ export function AccountingEntityCreationDialog({
   const [hasSubmissionError, setHasSubmissionError] = useState(false);
   const submittingRef = useRef(false);
   const { mutateAsync: createAccountingEntity } = useCreateAccountingEntity();
+
   const { refetch: getRecommendations } = useRecommendedBootstrap({
     disabled: true,
   });
+
   const { mutateAsync: setupHeaders } = useSetupHeaderAccounts();
+
   const { mutateAsync: createReceivable } =
     useCreateStatutoryReceivableAccount();
+
   const { mutateAsync: createPayable } = useCreateStatutoryPayableAccount();
   const { mutateAsync: createRevenue } = useCreateRevenueAccount();
   const { mutateAsync: createExpense } = useCreateExpenseAccount();
@@ -70,6 +74,7 @@ export function AccountingEntityCreationDialog({
   const { data: profile, isLoading: isLoadingProfile } = useProfile();
   const { data: currencies = [] } = useCurrencies();
   const { data: jurisdictions = [] } = useJurisdictions();
+
   const individualName =
     `${profile?.firstName ?? ''} ${profile?.lastName ?? ''}`.trim();
 
@@ -79,30 +84,38 @@ export function AccountingEntityCreationDialog({
     const { data: catalog } = await getRecommendations({ throwOnError: true });
     const invalidCatalogMessage = t('onboarding_invalid_catalog_error');
     if (!catalog) throw new Error(invalidCatalogMessage);
+
     const getName = (record: IRecommendedBootstrapAccountDto) => {
       const key = helpers.accountNameKey(record.key);
       if (!key) throw new Error(invalidCatalogMessage);
+
       return t(key);
     };
+
     const currency = payload.functionalCurrencyCode;
+
     const receivables = catalog.receivables.map((record) =>
       accountingBootstrapMapper.toReceivable(getName(record), currency)
     );
+
     const payables = catalog.payables.map((record) =>
       accountingBootstrapMapper.toPayable(getName(record), currency)
     );
+
     const revenue = catalog.revenue.map((record) =>
       accountingBootstrapMapper.toRevenue(
         getName(record),
         revenueBehavior(record.behavior, invalidCatalogMessage)
       )
     );
+
     const expense = catalog.expense.map((record) =>
       accountingBootstrapMapper.toExpense(
         getName(record),
         expenseBehavior(record.behavior, invalidCatalogMessage)
       )
     );
+
     const suspense = catalog.suspense.map((record) =>
       accountingBootstrapMapper.toSuspense(
         getName(record),
@@ -110,6 +123,7 @@ export function AccountingEntityCreationDialog({
         currency
       )
     );
+
     const entity = await createAccountingEntity(payload);
     queryClient.setQueryData(
       ['accountingService', 'getAccountingEntity'],
@@ -133,12 +147,14 @@ export function AccountingEntityCreationDialog({
 
   const handleSubmit = async (values: IAccountingEntityFormValues) => {
     if (submittingRef.current) return;
+
     submittingRef.current = true;
     setIsSubmitting(true);
     setHasSubmissionError(false);
     try {
       const payload =
         accountingEntityMapper.toAccountingEntityCreationDto(values);
+
       if (
         initialOnboarding &&
         payload.appPreferences.appUsageMode === 'non_power_user'

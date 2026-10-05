@@ -23,13 +23,17 @@ export function TransactionsTableContainer({
 }: Readonly<TransactionsTableContainerProps>) {
   const navigate = useNavigate();
   const handleApiError = useApiErrorHandler();
+
   const { mutateAsync: archive, isPending: archiving } =
     useArchiveJournalEntry();
+
   const { mutateAsync: deleteEntry } = useDeleteJournalEntry();
+
   const tableQuery = useTableQueryParams<'effectiveDate'>({
     defaultSortKey: EJournalEntrySortBy.EffectiveDate,
     defaultSortDirection: EPaginationSortDirection.Desc,
   });
+
   const debouncedSearchQuery = useDebounce(tableQuery.searchQuery, 300);
 
   const query = useMemo<IGetJournalEntriesQuery>(
@@ -70,6 +74,7 @@ export function TransactionsTableContainer({
 
   const handleArchiveTransaction = async (entry: IJournalEntryListDto) => {
     if (archiving) return;
+
     try {
       await archive({
         id: entry.id,

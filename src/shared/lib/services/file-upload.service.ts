@@ -11,6 +11,7 @@ async function upload(file: File): Promise<IFileUploadDto> {
       purpose: EFileUploadPurpose.JournalEntryAttachment,
     },
   ]);
+
   const uploadInstruction = uploadInstructionResponse.data[0];
 
   if (!uploadInstruction) throw new Error('Missing file upload instruction');
@@ -24,11 +25,13 @@ async function upload(file: File): Promise<IFileUploadDto> {
 
 async function uploadFile(file: File): Promise<string> {
   const uploadInstruction = await upload(file);
+
   return uploadInstruction.reference;
 }
 
 async function uploadAttachment(file: File) {
   const uploadInstruction = await upload(file);
+
   return uploadInstruction.file;
 }
 

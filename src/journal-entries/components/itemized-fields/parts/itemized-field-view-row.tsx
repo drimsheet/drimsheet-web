@@ -38,9 +38,11 @@ export function ItemizedFieldViewRow({
   const item_view_aria_label = t('itemized_item_view_aria_label', {
     rowNumber,
   });
+
   const item_menu_aria_label = t('itemized_item_menu_aria_label', {
     rowNumber,
   });
+
   const edit_item_text = t('itemized_edit_item_text');
   const delete_item_text = t('itemized_delete_item_text');
 

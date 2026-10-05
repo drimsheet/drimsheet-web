@@ -62,8 +62,8 @@ Requirements:
 - `__tests__/<component-name>.test.tsx`: required when behavior, interaction,
   validation, accessibility, or meaningful conditional rendering needs a
   contract.
-- `types.ts`: required for forms; otherwise use it when types are shared by more
-  than one file in the component directory.
+- `types.ts`: required when the owner exposes public types. Keep public types out
+  of component, container, page, and dialog implementation files.
 - `validation.ts`: required when the component owns validation.
 - `<component-name>.container.tsx`: required when the UI needs side effects or
   orchestration.
@@ -133,6 +133,8 @@ Private parts follow these ownership rules:
   only when a support artifact intentionally targets a non-public module such
   as validation, `helper.ts`, or a private part.
 - Prefer `import type` and `export type` for type-only contracts.
+- Re-export public types directly from `./types` in the owner barrel. Do not
+  re-export types from component, container, page, or dialog implementations.
 - Export only public components, containers, types, variants, and validation
   intended for consumers.
 - Do not export tests, stories, private helpers, or implementation-only types.

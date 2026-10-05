@@ -15,13 +15,16 @@ function setup() {
   const queryClient = new QueryClient({
     defaultOptions: { mutations: { retry: false } },
   });
+
   const listKey = [...journalEntriesQueryKey, { page: 1 }];
   const detailKey = journalEntryQueryKey('entry-1');
   queryClient.setQueryData(listKey, { data: [{ id: 'entry-1' }] });
   queryClient.setQueryData(detailKey, { id: 'entry-1', version: 3 });
+
   const wrapper = ({ children }: Readonly<{ children: ReactNode }>) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
+
   return {
     ...renderHook(() => useArchiveJournalEntry(), { wrapper }),
     queryClient,

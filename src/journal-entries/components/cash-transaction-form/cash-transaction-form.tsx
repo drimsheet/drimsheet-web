@@ -59,7 +59,9 @@ export function CashTransactionForm({
 
   const [singleEntryConfirmationOpen, setSingleEntryConfirmationOpen] =
     useState(false);
+
   const [isItemizedRowEditing, setIsItemizedRowEditing] = useState(false);
+
   const [initialItemizedEditItemId, setInitialItemizedEditItemId] =
     useState<string>();
 
@@ -86,6 +88,7 @@ export function CashTransactionForm({
         accounts,
         values.accountId
       );
+
     const officialRateMatches = cashTransactionFormHelpers.matchesOfficialRate(
       officialExchangeRate,
       accountCurrencyCode ?? '',
@@ -122,8 +125,10 @@ export function CashTransactionForm({
   const selectedAccount = accounts.find(
     (account) => account.id === formik.values.accountId
   );
+
   const accountCurrencyCode =
     selectedAccount?.balance.currencyCode ?? functionalCurrencyCode;
+
   const accountOpeningDate = selectedAccount?.openingBalanceDate;
 
   const itemizedTotal = cashTransactionFormHelpers.getItemTotal(
@@ -171,6 +176,7 @@ export function CashTransactionForm({
 
   const handleDateDisabled = (date: Date) => {
     if (!dateUtils.isNotInTheFuture(date)) return true;
+
     if (!accountOpeningDate) return false;
 
     return !dateUtils.isOnOrAfter(date, accountOpeningDate);
@@ -203,6 +209,7 @@ export function CashTransactionForm({
     const errors = await formik.validateForm();
     if (Object.keys(errors).length > 0) {
       await formik.submitForm();
+
       return;
     }
 
@@ -240,6 +247,7 @@ export function CashTransactionForm({
     if (firstItem) {
       void formik.setFieldValue('categoryId', firstItem.accountId);
     }
+
     void formik.setFieldValue('amount', {
       amount: itemizedTotal,
       currencyCode: formik.values.amount.currencyCode,
@@ -282,15 +290,18 @@ export function CashTransactionForm({
       accountCurrencyCode,
       functionalCurrencyCode
     );
+
   const interactionDisabled = disabled || loading || savingDraft;
 
   /**
    * Errors
    */
   const accountError = getErrorMessage('accountId');
+
   const amountError = formik.values.isItemized
     ? []
     : getErrorMessage('amount.amount');
+
   const dateError = getErrorMessage('date');
   const categoryError = getErrorMessage('categoryId');
   const exchangeRateError = getErrorMessage('exchangeRate');
@@ -311,12 +322,16 @@ export function CashTransactionForm({
   const description_label = t('description_label');
   const description_placeholder = t('description_placeholder');
   const exchange_rate_label = t('exchange_rate_label');
+
   const itemize_transaction_text = t(
     'cash_transaction_itemize_transaction_text'
   );
+
   const back_to_single_text = t('cash_transaction_back_to_single_entry_text');
+
   const counterparty_text_keys =
     cashTransactionFormHelpers.getCounterpartyTextKeys(variant);
+
   const counterparty_empty_text = t(counterparty_text_keys.empty);
   const counterparty_label = t(counterparty_text_keys.label);
   const counterparty_placeholder = t(counterparty_text_keys.placeholder);
@@ -324,12 +339,15 @@ export function CashTransactionForm({
   const attachment_action_text = t('cash_transaction_attachment_action_text');
   const attachment_replace_text = t('cash_transaction_attachment_replace_text');
   const attachment_remove_text = t('cash_transaction_attachment_remove_text');
+
   const attachment_guidance_text = t(
     'cash_transaction_attachment_guidance_text'
   );
+
   const return_title = t('cash_transaction_return_to_single_title');
   const return_description = t('cash_transaction_return_to_single_description');
   const return_cancel_text = t('cash_transaction_return_to_single_cancel_text');
+
   const return_confirm_text = t(
     'cash_transaction_return_to_single_confirm_text'
   );

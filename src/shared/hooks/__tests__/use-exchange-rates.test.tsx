@@ -39,9 +39,11 @@ describe('useExchangeRates', () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
+
     const wrapper = ({ children }: Readonly<{ children: ReactNode }>) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
+
     vi.mocked(currencyService.getExchangeRates).mockResolvedValue([
       officialRate,
     ]);

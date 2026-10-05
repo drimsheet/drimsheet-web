@@ -7,11 +7,13 @@ import cashTransferFormHelpers from './helper';
 import type { ICashTransferFormValues } from './types';
 
 const MAX_ATTACHMENT_SIZE_BYTES = 2 * 1024 * 1024;
+
 const ACCEPTED_ATTACHMENT_TYPES = new Set([
   'image/jpeg',
   'image/png',
   'application/pdf',
 ]);
+
 const ACCEPTED_ATTACHMENT_EXTENSIONS = ['.jpeg', '.jpg', '.png', '.pdf'];
 
 export interface ICashTransferFormValidationMessages {
@@ -151,6 +153,7 @@ export function createCashTransferFormValidation(
           function (value) {
             const values = this.parent as ICashTransferFormValues;
             if (!value || !values.sourceAccountId) return true;
+
             return value !== values.sourceAccountId;
           }
         ),
@@ -183,10 +186,13 @@ export function createCashTransferFormValidation(
           messages.dateBeforeAccountOpening,
           function (value) {
             if (!value) return true;
+
             const values = this.parent as ICashTransferFormValues;
+
             const sourceOpeningDate = sourceAccounts.find(
               (account) => account.id === values.sourceAccountId
             )?.openingBalanceDate;
+
             const destinationOpeningDate = destinationAccounts.find(
               (account) => account.id === values.destinationAccountId
             )?.openingBalanceDate;

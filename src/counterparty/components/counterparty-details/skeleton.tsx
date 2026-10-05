@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 export function CounterpartyDetailsSkeleton() {
   const { t } = useTranslation('counterparty');
   const loading_text = t('details_loading_text');
+
   return (
     <div className="flex flex-col gap-10" aria-busy="true">
       <output className="sr-only">{loading_text}</output>

@@ -6,9 +6,11 @@ import { Button } from '@/shared/components/button';
 export function FeatureNotAvailable() {
   const { t } = useTranslation('shared');
   const feature_not_available_title = t('feature_not_available_title');
+
   const feature_not_available_description = t(
     'feature_not_available_description'
   );
+
   const request_access_action = t('request_access_action');
 
   return (

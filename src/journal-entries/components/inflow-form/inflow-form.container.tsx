@@ -40,6 +40,7 @@ export function InflowFormContainer({
 
   const [currencyContext, setCurrencyContext] =
     useState<ICashTransactionCurrencyContext>();
+
   const [submissionIntent, setSubmissionIntent] = useState<
     'submit' | 'draft'
   >();
@@ -71,14 +72,18 @@ export function InflowFormContainer({
     useAccountingEntity(requiredQueryOptions);
 
   const functionalCurrencyCode = accountingEntity?.functionalCurrencyCode ?? '';
+
   const exchangeRateQuery = journalEntryMapper.toExchangeRateQuery(
     currencyContext,
     functionalCurrencyCode
   );
+
   const { data: officialExchangeRates } = useExchangeRates(exchangeRateQuery);
   const { mutateAsync: createReceipt } = useCreateReceipt();
+
   const { mutateAsync: rectifyJournalEntry, isPending: isRectifying } =
     useRectifyJournalEntry();
+
   const initialValues = useMemo(
     () =>
       journalEntry
@@ -109,6 +114,7 @@ export function InflowFormContainer({
         const attachments = values.attachment
           ? [await fileUploadService.uploadAttachment(values.attachment)]
           : journalEntry.attachments;
+
         const payload =
           journalEntryMapper.toReceiptJournalEntryRectificationReq(
             values,
@@ -123,7 +129,9 @@ export function InflowFormContainer({
         const attachmentReferences = values.attachment
           ? [await fileUploadService.uploadFile(values.attachment)]
           : [];
+
         const postedAt = intent === 'draft' ? null : new Date().toISOString();
+
         const payload = journalEntryMapper.toReceiptEntryReq(
           values,
           functionalCurrencyCode,
@@ -132,12 +140,15 @@ export function InflowFormContainer({
         );
 
         await createReceipt(payload);
+
         const successMessage =
           intent === 'draft'
             ? t('journal_entry_draft_saved_success_text')
             : t('inflow_receipt_created_success_text');
+
         toast.success(successMessage);
       }
+
       navigate('/transactions');
     } catch (error) {
       handleApiError(error, { showToast: true });

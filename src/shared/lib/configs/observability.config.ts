@@ -40,8 +40,10 @@ function normalizeDsn(value: string | undefined) {
 
   try {
     const parsedDsn = new URL(dsn);
+
     const isHttp =
       parsedDsn.protocol === 'https:' || parsedDsn.protocol === 'http:';
+
     const hasProjectId =
       parsedDsn.pathname.split('/').filter(Boolean).length > 0;
 
@@ -53,7 +55,9 @@ function normalizeDsn(value: string | undefined) {
 
 function getTracesSampleRate(environment: UObservabilityEnvironment) {
   if (environment === 'development' || environment === 'staging') return 1;
+
   if (environment === 'production') return 0.1;
+
   return 0;
 }
 
@@ -63,6 +67,7 @@ export function createObservabilityConfig(
   const configuredEnvironment = normalizeEnvironment(
     environmentVariables.VITE_APP_ENV
   );
+
   const environment = configuredEnvironment ?? 'local';
   const dsn = normalizeDsn(environmentVariables.VITE_SENTRY_DSN);
   const tracesSampleRate = getTracesSampleRate(environment);

@@ -134,6 +134,7 @@ describe('counterparty.mapper', () => {
         name: 'John Doe',
         type: 'individual',
       };
+
       const result = counterpartyMapper.toCounterpartyCreateReq(values);
       expect(result).toEqual({
         name: 'John Doe',
@@ -151,6 +152,7 @@ describe('counterparty.mapper', () => {
         displayName: 'Acme',
         address: {},
       };
+
       const result = counterpartyMapper.toVendorCreateReq(values);
       expect(result).toEqual({
         name: 'Acme Corp',
@@ -175,6 +177,7 @@ describe('counterparty.mapper', () => {
           countryCode: 'NG',
         },
       };
+
       const result = counterpartyMapper.toVendorCreateReq(values);
       expect(result).toEqual({
         name: 'Acme Corp',
@@ -207,6 +210,7 @@ describe('counterparty.mapper', () => {
           countryCode: 'NG',
         },
       };
+
       const result = counterpartyMapper.toContractorCreateReq(values);
       expect(result).toEqual({
         name: 'Jane Smith',
@@ -239,6 +243,7 @@ describe('counterparty.mapper', () => {
           countryCode: 'NG',
         },
       };
+
       const result = counterpartyMapper.toEmployerCreateReq(values);
       expect(result).toEqual({
         name: 'Tech Inc',
@@ -269,6 +274,7 @@ describe('counterparty.mapper', () => {
           countryCode: 'NG',
         },
       };
+
       const result = counterpartyMapper.toEmployerCreateReq(values);
       expect(result).toEqual({
         name: 'Tech Inc',

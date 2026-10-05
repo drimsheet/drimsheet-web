@@ -25,6 +25,7 @@ const coverageFileName = 'v8-coverage.json';
 
 async function findCoverageFiles(directory: string): Promise<string[]> {
   const entries = await readdir(directory, { withFileTypes: true });
+
   const files = await Promise.all(
     entries.map(async (entry) => {
       const entryPath = path.join(directory, entry.name);
@@ -117,6 +118,7 @@ export default class CoverageReporter implements Reporter {
       reports.create('text-summary').execute(context);
     } catch (error) {
       console.error('Failed to generate Playwright coverage:', error);
+
       return { status: 'failed' };
     }
 

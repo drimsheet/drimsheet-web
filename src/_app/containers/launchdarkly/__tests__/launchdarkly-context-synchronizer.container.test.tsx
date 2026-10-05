@@ -139,6 +139,7 @@ describe('LaunchDarklyContextSynchronizerContainer', () => {
     let completeIdentify:
       | ((value: { status: 'completed' }) => void)
       | undefined;
+
     identify.mockReturnValueOnce(
       new Promise((resolve) => {
         completeIdentify = resolve;

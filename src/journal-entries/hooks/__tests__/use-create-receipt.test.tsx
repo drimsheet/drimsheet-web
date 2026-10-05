@@ -65,6 +65,7 @@ describe('useCreateReceipt', () => {
   it('propagates service errors', async () => {
     const error = new Error('Receipt creation failed');
     vi.mocked(journalEntryService.createReceipt).mockRejectedValue(error);
+
     const { result } = renderHook(() => useCreateReceipt(), {
       wrapper: createWrapper(),
     });

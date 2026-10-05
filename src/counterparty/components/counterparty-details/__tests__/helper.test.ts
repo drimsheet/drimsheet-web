@@ -8,6 +8,7 @@ const address = {
   region: 'Lagos',
   countryCode: 'NG',
 };
+
 const party: ICounterpartyDto = {
   id: 'one',
   accountingEntityId: 'entity',

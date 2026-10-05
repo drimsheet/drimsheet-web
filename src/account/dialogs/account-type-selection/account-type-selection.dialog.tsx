@@ -7,13 +7,7 @@ import {
 } from '@/shared/components/dialog';
 import type { ULedgerAccountBehavior } from '@/shared/lib/api/Api';
 import { useTranslation } from 'react-i18next';
-
-export interface AccountTypeSelectionDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (value: ULedgerAccountBehavior) => void;
-  defaultValue?: ULedgerAccountBehavior;
-}
+import type { AccountTypeSelectionDialogProps } from './types';
 
 export function AccountTypeSelectionDialog({
   open,

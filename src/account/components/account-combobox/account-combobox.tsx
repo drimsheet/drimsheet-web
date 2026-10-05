@@ -76,6 +76,7 @@ export function AccountCombobox({
 
   const resolved_placeholder =
     placeholder ?? t('ledger-accounts:select_account_placeholder');
+
   const resolved_empty_message =
     emptyMessage ?? t('ledger-accounts:no_accounts_found');
 

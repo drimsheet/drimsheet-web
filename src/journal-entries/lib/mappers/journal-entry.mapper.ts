@@ -104,6 +104,7 @@ function toJournalCounterpartyReq(
   };
 
   if (value.id !== undefined) counterparty.id = value.id;
+
   if (value.type !== undefined) counterparty.type = value.type;
 
   return counterparty;
@@ -499,6 +500,7 @@ function resolveRectificationLineId(
   isItemized: boolean
 ) {
   if (itemId && originalIds.has(itemId)) return itemId;
+
   if (!isItemized) return findReusableLineId(originalLines, accountId);
 
   return undefined;
@@ -515,11 +517,14 @@ function toPaymentJournalEntryRectificationReq(
     functionalCurrencyCode,
     journalEntry.postedAt ?? journalEntry.createdAt
   );
+
   const originalLines = [...journalEntry.lines].sort(
     (left, right) => left.sequenceOrder - right.sequenceOrder
   );
+
   const sourceLine = originalLines[0];
   const destinationLines = originalLines.slice(1);
+
   const originalDestinationIds = new Set(
     destinationLines.map((line) => line.id)
   );
@@ -537,6 +542,7 @@ function toPaymentJournalEntryRectificationReq(
     ),
     destinationLines: payment.destinationLines.map((line, index) => {
       const itemId = values.isItemized ? values.items[index]?.id : undefined;
+
       const id = resolveRectificationLineId(
         itemId,
         originalDestinationIds,
@@ -561,9 +567,11 @@ function toReceiptJournalEntryRectificationReq(
     functionalCurrencyCode,
     journalEntry.postedAt ?? journalEntry.createdAt
   );
+
   const originalLines = [...journalEntry.lines].sort(
     (left, right) => left.sequenceOrder - right.sequenceOrder
   );
+
   const destinationLine = originalLines.at(-1);
   const sourceLines = originalLines.slice(0, -1);
   const originalSourceIds = new Set(sourceLines.map((line) => line.id));
@@ -577,6 +585,7 @@ function toReceiptJournalEntryRectificationReq(
     sourceType: 'receipt',
     sourceLines: receipt.sourceLines.map((line, index) => {
       const itemId = values.isItemized ? values.items[index]?.id : undefined;
+
       const id = resolveRectificationLineId(
         itemId,
         originalSourceIds,
@@ -605,9 +614,11 @@ function toTransferJournalEntryRectificationReq(
     functionalCurrencyCode,
     journalEntry.postedAt ?? journalEntry.createdAt
   );
+
   const originalLines = [...journalEntry.lines].sort(
     (left, right) => left.sequenceOrder - right.sequenceOrder
   );
+
   const chargeLines = originalLines.slice(2);
   const originalChargeIds = new Set(chargeLines.map((line) => line.id));
 

@@ -15,11 +15,13 @@ export function EditTransactionPage() {
   const navigate = useNavigate();
   const { type, id } = useParams<{ type: string; id: string }>();
   const routeSourceType = journalEntryRouteMapper.toSourceType(type);
+
   const {
     data: journalEntry,
     isError,
     isPending,
   } = useJournalEntry(routeSourceType ? id : undefined);
+
   const handleBack = () => navigate('/transactions');
 
   if (!id || !routeSourceType) {

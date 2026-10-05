@@ -27,6 +27,7 @@ export const Default: Story = {};
 export const Interactive: Story = {
   render: (args) => {
     const [file, setFile] = useState<File | null>(null);
+
     return <FileUpload {...args} value={file} onValueChange={setFile} />;
   },
 };

@@ -67,8 +67,10 @@ export const AnimatedThemeToggler = forwardRef<
         const x = left + width / 2;
         const y = top + height / 2;
         const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+
         const viewportHeight =
           window.visualViewport?.height ?? window.innerHeight;
+
         const maxRadius = Math.hypot(
           Math.max(x, viewportWidth - x),
           Math.max(y, viewportHeight - y)
@@ -76,9 +78,11 @@ export const AnimatedThemeToggler = forwardRef<
 
         const applyTheme = () => {
           const newTheme = !isDark;
+
           const theme = newTheme
             ? EAppThemePreference.Dark
             : EAppThemePreference.Light;
+
           setIsDark(newTheme);
           document.documentElement.classList.toggle('dark');
           storageService.set({ theme });
@@ -87,6 +91,7 @@ export const AnimatedThemeToggler = forwardRef<
 
         if (typeof document.startViewTransition !== 'function') {
           applyTheme();
+
           return;
         }
 

@@ -8,6 +8,7 @@ import {
 
 async function getLedgerAccounts(query: IGetLedgerAccountsQuery) {
   const response = await drimsheetApi.ledger.getLedgerAccounts(query);
+
   return response.data;
 }
 
@@ -21,6 +22,7 @@ function getPettyBaseCashFilters(): IGetLedgerAccountsQuery {
 
 async function getLedgerAccount(id: string) {
   const res = await drimsheetApi.ledger.getLedgerAccount(id);
+
   return res.data;
 }
 
@@ -28,6 +30,7 @@ async function getPermittedPostingAccounts(
   query: IGetPermittedPostingAccountsQuery
 ) {
   const res = await drimsheetApi.ledger.getPermittedPostingAccounts(query);
+
   return res.data;
 }
 

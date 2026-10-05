@@ -13,6 +13,7 @@ export function FeatureFlagGuard({
   const synchronizationState = useLaunchDarklyContextSynchronization();
   const hasFeatureAccess = useFeatureFlags(flagKeys);
   const loading_application_label = t('loading_application_status');
+
   const feature_flag_synchronization_error = t(
     'feature_flag_synchronization_error'
   );

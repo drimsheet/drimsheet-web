@@ -8,33 +8,13 @@ import {
   ComboboxTrigger,
 } from '@/shared/components/combobox';
 import { CurrencyLogo } from '@/shared/components/currency-logo';
-import {
-  MoneyInput,
-  type MoneyInputProps,
-} from '@/shared/components/money-input';
+import { MoneyInput } from '@/shared/components/money-input';
 import countries from '@/shared/configs/countries.json' with { type: 'json' };
 import uiCurrencies from '@/shared/configs/currencies.json' with { type: 'json' };
 import { type ICurrencyDto, type IMoneyDto } from '@/shared/lib/api/Api';
 import { cn } from '@/shared/lib/utils/cn';
-import type { ChangeEvent } from 'react';
 import { forwardRef, useMemo, useRef, useState } from 'react';
-
-export interface MoneyWithCurrencyInputProps extends Omit<
-  MoneyInputProps,
-  'className' | 'currencyCode' | 'onChange' | 'value'
-> {
-  amountClassName?: string;
-  className?: string;
-  currencies?: ICurrencyDto[];
-  currencyDisabled?: boolean;
-  currencyLabel?: string;
-  currencyLabelFormat?: 'code' | 'symbol' | 'none';
-  onChange?: (value: IMoneyDto, event?: ChangeEvent<HTMLInputElement>) => void;
-  searchLabel?: string;
-  searchPlaceholder?: string;
-  showFlag?: boolean;
-  value?: IMoneyDto;
-}
+import type { MoneyWithCurrencyInputProps } from './types';
 
 interface CurrencyOption extends ICurrencyDto {
   logo: string;
@@ -135,6 +115,7 @@ const MoneyWithCurrencyInput = forwardRef<
 
     const currencyCodeLabel =
       selectedCurrency?.code || value?.currencyCode || 'Currency';
+
     const currencyDisplayLabel =
       currencyLabelFormat === 'code'
         ? currencyCodeLabel

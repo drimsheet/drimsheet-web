@@ -18,6 +18,7 @@ export function AccountTypeSelection({
   className,
 }: Readonly<AccountTypeSelectionProps>) {
   const { t } = useTranslation(['ledger-accounts']);
+
   const [internalSelected, setInternalSelected] = useState(
     value ?? defaultValue
   );
@@ -61,6 +62,7 @@ export function AccountTypeSelection({
 
   const handleSelect = (optionValue: ULedgerAccountBehavior) => {
     if (disabled) return;
+
     if (value === undefined) {
       setInternalSelected(optionValue);
     }
@@ -68,6 +70,7 @@ export function AccountTypeSelection({
 
   const handleSubmit = () => {
     if (!canSubmit || !selectedValue) return;
+
     onSubmit?.(selectedValue);
   };
 

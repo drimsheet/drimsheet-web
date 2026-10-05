@@ -133,6 +133,7 @@ describe('CounterpartiesTable', () => {
     const searchInput = screen.getByPlaceholderText(
       /search counterparties.../i
     );
+
     await user.type(searchInput, 'Alice');
 
     expect(onSearchChange).toHaveBeenCalled();

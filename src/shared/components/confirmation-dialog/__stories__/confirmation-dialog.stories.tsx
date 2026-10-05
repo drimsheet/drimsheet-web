@@ -26,14 +26,17 @@ const meta = {
   },
   render: function Render(args) {
     const [, updateArgs] = useArgs();
+
     const handleConfirm = () => {
       args.onConfirm();
       updateArgs({ open: false });
     };
+
     const handleOpenChange = (open: boolean) => {
       args.onOpenChange(open);
       updateArgs({ open });
     };
+
     return (
       <ConfirmationDialog
         {...args}

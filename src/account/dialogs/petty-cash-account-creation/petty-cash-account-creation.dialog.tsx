@@ -19,11 +19,7 @@ import { useExchangeRates } from '@/shared/hooks/use-exchange-rates';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-
-export interface PettyCashAccountCreationDialogProps {
-  open: boolean;
-  onClose: () => void;
-}
+import type { PettyCashAccountCreationDialogProps } from './types';
 
 const defaultExchangeRateContext: IOpeningBalanceExchangeRateContext = {
   currencyCode: '',
@@ -37,20 +33,24 @@ export function PettyCashAccountCreationDialog({
 }: Readonly<PettyCashAccountCreationDialogProps>) {
   const { t } = useTranslation(['ledger-accounts', 'shared']);
   const handleApiError = useApiErrorHandler();
+
   const [exchangeRateContext, setExchangeRateContext] =
     useState<IOpeningBalanceExchangeRateContext>(defaultExchangeRateContext);
 
   const { data: currencies = [], isPending: isCurrenciesPending } =
     useCurrencies();
+
   const { data: accountingEntity, isPending: isAccountingEntityPending } =
     useAccountingEntity();
 
   const accountingCurrencyCode = accountingEntity?.functionalCurrencyCode ?? '';
+
   const exchangeRateQuery =
     assetAccountMapper.toOpeningBalanceExchangeRateQuery(
       exchangeRateContext,
       accountingCurrencyCode
     );
+
   const { data: officialExchangeRates } = useExchangeRates(exchangeRateQuery);
   const officialExchangeRate = officialExchangeRates?.[0];
 
@@ -78,6 +78,7 @@ export function PettyCashAccountCreationDialog({
         accountingCurrencyCode,
         officialExchangeRate
       );
+
       await createPettyCashAccount(request);
       toast.success(
         t('ledger-accounts:petty_cash_account_created_success_text')
@@ -91,6 +92,7 @@ export function PettyCashAccountCreationDialog({
   const create_petty_cash_account_title = t(
     'ledger-accounts:create_petty_cash_account'
   );
+
   const create_petty_cash_account_description = t(
     'ledger-accounts:create_petty_cash_account_description'
   );

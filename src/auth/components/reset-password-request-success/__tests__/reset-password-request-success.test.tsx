@@ -25,6 +25,7 @@ describe('RequestPasswordResetSuccess', () => {
       const retryButton = screen.getByRole('button', {
         name: /Retry in 30s/i,
       });
+
       expect(retryButton).toBeInTheDocument();
       expect(retryButton).toBeDisabled();
     });
@@ -79,6 +80,7 @@ describe('RequestPasswordResetSuccess', () => {
       const signInLink = screen.getByRole('link', {
         name: /Back to sign in/i,
       });
+
       expect(signInLink).toBeInTheDocument();
       expect(signInLink).toHaveAttribute('href', '/auth/signin');
     });

@@ -14,11 +14,13 @@ export const currencyService = {
 
   async getAll() {
     const res = await drimsheetApi.currencies.getAllCurrencies();
+
     return res.data;
   },
 
   async getExchangeRates(query: IExchangeRateQueryParam) {
     const res = await drimsheetApi.currencies.getExchangeRates(query);
+
     return res.data;
   },
 
@@ -26,6 +28,7 @@ export const currencyService = {
     const jurisdiction = countries.find(
       (country) => country.currencyCode === currencyCode
     );
+
     return jurisdiction?.locale ?? 'en-NG';
   },
 };

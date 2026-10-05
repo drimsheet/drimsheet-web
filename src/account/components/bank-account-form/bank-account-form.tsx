@@ -48,10 +48,12 @@ export function BankAccountForm({
   onSubmit,
 }: Readonly<BankAccountFormProps>) {
   const { t } = useTranslation<'ledger-accounts'>('ledger-accounts');
+
   const validationSchema = useBankAccountFormValidation(
     accountingCurrencyCode,
     officialExchangeRate
   );
+
   const handleSubmit = (values: IBankAccountFormValues) => onSubmit(values);
 
   const formik = useFormik<IBankAccountFormValues>({
@@ -90,6 +92,7 @@ export function BankAccountForm({
     if (checked) {
       formik.setFieldValue('exchangeRate', null);
     }
+
     onExchangeRateContextChange({
       currencyCode: formik.values.currencyCode,
       date: formik.values.openingDate,

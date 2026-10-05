@@ -17,6 +17,7 @@ export function EntryOverview({
 }: Readonly<EntryOverviewProps>) {
   const { t } = useTranslation('journal-entries');
   const entry_overview_menu_label = t('entry_overview_menu_label');
+
   return (
     <article className="flex items-center gap-3 rounded-lg border bg-card p-4">
       <div className="min-w-0 flex-1">

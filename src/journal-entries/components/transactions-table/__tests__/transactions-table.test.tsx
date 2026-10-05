@@ -217,9 +217,11 @@ describe('TransactionsTable', () => {
     const paymentRow = screen
       .getByText('Payment to Osahon Oboite & 1 other')
       .closest('tr');
+
     const receiptRow = screen
       .getByText('Receipt from Osahon Oboite')
       .closest('tr');
+
     const transferRow = screen
       .getByText('USD account → Main checking')
       .closest('tr');
@@ -314,11 +316,13 @@ describe('TransactionsTable', () => {
     const openButtons = screen.getAllByRole('button', {
       name: 'Open transaction',
     });
+
     await user.click(openButtons[0]);
 
     const outflowDrawer = screen.getByRole('dialog', {
       name: 'Transaction details',
     });
+
     expect(within(outflowDrawer).getByText('Outflow')).toBeInTheDocument();
     expect(
       within(outflowDrawer).getByText('Main checking')
@@ -334,9 +338,11 @@ describe('TransactionsTable', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     await user.click(openButtons[1]);
+
     const inflowDrawer = screen.getByRole('dialog', {
       name: 'Transaction details',
     });
+
     expect(within(inflowDrawer).getByText('Inflow')).toBeInTheDocument();
     expect(
       within(inflowDrawer).getByText('Professional services')
@@ -346,9 +352,11 @@ describe('TransactionsTable', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     await user.click(openButtons[2]);
+
     const transferDrawer = screen.getByRole('dialog', {
       name: 'Transaction details',
     });
+
     expect(within(transferDrawer).getByText('Transfer')).toBeInTheDocument();
     expect(within(transferDrawer).getByText('USD account')).toBeInTheDocument();
     expect(

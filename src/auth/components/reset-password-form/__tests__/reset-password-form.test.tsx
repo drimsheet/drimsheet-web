@@ -33,6 +33,7 @@ describe('ResetPasswordForm', () => {
 
     const passwordInput = screen.getByLabelText(/New Password/i);
     const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
+
     const submitButton = screen.getByRole('button', {
       name: /Reset password/i,
     });
@@ -58,6 +59,7 @@ describe('ResetPasswordForm', () => {
     );
 
     const passwordInput = screen.getByLabelText(/New Password/i);
+
     const submitButton = screen.getByRole('button', {
       name: /Reset password/i,
     });
@@ -98,6 +100,7 @@ describe('ResetPasswordForm', () => {
 
     const passwordInput = screen.getByLabelText(/New Password/i);
     const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
+
     const submitButton = screen.getByRole('button', {
       name: /Reset password/i,
     });
@@ -123,6 +126,7 @@ describe('ResetPasswordForm', () => {
 
     const passwordInput = screen.getByLabelText(/New Password/i);
     const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
+
     const submitButton = screen.getByRole('button', {
       name: /Reset password/i,
     });
@@ -154,6 +158,7 @@ describe('ResetPasswordForm', () => {
 
     const passwordInput = screen.getByLabelText(/New Password/i);
     const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
+
     const submitButton = screen.getByRole('button', {
       name: /Reset password/i,
     });

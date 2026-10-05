@@ -7,13 +7,7 @@ import {
   DialogTitle,
 } from '@/shared/components/dialog';
 import { useTranslation } from 'react-i18next';
-
-export interface CounterpartyRoleSelectionDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (value: UCounterpartyRoleSelectValue) => void;
-  defaultValue?: UCounterpartyRoleSelectValue;
-}
+import type { CounterpartyRoleSelectionDialogProps } from './types';
 
 export function CounterpartyRoleSelectionDialog({
   open,

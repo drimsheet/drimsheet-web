@@ -26,6 +26,7 @@ function ComboboxTrigger({
 }: Readonly<ComboboxPrimitive.Trigger.Props & { showIcon?: boolean }>) {
   const { t } = useTranslation<'shared'>('shared');
   const open_options_aria_label = t('open_options_aria_label');
+
   const resolvedAriaLabel =
     ariaLabel ?? (children ? undefined : open_options_aria_label);
 

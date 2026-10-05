@@ -64,6 +64,7 @@ describe('journalEntryService', () => {
       },
       destinationLines: [],
     } satisfies TJournalEntryRectificationReq;
+
     vi.mocked(
       drimsheetApi.journalEntries.rectifyJournalEntry
     ).mockResolvedValue({

@@ -192,7 +192,9 @@ export const catalog = {
 export function accountId(index: number) {
   return `00000000-0000-4000-8000-${String(index).padStart(12, '0')}` as TEntityId;
 }
+
 export const records = Object.values(catalog).flat();
+
 function baseAccount(index: number, name: string): ILedgerAccountDto {
   return {
     id: accountId(index),
@@ -216,6 +218,7 @@ function baseAccount(index: number, name: string): ILedgerAccountDto {
     functionalBalance: { amount: 0, currencyCode: 'NGN', isMinorUnit: true },
   };
 }
+
 export const headers: ILedgerAccountDto[] = [
   {
     ...baseAccount(100, accountingLocale.header_cash_and_cash_equivalent_name),
@@ -581,25 +584,30 @@ export async function registerOnboardingRoutes(
     calls: [],
     failed: false,
   };
+
   const failure = {
     name: 'AccountingError',
     errorKey: 'accounting_error_accounting_entity_type_invalid',
     validationErrors: [],
   };
+
   const log = (
     path: string,
     method: string,
     body?: unknown,
     entityId?: string
   ) => state.calls.push({ path, method, body, entityId });
+
   await page.route(
     '**/api/v1/accounting/accounting-entities',
     async (route) => {
       log('/accounting/accounting-entities', 'GET');
       if (options.failRefresh && state.createdAccounts.length === 18) {
         await route.fulfill({ status: 500, json: failure });
+
         return;
       }
+
       await route.fulfill({
         json: state.entityCreated ? [state.activeEntity] : [],
       });
@@ -614,8 +622,10 @@ export async function registerOnboardingRoutes(
         status: state.entityCreated ? 200 : 404,
         json: state.entityCreated ? state.activeEntity : failure,
       });
+
       return;
     }
+
     const body = request.postDataJSON() as IAccountingEntityCreationDto;
     log('/accounting/accounting-entity', method, body);
     state.activeEntity = {
@@ -646,17 +656,22 @@ export async function registerOnboardingRoutes(
     if (request.method() === 'GET') {
       log(path, 'GET');
       await route.fulfill({ json: catalog });
+
       return;
     }
+
     const body = request.postDataJSON() as { name: string };
     const index = postings.findIndex((record) => record.name === body.name);
     log(path, 'POST', body, request.headers()['x-accounting-entity-id']);
     await options.beforePosting?.(index);
     if (index < 0) {
       await route.fulfill({ status: 400, json: failure });
+
       return;
     }
+
     const template = postings[index];
+
     const row = {
       ...template,
       balance: {
@@ -668,13 +683,17 @@ export async function registerOnboardingRoutes(
         currencyCode: state.activeEntity.functionalCurrencyCode,
       },
     };
+
     const fail = options.failPostingIndex === index && !state.failed;
     if (!fail) state.createdAccounts.push(row);
+
     if (fail) {
       state.failed = true;
       await route.fulfill({ status: 500, json: failure });
+
       return;
     }
+
     await route.fulfill({ status: 201, json: row });
   });
   await page.route('**/api/v1/ledger/header-accounts/setup', async (route) => {
@@ -686,12 +705,16 @@ export async function registerOnboardingRoutes(
     );
     const fail = options.failHeader && !state.failed;
     if (!fail) state.headersCreated = true;
+
     if (fail) {
       state.failed = true;
       await route.fulfill({ status: 500, json: failure });
+
       return;
     }
+
     await route.fulfill({ status: 201, json: headers });
   });
+
   return state;
 }

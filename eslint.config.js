@@ -2,6 +2,7 @@
 import storybook from 'eslint-plugin-storybook';
 
 import js from '@eslint/js';
+import stylistic from '@stylistic/eslint-plugin';
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
@@ -30,9 +31,27 @@ export default defineConfig([
       globals: globals.browser,
     },
     plugins: {
+      '@stylistic': stylistic,
       'no-relative-import-paths': noRelativeImportPaths,
     },
     rules: {
+      '@stylistic/padding-line-between-statements': [
+        'error',
+        { blankLine: 'always', prev: '*', next: 'return' },
+        {
+          blankLine: 'always',
+          prev: '*',
+          next: ['multiline-const', 'multiline-let', 'multiline-var'],
+        },
+        {
+          blankLine: 'always',
+          prev: ['multiline-const', 'multiline-let', 'multiline-var'],
+          next: '*',
+        },
+        { blankLine: 'always', prev: '*', next: 'function' },
+        { blankLine: 'always', prev: 'function', next: '*' },
+        { blankLine: 'always', prev: ['block-like', 'if'], next: '*' },
+      ],
       'no-nested-ternary': 'error',
       'no-relative-import-paths/no-relative-import-paths': [
         'warn',

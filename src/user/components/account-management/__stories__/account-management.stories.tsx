@@ -5,6 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const timestamp = '2026-01-01T00:00:00.000Z';
 const ownerId = '00000000-0000-4000-8000-000000000100' as TEntityId;
+
 const activeEntity = {
   id: '00000000-0000-4000-8000-000000000001' as TEntityId,
   name: 'Drimsheet',
@@ -16,6 +17,7 @@ const activeEntity = {
   createdAt: timestamp,
   updatedAt: timestamp,
 } satisfies IAccountingEntity;
+
 const otherEntity = {
   ...activeEntity,
   id: '00000000-0000-4000-8000-000000000002' as TEntityId,

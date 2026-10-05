@@ -56,10 +56,13 @@ describe('CurrencySelect', () => {
     const logoDivs = document.querySelectorAll(
       'div[style*="background-image"]'
     );
+
     const hasNgIcon = Array.from(logoDivs).some((div) => {
       const element = div as HTMLElement;
+
       return element.style.backgroundImage.includes('ng.png');
     });
+
     expect(hasNgIcon).toBe(true);
     expect(screen.getByRole('combobox')).toHaveValue('Nigerian Naira');
   });
@@ -83,6 +86,7 @@ describe('CurrencySelect', () => {
     const option = await screen.findByRole('option', {
       name: /Nigerian Naira/i,
     });
+
     expect(option).toBeInTheDocument();
 
     await user.click(option);

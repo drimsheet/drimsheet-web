@@ -48,6 +48,7 @@ function DateInput({
   const [open, setOpen] = useState(false);
 
   const selectedDate = parseDateValue(value);
+
   const displayValue = selectedDate
     ? dateUtils.formatWithJurisdiction(selectedDate, countryCode)
     : placeholder;

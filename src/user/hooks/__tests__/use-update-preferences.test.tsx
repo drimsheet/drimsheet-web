@@ -35,10 +35,13 @@ describe('useUpdatePreferences', () => {
     const queryClient = new QueryClient({
       defaultOptions: { mutations: { retry: false } },
     });
+
     vi.mocked(userService.updatePreferences).mockResolvedValue(preferences);
+
     const wrapper = ({ children }: Readonly<{ children: ReactNode }>) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
+
     const { result } = renderHook(() => useUpdatePreferences(), { wrapper });
 
     await act(async () => {

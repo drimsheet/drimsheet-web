@@ -43,6 +43,7 @@ export function CurrencySelect({
   const mappedCurrencies = useMemo(() => {
     return currencies.map((c) => {
       const uiCurrency = uiCurrencies.find((uc) => uc.code === c.code);
+
       return {
         ...c,
         logo: uiCurrency?.logo || '',
@@ -58,6 +59,7 @@ export function CurrencySelect({
 
   const mapItemToStringLabel = (item: ICurrency | null) => {
     if (!item) return '';
+
     return displayCode ? item.code : item.name;
   };
 
@@ -67,6 +69,7 @@ export function CurrencySelect({
     const matchingCountries = countries.filter((c) =>
       c.name.toLowerCase().includes(lowerVal)
     );
+
     const matchingCurrencyCodes = new Set(
       matchingCountries.map((c) => c.currencyCode)
     );

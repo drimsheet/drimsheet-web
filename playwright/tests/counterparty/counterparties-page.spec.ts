@@ -168,9 +168,11 @@ test.describe('Counterparties Page Flow', () => {
     const activeBadges = page
       .getByRole('cell')
       .getByText('Active', { exact: true });
+
     const archivedBadges = page
       .getByRole('cell')
       .getByText('Archived', { exact: true });
+
     await expect(activeBadges).toHaveCount(3);
     await expect(archivedBadges).toHaveCount(1);
 
@@ -239,6 +241,7 @@ test.describe('Counterparties Page Flow', () => {
 
     const requestPromise = page.waitForRequest((req) => {
       const url = new URL(req.url());
+
       return (
         req.method() === 'GET' &&
         url.pathname.includes('/api/v1/counterparties') &&
@@ -348,6 +351,7 @@ test.describe('Counterparties Page Flow', () => {
 
     const requestPromise = page.waitForRequest((req) => {
       const url = new URL(req.url());
+
       return (
         req.method() === 'GET' &&
         url.pathname.includes('/api/v1/counterparties') &&
@@ -393,6 +397,7 @@ test.describe('Counterparties Page Flow', () => {
 
     const requestPromise = page.waitForRequest((req) => {
       const url = new URL(req.url());
+
       return (
         req.method() === 'GET' &&
         url.pathname.includes('/api/v1/counterparties') &&
@@ -432,6 +437,7 @@ test.describe('Counterparties Page Flow', () => {
     const selectionDialog = page.getByRole('dialog').filter({
       has: page.getByRole('heading', { name: /select counterparty role/i }),
     });
+
     await expect(selectionDialog).toBeVisible();
   });
 });

@@ -36,6 +36,7 @@ const officialExchangeRate = {
 
 function renderForm(props?: Partial<PettyCashAccountFormProps>) {
   const onSubmit = props?.onSubmit ?? vi.fn();
+
   const onExchangeRateContextChange =
     props?.onExchangeRateContextChange ?? vi.fn();
 
@@ -134,6 +135,7 @@ describe('PettyCashAccountForm', () => {
 
   it('submits a valid same-currency account', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: validInitialValues,
     });
@@ -155,6 +157,7 @@ describe('PettyCashAccountForm', () => {
 
   it('uses an official exchange rate when no manual rate is entered', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: {
         ...validInitialValues,
@@ -177,6 +180,7 @@ describe('PettyCashAccountForm', () => {
 
   it('preserves an inverted foreign-currency rate through submission', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: {
         ...validInitialValues,
@@ -199,6 +203,7 @@ describe('PettyCashAccountForm', () => {
 
   it('reports foreign currency context and clears it when opening without a balance', async () => {
     const user = userEvent.setup();
+
     const { onExchangeRateContextChange } = renderForm({
       initialValues: validInitialValues,
     });
@@ -225,6 +230,7 @@ describe('PettyCashAccountForm', () => {
 
   it('submits the selected sub-account state', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: validInitialValues,
     });
@@ -241,6 +247,7 @@ describe('PettyCashAccountForm', () => {
 
   it('submits form values unchanged when creating without a balance', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: {
         ...validInitialValues,

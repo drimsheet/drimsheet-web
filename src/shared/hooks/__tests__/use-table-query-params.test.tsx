@@ -64,6 +64,7 @@ describe('useTableQueryParams', () => {
       () => {
         const qParams = useTableQueryParams();
         const loc = useLocation();
+
         return { qParams, loc };
       },
       { wrapper }
@@ -89,6 +90,7 @@ describe('useTableQueryParams', () => {
       () => {
         const qParams = useTableQueryParams();
         const loc = useLocation();
+
         return { qParams, loc };
       },
       { wrapper }
@@ -112,6 +114,7 @@ describe('useTableQueryParams', () => {
       () => {
         const qParams = useTableQueryParams();
         const loc = useLocation();
+
         return { qParams, loc };
       },
       { wrapper }
@@ -143,6 +146,7 @@ describe('useTableQueryParams', () => {
       () => {
         const qParams = useTableQueryParams();
         const loc = useLocation();
+
         return { qParams, loc };
       },
       { wrapper }
@@ -178,6 +182,7 @@ describe('useTableQueryParams', () => {
       () => {
         const qParams = useTableQueryParams({ filterKeys: ['status', 'type'] });
         const loc = useLocation();
+
         return { qParams, loc };
       },
       { wrapper }

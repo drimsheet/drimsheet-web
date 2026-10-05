@@ -45,6 +45,7 @@ export function TransactionDetails({
   } else if (details.direction === EJournalEntrySourceType.Receipt) {
     const hasLocalValue =
       details.amount.currencyCode !== details.functionalAmount.currencyCode;
+
     summary = {
       icon: (
         <BalanceEffectIcon
@@ -60,6 +61,7 @@ export function TransactionDetails({
   } else {
     const hasLocalValue =
       details.amount.currencyCode !== details.functionalAmount.currencyCode;
+
     summary = {
       icon: (
         <BalanceEffectIcon
@@ -132,6 +134,7 @@ export function TransactionDetails({
                 'transaction_details_open_attachment_action',
                 { name: attachment.name }
               );
+
               const attachmentType =
                 attachment.type.split('/').at(-1)?.toUpperCase() ||
                 attachment.type;

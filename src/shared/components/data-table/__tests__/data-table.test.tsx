@@ -80,6 +80,7 @@ describe('DataTable', () => {
   it('preserves custom header priority and a null cell renderer result', () => {
     const headerRender = vi.fn(() => null);
     const renderHeader = vi.fn(() => 'Legacy header');
+
     const customColumns: ITableColumn<ITestRow>[] = [
       {
         dataIndex: 'name',
