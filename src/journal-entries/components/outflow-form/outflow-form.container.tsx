@@ -40,6 +40,7 @@ export function OutflowFormContainer({
 
   const [currencyContext, setCurrencyContext] =
     useState<ICashTransactionCurrencyContext>();
+
   const [submissionIntent, setSubmissionIntent] = useState<
     'submit' | 'draft'
   >();
@@ -71,14 +72,18 @@ export function OutflowFormContainer({
     useAccountingEntity(requiredQueryOptions);
 
   const functionalCurrencyCode = accountingEntity?.functionalCurrencyCode ?? '';
+
   const exchangeRateQuery = journalEntryMapper.toExchangeRateQuery(
     currencyContext,
     functionalCurrencyCode
   );
+
   const { data: officialExchangeRates } = useExchangeRates(exchangeRateQuery);
   const { mutateAsync: createPayment } = useCreatePayment();
+
   const { mutateAsync: rectifyJournalEntry, isPending: isRectifying } =
     useRectifyJournalEntry();
+
   const initialValues = useMemo(
     () =>
       journalEntry
@@ -109,6 +114,7 @@ export function OutflowFormContainer({
         const attachments = values.attachment
           ? [await fileUploadService.uploadAttachment(values.attachment)]
           : journalEntry.attachments;
+
         const payload =
           journalEntryMapper.toPaymentJournalEntryRectificationReq(
             values,
@@ -123,7 +129,9 @@ export function OutflowFormContainer({
         const attachmentReferences = values.attachment
           ? [await fileUploadService.uploadFile(values.attachment)]
           : [];
+
         const postedAt = intent === 'draft' ? null : new Date().toISOString();
+
         const payload = journalEntryMapper.toPaymentEntryReq(
           values,
           functionalCurrencyCode,
@@ -132,12 +140,15 @@ export function OutflowFormContainer({
         );
 
         await createPayment(payload);
+
         const successMessage =
           intent === 'draft'
             ? t('journal_entry_draft_saved_success_text')
             : t('outflow_payment_created_success_text');
+
         toast.success(successMessage);
       }
+
       navigate('/transactions');
     } catch (error) {
       handleApiError(error, { showToast: true });

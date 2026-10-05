@@ -14,6 +14,7 @@ function toAccountingEntityCreationDto(
 ): IAccountingEntityCreationDto {
   const fiscalYearStart = values.fiscalYearStart!;
   const fiscalYearEnd = values.fiscalYearEnd!;
+
   const periodCount = dateUtils.getDurationInMonths(
     fiscalYearStart,
     fiscalYearEnd

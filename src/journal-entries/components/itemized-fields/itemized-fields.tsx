@@ -23,6 +23,7 @@ export function ItemizedFields({
   onEditModeChange,
 }: Readonly<ItemizedFieldsProps>) {
   const { t } = useTranslation<'journal-entries'>('journal-entries');
+
   const [items, setItems] = useState<IItemizedFieldValue[]>(() =>
     defaultValue.map((item) => ({
       id: item.id,
@@ -35,10 +36,12 @@ export function ItemizedFields({
       description: item.description,
     }))
   );
+
   const [draftItem, setDraftItem] = useState<IItemizedFieldValue | null>(() => {
     const initialEditItem = defaultValue.find(
       (item) => item.id === initialEditItemId
     );
+
     if (!initialEditItem) return null;
 
     return {
@@ -52,6 +55,7 @@ export function ItemizedFields({
       description: initialEditItem.description,
     };
   });
+
   const [saveAttempted, setSaveAttempted] = useState(false);
 
   const draftErrors = draftItem
@@ -71,6 +75,7 @@ export function ItemizedFields({
   const draftReplacesCommittedItem = Boolean(
     draftItem && items.some((item) => item.id === draftItem.id)
   );
+
   const availableAccounts =
     excludeSelectedAccounts && draftItem
       ? itemizedFieldsHelpers.getAvailableAccounts(accounts, items, draftItem)
@@ -143,6 +148,7 @@ export function ItemizedFields({
       accountId: draftItem.accountId,
       description: draftItem.description,
     };
+
     const nextItems = draftReplacesCommittedItem
       ? items.map((item) => (item.id === savedItem.id ? savedItem : item))
       : [...items, savedItem];
@@ -158,6 +164,7 @@ export function ItemizedFields({
 
     if (!committedItemExists) {
       if (activeDraftItemDeleted) handleDraftItemClose();
+
       return;
     }
 
@@ -165,12 +172,14 @@ export function ItemizedFields({
 
     setItems(nextItems);
     if (activeDraftItemDeleted) handleDraftItemClose();
+
     onChange(nextItems);
   };
 
   const items_required_text = t('itemized_items_required_text');
   const add_item_text = t('itemized_add_item_text');
   const save_item_text = t('itemized_save_item_text');
+
   const itemsError =
     items.length || draftItem ? [] : [{ message: items_required_text }];
 

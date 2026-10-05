@@ -37,6 +37,7 @@ export function AppLayout() {
   }
 
   const notificationsAriaLabel = tUser('notifications_aria_label');
+
   const headerActions = (
     <>
       <Button

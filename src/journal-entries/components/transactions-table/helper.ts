@@ -69,6 +69,7 @@ function getRowCategoryLines(
   sourceType: UTransactionsTableDirection
 ) {
   if (sourceType === EJournalEntrySourceType.Receipt) return lines.slice(0, -1);
+
   if (sourceType === EJournalEntrySourceType.Payment) return lines.slice(1);
 
   return [];

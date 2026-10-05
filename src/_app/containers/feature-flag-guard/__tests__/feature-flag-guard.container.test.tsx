@@ -103,6 +103,7 @@ describe('FeatureFlagGuard', () => {
 
     function ProtectedContent() {
       onMount();
+
       return <p>Protected content</p>;
     }
 

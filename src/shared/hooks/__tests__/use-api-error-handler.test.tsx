@@ -66,6 +66,7 @@ describe('useApiErrorHandler', () => {
       name: 'InternalServerError',
       errorKey: 'app_error_unexpected',
     });
+
     const { result } = renderHook(() => useApiErrorHandler());
 
     act(() => {
@@ -88,6 +89,7 @@ describe('useApiErrorHandler', () => {
       name: 'UnauthorizedError',
       errorKey: 'app_error_unauthorized',
     });
+
     const { result } = renderHook(() => useApiErrorHandler());
 
     let parsedError: ReturnType<typeof result.current>;
@@ -103,10 +105,12 @@ describe('useApiErrorHandler', () => {
 
   it('does not force sign-out for an unauthorized response on an auth route', () => {
     window.history.pushState({}, '', '/auth/signin');
+
     const error = makeResponseError(401, {
       name: 'UnauthorizedError',
       errorKey: 'app_error_unauthorized',
     });
+
     const { result } = renderHook(() => useApiErrorHandler());
 
     act(() => {
@@ -122,6 +126,7 @@ describe('useApiErrorHandler', () => {
       config: { method: 'get', headers: {} as never },
       request: {},
     });
+
     const { result } = renderHook(() => useApiErrorHandler());
 
     act(() => {
@@ -159,12 +164,15 @@ describe('useApiErrorHandler', () => {
       { field: 'passwordConfirmation', message: 'auth_error_password_invalid' },
       { field: 'firstName', message: '' },
     ];
+
     const setValidationError = vi.fn();
+
     const error = makeResponseError(422, {
       name: 'ValidationError',
       errorKey: 'app_error_validation_error',
       validationErrors,
     });
+
     const { result } = renderHook(() => useApiErrorHandler());
 
     act(() => {
@@ -184,6 +192,7 @@ describe('useApiErrorHandler', () => {
       errorKey: 'app_error_validation_error',
       validationErrors: [{ field: 'email', message: '' }],
     });
+
     const { result } = renderHook(() => useApiErrorHandler());
 
     act(() => {
@@ -197,11 +206,13 @@ describe('useApiErrorHandler', () => {
   it('preserves validation projection and shows untranslated API messages', () => {
     const validationErrors = [{ field: 'name', message: 'Name is required' }];
     const setValidationError = vi.fn();
+
     const error = makeResponseError(422, {
       name: 'ValidationError',
       errorKey: 'unknown_error_key',
       validationErrors,
     });
+
     const { result } = renderHook(() => useApiErrorHandler());
 
     act(() => {
@@ -217,6 +228,7 @@ describe('useApiErrorHandler', () => {
       name: 'ValidationError',
       errorKey: 'unknown_error_key',
     });
+
     const { result } = renderHook(() => useApiErrorHandler());
 
     act(() => {

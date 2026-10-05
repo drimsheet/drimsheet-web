@@ -71,11 +71,13 @@ const categories = [
 ] as unknown as ILedgerAccountDto[];
 
 const timestamp = '2026-09-21T10:00:00.000Z';
+
 const transactionMoney = {
   amount: 250,
   currencyCode: 'NGN',
   isMinorUnit: false,
 };
+
 const journalEntry = {
   id: 'payment-entry',
   accountingEntityId: 'entity-1',
@@ -191,6 +193,7 @@ describe('OutflowFormContainer', () => {
 
   it('maps neutral form values to a payment request after uploading an attachment', async () => {
     const user = userEvent.setup();
+
     const attachment = new File(['payment'], 'payment.pdf', {
       type: 'application/pdf',
     });

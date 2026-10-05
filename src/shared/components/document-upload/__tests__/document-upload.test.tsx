@@ -70,6 +70,7 @@ describe('DocumentUpload', () => {
     const input = document.querySelector(
       'input[type="file"]'
     ) as HTMLInputElement;
+
     await user.upload(input, excelFile);
 
     expect(onUpload).toHaveBeenCalledWith([excelFile]);
@@ -114,6 +115,7 @@ describe('DocumentUpload', () => {
     const input = document.querySelector(
       'input[type="file"]'
     ) as HTMLInputElement;
+
     expect(input).toBeInTheDocument();
 
     await user.upload(input, pdfFile);
@@ -129,6 +131,7 @@ describe('DocumentUpload', () => {
     const input = document.querySelector(
       'input[type="file"]'
     ) as HTMLInputElement;
+
     await user.upload(input, invalidFile);
 
     expect(onUpload).not.toHaveBeenCalled();
@@ -149,6 +152,7 @@ describe('DocumentUpload', () => {
     const input = document.querySelector(
       'input[type="file"]'
     ) as HTMLInputElement;
+
     await user.upload(input, pdfFile);
 
     expect(onUpload).toHaveBeenCalledWith([imageFile, pdfFile]);
@@ -164,9 +168,11 @@ describe('DocumentUpload', () => {
     );
 
     expect(screen.getByTestId('custom-media')).toBeInTheDocument();
+
     const wrapper = screen
       .getByText('Upload receipt or bank statement')
       .closest('.custom-class');
+
     expect(wrapper).toBeInTheDocument();
   });
 
@@ -174,6 +180,7 @@ describe('DocumentUpload', () => {
     const createObjectURLSpy = vi
       .spyOn(URL, 'createObjectURL')
       .mockReturnValue('blob:test-preview');
+
     const revokeObjectURLSpy = vi
       .spyOn(URL, 'revokeObjectURL')
       .mockImplementation(() => {});
@@ -220,6 +227,7 @@ describe('DocumentUpload', () => {
     const input = document.querySelector(
       'input[type="file"]'
     ) as HTMLInputElement;
+
     await user.upload(input, fileWithNoType);
 
     expect(onUpload).toHaveBeenCalledWith([fileWithNoType]);
@@ -236,6 +244,7 @@ describe('DocumentUpload', () => {
     const input = document.querySelector(
       'input[type="file"]'
     ) as HTMLInputElement;
+
     await user.upload(input, invalidFile);
 
     expect(onUpload).toHaveBeenCalledWith([invalidFile]);

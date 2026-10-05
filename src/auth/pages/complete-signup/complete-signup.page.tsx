@@ -21,14 +21,17 @@ export function CompleteSignUpPage() {
   useEffect(() => {
     const handleVerifyEmail = async () => {
       if (hasCalled.current) return;
+
       hasCalled.current = true;
 
       if (!token) {
         const invalid_verification_link_text = t(
           'invalid_verification_link_text'
         );
+
         navigate('/auth/signup', { replace: true });
         queueMicrotask(() => toast.error(invalid_verification_link_text));
+
         return;
       }
 

@@ -14,15 +14,19 @@ export function AccountingEntityAvatarContainer({
   onLogoutClick,
 }: Readonly<AccountingEntityAvatarContainerProps>) {
   const { t } = useTranslation('user');
+
   const {
     data: accountingEntities = [],
     isLoading: isLoadingAccountingEntities,
   } = useAccountingEntities();
+
   const hasAccountingEntities = accountingEntities.length > 0;
+
   const { data: activeEntity, isLoading: isLoadingAccountingEntity } =
     useAccountingEntity({
       disabled: isLoadingAccountingEntities || !hasAccountingEntities,
     });
+
   const isLoading =
     isLoadingAccountingEntities ||
     (hasAccountingEntities && isLoadingAccountingEntity);

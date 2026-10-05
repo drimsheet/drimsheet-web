@@ -58,6 +58,7 @@ export function BankSelection({
 
   const getBankDisplayName = (bank: BankItem) =>
     bank.bankName ?? bank.name ?? '';
+
   const getBankCode = (bank: BankItem) =>
     bank.bankCode ?? bank.code ?? bank.id ?? '';
 
@@ -65,6 +66,7 @@ export function BankSelection({
     if (!searchQuery) {
       return safeBanks;
     }
+
     return safeBanks.filter((bank) =>
       getBankDisplayName(bank).toLowerCase().includes(searchQuery.toLowerCase())
     );

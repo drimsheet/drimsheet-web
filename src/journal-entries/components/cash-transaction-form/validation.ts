@@ -10,11 +10,13 @@ import type {
 } from './types';
 
 const MAX_ATTACHMENT_SIZE_BYTES = 2 * 1024 * 1024;
+
 const ACCEPTED_ATTACHMENT_TYPES = new Set([
   'image/jpeg',
   'image/png',
   'application/pdf',
 ]);
+
 const ACCEPTED_ATTACHMENT_EXTENSIONS = ['.jpeg', '.jpg', '.png', '.pdf'];
 
 export interface ICashTransactionFormValidationMessages {
@@ -77,14 +79,17 @@ export function createCashTransactionFormValidation(
       messages.exchangeRateRequired,
       function (exchangeRate) {
         const values = this.parent as ICashTransactionFormValues;
+
         const required = requiresExchangeRate(
           values.accountId,
           accounts,
           functionalCurrencyCode
         );
+
         const accountCurrencyCode = accounts.find(
           (account) => account.id === values.accountId
         )?.balance.currencyCode;
+
         const hasOfficialRate = cashTransactionFormHelpers.matchesOfficialRate(
           officialExchangeRate,
           accountCurrencyCode ?? '',
@@ -104,11 +109,13 @@ export function createCashTransactionFormValidation(
       messages.exchangeRateNumber,
       function (exchangeRate) {
         const values = this.parent as ICashTransactionFormValues;
+
         const required = requiresExchangeRate(
           values.accountId,
           accounts,
           functionalCurrencyCode
         );
+
         const rate = exchangeRate?.value;
 
         if (!required || rate === null || rate === undefined) return true;
@@ -124,11 +131,13 @@ export function createCashTransactionFormValidation(
       messages.exchangeRatePositive,
       function (exchangeRate) {
         const values = this.parent as ICashTransactionFormValues;
+
         const required = requiresExchangeRate(
           values.accountId,
           accounts,
           functionalCurrencyCode
         );
+
         const rate = exchangeRate?.value;
 
         if (
@@ -196,6 +205,7 @@ export function createCashTransactionFormValidation(
           if (!value) return true;
 
           const values = this.parent as ICashTransactionFormValues;
+
           const openingBalanceDate = accounts.find(
             (account) => account.id === values.accountId
           )?.openingBalanceDate;
@@ -247,6 +257,7 @@ export function useCashTransactionFormValidation(
   officialExchangeRate?: IExchangeRate
 ) {
   const { t } = useTranslation<'journal-entries'>('journal-entries');
+
   const counterpartyTextKeys =
     cashTransactionFormHelpers.getCounterpartyTextKeys(variant);
 

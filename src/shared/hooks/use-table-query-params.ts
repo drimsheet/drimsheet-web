@@ -23,10 +23,12 @@ export function useTableQueryParams<
   const updateSearchParams = useCallback(
     (update: (params: URLSearchParams) => void) => {
       const pending = pendingSearchParams.current;
+
       // Compose rapid edits until the router supplies a new URL snapshot.
       const next = new URLSearchParams(
         pending.source === searchParams ? pending.value : searchParams
       );
+
       update(next);
       pendingSearchParams.current = { source: searchParams, value: next };
       setSearchParams(next, { replace: true });
@@ -36,9 +38,11 @@ export function useTableQueryParams<
 
   const searchQuery = searchParams.get('q') || '';
   const page = Number(searchParams.get('page')) || 1;
+
   const sortKey = (searchParams.get('sort') || options.defaultSortKey) as
     | TSortKey
     | undefined;
+
   const sortDirection =
     (searchParams.get('order') as 'asc' | 'desc' | null) ||
     options.defaultSortDirection ||
@@ -54,6 +58,7 @@ export function useTableQueryParams<
         }
       }
     }
+
     return result;
   }, [searchParams, options.filterKeys]);
 
@@ -65,6 +70,7 @@ export function useTableQueryParams<
         } else {
           next.delete('q');
         }
+
         next.set('page', '1');
       });
     },
@@ -94,6 +100,7 @@ export function useTableQueryParams<
           next.delete('sort');
           next.delete('order');
         }
+
         next.set('page', '1');
       });
     },
@@ -113,6 +120,7 @@ export function useTableQueryParams<
             }
           }
         }
+
         next.set('page', '1');
       });
     },

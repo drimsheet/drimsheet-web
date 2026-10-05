@@ -280,6 +280,7 @@ describe('ItemizedFields', () => {
     const menuButton = screen.getByRole('button', {
       name: 'Open item 1 actions',
     });
+
     expect(
       menuButton.querySelector('.lucide-ellipsis-vertical')
     ).toBeInTheDocument();

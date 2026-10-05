@@ -20,6 +20,7 @@ const meta = {
     ),
   ],
 } satisfies Meta<typeof NavConfigurations>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 

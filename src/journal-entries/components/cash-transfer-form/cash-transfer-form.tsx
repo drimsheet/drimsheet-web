@@ -53,7 +53,9 @@ export function CashTransferForm({
 
   const [singleEntryConfirmationOpen, setSingleEntryConfirmationOpen] =
     useState(false);
+
   const [isItemizedRowEditing, setIsItemizedRowEditing] = useState(false);
+
   const [initialItemizedEditItemId, setInitialItemizedEditItemId] =
     useState<string>();
 
@@ -62,6 +64,7 @@ export function CashTransferForm({
     destinationAccounts,
     officialExchangeRate
   );
+
   const resolvedInitialValues = useMemo(
     () =>
       cashTransferFormHelpers.createInitialValues(
@@ -94,23 +97,28 @@ export function CashTransferForm({
   const selectedSourceAccount = sourceAccounts.find(
     (account) => account.id === formik.values.sourceAccountId
   );
+
   const selectedDestinationAccount = destinationAccounts.find(
     (account) => account.id === formik.values.destinationAccountId
   );
+
   const sourceCurrencyCode = formik.values.amountSent.currencyCode;
   const destinationCurrencyCode = formik.values.amountReceived.currencyCode;
   const sourceOpeningDate = selectedSourceAccount?.openingBalanceDate;
   const destinationOpeningDate = selectedDestinationAccount?.openingBalanceDate;
+
   const exchangeRateRequired = cashTransferFormHelpers.isExchangeRateRequired(
     sourceCurrencyCode,
     destinationCurrencyCode
   );
+
   const officialRateMatches = cashTransferFormHelpers.matchesOfficialRate(
     officialExchangeRate,
     sourceCurrencyCode,
     destinationCurrencyCode,
     formik.values.date
   );
+
   const effectiveExchangeRate =
     cashTransferFormHelpers.getEffectiveExchangeRate(
       formik.values,
@@ -120,6 +128,7 @@ export function CashTransferForm({
   const sourceAccountOptions = sourceAccounts.filter(
     (account) => account.id !== formik.values.destinationAccountId
   );
+
   const destinationAccountOptions = destinationAccounts.filter(
     (account) => account.id !== formik.values.sourceAccountId
   );
@@ -152,6 +161,7 @@ export function CashTransferForm({
         destinationAccounts,
         destinationAccountId
       ) || sourceCurrencyCode;
+
     const itemizedFieldsWillRemount =
       nextDestinationCurrencyCode !== destinationCurrencyCode;
 
@@ -232,6 +242,7 @@ export function CashTransferForm({
     const errors = await formik.validateForm();
     if (Object.keys(errors).length > 0) {
       await formik.submitForm();
+
       return;
     }
 
@@ -248,6 +259,7 @@ export function CashTransferForm({
       generateUUID(),
       destinationCurrencyCode
     );
+
     const itemizedValues = {
       ...formik.values,
       isItemized: true,
@@ -329,9 +341,11 @@ export function CashTransferForm({
   const attachment_action_text = t('cash_transaction_attachment_action_text');
   const attachment_replace_text = t('cash_transaction_attachment_replace_text');
   const attachment_remove_text = t('cash_transaction_attachment_remove_text');
+
   const attachment_guidance_text = t(
     'cash_transaction_attachment_guidance_text'
   );
+
   const create_text = submitLabel ?? t('cash_transaction_create_text');
   const save_draft_text = t('cash_transaction_save_draft_text');
   const return_title = t('cash_transfer_return_to_single_title');

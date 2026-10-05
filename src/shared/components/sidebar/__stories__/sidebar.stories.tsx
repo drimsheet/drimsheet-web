@@ -14,6 +14,7 @@ const meta = {
   component: Sidebar,
   tags: ['autodocs'],
 } satisfies Meta<typeof Sidebar>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 

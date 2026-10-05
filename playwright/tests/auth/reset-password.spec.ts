@@ -1,11 +1,13 @@
 import { expect, test } from '@integration/fixtures/test';
 
 const resetEndpoint = '**/api/v1/auth/reset-password';
+
 const validToken =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJpYXQiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
 
 function createResponseGate() {
   let resolve = () => {};
+
   const promise = new Promise<void>((complete) => {
     resolve = complete;
   });
@@ -45,6 +47,7 @@ test('handles missing token parameter gracefully', async ({ page }) => {
   const requestLink = page.getByRole('link', {
     name: 'Get password reset link',
   });
+
   await expect(requestLink).toBeVisible();
   await expect(requestLink).toHaveAttribute('href', '/auth/forgot-password');
 });
@@ -63,6 +66,7 @@ test('associates validation errors with input via aria-invalid and aria-describe
   const passwordError = page.getByText('Password is required', {
     exact: true,
   });
+
   await expect(passwordError).toBeVisible();
   await expect(passwordInput).toHaveAttribute('aria-invalid', 'true');
   const passwordErrorId = await passwordError.getAttribute('id');
@@ -75,6 +79,7 @@ test('associates validation errors with input via aria-invalid and aria-describe
   const confirmError = page.getByText('Confirm Password is required', {
     exact: true,
   });
+
   await expect(confirmError).toBeVisible();
   await expect(confirmPasswordInput).toHaveAttribute('aria-invalid', 'true');
   const confirmErrorId = await confirmError.getAttribute('id');
@@ -185,6 +190,7 @@ test('reflows at 320px viewport without horizontal scroll', async ({
   const scrollWidth = await page.evaluate(
     () => document.documentElement.scrollWidth
   );
+
   expect(scrollWidth).toBeLessThanOrEqual(320);
 
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

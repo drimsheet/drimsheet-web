@@ -123,6 +123,7 @@ export function LedgerAccountsTable({
         ],
         render: (value) => {
           const statusVal = value as ULedgerAccountStatus;
+
           return (
             <StatusBadge
               {...ledgerAccountMapper.mapStatusToBadgeProps(statusVal)}
@@ -136,7 +137,9 @@ export function LedgerAccountsTable({
         sortable: true,
         render: (value) => {
           if (!value) return '';
+
           const date = new Date(String(value));
+
           return (
             <span className="text-xs text-muted-foreground font-medium">
               <FormattedDate value={date} />

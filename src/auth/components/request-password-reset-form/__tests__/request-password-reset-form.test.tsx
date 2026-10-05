@@ -28,6 +28,7 @@ describe('RequestPasswordResetForm', () => {
     const submitButton = screen.getByRole('button', {
       name: /Get password reset link/i,
     });
+
     await user.click(submitButton);
 
     const emailInput = screen.getByLabelText(/Email/i);
@@ -80,6 +81,7 @@ describe('RequestPasswordResetForm', () => {
     const submitButton = screen.getByRole('button', {
       name: /Get password reset link/i,
     });
+
     await user.click(submitButton);
 
     expect(handleSubmit).toHaveBeenCalledTimes(1);

@@ -34,8 +34,10 @@ function deserialize<K extends keyof IStorageState>(
       } catch {
         return undefined;
       }
+
     case 'theme': {
       const themes: string[] = Object.values(EAppThemePreference);
+
       return themes.includes(value) ? (value as IStorageState[K]) : undefined;
     }
   }
@@ -51,6 +53,7 @@ function serialize<K extends keyof IStorageState>(
 export const storageService = {
   get<K extends keyof IStorageState>(key: K): IStorageState[K] | undefined {
     const storedValue = localStorage.getItem(storageKeys[key]);
+
     return storedValue === null ? undefined : deserialize(key, storedValue);
   },
 

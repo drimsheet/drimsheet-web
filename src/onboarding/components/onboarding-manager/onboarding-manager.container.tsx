@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 export function OnboardingManagerContainer() {
   const { t } = useTranslation('accounting');
+
   const {
     data: accountingEntities,
     isLoading: isLoadingEntities,

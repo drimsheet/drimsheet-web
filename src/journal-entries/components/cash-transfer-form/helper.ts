@@ -16,6 +16,7 @@ const BALANCE_TOLERANCE = 1 / PRECISION_FACTOR;
 
 function round(value: number) {
   if (!Number.isFinite(value)) return Number.NaN;
+
   return (
     Math.round((value + Number.EPSILON) * PRECISION_FACTOR) / PRECISION_FACTOR
   );
@@ -46,6 +47,7 @@ function getItemTotal(items: IItemizedFieldValue[]) {
   return round(
     items.reduce((sum, item) => {
       if (!Number.isFinite(item.amount.amount)) return sum;
+
       return sum + item.amount.amount;
     }, 0)
   );
@@ -113,6 +115,7 @@ function calculateAmountReceived(
   if (!Number.isFinite(amountSent)) return Number.NaN;
 
   if (!exchangeRateRequired) return round(amountSent - chargeTotal);
+
   if (!exchangeRate || !Number.isFinite(exchangeRate) || exchangeRate <= 0) {
     return Number.NaN;
   }
@@ -151,6 +154,7 @@ function createInitialValues(
     ) ||
     initialValues?.amountSent?.currencyCode ||
     functionalCurrencyCode;
+
   const destinationCurrencyCode =
     getAccountCurrencyCode(
       destinationAccounts,
@@ -158,8 +162,10 @@ function createInitialValues(
     ) ||
     initialValues?.amountReceived?.currencyCode ||
     sourceCurrencyCode;
+
   const amountSent = initialValues?.amountSent?.amount ?? Number.NaN;
   const exchangeRate = initialValues?.exchangeRate ?? null;
+
   const items = (initialValues?.items ?? []).map((item) => ({
     id: item.id,
     amount: {
@@ -170,15 +176,19 @@ function createInitialValues(
     accountId: item.accountId,
     description: item.description,
   }));
+
   const isItemized = initialValues?.isItemized ?? false;
   const chargeTotal = isItemized ? getItemTotal(items) : 0;
+
   const exchangeRateRequired = isExchangeRateRequired(
     sourceCurrencyCode,
     destinationCurrencyCode
   );
+
   const effectiveExchangeRate = exchangeRate?.inverted
     ? currencyService.invertRate(exchangeRate.value)
     : exchangeRate?.value;
+
   const derivedAmountReceived = calculateAmountReceived(
     amountSent,
     effectiveExchangeRate !== null &&
@@ -222,6 +232,7 @@ function updateSourceAccount(
     sourceCurrencyCode,
     values.amountReceived.currencyCode
   );
+
   const nextValues: ICashTransferFormValues = {
     ...values,
     sourceAccountId,
@@ -259,10 +270,12 @@ function updateDestinationAccount(
     accountId: item.accountId,
     description: item.description,
   }));
+
   const exchangeRateRequired = isExchangeRateRequired(
     values.amountSent.currencyCode,
     destinationCurrencyCode
   );
+
   const nextValues: ICashTransferFormValues = {
     ...values,
     destinationAccountId,
@@ -332,7 +345,9 @@ function updateAmountReceived(
     amountReceived.amount,
     getChargeTotal(values)
   );
+
   const inverted = values.exchangeRate?.inverted ?? false;
+
   const displayedExchangeRate = inverted
     ? currencyService.invertRate(canonicalExchangeRate)
     : canonicalExchangeRate;
@@ -380,6 +395,7 @@ function updateItems(
   effectiveExchangeRate?: number
 ): ICashTransferFormValues {
   const nextValues = { ...values, items };
+
   const exchangeRateRequired = isExchangeRateRequired(
     values.amountSent.currencyCode,
     values.amountReceived.currencyCode
@@ -416,9 +432,11 @@ function isBalanced(
   officialExchangeRate?: IExchangeRate
 ) {
   const amountSent = values.amountSent.amount;
+
   const destinationTotal = round(
     values.amountReceived.amount + getChargeTotal(values)
   );
+
   if (!Number.isFinite(amountSent) || !Number.isFinite(destinationTotal)) {
     return false;
   }
@@ -427,7 +445,9 @@ function isBalanced(
     values.amountSent.currencyCode,
     values.amountReceived.currencyCode
   );
+
   const exchangeRate = getEffectiveExchangeRate(values, officialExchangeRate);
+
   const expectedDestinationTotal = exchangeRateRequired
     ? round(amountSent * (exchangeRate ?? Number.NaN))
     : amountSent;
@@ -446,12 +466,15 @@ function normalizeValues(
     values.amountSent.currencyCode,
     values.amountReceived.currencyCode
   );
+
   const effectiveExchangeRate = getEffectiveExchangeRate(
     values,
     officialExchangeRate
   );
+
   const hasManualExchangeRate =
     values.exchangeRate !== null && Number.isFinite(values.exchangeRate.value);
+
   let exchangeRate: ICashTransferFormValues['exchangeRate'] = null;
 
   if (hasManualExchangeRate) {

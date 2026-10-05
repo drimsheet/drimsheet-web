@@ -7,6 +7,7 @@ import type { Page } from '@playwright/test';
 
 const timestamp = '2026-09-21T10:00:00.000Z';
 const money = { amount: 250, currencyCode: 'NGN', isMinorUnit: false };
+
 const paymentEntry = {
   id: 'payment-entry',
   accountingEntityId: 'entity-1',
@@ -113,6 +114,7 @@ async function registerRoutes(
           validationErrors: [],
         },
       });
+
       return;
     }
 

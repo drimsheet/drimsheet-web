@@ -70,6 +70,7 @@ describe('DefaultErrorBoundary', () => {
 
     function RecoverableChild() {
       if (shouldThrow) throw new Error('recoverable');
+
       return <p>Application recovered</p>;
     }
 

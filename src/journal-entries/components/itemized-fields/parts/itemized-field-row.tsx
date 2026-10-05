@@ -39,6 +39,7 @@ export function ItemizedFieldRow({
   onDelete,
 }: Readonly<ItemizedFieldRowProps>) {
   const { t } = useTranslation<'journal-entries'>('journal-entries');
+
   const [descriptionVisible, setDescriptionVisible] = useState(
     Boolean(item.description)
   );
@@ -94,9 +95,11 @@ export function ItemizedFieldRow({
   const description_label = t('description_label');
   const item_description_placeholder = t('itemized_description_placeholder');
   const add_description_text = t('itemized_add_description_text');
+
   const item_menu_aria_label = t('itemized_item_menu_aria_label', {
     rowNumber,
   });
+
   const delete_item_text = t('itemized_delete_item_text');
 
   return (

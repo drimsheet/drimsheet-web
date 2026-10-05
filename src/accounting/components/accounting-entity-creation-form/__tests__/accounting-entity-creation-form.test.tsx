@@ -87,6 +87,7 @@ describe('AccountingEntityCreationForm', () => {
         individualName="Ada Lovelace"
       />
     );
+
     return { onSubmit, user };
   };
 
@@ -217,6 +218,7 @@ describe('AccountingEntityCreationForm', () => {
       ...jurisdictions[0],
       maxFiscalMonths: 11,
     };
+
     render(
       <AccountingEntityCreationForm
         onSubmit={vi.fn()}
@@ -239,6 +241,7 @@ describe('AccountingEntityCreationForm', () => {
       .add(1, 'year')
       .subtract(1, 'day')
       .toDate();
+
     const endDateButtonName = new Intl.DateTimeFormat('en-NG', {
       year: 'numeric',
       month: 'short',
@@ -313,6 +316,7 @@ describe('AccountingEntityCreationForm Validation', () => {
 
   it('validates that fiscalYearStart is not more than 2 years in the past', async () => {
     const fiscalYearStart = dayjs().subtract(1, 'year');
+
     const validData = {
       name: 'Ada Lovelace',
       entityType: 'individual',
@@ -329,6 +333,7 @@ describe('AccountingEntityCreationForm Validation', () => {
     await expect(validationSchema.validate(validData)).resolves.toBeTruthy();
 
     const invalidFiscalYearStart = dayjs().subtract(3, 'years');
+
     const invalidData = {
       ...validData,
       fiscalYearStart: invalidFiscalYearStart.toDate(),
@@ -345,6 +350,7 @@ describe('AccountingEntityCreationForm Validation', () => {
 
   it('uses the selected jurisdiction maximum as an inclusive boundary', async () => {
     const fiscalYearStart = dayjs().startOf('year');
+
     const validData = {
       name: 'Ada Lovelace',
       entityType: 'individual',
@@ -391,6 +397,7 @@ describe('AccountingEntityCreationForm Validation', () => {
 
   it('uses the maximum belonging to the selected country', async () => {
     const fiscalYearStart = dayjs().startOf('year');
+
     const data = {
       name: 'Ada Lovelace',
       entityType: 'individual',

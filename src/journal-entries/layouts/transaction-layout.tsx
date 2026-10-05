@@ -6,6 +6,7 @@ export function TransactionLayout() {
   const { t } = useTranslation('journal-entries');
   const location = useLocation();
   const navigate = useNavigate();
+
   const items: ITabItem[] = [
     { value: 'inflow', label: t('inflow_tab') },
     { value: 'outflow', label: t('outflow_tab') },

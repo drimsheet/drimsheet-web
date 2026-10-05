@@ -149,10 +149,12 @@ test.describe('Cash transfer creation', () => {
     page,
   }) => {
     const postingAccountQueries: IPostingAccountQuery[] = [];
+
     const uploadLog: IUploadLog = {
       directUploads: 0,
       preparationBody: null,
     };
+
     await registerTransferPageRoutes(page, postingAccountQueries);
     await registerAttachmentRoutes(page, uploadLog);
 

@@ -23,6 +23,7 @@ export function SignInPage() {
 
   const handleLogin = async (values: ILoginFormValues) => {
     if (isLoading) return;
+
     setInFlight(true);
     try {
       await loginWithEmail(values);

@@ -40,6 +40,7 @@ export function CashTransferFormContainer({
 
   const [currencyContext, setCurrencyContext] =
     useState<ICashTransferCurrencyContext>();
+
   const [submissionIntent, setSubmissionIntent] = useState<
     'submit' | 'draft'
   >();
@@ -66,12 +67,16 @@ export function CashTransferFormContainer({
     useAccountingEntity(requiredQueryOptions);
 
   const functionalCurrencyCode = accountingEntity?.functionalCurrencyCode ?? '';
+
   const exchangeRateQuery =
     journalEntryMapper.toTransferExchangeRateQuery(currencyContext);
+
   const { data: officialExchangeRates } = useExchangeRates(exchangeRateQuery);
   const { mutateAsync: createTransfer } = useCreateTransfer();
+
   const { mutateAsync: rectifyJournalEntry, isPending: isRectifying } =
     useRectifyJournalEntry();
+
   const initialValues = useMemo(
     () =>
       journalEntry
@@ -82,10 +87,13 @@ export function CashTransferFormContainer({
 
   const isFormDataPending =
     isSourcesPending || isDestinationsPending || isAccountingEntityPending;
+
   const permittedDestinationAccounts = permittedDestinations?.data ?? [];
+
   const destinationAccounts = permittedDestinationAccounts.filter(
     (account) => account.subType === ELedgerAccountSubType.CashAndCashEquivalent
   );
+
   const categories = permittedDestinationAccounts.filter(
     (account) => account.subType !== ELedgerAccountSubType.CashAndCashEquivalent
   );
@@ -95,6 +103,7 @@ export function CashTransferFormContainer({
     intent: 'submit' | 'draft'
   ) => {
     if (submissionIntent) return;
+
     setSubmissionIntent(intent);
 
     try {
@@ -102,6 +111,7 @@ export function CashTransferFormContainer({
         const attachments = values.attachment
           ? [await fileUploadService.uploadAttachment(values.attachment)]
           : journalEntry.attachments;
+
         const payload =
           journalEntryMapper.toTransferJournalEntryRectificationReq(
             values,
@@ -116,7 +126,9 @@ export function CashTransferFormContainer({
         const attachmentReferences = values.attachment
           ? [await fileUploadService.uploadFile(values.attachment)]
           : [];
+
         const postedAt = intent === 'draft' ? null : new Date().toISOString();
+
         const payload = journalEntryMapper.toTransferEntryReq(
           values,
           functionalCurrencyCode,
@@ -125,12 +137,15 @@ export function CashTransferFormContainer({
         );
 
         await createTransfer(payload);
+
         const successMessage =
           intent === 'draft'
             ? t('journal_entry_draft_saved_success_text')
             : t('transfer_created_success_text');
+
         toast.success(successMessage);
       }
+
       navigate('/transactions');
     } catch (error) {
       handleApiError(error, { showToast: true });

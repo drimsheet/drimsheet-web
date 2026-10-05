@@ -25,6 +25,7 @@ export function TransactionDeleteAction({
   const confirmationInputId = useId();
   const [open, setOpen] = useState(false);
   const [confirmationText, setConfirmationText] = useState('');
+
   const [pendingAction, setPendingAction] = useState<
     'archive' | 'delete' | null
   >(null);
@@ -35,6 +36,7 @@ export function TransactionDeleteAction({
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (busy) return;
+
     setOpen(nextOpen);
     if (!nextOpen) setConfirmationText('');
   };

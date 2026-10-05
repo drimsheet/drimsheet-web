@@ -8,6 +8,7 @@ import { storageService } from '@/shared/lib/services/storage.service';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 const accountingEntityId = '00000000-0000-4000-8000-000000000002' as TEntityId;
+
 const preferences = {
   userId: '00000000-0000-4000-8000-000000000001' as TEntityId,
   createdBy: '00000000-0000-4000-8000-000000000001' as TEntityId,

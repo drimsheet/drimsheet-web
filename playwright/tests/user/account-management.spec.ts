@@ -37,12 +37,14 @@ async function registerAccountManagementRoutes(page: Page) {
     const accountingEntityId = route.request().headers()[
       'x-accounting-entity-id'
     ];
+
     const activeAccountingEntity = accountingEntities.find(
       ({ id }) => id === accountingEntityId
     );
 
     if (!activeAccountingEntity) {
       await route.fulfill({ status: 404 });
+
       return;
     }
 
@@ -52,6 +54,7 @@ async function registerAccountManagementRoutes(page: Page) {
     const payload = route
       .request()
       .postDataJSON() as IAccountingEntitySwitchReq;
+
     const activeAccountingEntity = accountingEntities.find(
       ({ id }) => id === payload.accountingEntityId
     );
@@ -121,6 +124,7 @@ test('opens account management with active and alternate account details', async
   const trigger = page.getByRole('button', {
     name: 'Open account management for Integration Entity',
   });
+
   await expect(trigger).toContainText('IE');
   await expect(
     page.getByRole('button', { name: 'Notifications' })
@@ -147,6 +151,7 @@ test('opens account management with active and alternate account details', async
 
 test('persists a selected color theme preference', async ({ page }) => {
   await signIn(page);
+
   const updatedPreferences = {
     createdBy: authenticatedUser.id,
     userId: authenticatedUser.id as TEntityId,
@@ -158,6 +163,7 @@ test('persists a selected color theme preference', async ({ page }) => {
     createdAt: authenticatedUser.createdAt,
     updatedAt: authenticatedUser.updatedAt,
   } satisfies IUserPreferences;
+
   await page.route(preferencesEndpoint, async (route) => {
     await route.fulfill({ json: updatedPreferences });
   });
@@ -173,6 +179,7 @@ test('persists a selected color theme preference', async ({ page }) => {
       request.url().endsWith('/api/v1/users/preferences') &&
       request.method() === 'PATCH'
   );
+
   await page.getByRole('button', { name: 'Toggle theme' }).click();
   const preferencesRequest = await preferencesRequestPromise;
 
@@ -197,11 +204,13 @@ test('switches accounting entity and reloads with the active entity', async ({
     .click();
 
   const switchRequestPromise = page.waitForRequest(switchEntityEndpoint);
+
   const reloadRequestPromise = page.waitForRequest(
     (request) =>
       request.isNavigationRequest() &&
       request.url() === 'http://127.0.0.1:4000/dashboard'
   );
+
   const activeEntityRequestPromise = page.waitForRequest(
     (request) =>
       request.url().includes('/api/v1/accounting/accounting-entity') &&
@@ -292,23 +301,29 @@ test('creates an additional entity without running initial bootstrap', async ({
   await registerConfigurationRoutes(page);
   await signIn(page);
   let created = false;
+
   const additional = {
     ...alternateAccountingEntity,
     id: '00000000-0000-4000-8000-000000000004' as TEntityId,
     name: 'Additional Entity',
     createdBy: authenticatedUser.id,
   };
+
   const bootstrapRequests: string[] = [];
   await page.route(activeEntityEndpoint, async (route) => {
     if (route.request().method() === 'POST') {
       created = true;
       await route.fulfill({ status: 201, json: additional });
+
       return;
     }
+
     if (!created) {
       await route.fallback();
+
       return;
     }
+
     await route.fulfill({ json: additional });
   });
   await page.route(entityListEndpoint, async (route) => {
@@ -329,6 +344,7 @@ test('creates an additional entity without running initial bootstrap', async ({
       await route.fulfill({ status: 400, json: {} });
     });
   }
+
   await page
     .getByRole('button', {
       name: 'Open account management for Integration Entity',
@@ -343,11 +359,13 @@ test('creates an additional entity without running initial bootstrap', async ({
   await dialog.getByRole('textbox', { name: 'Name' }).fill(additional.name);
   await dialog.getByRole('button', { name: 'Next' }).click();
   await dialog.getByRole('button', { name: 'Next' }).click();
+
   const requestPromise = page.waitForRequest(
     (request) =>
       request.url().includes('/api/v1/accounting/accounting-entity') &&
       request.method() === 'POST'
   );
+
   await dialog.getByRole('button', { name: 'Complete setup' }).click();
   const request = await requestPromise;
   expect(request.postDataJSON()).toEqual(

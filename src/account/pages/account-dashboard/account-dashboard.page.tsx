@@ -17,6 +17,7 @@ export function AccountsDashboardPage() {
 
   const [showAccountTypeSelection, setShowAccountTypeSelection] =
     useState(false);
+
   const [selectedBehavior, setSelectedBehavior] =
     useState<ULedgerAccountBehavior | null>(null);
 
@@ -27,6 +28,7 @@ export function AccountsDashboardPage() {
 
   const accounts_label = t('shared:accounts');
   const total_vault_balance_label = t('ledger-accounts:total_vault_balance');
+
   const accounts_count_text = t('ledger-accounts:accounts_count', {
     count: 12,
   });

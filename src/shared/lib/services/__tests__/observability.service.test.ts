@@ -37,6 +37,7 @@ let observabilityService: TObservabilityService;
 function getSentryOptions() {
   const options = vi.mocked(Sentry.init).mock.calls[0]?.[0];
   if (!options) throw new Error('Expected Sentry initialization options');
+
   return options;
 }
 
@@ -122,6 +123,7 @@ describe('observabilityService', () => {
 
   it('projects only approved manual report context', () => {
     observabilityService.initialize(ENABLED_CONFIG);
+
     const context = {
       source: 'api-client',
       operation: 'request',

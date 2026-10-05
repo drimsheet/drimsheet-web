@@ -23,11 +23,13 @@ const nameKeys: Record<string, keyof typeof accountingLocale> = {
   'asset-suspense-account': 'bootstrap_asset_suspense_account_name',
   'liability-suspense-account': 'bootstrap_liability_suspense_account_name',
 };
+
 function accountNameKey(
   key: string
 ): keyof typeof accountingLocale | undefined {
   return nameKeys[key];
 }
+
 function headerNames(
   translate: (key: keyof typeof accountingLocale) => string
 ): IHeaderAccountNameAliasesReq {
@@ -58,8 +60,10 @@ function headerNames(
     statutory_payables: translate('header_statutory_payables_name'),
   };
 }
+
 const accountingEntityCreationHelpers = Object.freeze({
   accountNameKey,
   headerNames,
 });
+
 export default accountingEntityCreationHelpers;

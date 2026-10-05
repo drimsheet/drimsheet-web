@@ -7,6 +7,7 @@ const verificationUrl = `/auth/signup/complete?token=${verificationToken}`;
 
 function createResponseGate() {
   let resolve = () => {};
+
   const promise = new Promise<void>((complete) => {
     resolve = complete;
   });

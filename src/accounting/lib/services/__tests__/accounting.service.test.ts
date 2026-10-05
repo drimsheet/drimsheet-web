@@ -22,6 +22,7 @@ vi.mock('@/shared/lib/api', () => ({
 }));
 
 const timestamp = '2026-01-01T00:00:00.000Z';
+
 const firstEntity = {
   id: '00000000-0000-4000-8000-000000000001' as TEntityId,
   name: 'First Account',
@@ -33,6 +34,7 @@ const firstEntity = {
   createdAt: timestamp,
   updatedAt: timestamp,
 } satisfies IAccountingEntity;
+
 const secondEntity = {
   ...firstEntity,
   id: '00000000-0000-4000-8000-000000000002' as TEntityId,
@@ -132,6 +134,7 @@ describe('accountingService', () => {
     const payload = {
       accountingEntityId: secondEntity.id,
     } satisfies IAccountingEntitySwitchReq;
+
     vi.mocked(drimsheetApi.accounting.switchAccountingEntity).mockResolvedValue(
       { data: secondEntity } as never
     );

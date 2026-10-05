@@ -65,6 +65,7 @@ describe('useCreatePayment', () => {
   it('propagates service errors', async () => {
     const error = new Error('Payment creation failed');
     vi.mocked(journalEntryService.createPayment).mockRejectedValue(error);
+
     const { result } = renderHook(() => useCreatePayment(), {
       wrapper: createWrapper(),
     });

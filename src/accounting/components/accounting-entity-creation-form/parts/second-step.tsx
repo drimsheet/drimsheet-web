@@ -49,9 +49,11 @@ function AccountingEntityCreationFormStep2({
   const reporting_currency_label = t('reporting_currency_label');
   const fiscal_year_start_label = t('fiscal_year_start_label');
   const fiscal_year_end_label = t('fiscal_year_end_label');
+
   const fiscal_year_start_warning = t('fiscal_year_start_warning', {
     expectedStart: formattedExpectedStart,
   });
+
   const back_button_label = t('back_button_label');
   const next_button_label = t('next_button_label');
 
@@ -83,6 +85,7 @@ function AccountingEntityCreationFormStep2({
                     oldStart,
                     oldEnd
                   );
+
                   formik.setFieldValue('fiscalYearEnd', newEnd);
                 }
               }}

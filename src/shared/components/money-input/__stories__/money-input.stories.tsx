@@ -9,6 +9,7 @@ const meta = {
   parameters: { layout: 'centered' },
   render: (args) => {
     const [val, setVal] = useState(args.value || '');
+
     return (
       <MoneyInput
         {...args}
@@ -21,6 +22,7 @@ const meta = {
     );
   },
 } satisfies Meta<typeof MoneyInput>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 

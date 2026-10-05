@@ -88,6 +88,7 @@ const columns: ITableColumn<IMockRow>[] = [
     ],
     render: (value) => {
       const status = value as IMockRow['status'];
+
       const colors = {
         ACTIVE:
           'bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20 border-emerald-500/20',
@@ -96,6 +97,7 @@ const columns: ITableColumn<IMockRow>[] = [
         INACTIVE:
           'bg-gray-500/10 text-gray-500 dark:bg-gray-500/20 border-gray-500/20',
       };
+
       return (
         <span
           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${colors[status]}`}
@@ -111,10 +113,12 @@ const columns: ITableColumn<IMockRow>[] = [
     sortable: true,
     render: (value, row) => {
       const num = value as number;
+
       const formatted = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: row.currency,
       }).format(num);
+
       return (
         <span className="font-mono font-bold text-foreground">{formatted}</span>
       );
@@ -149,11 +153,14 @@ export const ControlledDataTableWrapper = <T extends IDataWithId>({
   const [currentSortKey, setCurrentSortKey] = React.useState<
     string | undefined
   >(initialSortKey);
+
   const [currentSortDirection, setCurrentSortDirection] = React.useState<
     'asc' | 'desc' | null
   >(initialSortDirection);
+
   const [filters, setFilters] =
     React.useState<Record<string, (string | number)[]>>(initialFilters);
+
   const [selectedRowIds, setSelectedRowIds] = React.useState<
     (string | number)[]
   >(initialSelectedRowIds);
@@ -175,6 +182,7 @@ export const ControlledDataTableWrapper = <T extends IDataWithId>({
       if (JSON.stringify(prev) === JSON.stringify(initialFilters)) {
         return prev;
       }
+
       return initialFilters;
     });
   }, [initialFilters]);
@@ -184,6 +192,7 @@ export const ControlledDataTableWrapper = <T extends IDataWithId>({
       if (JSON.stringify(prev) === JSON.stringify(initialSelectedRowIds)) {
         return prev;
       }
+
       return initialSelectedRowIds;
     });
   }, [initialSelectedRowIds]);
@@ -197,6 +206,7 @@ export const ControlledDataTableWrapper = <T extends IDataWithId>({
       if (values.length > 0) {
         result = result.filter((row) => {
           const val = row[key as keyof T];
+
           return values.includes(val as string | number);
         });
       }
@@ -213,6 +223,7 @@ export const ControlledDataTableWrapper = <T extends IDataWithId>({
         } else {
           comparison = String(valA).localeCompare(String(valB));
         }
+
         return currentSortDirection === 'asc' ? comparison : -comparison;
       });
     }
@@ -281,6 +292,7 @@ export const InteractiveSelection: Story = {
     const [selectedIds, setSelectedIds] = React.useState<(string | number)[]>([
       2, 4,
     ]);
+
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between text-sm bg-muted/30 border border-border px-4 py-2 rounded-lg">

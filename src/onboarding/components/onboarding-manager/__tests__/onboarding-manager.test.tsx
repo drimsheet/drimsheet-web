@@ -22,6 +22,7 @@ vi.mock('@/accounting/dialogs/accounting-entity-creation', () => {
       initialOnboarding: boolean;
     }) => {
       completion.callback = done;
+
       return (
         <div
           data-testid="accounting-onboarding-form"
@@ -88,10 +89,12 @@ describe('OnboardingManagerContainer', () => {
 
   it('awaits an authoritative non-empty refetch when onboarding completes', async () => {
     const user = userEvent.setup();
+
     const refetch = vi.fn().mockResolvedValue({
       data: [{ id: 'entity-1', name: 'My Entity' }],
       error: null,
     });
+
     vi.mocked(useAccountingEntities).mockReturnValue({
       data: [],
       isLoading: false,
@@ -105,10 +108,12 @@ describe('OnboardingManagerContainer', () => {
   });
   it('rejects a failed completion refresh even when it returns cached entities', async () => {
     const error = new Error('Refresh failed');
+
     const refetch = vi.fn().mockResolvedValue({
       data: [{ id: 'entity-1', name: 'My Entity' }],
       error,
     });
+
     vi.mocked(useAccountingEntities).mockReturnValue({
       data: [],
       isLoading: false,

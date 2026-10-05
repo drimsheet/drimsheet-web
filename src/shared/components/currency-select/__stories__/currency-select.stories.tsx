@@ -16,6 +16,7 @@ const meta = {
   parameters: { layout: 'centered' },
   args: { onChange: () => {} },
 } satisfies Meta<typeof CurrencySelect>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {

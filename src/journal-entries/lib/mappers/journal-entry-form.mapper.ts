@@ -45,8 +45,10 @@ function toCashTransactionFormValues(
 
   const exchangeRate =
     cashLine.exchangeRate ?? firstCategoryLine.exchangeRate ?? null;
+
   const counterparty =
     lines.find((line) => line.counterparty)?.counterparty ?? null;
+
   const isItemized = categoryLines.length > 1;
 
   return {

@@ -14,9 +14,11 @@ describe('AccountTypeSelection', () => {
 
     const bankRadio = screen.getByRole('radio', { name: /bank account/i });
     const pettyCashRadio = screen.getByRole('radio', { name: /petty cash/i });
+
     const virtualAccountRadio = screen.getByRole('radio', {
       name: /virtual account/i,
     });
+
     const creditCardRadio = screen.getByRole('radio', { name: /credit card/i });
 
     expect(bankRadio).toBeEnabled();

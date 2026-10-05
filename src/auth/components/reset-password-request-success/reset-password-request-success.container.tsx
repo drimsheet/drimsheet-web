@@ -11,6 +11,7 @@ export function RequestPasswordResetSuccessContainer({
 
   const handleRetry = useCallback(() => {
     if (countdown > 0 || loading) return;
+
     setCountdown(30);
     void onRetry();
   }, [countdown, loading, onRetry]);
@@ -19,9 +20,11 @@ export function RequestPasswordResetSuccessContainer({
 
   useEffect(() => {
     if (!hasTimeRemaining) return;
+
     const timer = setInterval(() => {
       setCountdown((prev) => Math.max(0, prev - 1));
     }, 1000);
+
     return () => clearInterval(timer);
   }, [hasTimeRemaining]);
 

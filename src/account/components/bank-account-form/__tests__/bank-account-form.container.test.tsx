@@ -15,6 +15,7 @@ describe('BankAccountFormContainer', () => {
       useGetBankByCountryModule,
       'useGetBankByCountry'
     );
+
     useGetBankByCountrySpy.mockReturnValue({
       data: [{ bankCode: 'GTB', bankName: 'Guaranty Trust Bank' }],
       isPending: false,
@@ -43,10 +44,12 @@ describe('BankAccountFormContainer', () => {
 
   it('updates bank query location while retaining entered account name in form state', async () => {
     const user = userEvent.setup();
+
     const useGetBankByCountrySpy = vi.spyOn(
       useGetBankByCountryModule,
       'useGetBankByCountry'
     );
+
     useGetBankByCountrySpy.mockReturnValue({
       data: [],
       isPending: false,
@@ -75,9 +78,11 @@ describe('BankAccountFormContainer', () => {
 
     const locationInput = screen.getByPlaceholderText('Select a country');
     await user.click(locationInput);
+
     const usOption = await screen.findByRole('option', {
       name: /United States/i,
     });
+
     await user.click(usOption);
 
     expect(useGetBankByCountrySpy).toHaveBeenLastCalledWith('US');

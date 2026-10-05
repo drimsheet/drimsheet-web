@@ -253,6 +253,7 @@ describe('CashTransactionForm', () => {
   it('uses a matching official foreign exchange rate as the default', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
+
     const officialRate = {
       baseCurrencyCode: 'USD',
       targetCurrencyCode: 'NGN',

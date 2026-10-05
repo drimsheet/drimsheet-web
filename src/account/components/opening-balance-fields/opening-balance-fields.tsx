@@ -30,11 +30,13 @@ export function OpeningBalanceFields({
     !createWithoutOpeningBalance &&
     Boolean(currencyCode) &&
     currencyCode !== accountingCurrencyCode;
+
   const openingBalanceDisabled = disabled || createWithoutOpeningBalance;
 
   const create_without_opening_balance_label = t(
     'create_without_opening_balance_label'
   );
+
   const opening_balance_label = t('opening_balance_label');
   const opening_date_label = t('opening_date_label');
   const opening_date_placeholder = t('opening_date_placeholder');

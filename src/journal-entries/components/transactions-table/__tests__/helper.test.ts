@@ -122,6 +122,7 @@ function createRows(entries: IJournalEntryListDto[]) {
 describe('transactionsTableHelpers', () => {
   it('uses the payment source line and deduplicates counterparties and categories', () => {
     const sourceAmount = createMoney(125_000);
+
     const entry = createEntry(EJournalEntrySourceType.Payment, [
       createLine({
         id: 'line-3',
@@ -168,6 +169,7 @@ describe('transactionsTableHelpers', () => {
 
   it('uses the receipt destination line for the account and amount', () => {
     const destinationAmount = createMoney(85_000);
+
     const entry = createEntry(EJournalEntrySourceType.Receipt, [
       createLine({
         id: 'line-2',
@@ -198,6 +200,7 @@ describe('transactionsTableHelpers', () => {
 
   it('uses the transfer source account and source amount', () => {
     const sourceAmount = createMoney(1_000, 'USD');
+
     const entry = createEntry(EJournalEntrySourceType.Transfer, [
       createLine({
         id: 'line-2',
@@ -251,12 +254,14 @@ describe('transactionsTableHelpers', () => {
   it('creates ordered outflow details from the payment lines', () => {
     const exchangeRate = createExchangeRate();
     const functionalAmount = createMoney(1_590_000);
+
     const attachment = {
       name: 'receipt.pdf',
       size: 2048,
       type: 'application/pdf',
       url: 'https://example.com/receipt.pdf',
     };
+
     const entry = createEntry(
       EJournalEntrySourceType.Payment,
       [
@@ -309,6 +314,7 @@ describe('transactionsTableHelpers', () => {
 
   it('creates transfer details with the source, destination, and every fee line', () => {
     const exchangeRate = createExchangeRate();
+
     const entry = createEntry(EJournalEntrySourceType.Transfer, [
       createLine({
         id: 'line-4',
@@ -371,6 +377,7 @@ describe('transactionsTableHelpers', () => {
         amount: createMoney(10_000),
       }),
     ]);
+
     const transfer = createEntry(EJournalEntrySourceType.Transfer, [
       createLine({
         id: 'line-1',

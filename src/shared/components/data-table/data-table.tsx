@@ -175,11 +175,13 @@ function SortIcon({ direction }: Readonly<SortIconProps>) {
       <ArrowUp className="size-3.5 text-primary stroke-[2.5] animate-in slide-in-from-bottom-1 duration-150" />
     );
   }
+
   if (direction === 'desc') {
     return (
       <ArrowDown className="size-3.5 text-primary stroke-[2.5] animate-in slide-in-from-top-1 duration-150" />
     );
   }
+
   return (
     <ArrowUpDown className="size-3 text-muted-foreground/45 group-hover:text-muted-foreground transition-all duration-150" />
   );
@@ -242,6 +244,7 @@ export function DataTableHeaderCell<T extends IDataWithId>({
     (val: string | number) => {
       const currentSelected =
         column.filterValue || filters?.[String(column.dataIndex)] || [];
+
       const newSelected = currentSelected.includes(val)
         ? currentSelected.filter((v) => v !== val)
         : [...currentSelected, val];
@@ -457,6 +460,7 @@ export function DataTableActiveFilters<T extends IDataWithId>({
 
     Object.entries(filters).forEach(([columnKey, values]) => {
       if (!values || values.length === 0) return;
+
       const column = columns.find((col) => String(col.dataIndex) === columnKey);
       if (!column) return;
 
@@ -480,6 +484,7 @@ export function DataTableActiveFilters<T extends IDataWithId>({
   const handleRemoveChip = useCallback(
     (columnKey: string, valueToRemove: string | number) => {
       if (!onFilterChange || !filters) return;
+
       const currentValues = filters[columnKey] || [];
       const newValues = currentValues.filter((v) => v !== valueToRemove);
 
@@ -497,6 +502,7 @@ export function DataTableActiveFilters<T extends IDataWithId>({
 
   const handleClearAllFilters = useCallback(() => {
     if (!onFilterChange) return;
+
     onFilterChange({});
   }, [onFilterChange]);
 
@@ -588,6 +594,7 @@ export function DataTable<T extends IDataWithId>({
       } else {
         newSelection.add(id);
       }
+
       onRowSelectionChange?.(Array.from(newSelection));
     },
     [selectedRowIds, onRowSelectionChange]
@@ -595,8 +602,10 @@ export function DataTable<T extends IDataWithId>({
 
   const handleSelectAll = useCallback(() => {
     const selectedSet = new Set(selectedRowIds || []);
+
     const allSelected =
       data.length > 0 && data.every((row) => selectedSet.has(row.id));
+
     let newSelection: Set<string | number>;
 
     if (allSelected) {
@@ -604,6 +613,7 @@ export function DataTable<T extends IDataWithId>({
     } else {
       newSelection = new Set(data.map((row) => row.id));
     }
+
     onRowSelectionChange?.(Array.from(newSelection));
   }, [data, selectedRowIds, onRowSelectionChange]);
 
@@ -626,6 +636,7 @@ export function DataTable<T extends IDataWithId>({
 
   const isAllSelected =
     data.length > 0 && data.every((row) => selectedSet.has(row.id));
+
   const isSomeSelected =
     data.length > 0 &&
     data.some((row) => selectedSet.has(row.id)) &&
@@ -633,6 +644,7 @@ export function DataTable<T extends IDataWithId>({
 
   const getStickyStyles = (index: number) => {
     if (!stickyHeader && _.isEmpty(stickyProps)) return undefined;
+
     return {
       position: 'sticky' as const,
       top: stickyProps?.top ?? 0,

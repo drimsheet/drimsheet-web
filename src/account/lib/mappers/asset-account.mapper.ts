@@ -72,6 +72,7 @@ function toPettyCashAccountCreationDto(
       value: officialExchangeRate?.rate ?? null,
       inverted: false,
     };
+
     exchangeRate = currencyMapper.toUserEnteredExchangeRate(
       {
         baseCurrencyCode: values.currencyCode,
@@ -130,6 +131,7 @@ function toBankAccountCreationDto(
       value: officialExchangeRate?.rate ?? null,
       inverted: false,
     };
+
     exchangeRate = currencyMapper.toUserEnteredExchangeRate(
       {
         baseCurrencyCode: values.currencyCode,

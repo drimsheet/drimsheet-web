@@ -93,6 +93,7 @@ describe('MoneyWithCurrencyInput', () => {
     const searchInput = await screen.findByRole('combobox', {
       name: 'Search currency',
     });
+
     const popup = searchInput.closest('[data-slot="combobox-content"]');
 
     expect(searchInput).toHaveAttribute('placeholder', 'Search');

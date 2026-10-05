@@ -125,6 +125,7 @@ describe('AccountingEntityAvatarContainer', () => {
     const trigger = screen.getByRole('button', {
       name: 'Open account management for Drimsheet',
     });
+
     expect(trigger).toHaveTextContent('DR');
 
     await user.click(trigger);
@@ -132,6 +133,7 @@ describe('AccountingEntityAvatarContainer', () => {
     const dialog = await screen.findByRole('dialog', {
       name: 'Account management',
     });
+
     expect(dialog).toHaveTextContent('Drimsheet');
     expect(dialog).toHaveTextContent('member@example.com');
     expect(dialog).toHaveTextContent('Private company');

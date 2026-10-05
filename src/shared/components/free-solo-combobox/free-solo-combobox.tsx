@@ -36,6 +36,7 @@ export function FreeSoloCombobox<TOption extends object>({
   }
 
   const selectedOption = typeof value === 'object' ? value : null;
+
   const filteredOptions = useMemo(() => {
     const normalizedInputValue = inputValue.trim().toLowerCase();
 
@@ -45,6 +46,7 @@ export function FreeSoloCombobox<TOption extends object>({
       getOptionLabel(option).toLowerCase().includes(normalizedInputValue)
     );
   }, [getOptionLabel, inputValue, options]);
+
   const hasError = Boolean(error?.length);
   const errorId = `${id}-error`;
 

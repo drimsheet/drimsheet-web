@@ -60,6 +60,7 @@ describe('FiscalDateSelect', () => {
     const trigger = screen.getByRole('button', {
       name: /Jan.*1.*2024|1.*Jan.*2024/i,
     });
+
     await user.click(trigger);
 
     const day15 = screen.getByText('15');

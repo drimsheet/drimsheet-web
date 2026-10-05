@@ -35,13 +35,16 @@ describe('useRectifyJournalEntry', () => {
     const queryClient = new QueryClient({
       defaultOptions: { mutations: { retry: false } },
     });
+
     const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries');
     vi.mocked(journalEntryService.rectifyJournalEntry).mockResolvedValue({
       currentJournalEntryId: 'current-entry',
     } as never);
+
     const wrapper = ({ children }: Readonly<{ children: ReactNode }>) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
+
     const { result } = renderHook(() => useRectifyJournalEntry(), { wrapper });
 
     await act(async () =>

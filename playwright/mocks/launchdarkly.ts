@@ -33,6 +33,7 @@ export async function registerLaunchDarklyRoutes(
 
     if (url.includes('/sdk/goals/')) {
       await route.fulfill({ json: [] });
+
       return;
     }
 

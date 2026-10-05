@@ -113,6 +113,7 @@ describe('InflowFormContainer', () => {
 
   it('maps neutral form values to a receipt request after uploading an attachment', async () => {
     const user = userEvent.setup();
+
     const attachment = new File(['receipt'], 'receipt.pdf', {
       type: 'application/pdf',
     });

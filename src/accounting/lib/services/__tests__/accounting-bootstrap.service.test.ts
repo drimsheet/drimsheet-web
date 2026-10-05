@@ -16,6 +16,7 @@ vi.mock('@/shared/lib/api', () => ({
 }));
 describe('accountingBootstrapService', () => {
   beforeEach(() => vi.clearAllMocks());
+
   const calls = [
     [
       service.setupHeaders,
@@ -52,6 +53,7 @@ describe('accountingBootstrapService', () => {
       { name: 'Suspense', type: 'asset', currencyCode: 'NGN' },
     ],
   ] as const;
+
   it('fetches the recommendation catalog and returns response data', async () => {
     vi.mocked(drimsheetApi.accounts.getRecommendedBootstrap).mockResolvedValue({
       data: { catalog: true },

@@ -22,6 +22,7 @@ const optionalNumber = (typeErrorMessage: string) =>
     .number()
     .transform((value, originalValue) => {
       if (originalValue === null || originalValue === '') return undefined;
+
       return value;
     })
     .typeError(typeErrorMessage);
@@ -63,6 +64,7 @@ export function createPettyCashAccountFormValidation(
           createWithoutOpeningBalance: boolean;
           currencyCode: string;
         };
+
         const required =
           !values.createWithoutOpeningBalance &&
           Boolean(values.currencyCode) &&

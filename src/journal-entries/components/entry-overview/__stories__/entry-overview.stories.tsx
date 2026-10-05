@@ -1,11 +1,13 @@
 import { EntryOverview } from '@/journal-entries/components/entry-overview';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Pencil, Trash2 } from 'lucide-react';
+
 const meta = {
   title: 'Journal Entries/EntryOverview',
   component: EntryOverview,
   tags: ['autodocs'],
 } satisfies Meta<typeof EntryOverview>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const WithActions: Story = {

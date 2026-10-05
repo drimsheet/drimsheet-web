@@ -20,6 +20,7 @@ describe('FileUpload', () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
     render(<FileUpload {...defaultProps} onValueChange={onValueChange} />);
+
     const file = new File(['receipt'], 'receipt.pdf', {
       type: 'application/pdf',
     });
@@ -36,9 +37,11 @@ describe('FileUpload', () => {
   it('shows and removes a selected file', async () => {
     const user = userEvent.setup();
     const onValueChange = vi.fn();
+
     const file = new File(['receipt'], 'receipt.pdf', {
       type: 'application/pdf',
     });
+
     render(
       <FileUpload
         {...defaultProps}
@@ -57,6 +60,7 @@ describe('FileUpload', () => {
     const file = new File(['receipt'], 'receipt.pdf', {
       type: 'application/pdf',
     });
+
     render(<FileUpload {...defaultProps} disabled value={file} />);
 
     expect(screen.getByLabelText('Attach receipt')).toBeDisabled();

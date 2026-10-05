@@ -22,10 +22,12 @@ export function OAuthConfirmationPage() {
 
     const handleCompleteSignIn = async () => {
       if (hasStartedCompletion.current) return;
+
       hasStartedCompletion.current = true;
 
       if (searchParams.toString()) {
         handleFailure();
+
         return;
       }
 

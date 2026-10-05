@@ -14,9 +14,11 @@ export function TransferTransactionDetails({
   const conversionTitle = t('transaction_details_conversion_title');
   const exchangeRateLabel = t('exchange_rate_label');
   const transferFeeTitle = t('transaction_details_transfer_fee_title');
+
   const hasConversion =
     details.sourceAmount.currencyCode !==
     details.destinationAmount.currencyCode;
+
   const exchangeRateValue =
     details.exchangeRate && hasConversion
       ? t('transaction_details_exchange_rate_value', {

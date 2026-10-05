@@ -40,10 +40,12 @@ export function PettyCashAccountForm({
   onSubmit,
 }: Readonly<PettyCashAccountFormProps>) {
   const { t } = useTranslation<'ledger-accounts'>('ledger-accounts');
+
   const validationSchema = usePettyCashAccountFormValidation(
     accountingCurrencyCode,
     officialExchangeRate
   );
+
   const handleSubmit = (values: IPettyCashAccountFormValues) =>
     onSubmit(values);
 
@@ -74,6 +76,7 @@ export function PettyCashAccountForm({
     if (checked) {
       void formik.setFieldValue('exchangeRate', null);
     }
+
     onExchangeRateContextChange({
       currencyCode: formik.values.currencyCode,
       date: formik.values.openingDate,

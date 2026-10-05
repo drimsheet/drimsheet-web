@@ -73,6 +73,7 @@ describe('useCreateTransfer', () => {
   it('propagates service errors', async () => {
     const error = new Error('Transfer creation failed');
     vi.mocked(journalEntryService.createTransfer).mockRejectedValue(error);
+
     const { result } = renderHook(() => useCreateTransfer(), {
       wrapper: createWrapper(),
     });

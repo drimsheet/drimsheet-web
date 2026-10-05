@@ -6,11 +6,13 @@ import {
 import type { Page } from '@playwright/test';
 
 const timestamp = '2026-09-16T10:00:00.000Z';
+
 const money = (amount: number, currencyCode = 'NGN') => ({
   amount,
   currencyCode,
   isMinorUnit: false,
 });
+
 const accountNamesById: Record<string, string> = {
   'cash-main': 'Main checking',
   'cash-usd': 'USD account',
@@ -18,10 +20,12 @@ const accountNamesById: Record<string, string> = {
   gift: 'Gift',
   services: 'Professional services',
 };
+
 const counterpartyNamesById: Record<string, string> = {
   osahon: 'Osahon Oboite',
   acme: 'Acme Consulting',
 };
+
 const line = (
   id: string,
   entryId: string,
@@ -56,6 +60,7 @@ const line = (
   createdAt: timestamp,
   updatedAt: timestamp,
 });
+
 const entry = (
   id: string,
   sourceType: string,
@@ -115,6 +120,7 @@ const accounts = [
   { id: 'gift', name: 'Gift' },
   { id: 'services', name: 'Professional services' },
 ];
+
 const counterparties = [
   { id: 'osahon', name: 'Osahon Oboite' },
   { id: 'acme', name: 'Acme Consulting' },
@@ -254,10 +260,12 @@ test('dismisses archive confirmation without changing the transaction', async ({
   await page.getByRole('button', { name: 'Open transaction' }).first().click();
 
   const drawer = page.getByRole('dialog', { name: 'Transaction details' });
+
   const archiveButton = drawer.getByRole('button', {
     name: 'Archive',
     exact: true,
   });
+
   const confirmation = page.getByRole('alertdialog', {
     name: 'Archive this transaction?',
   });
@@ -322,7 +330,9 @@ test('requires typing delete before confirming transaction deletion', async ({
   const confirmation = page.getByRole('alertdialog', {
     name: 'Delete this transaction?',
   });
+
   const confirmationInput = confirmation.getByLabel('Type "delete" to confirm');
+
   const deleteButton = confirmation.getByRole('button', {
     name: 'Delete',
     exact: true,
@@ -378,9 +388,11 @@ test('keeps delete confirmation open when deletion fails', async ({ page }) => {
 
   const drawer = page.getByRole('dialog', { name: 'Transaction details' });
   await drawer.getByRole('button', { name: 'Delete', exact: true }).click();
+
   const confirmation = page.getByRole('alertdialog', {
     name: 'Delete this transaction?',
   });
+
   await confirmation.getByLabel('Type "delete" to confirm').fill('delete');
   await confirmation
     .getByRole('button', { name: 'Delete', exact: true })
@@ -405,9 +417,11 @@ test('archives instead of deleting and returns to the refreshed transactions pag
   let archived = false;
   let requestCount = 0;
   let releaseResponse = () => {};
+
   const responseGate = new Promise<void>((resolve) => {
     releaseResponse = resolve;
   });
+
   await page.route('**/api/v1/journal-entries?*', async (route) => {
     const data = archived ? journalEntries.slice(1) : journalEntries;
     await route.fulfill({
@@ -434,15 +448,19 @@ test('archives instead of deleting and returns to the refreshed transactions pag
   await page.getByRole('button', { name: 'Open transaction' }).first().click();
   const drawer = page.getByRole('dialog', { name: 'Transaction details' });
   await drawer.getByRole('button', { name: 'Delete', exact: true }).click();
+
   const confirmation = page.getByRole('alertdialog', {
     name: 'Delete this transaction?',
   });
+
   await confirmation
     .getByRole('button', { name: 'Archive instead', exact: true })
     .click();
+
   const pendingButton = confirmation.getByRole('button', {
     name: 'Archiving...',
   });
+
   await expect(pendingButton).toBeDisabled();
   await expect(pendingButton).toHaveAttribute('aria-busy', 'true');
   await expect(
@@ -485,8 +503,10 @@ test('closes archive confirmation on failure and shows the error', async ({
             validationErrors: [],
           },
         });
+
         return;
       }
+
       await route.fulfill({
         json: { ...journalEntries[0], status: 'archived', version: 2 },
       });
@@ -496,9 +516,11 @@ test('closes archive confirmation on failure and shows the error', async ({
   await page.getByRole('button', { name: 'Open transaction' }).first().click();
   const drawer = page.getByRole('dialog', { name: 'Transaction details' });
   await drawer.getByRole('button', { name: 'Archive', exact: true }).click();
+
   const confirmation = page.getByRole('alertdialog', {
     name: 'Archive this transaction?',
   });
+
   await confirmation
     .getByRole('button', { name: 'Archive', exact: true })
     .click();

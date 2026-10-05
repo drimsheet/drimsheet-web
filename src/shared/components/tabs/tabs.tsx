@@ -15,9 +15,11 @@ export function Tabs({
 
     event.preventDefault();
     const enabledItems = items.filter((item) => !item.disabled);
+
     const selectedIndex = enabledItems.findIndex(
       (item) => item.value === value
     );
+
     let nextIndex: number;
 
     if (event.key === 'Home') {

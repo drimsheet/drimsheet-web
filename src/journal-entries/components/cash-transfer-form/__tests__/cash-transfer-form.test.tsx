@@ -309,6 +309,7 @@ describe('CashTransferForm', () => {
 
   it('preserves an inverted transfer rate through submission', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: {
         sourceAccountId: 'source-usd',
@@ -355,6 +356,7 @@ describe('CashTransferForm', () => {
 
   it('submits normalized sent and received values', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: {
         ...defaultInitialValues,

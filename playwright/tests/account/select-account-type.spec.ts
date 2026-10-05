@@ -42,8 +42,10 @@ async function registerAccountPageRoutes(page: Page) {
   await page.route(exchangeRatesEndpoint, async (route) => {
     const url = new URL(route.request().url());
     const currencyPair = url.searchParams.get('currencyPair') ?? '';
+
     const [baseCurrencyCode = '', targetCurrencyCode = ''] =
       currencyPair.split('/');
+
     const asOf = url.searchParams.get('asOf') ?? '';
 
     await route.fulfill({
@@ -107,6 +109,7 @@ test.describe('Account Type Selection Flow', () => {
     const selectionDialog = page.getByRole('dialog').filter({
       has: page.getByRole('heading', { name: /select account type/i }),
     });
+
     await expect(selectionDialog).toBeVisible();
 
     // Select Petty cash
@@ -115,6 +118,7 @@ test.describe('Account Type Selection Flow', () => {
     const continueButton = selectionDialog.getByRole('button', {
       name: /continue/i,
     });
+
     await expect(continueButton).toBeEnabled();
     await continueButton.click();
 
@@ -123,6 +127,7 @@ test.describe('Account Type Selection Flow', () => {
     const pettyCashDialog = page.getByRole('dialog').filter({
       has: page.getByRole('heading', { name: /create petty cash account/i }),
     });
+
     await expect(pettyCashDialog).toBeVisible();
 
     // Intercept POST creation request and verify payload
@@ -157,6 +162,7 @@ test.describe('Account Type Selection Flow', () => {
     const createButton = pettyCashDialog.getByRole('button', {
       name: /create account/i,
     });
+
     await expect(createButton).toBeEnabled();
     await createButton.click();
 
@@ -189,15 +195,18 @@ test.describe('Account Type Selection Flow', () => {
     await signInAndNavigateToAccounts(page);
 
     await page.getByRole('button', { name: 'Add account' }).click();
+
     const selectionDialog = page.getByRole('dialog').filter({
       has: page.getByRole('heading', { name: /select account type/i }),
     });
+
     await selectionDialog.getByRole('radio', { name: /petty cash/i }).click();
     await selectionDialog.getByRole('button', { name: /continue/i }).click();
 
     const pettyCashDialog = page.getByRole('dialog').filter({
       has: page.getByRole('heading', { name: /create petty cash account/i }),
     });
+
     await expect(pettyCashDialog).toBeVisible();
 
     let capturedRequestBody: IPettyCashAccountCreationReq | null = null;
@@ -221,6 +230,7 @@ test.describe('Account Type Selection Flow', () => {
     const exchangeRateRequestPromise = page.waitForRequest((request) =>
       request.url().includes('/api/v1/currencies/exchange-rates')
     );
+
     await pettyCashDialog
       .getByRole('button', { name: /opening date/i })
       .click();
@@ -278,17 +288,21 @@ test.describe('Account Type Selection Flow', () => {
     const selectionDialog = page.getByRole('dialog').filter({
       has: page.getByRole('heading', { name: /select account type/i }),
     });
+
     await expect(selectionDialog).toBeVisible();
 
     const bankRadio = selectionDialog.getByRole('radio', {
       name: /bank account/i,
     });
+
     const pettyCashRadio = selectionDialog.getByRole('radio', {
       name: /petty cash/i,
     });
+
     const virtualAccountRadio = selectionDialog.getByRole('radio', {
       name: /virtual account/i,
     });
+
     const creditCardRadio = selectionDialog.getByRole('radio', {
       name: /credit card/i,
     });
@@ -303,6 +317,7 @@ test.describe('Account Type Selection Flow', () => {
     const continueButton = selectionDialog.getByRole('button', {
       name: /continue/i,
     });
+
     await expect(continueButton).toBeDisabled();
 
     await virtualAccountRadio.click();
@@ -318,9 +333,11 @@ test.describe('Account Type Selection Flow', () => {
     await signInAndNavigateToAccounts(page);
 
     await page.getByRole('button', { name: 'Add account' }).click();
+
     const selectionDialog = page.getByRole('dialog').filter({
       has: page.getByRole('heading', { name: /select account type/i }),
     });
+
     await selectionDialog.getByRole('radio', { name: /petty cash/i }).click();
     await selectionDialog.getByRole('button', { name: /continue/i }).click();
 
@@ -360,9 +377,11 @@ test.describe('Account Type Selection Flow', () => {
     });
 
     await page.getByRole('button', { name: 'Add account' }).click();
+
     const selectionDialog = page.getByRole('dialog').filter({
       has: page.getByRole('heading', { name: /select account type/i }),
     });
+
     await selectionDialog.getByRole('radio', { name: /petty cash/i }).click();
     await selectionDialog.getByRole('button', { name: /continue/i }).click();
 

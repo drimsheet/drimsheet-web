@@ -6,6 +6,7 @@ const meta = {
   component: Toaster,
   tags: ['autodocs'],
 } satisfies Meta<typeof Toaster>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 

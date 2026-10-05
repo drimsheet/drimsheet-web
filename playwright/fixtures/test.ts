@@ -26,6 +26,7 @@ export const test = base.extend<IFeatureFlagFixtures>({
 
     if (!collectCoverage) {
       await use(page);
+
       return;
     }
 
@@ -41,6 +42,7 @@ export const test = base.extend<IFeatureFlagFixtures>({
     await use(page);
 
     const coverage = await page.coverage.stopJSCoverage();
+
     const applicationCoverage = coverage.filter(({ url }) => {
       try {
         const sourcePath = new URL(url).pathname;
@@ -54,6 +56,7 @@ export const test = base.extend<IFeatureFlagFixtures>({
         return false;
       }
     });
+
     const outputPath = testInfo.outputPath('v8-coverage.json');
 
     await mkdir(path.dirname(outputPath), { recursive: true });

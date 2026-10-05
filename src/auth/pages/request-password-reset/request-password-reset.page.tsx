@@ -26,6 +26,7 @@ export function RequestPasswordResetPage() {
 
   const handleRequestReset = async (email: string) => {
     if (inFlight) return;
+
     setInFlight(true);
     try {
       await requestPasswordReset(email);
@@ -42,6 +43,7 @@ export function RequestPasswordResetPage() {
 
   const handleResend = async () => {
     if (!submittedEmail || inFlight) return;
+
     setInFlight(true);
     try {
       await requestPasswordReset(submittedEmail);

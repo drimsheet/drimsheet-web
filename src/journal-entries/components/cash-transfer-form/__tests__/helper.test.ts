@@ -134,15 +134,18 @@ describe('cashTransferFormHelpers', () => {
       isItemized: false,
       items: [],
     };
+
     const sentUpdated = cashTransferFormHelpers.updateAmountSent(
       forexValues,
       { amount: 200, currencyCode: 'USD', isMinorUnit: false },
       1500
     );
+
     const rateUpdated = cashTransferFormHelpers.updateExchangeRate(
       sentUpdated,
       { value: 1000, inverted: false }
     );
+
     const receivedUpdated = cashTransferFormHelpers.updateAmountReceived(
       rateUpdated,
       { amount: 250000, currencyCode: 'NGN', isMinorUnit: false }
@@ -171,10 +174,12 @@ describe('cashTransferFormHelpers', () => {
       isItemized: false,
       items: [],
     };
+
     const rateUpdated = cashTransferFormHelpers.updateExchangeRate(
       invertedValues,
       { value: 0.002, inverted: true }
     );
+
     const receivedUpdated = cashTransferFormHelpers.updateAmountReceived(
       invertedValues,
       { amount: 200000, currencyCode: 'NGN', isMinorUnit: false }
@@ -189,6 +194,7 @@ describe('cashTransferFormHelpers', () => {
 
   it('recalculates received value when committed charges change', () => {
     const item = cashTransferFormHelpers.createItem('fee-2', 'NGN');
+
     const chargedValues = cashTransferFormHelpers.updateItems(
       { ...values, amountSent: { ...values.amountSent, amount: 110 } },
       [{ ...item, amount: { ...item.amount, amount: 10 } }]
@@ -207,6 +213,7 @@ describe('cashTransferFormHelpers', () => {
       'usd-bank',
       'USD'
     );
+
     const destinationUpdated = cashTransferFormHelpers.updateDestinationAccount(
       sourceUpdated,
       'usd-cash',
@@ -291,10 +298,12 @@ describe('cashTransferFormHelpers', () => {
       },
       exchangeRate: null,
     };
+
     const normalized = cashTransferFormHelpers.normalizeValues(
       forexValues,
       officialRate
     );
+
     const singleEntry = cashTransferFormHelpers.normalizeValues({
       ...values,
       isItemized: false,

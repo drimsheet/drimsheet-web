@@ -8,6 +8,7 @@ const meta = {
   tags: ['autodocs'],
   parameters: { layout: 'centered' },
 } satisfies Meta<typeof RadioGroup>;
+
 export default meta;
 type Story = StoryObj<typeof meta>;
 

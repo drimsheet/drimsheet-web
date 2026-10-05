@@ -28,6 +28,7 @@ export function ResetPasswordPage() {
     helpers
   ) => {
     if (inFlight || isPending) return;
+
     setInFlight(true);
     try {
       await resetPassword({

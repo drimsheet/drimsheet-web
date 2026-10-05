@@ -197,6 +197,7 @@ async function registerOutflowPageRoutes(
 
   await page.route(exchangeRatesEndpoint, async (route) => {
     const url = new URL(route.request().url());
+
     const query = {
       asOf: url.searchParams.get('asOf'),
       currencyPair: url.searchParams.get('currencyPair'),
@@ -252,6 +253,7 @@ test.describe('Outflow payment creation', () => {
     page,
   }) => {
     let releasePostingAccounts: () => void = () => undefined;
+
     const postingAccountsGate = new Promise<void>((resolve) => {
       releasePostingAccounts = resolve;
     });
@@ -282,11 +284,13 @@ test.describe('Outflow payment creation', () => {
     page,
   }) => {
     const exchangeRates: IExchangeRateQuery[] = [];
+
     const queryLog: IOutflowQueryLog = {
       counterpartyLimits: [],
       exchangeRates,
       postingAccounts: [],
     };
+
     await registerOutflowPageRoutes(page, queryLog, {
       exchangeRateResponse: (query) => {
         if (!query.currencyPair || !query.asOf) return [];
@@ -328,10 +332,12 @@ test.describe('Outflow payment creation', () => {
     const previousDate = new Date(`${firstQuery.asOf}T00:00:00.000Z`);
     previousDate.setUTCDate(previousDate.getUTCDate() - 1);
     const previousApiDate = previousDate.toISOString().slice(0, 10);
+
     const previousWeekday = previousDate.toLocaleDateString('en-US', {
       timeZone: 'UTC',
       weekday: 'long',
     });
+
     const previousMonth = previousDate.toLocaleDateString('en-US', {
       month: 'long',
       timeZone: 'UTC',
@@ -369,16 +375,20 @@ test.describe('Outflow payment creation', () => {
       counterpartyLimits: [],
       postingAccounts: [],
     };
+
     await registerOutflowPageRoutes(page, queryLog);
+
     const uploadLog: IUploadLog = {
       directUploads: 0,
       preparationBody: null,
     };
+
     await registerAttachmentUploadRoutes(page, uploadLog);
 
     let capturedRequestBody: IPaymentEntryReq | null = null;
     let requestCount = 0;
     let releasePaymentResponse: () => void = () => undefined;
+
     const paymentResponseGate = new Promise<void>((resolve) => {
       releasePaymentResponse = resolve;
     });
@@ -429,6 +439,7 @@ test.describe('Outflow payment creation', () => {
 
     const body = capturedRequestBody as unknown as IPaymentEntryReq;
     const effectiveDate = body.effectiveDate;
+
     const exchangeRate = {
       baseCurrencyCode: 'USD',
       targetCurrencyCode: 'NGN',

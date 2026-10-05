@@ -9,10 +9,12 @@ import { configDefaults, defineConfig } from 'vitest/config';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 const packageMetadata = createRequire(import.meta.url)('./package.json') as {
   name: string;
   version: string;
 };
+
 const appRelease = `${packageMetadata.name}@${packageMetadata.version}`;
 
 function requireBuildValue(
@@ -31,8 +33,10 @@ function requireBuildValue(
 
 export default defineConfig(({ command, mode }) => {
   const environment = loadEnv(mode, __dirname, ['VITE_', 'SENTRY_']);
+
   const sentryBuildEnabled =
     command === 'build' && Boolean(environment.VITE_SENTRY_DSN?.trim());
+
   const plugins: PluginOption[] = [react(), tailwindcss()];
 
   if (sentryBuildEnabled) {

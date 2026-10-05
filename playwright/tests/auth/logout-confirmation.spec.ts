@@ -10,12 +10,15 @@ const password = 'Password1!';
 const loginEndpoint = '**/api/v1/auth/login-with-email';
 const logoutEndpoint = '**/api/v1/auth/logout';
 const dialogTitle = 'Are you sure you want to log out?';
+
 const dialogDescription =
   'You will need to log back in to access your account.';
+
 const logoutFailureMessage = 'Missing token.';
 
 function createResponseGate() {
   let resolve = () => {};
+
   const promise = new Promise<void>((complete) => {
     resolve = complete;
   });
@@ -51,9 +54,11 @@ async function openLogoutDialog(page: Page) {
       name: 'Open account management for Integration Entity',
     })
     .click();
+
   const accountManagementDialog = page.getByRole('dialog', {
     name: 'Account management',
   });
+
   await accountManagementDialog
     .getByRole('button', { name: 'Log out' })
     .click();

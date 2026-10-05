@@ -36,10 +36,12 @@ describe('useJournalEntries', () => {
       orderBy: EJournalEntrySortBy.EffectiveDate,
       sortDirection: EPaginationSortDirection.Desc,
     };
+
     const response = {
       data: [],
       meta: { page: 2, limit: 10, total: 0, totalPages: 0 },
     };
+
     vi.mocked(journalEntryService.getJournalEntries).mockResolvedValue(
       response
     );

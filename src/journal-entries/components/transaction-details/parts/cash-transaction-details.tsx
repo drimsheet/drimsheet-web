@@ -8,6 +8,7 @@ export function CashTransactionDetails({
 }: Readonly<CashTransactionDetailsProps>) {
   const { t } = useTranslation('journal-entries');
   const isInflow = details.direction === EJournalEntrySourceType.Receipt;
+
   const counterpartyNames = details.counterparties
     .map((counterparty) => counterparty.name)
     .join(', ');
@@ -15,18 +16,23 @@ export function CashTransactionDetails({
   const cashAccountLabel = isInflow
     ? t('transaction_details_received_into_label')
     : t('transaction_details_paid_from_label');
+
   const counterpartyLabel = isInflow
     ? t('transaction_details_received_from_label')
     : t('transaction_details_paid_to_label');
+
   const transactionSectionTitle = t(
     'transaction_details_transaction_section_title'
   );
+
   const cashAccountText = t('transaction_details_cash_account_text');
   const whatForTitle = t('transaction_details_what_for_title');
   const conversionTitle = t('transaction_details_conversion_title');
   const exchangeRateLabel = t('exchange_rate_label');
+
   const hasConversion =
     details.amount.currencyCode !== details.functionalAmount.currencyCode;
+
   const exchangeRateValue =
     details.exchangeRate && hasConversion
       ? t('transaction_details_exchange_rate_value', {

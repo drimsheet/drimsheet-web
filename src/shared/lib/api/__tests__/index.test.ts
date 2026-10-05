@@ -10,6 +10,7 @@ describe('drimsheetApi request correlation', () => {
 
   it('generates a distinct valid correlation ID for every Core request', async () => {
     const requests: InternalAxiosRequestConfig[] = [];
+
     const adapter: AxiosAdapter = async (config) => {
       requests.push(config);
 

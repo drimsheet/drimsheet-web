@@ -43,6 +43,7 @@ function createAccountingEntityCreationFormValidation(
       .required(messages.fiscalYearStartRequired)
       .test('is-recent', messages.fiscalYearStartTooOld, function (value) {
         if (!value) return true;
+
         return !dayjs(value).isBefore(dayjs().subtract(2, 'years'), 'day');
       }),
     fiscalYearEnd: yup
@@ -55,6 +56,7 @@ function createAccountingEntityCreationFormValidation(
         function (value) {
           const { fiscalYearStart } = this
             .parent as IAccountingEntityFormValues;
+
           if (!fiscalYearStart || !value) return true;
 
           const minimumEndDate = dayjs(fiscalYearStart)
@@ -67,14 +69,18 @@ function createAccountingEntityCreationFormValidation(
       .test('is-valid-max-duration', function (value) {
         const { countryCode, fiscalYearStart } = this
           .parent as IAccountingEntityFormValues;
+
         if (!fiscalYearStart || !value) return true;
 
         const jurisdiction = jurisdictions.find(
           ({ code }) => code === countryCode
         );
+
         const maxFiscalMonths =
           jurisdiction?.maxFiscalMonths ?? DEFAULT_MAX_FISCAL_MONTHS;
+
         const country = jurisdiction?.name ?? countryCode;
+
         const maximumEndDate = dayjs(fiscalYearStart)
           .add(maxFiscalMonths, 'month')
           .subtract(1, 'day');

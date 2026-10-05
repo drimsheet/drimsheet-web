@@ -49,10 +49,13 @@ export const counterpartyMapper = {
     };
 
     const orderBy = values.sortKey ? sortKeyMap[values.sortKey] : undefined;
+
     const status = values.filters.status?.[0] as
       | UCounterpartyStatus
       | undefined;
+
     const type = values.filters.type?.[0] as UCounterpartyType | undefined;
+
     const roles =
       values.filters.roles && values.filters.roles.length > 0
         ? (values.filters.roles as UCounterpartyRole[])
@@ -82,6 +85,7 @@ export const counterpartyMapper = {
 
   toVendorCreateReq(values: IVendorFormValues): ICounterpartyCreateReq {
     const address = values.address;
+
     const hasAddress =
       address &&
       (address.line1 ||

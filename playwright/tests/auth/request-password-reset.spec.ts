@@ -4,6 +4,7 @@ const resetEndpoint = '**/api/v1/auth/get-password-reset-link';
 
 function createResponseGate() {
   let resolve = () => {};
+
   const promise = new Promise<void>((complete) => {
     resolve = complete;
   });
@@ -75,6 +76,7 @@ test('gates request, disables controls, and sends exactly one POST', async ({
   const submitButton = page.getByRole('button', {
     name: 'Get password reset link',
   });
+
   await submitButton.click();
 
   await emailInput.press('Enter');
@@ -157,6 +159,7 @@ test('advances cooldown, resends request, and keeps success view while pending',
     if (requestCount === 2) {
       await responseGate.promise;
     }
+
     await route.fulfill({
       status: 200,
       json: { message: 'Password reset link sent' },
@@ -211,8 +214,10 @@ test('retains success view on resend API failure', async ({ page }) => {
           validationErrors: [],
         },
       });
+
       return;
     }
+
     await route.fulfill({
       status: 200,
       json: { message: 'Password reset link sent' },
@@ -260,6 +265,7 @@ test('reflows at 320px viewport without horizontal scroll', async ({
   const scrollWidth = await page.evaluate(
     () => document.documentElement.scrollWidth
   );
+
   expect(scrollWidth).toBeLessThanOrEqual(320);
 
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

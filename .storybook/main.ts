@@ -10,4 +10,5 @@ const config: StorybookConfig = {
   ],
   framework: '@storybook/react-vite',
 };
+
 export default config;

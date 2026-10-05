@@ -82,8 +82,10 @@ async function completeAccountingEntityForm(
       .getByRole('option', { name: new RegExp(reportingCurrency) })
       .click();
   }
+
   await dialog.getByRole('button', { name: 'Next' }).click();
   if (manual) await dialog.getByRole('radio', { name: /Manual/ }).check();
+
   await dialog.getByRole('button', { name: 'Complete setup' }).click();
 }
 
@@ -128,15 +130,19 @@ test('creates headers and all posting accounts sequentially before closing onboa
   page,
 }) => {
   let release!: () => void;
+
   const lastAccount = new Promise<void>((resolve) => {
     release = resolve;
   });
+
   await registerAuthenticatedAppRoutes(page);
+
   const state = await registerOnboardingRoutes(page, {
     beforePosting: async (index) => {
       if (index === 17) await lastAccount;
     },
   });
+
   await registerConfigurationRoutes(page);
   await signIn(page);
   await completeAccountingEntityForm(page, false, 'US Dollar');
@@ -187,6 +193,7 @@ test('creates headers and all posting accounts sequentially before closing onboa
     expect(call.body).not.toHaveProperty('controlAccountId');
     expect(call.body).not.toHaveProperty('controlAccountCode');
   }
+
   expect(calls[2].body).toEqual({
     name: catalog.receivables[0].name,
     isControlAccount: false,

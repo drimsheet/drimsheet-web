@@ -52,6 +52,7 @@ const validInitialValues: Partial<IBankAccountFormValues> = {
 function renderForm(props?: Partial<BankAccountFormProps>) {
   const onSubmit = props?.onSubmit ?? vi.fn();
   const onBankLocationChange = props?.onBankLocationChange ?? vi.fn();
+
   const onExchangeRateContextChange =
     props?.onExchangeRateContextChange ?? vi.fn();
 
@@ -136,15 +137,18 @@ describe('BankAccountForm', () => {
 
   it('handles field changes and location change callback', async () => {
     const user = userEvent.setup();
+
     const { onBankLocationChange } = renderForm({
       initialValues: validInitialValues,
     });
 
     const locationInput = screen.getByPlaceholderText('Select a country');
     await user.click(locationInput);
+
     const usOption = await screen.findByRole('option', {
       name: /United States/i,
     });
+
     await user.click(usOption);
 
     expect(onBankLocationChange).toHaveBeenCalledWith('US');
@@ -152,12 +156,14 @@ describe('BankAccountForm', () => {
     const createWithoutBalanceCheckbox = screen.getByLabelText(
       'Create without an opening balance'
     );
+
     await user.click(createWithoutBalanceCheckbox);
     expect(screen.getByLabelText('Opening balance')).toBeDisabled();
   });
 
   it('submits a valid bank account form', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: validInitialValues,
     });
@@ -183,6 +189,7 @@ describe('BankAccountForm', () => {
 
   it('submits a foreign currency bank account with exchange rate', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: {
         ...validInitialValues,
@@ -205,6 +212,7 @@ describe('BankAccountForm', () => {
 
   it('preserves an inverted foreign-currency rate through submission', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: {
         ...validInitialValues,
@@ -227,6 +235,7 @@ describe('BankAccountForm', () => {
 
   it('uses an official exchange rate when no manual rate is entered', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: {
         ...validInitialValues,
@@ -249,6 +258,7 @@ describe('BankAccountForm', () => {
 
   it('keeps a manual exchange rate when an official rate is available', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: {
         ...validInitialValues,
@@ -271,6 +281,7 @@ describe('BankAccountForm', () => {
 
   it('reports the complete context when opening-balance eligibility changes', async () => {
     const user = userEvent.setup();
+
     const { onExchangeRateContextChange } = renderForm({
       initialValues: validInitialValues,
     });
@@ -297,6 +308,7 @@ describe('BankAccountForm', () => {
 
   it('submits sub account checkbox state', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: validInitialValues,
     });
@@ -315,6 +327,7 @@ describe('BankAccountForm', () => {
 
   it('submits form values unchanged when opening balance creation is disabled', async () => {
     const user = userEvent.setup();
+
     const { onSubmit } = renderForm({
       initialValues: {
         ...validInitialValues,
@@ -358,9 +371,11 @@ describe('BankAccountFormContainer', () => {
 
     const locationInput = screen.getByPlaceholderText('Select a country');
     await user.click(locationInput);
+
     const usOption = await screen.findByRole('option', {
       name: /United States/i,
     });
+
     await user.click(usOption);
 
     expect(locationInput).toHaveValue('United States');

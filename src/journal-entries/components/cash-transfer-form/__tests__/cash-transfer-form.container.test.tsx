@@ -113,6 +113,7 @@ describe('CashTransferFormContainer', () => {
 
   it('uploads the receipt and creates a mapped transfer', async () => {
     const user = userEvent.setup();
+
     const attachment = new File(['receipt'], 'receipt.pdf', {
       type: 'application/pdf',
     });

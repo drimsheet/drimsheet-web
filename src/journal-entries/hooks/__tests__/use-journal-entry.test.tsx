@@ -27,6 +27,7 @@ describe('useJournalEntry', () => {
     vi.mocked(journalEntryService.getJournalEntry).mockResolvedValue({
       id: 'entry-1',
     } as never);
+
     const { result } = renderHook(() => useJournalEntry('entry-1'), {
       wrapper: createWrapper(),
     });
@@ -58,7 +59,9 @@ describe('useJournalEntry', () => {
         headers: {},
       },
     } as AxiosError;
+
     vi.mocked(journalEntryService.getJournalEntry).mockRejectedValue(error);
+
     const { result } = renderHook(() => useJournalEntry('missing-entry'), {
       wrapper: createWrapper(),
     });

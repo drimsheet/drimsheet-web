@@ -154,6 +154,7 @@ describe('AccountCombobox', () => {
     const option = await screen.findByRole('option', {
       name: /Trade Payables/i,
     });
+
     expect(option).toBeInTheDocument();
 
     await user.click(option);
