@@ -36,19 +36,15 @@ describe('journalEntryService', () => {
       } as never
     );
 
-    await journalEntryService.deleteJournalEntry('entry-1', {
-      expectedVersion: 3,
-    });
+    await journalEntryService.deleteJournalEntry('entry-1');
 
     expect(drimsheetApi.journalEntries.deleteJournalEntry).toHaveBeenCalledWith(
-      'entry-1',
-      { expectedVersion: 3 }
+      'entry-1'
     );
   });
 
   it('delegates rectification to the generated operation', async () => {
     const payload = {
-      expectedVersion: 1,
       attachments: [],
       effectiveDate: '2026-09-21',
       postedAt: null,

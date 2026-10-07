@@ -56,7 +56,6 @@ const line = (
   functionalAmount,
   side: 'debit',
   description,
-  version: 1,
   createdAt: timestamp,
   updatedAt: timestamp,
 });
@@ -75,7 +74,6 @@ const entry = (
   postedAt: timestamp,
   voidedAt: null,
   voidingEntryId: null,
-  version: 1,
   createdBy: authenticatedUser.id,
   createdAt: timestamp,
   updatedAt: timestamp,
@@ -317,7 +315,7 @@ test('requires typing delete before confirming transaction deletion', async ({
   await page.route('**/api/v1/journal-entries/payment-1', async (route) => {
     requestCount += 1;
     expect(route.request().method()).toBe('DELETE');
-    expect(route.request().postDataJSON()).toEqual({ expectedVersion: 1 });
+    expect(route.request().postData()).toBeNull();
     deleted = true;
     await route.fulfill({ status: 204 });
   });
@@ -436,11 +434,11 @@ test('archives instead of deleting and returns to the refreshed transactions pag
     async (route) => {
       requestCount += 1;
       expect(route.request().method()).toBe('POST');
-      expect(route.request().postDataJSON()).toEqual({ expectedVersion: 1 });
+      expect(route.request().postData()).toBeNull();
       await responseGate;
       archived = true;
       await route.fulfill({
-        json: { ...journalEntries[0], status: 'archived', version: 2 },
+        json: { ...journalEntries[0], status: 'archived' },
       });
     }
   );
@@ -508,7 +506,7 @@ test('closes archive confirmation on failure and shows the error', async ({
       }
 
       await route.fulfill({
-        json: { ...journalEntries[0], status: 'archived', version: 2 },
+        json: { ...journalEntries[0], status: 'archived' },
       });
     }
   );

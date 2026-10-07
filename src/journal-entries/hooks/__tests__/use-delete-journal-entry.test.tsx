@@ -19,7 +19,7 @@ function setup() {
   const listKey = [...journalEntriesQueryKey, { page: 1 }];
   const detailKey = journalEntryQueryKey('entry-1');
   queryClient.setQueryData(listKey, { data: [{ id: 'entry-1' }] });
-  queryClient.setQueryData(detailKey, { id: 'entry-1', version: 3 });
+  queryClient.setQueryData(detailKey, { id: 'entry-1' });
 
   const wrapper = ({ children }: Readonly<{ children: ReactNode }>) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -36,22 +36,18 @@ function setup() {
 describe('useDeleteJournalEntry', () => {
   beforeEach(() => vi.resetAllMocks());
 
-  it('deletes the requested version and invalidates cached lists and transaction details', async () => {
+  it('deletes the requested transaction and invalidates cached lists and details', async () => {
     vi.mocked(journalEntryService.deleteJournalEntry).mockResolvedValue(
       undefined
     );
     const { result, queryClient, listKey, detailKey } = setup();
 
     await act(async () => {
-      await result.current.mutateAsync({
-        id: 'entry-1',
-        payload: { expectedVersion: 3 },
-      });
+      await result.current.mutateAsync('entry-1');
     });
 
     expect(journalEntryService.deleteJournalEntry).toHaveBeenCalledWith(
-      'entry-1',
-      { expectedVersion: 3 }
+      'entry-1'
     );
     expect(queryClient.getQueryState(listKey)?.isInvalidated).toBe(true);
     expect(queryClient.getQueryState(detailKey)?.isInvalidated).toBe(true);
@@ -63,19 +59,11 @@ describe('useDeleteJournalEntry', () => {
     const { result, queryClient, listKey, detailKey } = setup();
 
     await act(async () => {
-      await expect(
-        result.current.mutateAsync({
-          id: 'entry-1',
-          payload: { expectedVersion: 3 },
-        })
-      ).rejects.toBe(error);
+      await expect(result.current.mutateAsync('entry-1')).rejects.toBe(error);
     });
 
     expect(queryClient.getQueryState(listKey)?.isInvalidated).toBe(false);
     expect(queryClient.getQueryState(detailKey)?.isInvalidated).toBe(false);
-    expect(queryClient.getQueryData(detailKey)).toEqual({
-      id: 'entry-1',
-      version: 3,
-    });
+    expect(queryClient.getQueryData(detailKey)).toEqual({ id: 'entry-1' });
   });
 });

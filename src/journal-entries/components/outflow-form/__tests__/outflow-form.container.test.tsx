@@ -88,7 +88,6 @@ const journalEntry = {
   postedAt: timestamp,
   voidedAt: null,
   voidingEntryId: null,
-  version: 2,
   createdBy: '00000000-0000-4000-8000-000000000100' as TEntityId,
   createdAt: timestamp,
   updatedAt: timestamp,
@@ -109,7 +108,6 @@ const journalEntry = {
       functionalAmount: transactionMoney,
       side: EJournalSide.Credit,
       description: 'Office supplies',
-      version: 1,
       createdAt: timestamp,
       updatedAt: timestamp,
     },
@@ -128,7 +126,6 @@ const journalEntry = {
       functionalAmount: transactionMoney,
       side: EJournalSide.Debit,
       description: 'Office supplies',
-      version: 1,
       createdAt: timestamp,
       updatedAt: timestamp,
     },
@@ -290,7 +287,6 @@ describe('OutflowFormContainer', () => {
       expect(rectifyJournalEntry).toHaveBeenCalledWith({
         id: 'payment-entry',
         payload: expect.objectContaining({
-          expectedVersion: 2,
           sourceType: 'payment',
           sourceLine: expect.objectContaining({ id: 'cash-line' }),
           destinationLines: [expect.objectContaining({ id: 'category-line' })],

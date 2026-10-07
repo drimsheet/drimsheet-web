@@ -1,9 +1,16 @@
+import { CounterpartyUpdateDialog } from '@/counterparty/dialogs/counterparty-update';
+import { useArchiveCounterparty } from '@/counterparty/hooks/use-archive-counterparty';
 import { useCounterparties } from '@/counterparty/hooks/use-counterparties';
 import { counterpartyMapper } from '@/counterparty/lib/mappers/counterparty.mapper';
+import { getCounterpartyFormRole } from '@/counterparty/lib/utils/counterparty-form';
+import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
 import type { ICounterpartyDto } from '@/shared/lib/api/Api';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { CounterpartiesTable } from './counterparties-table';
 
 interface CounterpartiesTableContainerProps {
@@ -13,13 +20,32 @@ interface CounterpartiesTableContainerProps {
 export function CounterpartiesTableContainer({
   onAddCounterparty,
 }: Readonly<CounterpartiesTableContainerProps>) {
-  const tableQuery = useTableQueryParams<keyof ICounterpartyDto, string>({
-    filterKeys: ['status', 'type', 'roles'],
-  });
+  const { t } = useTranslation('counterparty');
+  const [, setSearchParams] = useSearchParams();
+  const handleApiError = useApiErrorHandler();
+
+  const { mutateAsync: archive, isPending: archiving } =
+    useArchiveCounterparty();
+
+  const tableQuery = useTableQueryParams<
+    keyof ICounterpartyDto,
+    'status' | 'counterpartyType' | 'roles'
+  >({ filterKeys: ['status', 'counterpartyType', 'roles'] });
+
+  const updateFilters = tableQuery.handleFilterChange;
 
   const debouncedSearchQuery = useDebounce(tableQuery.searchQuery, 300);
   const [selectedRowIds, setSelectedRowIds] = useState<(string | number)[]>([]);
   const limit = 10;
+
+  const filters = useMemo(() => {
+    const { counterpartyType, ...remainingFilters } = tableQuery.filters;
+
+    return {
+      ...remainingFilters,
+      ...(counterpartyType ? { type: counterpartyType } : {}),
+    };
+  }, [tableQuery.filters]);
 
   const query = useMemo(
     () =>
@@ -29,11 +55,11 @@ export function CounterpartiesTableContainer({
         limit,
         sortKey: tableQuery.sortKey,
         sortDirection: tableQuery.sortDirection,
-        filters: tableQuery.filters,
+        filters,
       }),
     [
       debouncedSearchQuery,
-      tableQuery.filters,
+      filters,
       tableQuery.page,
       tableQuery.sortDirection,
       tableQuery.sortKey,
@@ -42,24 +68,84 @@ export function CounterpartiesTableContainer({
 
   const { data: counterpartiesData, isLoading } = useCounterparties(query);
 
+  const handleFilterChange = useCallback(
+    (nextFilters: Record<string, (string | number)[]>) => {
+      const { type, ...remainingFilters } = nextFilters;
+
+      updateFilters({
+        ...remainingFilters,
+        ...(type ? { counterpartyType: type } : {}),
+      });
+    },
+    [updateFilters]
+  );
+
+  const handleEditCounterparty = useCallback(
+    (counterparty: ICounterpartyDto) => {
+      setSearchParams((current) => {
+        const next = new URLSearchParams(current);
+        next.set('id', counterparty.id);
+        next.set('type', getCounterpartyFormRole(counterparty));
+        next.delete('edit');
+        next.delete('editCounterpartyRole');
+
+        return next;
+      });
+    },
+    [setSearchParams]
+  );
+
+  const handleCloseEdit = useCallback(() => {
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete('id');
+        next.delete('type');
+        next.delete('editCounterpartyRole');
+
+        return next;
+      },
+      { replace: true }
+    );
+  }, [setSearchParams]);
+
+  const handleArchiveCounterparty = async (counterparty: ICounterpartyDto) => {
+    try {
+      await archive(counterparty.id);
+      toast.success(t('counterparty_archived_success_text'));
+    } catch (error) {
+      handleApiError(error, { showToast: true });
+      throw error;
+    }
+  };
+
   return (
-    <CounterpartiesTable
-      getCounterpartyHref={(id) => `/counterparties/${encodeURIComponent(id)}`}
-      onAddCounterparty={onAddCounterparty}
-      data={counterpartiesData?.data ?? []}
-      loading={isLoading}
-      selectable
-      selectedRowIds={selectedRowIds}
-      onRowSelectionChange={setSelectedRowIds}
-      onSortChange={tableQuery.handleSortChange}
-      onFilterChange={tableQuery.handleFilterChange}
-      currentSortKey={tableQuery.sortKey as string}
-      currentSortDirection={tableQuery.sortDirection}
-      searchValue={tableQuery.searchQuery}
-      onSearchChange={tableQuery.handleSearchChange}
-      filters={tableQuery.filters}
-      pagination={counterpartiesData?.meta}
-      onPageChange={tableQuery.handlePageChange}
-    />
+    <>
+      <CounterpartiesTable
+        archiving={archiving}
+        getCounterpartyHref={(id) =>
+          `/counterparties/${encodeURIComponent(id)}`
+        }
+        onAddCounterparty={onAddCounterparty}
+        onArchiveCounterparty={handleArchiveCounterparty}
+        onEditCounterparty={handleEditCounterparty}
+        data={counterpartiesData?.data ?? []}
+        loading={isLoading}
+        selectable
+        selectedRowIds={selectedRowIds}
+        onRowSelectionChange={setSelectedRowIds}
+        onSortChange={tableQuery.handleSortChange}
+        onFilterChange={handleFilterChange}
+        currentSortKey={tableQuery.sortKey as string}
+        currentSortDirection={tableQuery.sortDirection}
+        searchValue={tableQuery.searchQuery}
+        onSearchChange={tableQuery.handleSearchChange}
+        filters={filters}
+        pagination={counterpartiesData?.meta}
+        onPageChange={tableQuery.handlePageChange}
+      />
+
+      <CounterpartyUpdateDialog onClose={handleCloseEdit} />
+    </>
   );
 }

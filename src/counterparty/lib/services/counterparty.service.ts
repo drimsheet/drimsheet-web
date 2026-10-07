@@ -7,6 +7,12 @@ import type {
 } from '@/shared/lib/api/Api';
 
 export const counterpartyService = {
+  async archiveCounterparty(id: string) {
+    const response = await drimsheetApi.counterparties.archiveCounterparty(id);
+
+    return response.data;
+  },
+
   async updateCounterparty(id: string, data: ICounterpartyUpdateReq) {
     const response = await drimsheetApi.counterparties.updateCounterparty(
       id,

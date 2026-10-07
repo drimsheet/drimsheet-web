@@ -28,7 +28,6 @@ const original: ICounterpartyDto = {
   id,
   accountingEntityId: '00000000-0000-4000-8000-000000000002',
   createdBy: authenticatedUser.id,
-  version: 3,
   name: 'Adenike Supplies',
   type: 'organization',
   status: 'active',
@@ -120,7 +119,6 @@ async function setup(page: Page, options: ISetupOptions = {}) {
         data.meta === undefined
           ? party.roles
           : (Object.keys(data.meta) as UCounterpartyRole[]),
-      version: party.version + 1,
       updatedAt: '2026-10-05T00:00:00Z',
     };
     await route.fulfill({ json: party });
@@ -222,7 +220,7 @@ test('updates an unused counterparty, changes its type, and refreshes detail/lis
   await dialog.getByRole('button', { name: 'Save changes' }).click();
   await expect(dialog).not.toBeVisible();
   expect(state.patches).toEqual([
-    { expectedVersion: 3, name: 'Updated counterparty', type: 'individual' },
+    { name: 'Updated counterparty', type: 'individual' },
   ]);
   expect(state.transactionWrites).toEqual([]);
   await expect(
@@ -249,7 +247,7 @@ for (const status of ['posted', 'archived'] as const)
       .fill('New name');
     await dialog.getByRole('button', { name: 'Save changes' }).click();
     await expect(dialog).not.toBeVisible();
-    expect(state.patches).toEqual([{ expectedVersion: 3, name: 'New name' }]);
+    expect(state.patches).toEqual([{ name: 'New name' }]);
     expect(state.usageRequests.map((query) => query.get('status'))).toEqual(
       expect.arrayContaining(['posted', 'archived'])
     );
@@ -348,7 +346,6 @@ test('uses the recorded role container and preserves the other roles and postal 
   await dialog.getByRole('button', { name: 'Save changes' }).click();
   await expect(dialog).not.toBeVisible();
   expect(state.patches[0]).toEqual({
-    expectedVersion: 3,
     meta: {
       vendor: { address: { ...address, city: 'Abuja' } },
       employer: party.meta.employer,
@@ -426,7 +423,6 @@ test('clears an optional vendor address and retains an initially null address on
   await dialog.getByRole('button', { name: 'Save changes' }).click();
   await expect(dialog).not.toBeVisible();
   expect(state.patches[0]).toEqual({
-    expectedVersion: 3,
     meta: { vendor: { address: null } },
   });
   const reopened = await open(page);
@@ -437,7 +433,6 @@ test('clears an optional vendor address and retains an initially null address on
   await reopened.getByRole('button', { name: 'Save changes' }).click();
   await expect(reopened).not.toBeVisible();
   expect(state.patches[1]).toEqual({
-    expectedVersion: 4,
     name: 'Vendor without address',
   });
   expect(state.transactionWrites).toEqual([]);
@@ -464,40 +459,8 @@ test('reports a raced type-use conflict without rewriting or retrying the failed
     dialog.getByRole('button', { name: /Retry|Reload latest/ })
   ).toHaveCount(0);
   expect(state.patches).toEqual([
-    { expectedVersion: 3, name: 'Retained name', type: 'individual' },
+    { name: 'Retained name', type: 'individual' },
   ]);
-});
-
-test('uses a fresh version after the user reloads the page following a stale-version conflict', async ({
-  page,
-}) => {
-  const state = await setup(page);
-  const dialog = await open(page);
-  await dialog.getByLabel('Name', { exact: true }).fill('Unsaved input');
-  state.setFailure('repo_error_version_conflict');
-  state.setParty({ ...original, name: 'Other user edit', version: 4 });
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(
-    page.getByText('Record version conflict.', { exact: true })
-  ).toBeVisible();
-  await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
-    'Unsaved input'
-  );
-  await expect(
-    dialog.getByRole('button', { name: 'Reload latest' })
-  ).toHaveCount(0);
-  expect(state.patches).toHaveLength(1);
-  await page.reload();
-  await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
-    'Other user edit'
-  );
-  await dialog.getByLabel('Name', { exact: true }).fill('Updated latest');
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog).not.toBeVisible();
-  expect(state.patches[1]).toEqual({
-    expectedVersion: 4,
-    name: 'Updated latest',
-  });
 });
 
 test('lets a failed usage check reach the app error boundary and recovers on page reload', async ({
@@ -519,7 +482,6 @@ test('lets a failed usage check reach the app error boundary and recovers on pag
   await dialog.getByRole('button', { name: 'Save changes' }).click();
   await expect(dialog).not.toBeVisible();
   expect(state.patches[0]).toEqual({
-    expectedVersion: 3,
     name: 'Allowed name',
   });
 });
@@ -705,7 +667,7 @@ test('opens a direct edit link using the route ID and fetched type even when the
   );
   await dialog.getByRole('button', { name: 'Cancel' }).click();
   await expect(page).toHaveURL(url);
-  state.setParty({ ...original, type: 'individual', version: 4 });
+  state.setParty({ ...original, type: 'individual' });
   const reopened = await open(page);
   await expect(reopened.getByRole('combobox', { name: 'Type' })).toHaveText(
     'Individual'
@@ -716,9 +678,7 @@ test('opens a direct edit link using the route ID and fetched type even when the
     .fill('Updated latest record');
   await reopened.getByRole('button', { name: 'Save changes' }).click();
   await expect(reopened).not.toBeVisible();
-  expect(state.patches).toEqual([
-    { expectedVersion: 4, name: 'Updated latest record' },
-  ]);
+  expect(state.patches).toEqual([{ name: 'Updated latest record' }]);
   expect(state.transactionWrites).toEqual([]);
 });
 

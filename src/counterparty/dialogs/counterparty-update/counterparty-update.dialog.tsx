@@ -40,6 +40,7 @@ export function CounterpartyUpdateDialog({
   const [busy, setBusy] = useState(false);
   const id = counterpartyId ?? params.get('id') ?? '';
   const valid = helpers.isValidLink(params, routeId, { counterpartyId, type });
+  const resolvedRole = helpers.getRole(params, role);
 
   const handleNormalize = (party: ICounterpartyDto) => {
     if (helpers.normalizeParams(params, counterpartyId, party) === params)
@@ -79,7 +80,7 @@ export function CounterpartyUpdateDialog({
         <Render
           key={id}
           valid={valid}
-          role={role}
+          role={resolvedRole}
           counterpartyId={id}
           onSuccess={onClose}
           onCancel={handleClose}

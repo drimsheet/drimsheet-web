@@ -20,13 +20,10 @@ describe('counterparty form predicates', () => {
     ).toBe('vendor');
   });
   it('detects edits and leaves unchanged requests alone', () => {
-    expect(hasCounterpartyChanges({ expectedVersion: 1 })).toBe(false);
-    expect(
-      hasCounterpartyChanges({ expectedVersion: 1, name: 'Changed' })
-    ).toBe(true);
+    expect(hasCounterpartyChanges({})).toBe(false);
+    expect(hasCounterpartyChanges({ name: 'Changed' })).toBe(true);
     expect(
       hasCounterpartyChanges({
-        expectedVersion: 1,
         meta: { vendor: { address: null } },
       })
     ).toBe(true);

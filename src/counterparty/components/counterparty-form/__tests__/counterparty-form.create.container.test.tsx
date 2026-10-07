@@ -27,7 +27,6 @@ const created: ICounterpartyDto = {
   status: 'active',
   roles: [],
   meta: {},
-  version: 1,
   createdBy: 'user',
   accountingEntityId: 'entity',
   createdAt: '2026-10-05T00:00:00Z',

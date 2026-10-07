@@ -15,7 +15,6 @@ const party: ICounterpartyDto = {
   id: 'one',
   accountingEntityId: 'entity',
   createdBy: 'actor',
-  version: 7,
   name: 'Original',
   type: 'organization',
   status: 'draft',
@@ -38,7 +37,6 @@ describe('counterparty update mapper', () => {
         true
       )
     ).toEqual({
-      expectedVersion: 7,
       name: undefined,
       type: undefined,
       meta: undefined,
@@ -47,13 +45,11 @@ describe('counterparty update mapper', () => {
   it('includes allowed type edits and omits a locked type', () => {
     const values = { name: 'Changed', type: 'individual' as const };
     expect(mapper.toCounterpartyUpdateReq(values, party, true)).toEqual({
-      expectedVersion: 7,
       name: 'Changed',
       type: 'individual',
       meta: undefined,
     });
     expect(mapper.toCounterpartyUpdateReq(values, party, false)).toEqual({
-      expectedVersion: 7,
       name: 'Changed',
       type: undefined,
       meta: undefined,
@@ -65,7 +61,6 @@ describe('counterparty update mapper', () => {
     expect(mapper.toContractorValues(party).address).toEqual(address);
 
     const unchanged = {
-      expectedVersion: 7,
       name: undefined,
       type: undefined,
       meta: undefined,
@@ -89,7 +84,6 @@ describe('counterparty update mapper', () => {
     const values = mapper.toVendorValues(party);
     values.address.city = 'Abuja';
     expect(mapper.toVendorUpdateReq(values, party, false)).toEqual({
-      expectedVersion: 7,
       name: undefined,
       type: undefined,
       meta: {
@@ -103,7 +97,6 @@ describe('counterparty update mapper', () => {
     const values = mapper.toVendorValues(party);
     values.address = {};
     expect(mapper.toVendorUpdateReq(values, party, true)).toEqual({
-      expectedVersion: 7,
       name: undefined,
       type: undefined,
       meta: {
@@ -123,7 +116,6 @@ describe('counterparty update mapper', () => {
     expect(
       mapper.toVendorUpdateReq(mapper.toVendorValues(baseline), baseline, true)
     ).toEqual({
-      expectedVersion: 7,
       name: undefined,
       type: undefined,
       meta: undefined,
@@ -142,7 +134,6 @@ describe('counterparty update mapper', () => {
     const values = mapper.toContractorValues(baseline);
     values.address.city = 'Abuja';
     expect(mapper.toContractorUpdateReq(values, baseline, false)).toEqual({
-      expectedVersion: 7,
       name: undefined,
       type: undefined,
       meta: {
@@ -156,7 +147,6 @@ describe('counterparty update mapper', () => {
     const values = mapper.toEmployerValues(party);
     values.displayName = '';
     expect(mapper.toEmployerUpdateReq(values, party, true)).toEqual({
-      expectedVersion: 7,
       name: undefined,
       type: undefined,
       meta: {
@@ -168,7 +158,6 @@ describe('counterparty update mapper', () => {
     const contractor = mapper.toContractorValues(party);
     contractor.address.line1 = 'New street';
     expect(mapper.toContractorUpdateReq(contractor, party, true)).toEqual({
-      expectedVersion: 7,
       name: undefined,
       type: undefined,
       meta: {

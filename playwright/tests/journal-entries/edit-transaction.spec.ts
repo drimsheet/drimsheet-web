@@ -18,7 +18,6 @@ const paymentEntry = {
   postedAt: timestamp,
   voidedAt: null,
   voidingEntryId: null,
-  version: 3,
   createdBy: authenticatedUser.id,
   createdAt: timestamp,
   updatedAt: timestamp,
@@ -35,7 +34,6 @@ const paymentEntry = {
       functionalAmount: money,
       side: 'credit',
       description: 'Original description',
-      version: 1,
       createdAt: timestamp,
       updatedAt: timestamp,
     },
@@ -50,7 +48,6 @@ const paymentEntry = {
       functionalAmount: money,
       side: 'debit',
       description: 'Original description',
-      version: 1,
       createdAt: timestamp,
       updatedAt: timestamp,
     },
@@ -196,7 +193,6 @@ test('loads a direct edit route and rectifies the prefilled transaction', async 
   await expect(page).toHaveURL('/transactions');
   expect(rectificationBodies).toEqual([
     expect.objectContaining({
-      expectedVersion: 3,
       sourceType: 'payment',
       memo: 'Updated description',
       attachments: [],

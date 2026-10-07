@@ -36,7 +36,6 @@ const empty = {
 
 const party: ICounterpartyDto = {
   id: 'one',
-  version: 8,
   accountingEntityId: 'entity',
   createdBy: 'actor',
   name: 'Updated',
@@ -51,7 +50,7 @@ const party: ICounterpartyDto = {
 beforeEach(() => vi.resetAllMocks());
 
 describe('counterparty update hooks', () => {
-  it('captures only a ready edit version and preserves it until the counterparty ID changes', () => {
+  it('captures only a ready edit baseline and preserves it until the counterparty ID changes', () => {
     const { result, rerender } = renderHook(
       ({ counterparty, ready }) =>
         useCounterpartyFormUpdate({
@@ -66,7 +65,7 @@ describe('counterparty update hooks', () => {
     expect(result.current.baseline).toBeUndefined();
     rerender({ counterparty: party, ready: true });
     expect(result.current.baseline).toBe(party);
-    const latest = { ...party, version: 9, name: 'Changed elsewhere' };
+    const latest = { ...party, name: 'Changed elsewhere' };
     rerender({ counterparty: latest, ready: true });
     expect(result.current.baseline).toBe(party);
     const other = { ...latest, id: 'two' };
@@ -80,7 +79,7 @@ describe('counterparty update hooks', () => {
 
   it('uses cached role information only as a placeholder while reading a fresh edit baseline', async () => {
     const { client, wrapper } = setup();
-    const cached = { ...party, version: 7, roles: ['vendor' as const] };
+    const cached = { ...party, roles: ['vendor' as const] };
     client.setQueryData(
       ['counterpartyService', 'getCounterparty', 'one'],
       cached
@@ -166,7 +165,7 @@ describe('counterparty update hooks', () => {
     client.setQueryData(transactionsKey, []);
     client.setQueryData(['unrelated'], 'keep');
     vi.mocked(counterpartyService.updateCounterparty).mockResolvedValue(party);
-    const request = { expectedVersion: 7, name: 'Updated' };
+    const request = { name: 'Updated' };
 
     const { result } = renderHook(() => useUpdateCounterparty('one'), {
       wrapper,
@@ -210,14 +209,14 @@ describe('counterparty update hooks', () => {
 
     await act(async () => {
       await expect(
-        result.current.mutateAsync({ expectedVersion: 7, name: 'Other' })
+        result.current.mutateAsync({ name: 'Other' })
       ).rejects.toThrow('conflict');
     });
     expect(
       client.getQueryData(['counterpartyService', 'getCounterparty', 'one'])
     ).toEqual(party);
   });
-  it('prevents an older in-flight read from replacing the saved version', async () => {
+  it('prevents an older in-flight read from replacing the saved record', async () => {
     const { client, wrapper } = setup();
     const key = ['counterpartyService', 'getCounterparty', 'one'];
     let finishRead!: (data: ICounterpartyDto) => void;
@@ -239,8 +238,8 @@ describe('counterparty update hooks', () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ expectedVersion: 7, name: 'Updated' });
-      finishRead({ ...party, name: 'Old', version: 7 });
+      await result.current.mutateAsync({ name: 'Updated' });
+      finishRead({ ...party, name: 'Old' });
       await pending;
     });
     expect(client.getQueryData(key)).toEqual(party);
