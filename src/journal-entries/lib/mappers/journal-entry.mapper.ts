@@ -530,7 +530,6 @@ function toPaymentJournalEntryRectificationReq(
   );
 
   return {
-    expectedVersion: journalEntry.version,
     attachments: copyAttachments(attachments),
     effectiveDate: payment.effectiveDate,
     postedAt: payment.postedAt,
@@ -577,7 +576,6 @@ function toReceiptJournalEntryRectificationReq(
   const originalSourceIds = new Set(sourceLines.map((line) => line.id));
 
   return {
-    expectedVersion: journalEntry.version,
     attachments: copyAttachments(attachments),
     effectiveDate: receipt.effectiveDate,
     postedAt: receipt.postedAt,
@@ -623,7 +621,6 @@ function toTransferJournalEntryRectificationReq(
   const originalChargeIds = new Set(chargeLines.map((line) => line.id));
 
   return {
-    expectedVersion: journalEntry.version,
     attachments: copyAttachments(attachments),
     effectiveDate: transfer.effectiveDate,
     postedAt: transfer.postedAt,

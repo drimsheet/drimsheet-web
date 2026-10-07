@@ -201,6 +201,17 @@ export const EAccountingEntityType = {
 export type UAccountingEntityType =
   (typeof EAccountingEntityType)[keyof typeof EAccountingEntityType];
 
+export const ETSupportedRevenueAccountBehavior = {
+  Services: 'services',
+  EmploymentIncome: 'employment_income',
+  GainOnAssetSale: 'gain_on_asset_sale',
+  UnrealizedGains: 'unrealized_gains',
+  Grants: 'grants',
+  Gifts: 'gifts',
+} as const;
+export type TSupportedRevenueAccountBehavior =
+  (typeof ETSupportedRevenueAccountBehavior)[keyof typeof ETSupportedRevenueAccountBehavior];
+
 export const ETSupportedExpenseAccountBehavior = {
   DefaultDirectCost: 'default_direct_cost',
   Cogs: 'cogs',
@@ -216,17 +227,6 @@ export const ETSupportedExpenseAccountBehavior = {
 } as const;
 export type TSupportedExpenseAccountBehavior =
   (typeof ETSupportedExpenseAccountBehavior)[keyof typeof ETSupportedExpenseAccountBehavior];
-
-export const ETSupportedRevenueAccountBehavior = {
-  Services: 'services',
-  EmploymentIncome: 'employment_income',
-  GainOnAssetSale: 'gain_on_asset_sale',
-  UnrealizedGains: 'unrealized_gains',
-  Grants: 'grants',
-  Gifts: 'gifts',
-} as const;
-export type TSupportedRevenueAccountBehavior =
-  (typeof ETSupportedRevenueAccountBehavior)[keyof typeof ETSupportedRevenueAccountBehavior];
 
 export const ECounterpartySortBy = {
   CreatedAt: 'createdAt',
@@ -279,11 +279,27 @@ export const ECounterpartyStatus = {
 export type UCounterpartyStatus =
   (typeof ECounterpartyStatus)[keyof typeof ECounterpartyStatus];
 
+/** Status accepted when proposing or creating a ledger subaccount. */
+export const ELedgerAccountCreationStatus = {
+  Active: 'active',
+  Draft: 'draft',
+} as const;
+export type ULedgerAccountCreationStatus =
+  (typeof ELedgerAccountCreationStatus)[keyof typeof ELedgerAccountCreationStatus];
+
 export const EJournalSide = {
   Debit: 'debit',
   Credit: 'credit',
 } as const;
 export type UJournalSide = (typeof EJournalSide)[keyof typeof EJournalSide];
+
+export const EExchangeRateType = {
+  Official: 'official',
+  Negotiated: 'negotiated',
+  Market: 'market',
+} as const;
+export type UExchangeRateType =
+  (typeof EExchangeRateType)[keyof typeof EExchangeRateType];
 
 export const EJournalEntryStatus = {
   Archived: 'archived',
@@ -301,22 +317,6 @@ export const ELedgerAccountBalanceEffect = {
 } as const;
 export type ULedgerAccountBalanceEffect =
   (typeof ELedgerAccountBalanceEffect)[keyof typeof ELedgerAccountBalanceEffect];
-
-export const EExchangeRateType = {
-  Official: 'official',
-  Negotiated: 'negotiated',
-  Market: 'market',
-} as const;
-export type UExchangeRateType =
-  (typeof EExchangeRateType)[keyof typeof EExchangeRateType];
-
-/** Status accepted when proposing or creating a ledger subaccount. */
-export const ELedgerAccountCreationStatus = {
-  Active: 'active',
-  Draft: 'draft',
-} as const;
-export type ULedgerAccountCreationStatus =
-  (typeof ELedgerAccountCreationStatus)[keyof typeof ELedgerAccountCreationStatus];
 
 export const EJournalEntrySourceType = {
   Expense: 'expense',
@@ -549,11 +549,6 @@ export interface IHttpErrorDto {
   cause?: TErrorCause;
 }
 
-export interface IUserPreferencesUpdateDto {
-  theme?: UAppThemePreference;
-  appUsageMode?: UAppUsageModePreference;
-}
-
 export interface IUserProfileDto {
   id: TEntityId;
   email: string;
@@ -564,6 +559,11 @@ export interface IUserProfileDto {
   createdAt: string;
   /** @format date-time */
   updatedAt: string;
+}
+
+export interface IUserPreferencesUpdateDto {
+  theme?: UAppThemePreference;
+  appUsageMode?: UAppUsageModePreference;
 }
 
 export interface IMoneyDto {
@@ -601,33 +601,6 @@ export interface ILedgerAccountDto {
   functionalBalance: IMoneyDto;
 }
 
-export interface IHeaderAccountNameAliasesReq {
-  cash_and_cash_equivalent?: string;
-  receivables?: string;
-  short_term_debt?: string;
-  payable?: string;
-  retained_earnings?: string;
-  opening_balance?: string;
-  services?: string;
-  employment_income?: string;
-  gain_on_asset_sale?: string;
-  unrealized_gains?: string;
-  grants?: string;
-  gifts?: string;
-  direct_costs?: string;
-  rent_and_utilities?: string;
-  bank_charge?: string;
-  finance_cost?: string;
-  interest?: string;
-  income_tax_expense?: string;
-  unrealized_loss?: string;
-  loss_on_asset_disposal?: string;
-  trade_receivables?: string;
-  statutory_receivables?: string;
-  trade_payables?: string;
-  statutory_payables?: string;
-}
-
 export interface IPaginationResponseMeta {
   /** @format double */
   page: number;
@@ -661,6 +634,7 @@ export interface IGetLedgerAccountsQuery {
   search?: string;
   /** @format double */
   page?: number;
+  status?: ULedgerAccountStatus;
   type?: ULedgerType;
   subType?: ULedgerAccountSubType;
   behavior?: string;
@@ -678,34 +652,6 @@ export interface IGetPermittedPostingAccountsQuery {
   limit?: number;
 }
 
-export interface IExchangeRateDto {
-  baseCurrencyCode: string;
-  targetCurrencyCode: string;
-  /** @format double */
-  rate: number;
-  type: UExchangeRateType;
-  /** @format date-time */
-  asOf: string;
-  source: string;
-}
-
-export interface IOpeningBalanceDto {
-  amount: IMoneyDto;
-  exchangeRate: IExchangeRateDto | null;
-  /** @format date-time */
-  date: string;
-}
-
-export interface IPettyCashAccountCreationReq {
-  name: string;
-  /** Defaults to active when omitted. */
-  status?: ULedgerAccountCreationStatus;
-  currencyCode: string;
-  isControlAccount: boolean;
-  controlAccountId?: string;
-  openingBalance: IOpeningBalanceDto | null;
-}
-
 export interface IJournalHeaderDto {
   sourceType: UJournalEntrySourceType;
   memo: string | null;
@@ -717,8 +663,6 @@ export interface IJournalHeaderDto {
   /** @format date-time */
   voidedAt: string | null;
   voidingEntryId: string | null;
-  /** @format double */
-  version: number;
   createdBy: TEntityId;
   /** @format date-time */
   createdAt: string;
@@ -753,8 +697,6 @@ export interface IAccountTransactionRes {
   functionalAmount: IMoneyDto;
   side: UJournalSide;
   description: string | null;
-  /** @format double */
-  version: number;
   /** @format date-time */
   createdAt: string;
   /** @format date-time */
@@ -776,6 +718,61 @@ export interface IPaginationDto {
   search?: string;
   /** @format double */
   page?: number;
+}
+
+export interface IHeaderAccountNameAliasesReq {
+  cash_and_cash_equivalent?: string;
+  receivables?: string;
+  short_term_debt?: string;
+  payable?: string;
+  retained_earnings?: string;
+  opening_balance?: string;
+  services?: string;
+  employment_income?: string;
+  gain_on_asset_sale?: string;
+  unrealized_gains?: string;
+  grants?: string;
+  gifts?: string;
+  direct_costs?: string;
+  rent_and_utilities?: string;
+  bank_charge?: string;
+  finance_cost?: string;
+  interest?: string;
+  income_tax_expense?: string;
+  unrealized_loss?: string;
+  loss_on_asset_disposal?: string;
+  trade_receivables?: string;
+  statutory_receivables?: string;
+  trade_payables?: string;
+  statutory_payables?: string;
+}
+
+export interface IExchangeRateDto {
+  baseCurrencyCode: string;
+  targetCurrencyCode: string;
+  /** @format double */
+  rate: number;
+  type: UExchangeRateType;
+  /** @format date-time */
+  asOf: string;
+  source: string;
+}
+
+export interface IOpeningBalanceDto {
+  amount: IMoneyDto;
+  exchangeRate: IExchangeRateDto | null;
+  /** @format date-time */
+  date: string;
+}
+
+export interface IPettyCashAccountCreationReq {
+  name: string;
+  /** Defaults to active when omitted. */
+  status?: ULedgerAccountCreationStatus;
+  currencyCode: string;
+  isControlAccount: boolean;
+  controlAccountId?: string;
+  openingBalance: IOpeningBalanceDto | null;
 }
 
 export interface IFileAttachment {
@@ -805,8 +802,6 @@ export interface IJournalLineListDto {
   functionalAmount: IMoneyDto;
   side: UJournalSide;
   description: string | null;
-  /** @format double */
-  version: number;
   /** @format date-time */
   createdAt: string;
   /** @format date-time */
@@ -824,8 +819,6 @@ export interface IJournalEntryListDto {
   /** @format date-time */
   voidedAt: string | null;
   voidingEntryId: string | null;
-  /** @format double */
-  version: number;
   createdBy: TEntityId;
   /** @format date-time */
   createdAt: string;
@@ -868,8 +861,6 @@ export interface IJournalLineDto {
   functionalAmount: IMoneyDto;
   side: UJournalSide;
   description: string | null;
-  /** @format double */
-  version: number;
   /** @format date-time */
   createdAt: string;
   /** @format date-time */
@@ -887,8 +878,6 @@ export interface IJournalEntryDto {
   /** @format date-time */
   voidedAt: string | null;
   voidingEntryId: string | null;
-  /** @format double */
-  version: number;
   createdBy: TEntityId;
   /** @format date-time */
   createdAt: string;
@@ -991,16 +980,6 @@ export interface ITransferEntryReq {
   memo: string | null;
 }
 
-export interface IJournalEntryArchiveReq {
-  /** @format double */
-  expectedVersion: number;
-}
-
-export interface IJournalEntryDeletionReq {
-  /** @format double */
-  expectedVersion: number;
-}
-
 export interface IJournalEntryRectificationDto {
   mode: UJournalEntryRectificationMode;
   originalJournalEntryId: string;
@@ -1021,8 +1000,6 @@ export interface IJournalEntryRectificationCounterpartyLineReq {
 }
 
 export interface IPaymentJournalEntryRectificationReq {
-  /** @format double */
-  expectedVersion: number;
   attachments: IFileAttachment[];
   /** @format date-time */
   effectiveDate: string;
@@ -1035,8 +1012,6 @@ export interface IPaymentJournalEntryRectificationReq {
 }
 
 export interface IReceiptJournalEntryRectificationReq {
-  /** @format double */
-  expectedVersion: number;
   attachments: IFileAttachment[];
   /** @format date-time */
   effectiveDate: string;
@@ -1070,8 +1045,6 @@ export interface IJournalEntryRectificationLineReq {
 }
 
 export interface ITransferJournalEntryRectificationReq {
-  /** @format double */
-  expectedVersion: number;
   attachments: IFileAttachment[];
   /** @format date-time */
   effectiveDate: string;
@@ -1164,8 +1137,6 @@ export interface ICounterpartyMetaDto {
 }
 
 export interface ICounterpartyDto {
-  /** @format double */
-  version: number;
   createdBy: string;
   id: string;
   accountingEntityId: string;
@@ -1178,40 +1149,6 @@ export interface ICounterpartyDto {
   createdAt: string;
   /** @format date-time */
   updatedAt: string;
-}
-
-export interface ICounterpartyCreateMetaReq {
-  employer?: {
-    address: IAddressDto;
-    displayName?: string | null;
-  };
-  vendor?: {
-    address?: IAddressDto | null;
-  };
-  contractor?: {
-    address: IAddressDto;
-  };
-}
-
-export interface ICounterpartyUpdateReq {
-  /**
-   * Version returned by the last read; stale writes fail with HTTP 409.
-   * @format double
-   */
-  expectedVersion: number;
-  name?: string;
-  type?: UCounterpartyType;
-  /** Omit for ordinary edits; Active explicitly requests Draft activation. */
-  status?: 'active';
-  /** Complete role replacement when supplied; {} clears all roles. */
-  meta?: ICounterpartyCreateMetaReq;
-}
-
-export interface ICounterpartyCreateReq {
-  name: string;
-  status: UCounterpartyStatus;
-  type: UCounterpartyType;
-  meta?: ICounterpartyCreateMetaReq;
 }
 
 export interface IPaginatedResponseICounterpartyDto {
@@ -1230,6 +1167,35 @@ export interface IGetCounterpartiesQuery {
   roles?: UCounterpartyRole[];
   type?: UCounterpartyType;
   status?: UCounterpartyStatus;
+}
+
+export interface ICounterpartyCreateMetaReq {
+  employer?: {
+    address: IAddressDto;
+    displayName?: string | null;
+  };
+  vendor?: {
+    address?: IAddressDto | null;
+  };
+  contractor?: {
+    address: IAddressDto;
+  };
+}
+
+export interface ICounterpartyCreateReq {
+  name: string;
+  status: UCounterpartyStatus;
+  type: UCounterpartyType;
+  meta?: ICounterpartyCreateMetaReq;
+}
+
+export interface ICounterpartyUpdateReq {
+  name?: string;
+  type?: UCounterpartyType;
+  /** Omit for ordinary edits; Active explicitly requests Draft activation. */
+  status?: 'active';
+  /** Complete role replacement when supplied; {} clears all roles. */
+  meta?: ICounterpartyCreateMetaReq;
 }
 
 export interface IBankDirectoryDto {
@@ -1307,24 +1273,14 @@ export interface IBankAccountCreationReq {
   openingBalance: IOpeningBalanceDto | null;
 }
 
-export interface ICreateRevenueAccountDto {
+export interface ICreateStatutoryReceivableAccountDto {
   name: string;
   /** Defaults to active when omitted. */
   status?: ULedgerAccountCreationStatus;
   isControlAccount: boolean;
   /** @format uuid */
   controlAccountId?: string;
-  behavior: TSupportedRevenueAccountBehavior;
-}
-
-export interface ICreateExpenseAccountDto {
-  name: string;
-  /** Defaults to active when omitted. */
-  status?: ULedgerAccountCreationStatus;
-  isControlAccount: boolean;
-  /** @format uuid */
-  controlAccountId?: string;
-  behavior: TSupportedExpenseAccountBehavior;
+  currencyCode: string;
 }
 
 export interface ICreateTradeReceivableAccountDto {
@@ -1337,7 +1293,22 @@ export interface ICreateTradeReceivableAccountDto {
   currencyCode: string;
 }
 
-export interface ICreateStatutoryReceivableAccountDto {
+export interface ICreateExpenseAccountDto {
+  name: string;
+  /** Defaults to active when omitted. */
+  status?: ULedgerAccountCreationStatus;
+  isControlAccount: boolean;
+  /** @format uuid */
+  controlAccountId?: string;
+  behavior: TSupportedExpenseAccountBehavior;
+}
+
+export interface IStatutoryPayableAccountMeta {
+  taxAuthority: string;
+  taxType: string;
+}
+
+export interface ICreateStatutoryPayableAccountDto {
   name: string;
   /** Defaults to active when omitted. */
   status?: ULedgerAccountCreationStatus;
@@ -1345,6 +1316,7 @@ export interface ICreateStatutoryReceivableAccountDto {
   /** @format uuid */
   controlAccountId?: string;
   currencyCode: string;
+  meta?: IStatutoryPayableAccountMeta | null;
 }
 
 export interface ICreateTradePayableAccountDto {
@@ -1362,20 +1334,14 @@ export interface ICreateTradePayableAccountDto {
   } | null;
 }
 
-export interface IStatutoryPayableAccountMeta {
-  taxAuthority: string;
-  taxType: string;
-}
-
-export interface ICreateStatutoryPayableAccountDto {
+export interface ICreateRevenueAccountDto {
   name: string;
   /** Defaults to active when omitted. */
   status?: ULedgerAccountCreationStatus;
   isControlAccount: boolean;
   /** @format uuid */
   controlAccountId?: string;
-  currencyCode: string;
-  meta?: IStatutoryPayableAccountMeta | null;
+  behavior: TSupportedRevenueAccountBehavior;
 }
 
 export interface ICreateSuspenseAccountDto {
@@ -1396,6 +1362,21 @@ export interface IAccountingEntity {
   createdAt: string;
   /** @format date-time */
   updatedAt: string;
+}
+
+export interface IAccountingStandardDto {
+  individual: string[];
+  sole_trader: string[];
+  private_company: string[];
+}
+
+export interface IJurisdictionDto {
+  code: string;
+  name: string;
+  currencyCode: string;
+  /** @format double */
+  maxFiscalMonths: number;
+  accountingStandards: IAccountingStandardDto;
 }
 
 /** Fiscal year creation DTO */
@@ -1433,21 +1414,6 @@ export interface IAccountingEntityCreationDto {
 
 export interface IAccountingEntitySwitchReq {
   accountingEntityId: string;
-}
-
-export interface IAccountingStandardDto {
-  individual: string[];
-  sole_trader: string[];
-  private_company: string[];
-}
-
-export interface IJurisdictionDto {
-  code: string;
-  name: string;
-  currencyCode: string;
-  /** @format double */
-  maxFiscalMonths: number;
-  accountingStandards: IAccountingStandardDto;
 }
 
 import type {
@@ -1700,26 +1666,6 @@ export class Api<
   };
   ledger = {
     /**
-     * @description Set up all 24 header, equity, and standard receivable/payable control accounts atomically, with optional translated names.
-     *
-     * @tags Ledger
-     * @name SetupHeaderAccounts
-     * @request POST:/ledger/header-accounts/setup
-     */
-    setupHeaderAccounts: (
-      data?: IHeaderAccountNameAliasesReq,
-      params: RequestParams = {}
-    ) =>
-      this.request<ILedgerAccountDto[], IHttpErrorDto>({
-        path: `/ledger/header-accounts/setup`,
-        method: 'POST',
-        body: data,
-        type: EContentType.Json,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
      * @description Get paginated ledger accounts with optional filters
      *
      * @tags Ledger
@@ -1735,6 +1681,7 @@ export class Api<
         search?: string;
         /** @format double */
         page?: number;
+        status?: ULedgerAccountStatus;
         type?: ULedgerType;
         subType?: ULedgerAccountSubType;
         behavior?: string;
@@ -1779,26 +1726,6 @@ export class Api<
       }),
 
     /**
-     * @description Create an Active or Draft petty-cash subaccount; status defaults to Active.
-     *
-     * @tags Asset Accounts, Ledger
-     * @name CreatePettyCashAccount
-     * @request POST:/ledger/asset/petty-cash
-     */
-    createPettyCashAccount: (
-      data: IPettyCashAccountCreationReq,
-      params: RequestParams = {}
-    ) =>
-      this.request<ILedgerAccountDto, IHttpErrorDto>({
-        path: `/ledger/asset/petty-cash`,
-        method: 'POST',
-        body: data,
-        type: EContentType.Json,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
      * @description Get a single ledger account by id
      *
      * @tags Ledger
@@ -1838,6 +1765,60 @@ export class Api<
         method: 'GET',
         query: query,
         format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Set up all 24 header, equity, and standard receivable/payable control accounts atomically, with optional translated names.
+     *
+     * @tags Ledger
+     * @name SetupHeaderAccounts
+     * @request POST:/ledger/header-accounts/setup
+     */
+    setupHeaderAccounts: (
+      data?: IHeaderAccountNameAliasesReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerAccountDto[], IHttpErrorDto>({
+        path: `/ledger/header-accounts/setup`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Create an Active or Draft petty-cash subaccount; status defaults to Active.
+     *
+     * @tags Asset Accounts, Ledger
+     * @name CreatePettyCashAccount
+     * @request POST:/ledger/asset/petty-cash
+     */
+    createPettyCashAccount: (
+      data: IPettyCashAccountCreationReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerAccountDto, IHttpErrorDto>({
+        path: `/ledger/asset/petty-cash`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Archives a non-header account and all control-account descendants, retaining history. Already archived accounts are no-ops. Header accounts return 400. Archived accounts cannot appear in new journals, including reversals.
+     *
+     * @tags Ledger
+     * @name ArchiveLedgerAccount
+     * @request POST:/ledger/{accountId}/archive
+     */
+    archiveLedgerAccount: (accountId: string, params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/ledger/${accountId}/archive`,
+        method: 'POST',
         ...params,
       }),
   };
@@ -1894,16 +1875,10 @@ export class Api<
      * @name DeleteJournalEntry
      * @request DELETE:/journal-entries/{id}
      */
-    deleteJournalEntry: (
-      id: string,
-      data: IJournalEntryDeletionReq,
-      params: RequestParams = {}
-    ) =>
+    deleteJournalEntry: (id: string, params: RequestParams = {}) =>
       this.request<void, IHttpErrorDto>({
         path: `/journal-entries/${id}`,
         method: 'DELETE',
-        body: data,
-        type: EContentType.Json,
         ...params,
       }),
 
@@ -1959,27 +1934,6 @@ export class Api<
       }),
 
     /**
-     * @description Archive a journal entry without changing its financial effect.
-     *
-     * @tags Journal Entry
-     * @name ArchiveJournalEntry
-     * @request POST:/journal-entries/{id}/archive
-     */
-    archiveJournalEntry: (
-      id: string,
-      data: IJournalEntryArchiveReq,
-      params: RequestParams = {}
-    ) =>
-      this.request<IJournalEntryDto, IHttpErrorDto>({
-        path: `/journal-entries/${id}/archive`,
-        method: 'POST',
-        body: data,
-        type: EContentType.Json,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
      * @description Correct a journal entry while preserving its accounting audit trail.
      *
      * @tags Journal Entry
@@ -1996,6 +1950,21 @@ export class Api<
         method: 'POST',
         body: data,
         type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Archive a journal entry without changing its financial effect.
+     *
+     * @tags Journal Entry
+     * @name ArchiveJournalEntry
+     * @request POST:/journal-entries/{id}/archive
+     */
+    archiveJournalEntry: (id: string, params: RequestParams = {}) =>
+      this.request<IJournalEntryDto, IHttpErrorDto>({
+        path: `/journal-entries/${id}/archive`,
+        method: 'POST',
         format: 'json',
         ...params,
       }),
@@ -2065,62 +2034,6 @@ export class Api<
   };
   counterparties = {
     /**
-     * @description Update details and optionally activate a Draft. Supplied metadata replaces all roles. A type change after transaction use returns 409 with field=type, reason=transaction_usage and nextAction=create_counterparty. This counterparty's type cannot be changed because it has been used in a transaction. Create a new counterparty if a different type is required.
-     *
-     * @tags Counterparty
-     * @name UpdateCounterparty
-     * @request PATCH:/counterparties/{id}
-     */
-    updateCounterparty: (
-      id: string,
-      data: ICounterpartyUpdateReq,
-      params: RequestParams = {}
-    ) =>
-      this.request<ICounterpartyDto, IHttpErrorDto>({
-        path: `/counterparties/${id}`,
-        method: 'PATCH',
-        body: data,
-        type: EContentType.Json,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * @description Get a counterparty by id
-     *
-     * @tags Counterparty
-     * @name GetCounterparty
-     * @request GET:/counterparties/{id}
-     */
-    getCounterparty: (id: string, params: RequestParams = {}) =>
-      this.request<ICounterpartyDto, IHttpErrorDto>({
-        path: `/counterparties/${id}`,
-        method: 'GET',
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * @description Create a new counterparty
-     *
-     * @tags Counterparty
-     * @name CreateCounterparty
-     * @request POST:/counterparties
-     */
-    createCounterparty: (
-      data: ICounterpartyCreateReq,
-      params: RequestParams = {}
-    ) =>
-      this.request<ICounterpartyDto, IHttpErrorDto>({
-        path: `/counterparties`,
-        method: 'POST',
-        body: data,
-        type: EContentType.Json,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
      * @description Get counterparties
      *
      * @tags Counterparty
@@ -2146,6 +2059,91 @@ export class Api<
         path: `/counterparties`,
         method: 'GET',
         query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Create a new counterparty
+     *
+     * @tags Counterparty
+     * @name CreateCounterparty
+     * @request POST:/counterparties
+     */
+    createCounterparty: (
+      data: ICounterpartyCreateReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<ICounterpartyDto, IHttpErrorDto>({
+        path: `/counterparties`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Get a counterparty by id
+     *
+     * @tags Counterparty
+     * @name GetCounterparty
+     * @request GET:/counterparties/{id}
+     */
+    getCounterparty: (id: string, params: RequestParams = {}) =>
+      this.request<ICounterpartyDto, IHttpErrorDto>({
+        path: `/counterparties/${id}`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Update details and optionally activate a Draft. Supplied metadata replaces all roles. A type change after transaction use returns 409 with field=type, reason=transaction_usage and nextAction=create_counterparty. This counterparty's type cannot be changed because it has been used in a transaction. Create a new counterparty if a different type is required.
+     *
+     * @tags Counterparty
+     * @name UpdateCounterparty
+     * @request PATCH:/counterparties/{id}
+     */
+    updateCounterparty: (
+      id: string,
+      data: ICounterpartyUpdateReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<ICounterpartyDto, IHttpErrorDto>({
+        path: `/counterparties/${id}`,
+        method: 'PATCH',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Permanently delete a counterparty with no remaining transaction references. References in archived transactions also block deletion. Returns 409 with reason=transaction_usage and nextAction=archive_counterparty; retain the counterparty and use POST /counterparties/{id}/archive instead.
+     *
+     * @tags Counterparty
+     * @name DeleteCounterparty
+     * @request DELETE:/counterparties/{id}
+     */
+    deleteCounterparty: (id: string, params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/counterparties/${id}`,
+        method: 'DELETE',
+        ...params,
+      }),
+
+    /**
+     * @description Archive a counterparty while retaining its details and transaction references. An already archived counterparty returns unchanged without another history or event.
+     *
+     * @tags Counterparty
+     * @name ArchiveCounterparty
+     * @request POST:/counterparties/{id}/archive
+     */
+    archiveCounterparty: (id: string, params: RequestParams = {}) =>
+      this.request<ICounterpartyDto, IHttpErrorDto>({
+        path: `/counterparties/${id}/archive`,
+        method: 'POST',
         format: 'json',
         ...params,
       }),
@@ -2224,42 +2222,6 @@ export class Api<
       }),
 
     /**
-     * @description Get password reset link
-     *
-     * @tags Auth
-     * @name GetPasswordResetLink
-     * @request POST:/auth/get-password-reset-link
-     */
-    getPasswordResetLink: (
-      data: IRequestPasswordResetReq,
-      params: RequestParams = {}
-    ) =>
-      this.request<void, IHttpErrorDto>({
-        path: `/auth/get-password-reset-link`,
-        method: 'POST',
-        body: data,
-        type: EContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * @description Reset password
-     *
-     * @tags Auth
-     * @name ResetPassword
-     * @request POST:/auth/reset-password
-     */
-    resetPassword: (data: IResetPasswordReq, params: RequestParams = {}) =>
-      this.request<IAccessToken, IHttpErrorDto>({
-        path: `/auth/reset-password`,
-        method: 'POST',
-        body: data,
-        type: EContentType.Json,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
      * @description Start the Google OAuth flow. Redirects the user to Google for authentication.
      *
      * @tags Auth
@@ -2320,6 +2282,42 @@ export class Api<
         method: 'POST',
         ...params,
       }),
+
+    /**
+     * @description Get password reset link
+     *
+     * @tags Auth
+     * @name GetPasswordResetLink
+     * @request POST:/auth/get-password-reset-link
+     */
+    getPasswordResetLink: (
+      data: IRequestPasswordResetReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/auth/get-password-reset-link`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description Reset password
+     *
+     * @tags Auth
+     * @name ResetPassword
+     * @request POST:/auth/reset-password
+     */
+    resetPassword: (data: IResetPasswordReq, params: RequestParams = {}) =>
+      this.request<IAccessToken, IHttpErrorDto>({
+        path: `/auth/reset-password`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
   };
   accounts = {
     /**
@@ -2358,38 +2356,18 @@ export class Api<
       }),
 
     /**
-     * @description Create an Active or Draft revenue subaccount; status defaults to Active.
+     * @description Create an Active or Draft statutory receivable subaccount; status defaults to Active.
      *
-     * @tags Revenue Accounts, Accounts
-     * @name CreateRevenueAccount
-     * @request POST:/accounts/revenues
+     * @tags Asset Accounts, Accounts
+     * @name CreateStatutoryReceivableAccount
+     * @request POST:/accounts/asset/receivables/statutory
      */
-    createRevenueAccount: (
-      data: ICreateRevenueAccountDto,
+    createStatutoryReceivableAccount: (
+      data: ICreateStatutoryReceivableAccountDto,
       params: RequestParams = {}
     ) =>
       this.request<ILedgerAccountDto, IHttpErrorDto>({
-        path: `/accounts/revenues`,
-        method: 'POST',
-        body: data,
-        type: EContentType.Json,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * @description Create an Active or Draft expense subaccount; status defaults to Active.
-     *
-     * @tags Expense Accounts, Accounts
-     * @name CreateExpenseAccount
-     * @request POST:/accounts/expenses
-     */
-    createExpenseAccount: (
-      data: ICreateExpenseAccountDto,
-      params: RequestParams = {}
-    ) =>
-      this.request<ILedgerAccountDto, IHttpErrorDto>({
-        path: `/accounts/expenses`,
+        path: `/accounts/asset/receivables/statutory`,
         method: 'POST',
         body: data,
         type: EContentType.Json,
@@ -2418,18 +2396,38 @@ export class Api<
       }),
 
     /**
-     * @description Create an Active or Draft statutory receivable subaccount; status defaults to Active.
+     * @description Create an Active or Draft expense subaccount; status defaults to Active.
      *
-     * @tags Asset Accounts, Accounts
-     * @name CreateStatutoryReceivableAccount
-     * @request POST:/accounts/asset/receivables/statutory
+     * @tags Expense Accounts, Accounts
+     * @name CreateExpenseAccount
+     * @request POST:/accounts/expenses
      */
-    createStatutoryReceivableAccount: (
-      data: ICreateStatutoryReceivableAccountDto,
+    createExpenseAccount: (
+      data: ICreateExpenseAccountDto,
       params: RequestParams = {}
     ) =>
       this.request<ILedgerAccountDto, IHttpErrorDto>({
-        path: `/accounts/asset/receivables/statutory`,
+        path: `/accounts/expenses`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Create an Active or Draft statutory payable subaccount; status defaults to Active.
+     *
+     * @tags Liability Accounts, Accounts
+     * @name CreateStatutoryPayableAccount
+     * @request POST:/accounts/liability/payables/statutory
+     */
+    createStatutoryPayableAccount: (
+      data: ICreateStatutoryPayableAccountDto,
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerAccountDto, IHttpErrorDto>({
+        path: `/accounts/liability/payables/statutory`,
         method: 'POST',
         body: data,
         type: EContentType.Json,
@@ -2458,18 +2456,18 @@ export class Api<
       }),
 
     /**
-     * @description Create an Active or Draft statutory payable subaccount; status defaults to Active.
+     * @description Create an Active or Draft revenue subaccount; status defaults to Active.
      *
-     * @tags Liability Accounts, Accounts
-     * @name CreateStatutoryPayableAccount
-     * @request POST:/accounts/liability/payables/statutory
+     * @tags Revenue Accounts, Accounts
+     * @name CreateRevenueAccount
+     * @request POST:/accounts/revenues
      */
-    createStatutoryPayableAccount: (
-      data: ICreateStatutoryPayableAccountDto,
+    createRevenueAccount: (
+      data: ICreateRevenueAccountDto,
       params: RequestParams = {}
     ) =>
       this.request<ILedgerAccountDto, IHttpErrorDto>({
-        path: `/accounts/liability/payables/statutory`,
+        path: `/accounts/revenues`,
         method: 'POST',
         body: data,
         type: EContentType.Json,
@@ -2499,21 +2497,16 @@ export class Api<
   };
   accounting = {
     /**
-     * @description Create a new accounting entity
+     * @description Get user accounting entities
      *
      * @tags Accounting
-     * @name CreateAccountingEntity
-     * @request POST:/accounting/accounting-entity
+     * @name GetUserAccountingEntities
+     * @request GET:/accounting/accounting-entities
      */
-    createAccountingEntity: (
-      data: IAccountingEntityCreationDto,
-      params: RequestParams = {}
-    ) =>
-      this.request<IAccountingEntity, IHttpErrorDto>({
-        path: `/accounting/accounting-entity`,
-        method: 'POST',
-        body: data,
-        type: EContentType.Json,
+    getUserAccountingEntities: (params: RequestParams = {}) =>
+      this.request<IAccountingEntity[], IHttpErrorDto>({
+        path: `/accounting/accounting-entities`,
+        method: 'GET',
         format: 'json',
         ...params,
       }),
@@ -2534,18 +2527,18 @@ export class Api<
       }),
 
     /**
-     * @description Switch the current accounting entity
+     * @description Create a new accounting entity
      *
      * @tags Accounting
-     * @name SwitchAccountingEntity
-     * @request POST:/accounting/accounting-entity/switch
+     * @name CreateAccountingEntity
+     * @request POST:/accounting/accounting-entity
      */
-    switchAccountingEntity: (
-      data: IAccountingEntitySwitchReq,
+    createAccountingEntity: (
+      data: IAccountingEntityCreationDto,
       params: RequestParams = {}
     ) =>
       this.request<IAccountingEntity, IHttpErrorDto>({
-        path: `/accounting/accounting-entity/switch`,
+        path: `/accounting/accounting-entity`,
         method: 'POST',
         body: data,
         type: EContentType.Json,
@@ -2569,16 +2562,21 @@ export class Api<
       }),
 
     /**
-     * @description Get user accounting entities
+     * @description Switch the current accounting entity
      *
      * @tags Accounting
-     * @name GetUserAccountingEntities
-     * @request GET:/accounting/accounting-entities
+     * @name SwitchAccountingEntity
+     * @request POST:/accounting/accounting-entity/switch
      */
-    getUserAccountingEntities: (params: RequestParams = {}) =>
-      this.request<IAccountingEntity[], IHttpErrorDto>({
-        path: `/accounting/accounting-entities`,
-        method: 'GET',
+    switchAccountingEntity: (
+      data: IAccountingEntitySwitchReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IAccountingEntity, IHttpErrorDto>({
+        path: `/accounting/accounting-entity/switch`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
         format: 'json',
         ...params,
       }),

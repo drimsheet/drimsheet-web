@@ -11,7 +11,6 @@ vi.mock('@/journal-entries/lib/services/journal-entry.service', () => ({
 }));
 
 const payload = {
-  expectedVersion: 2,
   attachments: [],
   effectiveDate: '2026-09-21',
   postedAt: null,

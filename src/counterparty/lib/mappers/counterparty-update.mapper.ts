@@ -117,7 +117,6 @@ function toUpdateReq(
   const initialMeta = toMeta(baseline);
 
   return {
-    expectedVersion: baseline.version,
     name: values.name !== baseline.name ? values.name : undefined,
     type:
       canChangeType && values.type !== baseline.type ? values.type : undefined,

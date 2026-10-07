@@ -67,7 +67,6 @@ const paymentJournalEntry = {
   postedAt: occurredAt,
   voidedAt: null,
   voidingEntryId: null,
-  version: 4,
   createdBy: '00000000-0000-4000-8000-000000000100' as TEntityId,
   createdAt: occurredAt,
   updatedAt: occurredAt,
@@ -99,7 +98,6 @@ const paymentJournalEntry = {
       },
       side: EJournalSide.Credit,
       description: null,
-      version: 1,
       createdAt: occurredAt,
       updatedAt: occurredAt,
     },
@@ -122,7 +120,6 @@ const paymentJournalEntry = {
       },
       side: EJournalSide.Debit,
       description: null,
-      version: 1,
       createdAt: occurredAt,
       updatedAt: occurredAt,
     },
@@ -746,7 +743,6 @@ describe('journalEntryMapper', () => {
     );
 
     expect(result).toMatchObject({
-      expectedVersion: 4,
       sourceType: 'payment',
       attachments: paymentJournalEntry.attachments,
       sourceLine: { id: 'cash-line' },

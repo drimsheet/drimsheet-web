@@ -32,7 +32,6 @@ function createLine(
     functionalAmount: { amount, currencyCode: 'NGN', isMinorUnit: false },
     side: EJournalSide.Debit,
     description: `${accountId} description`,
-    version: 1,
     createdAt: '2026-09-21T10:00:00.000Z',
     updatedAt: '2026-09-21T10:00:00.000Z',
   };
@@ -52,7 +51,6 @@ function createEntry(
     postedAt: '2026-09-21T10:00:00.000Z',
     voidedAt: null,
     voidingEntryId: null,
-    version: 3,
     createdBy: '00000000-0000-4000-8000-000000000100' as TEntityId,
     createdAt: '2026-09-21T10:00:00.000Z',
     updatedAt: '2026-09-21T10:00:00.000Z',

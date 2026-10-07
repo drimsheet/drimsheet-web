@@ -1,4 +1,4 @@
-import { Ellipsis, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -22,10 +22,12 @@ import {
   type UCounterpartyType,
 } from '@/shared/lib/api/Api';
 import { cn } from '@/shared/lib/utils/cn';
+import { CounterpartyRowActions } from './parts/counterparty-row-actions';
 import type { CounterpartiesTableProps } from './types';
 
 export function CounterpartiesTable({
   data,
+  archiving = false,
   getCounterpartyHref,
   loading = false,
   selectable = false,
@@ -44,6 +46,8 @@ export function CounterpartiesTable({
   onSearchChange,
   filters,
   onAddCounterparty,
+  onArchiveCounterparty,
+  onEditCounterparty,
 }: Readonly<CounterpartiesTableProps>) {
   const { t } = useTranslation(['counterparty', 'shared']);
   const getCounterpartyTypeLabel = useGetCounterpartyTypeLabel();
@@ -161,13 +165,14 @@ export function CounterpartiesTable({
         dataIndex: 'id',
         title: '',
         sortable: false,
-        render: () => {
-          return (
-            <Button variant="ghost" size="icon">
-              <Ellipsis />
-            </Button>
-          );
-        },
+        render: (_, row) => (
+          <CounterpartyRowActions
+            archiving={archiving}
+            counterparty={row}
+            onArchive={onArchiveCounterparty}
+            onEdit={onEditCounterparty}
+          />
+        ),
       },
     ];
   }, [
@@ -175,6 +180,9 @@ export function CounterpartiesTable({
     getCounterpartyTypeLabel,
     getCounterpartyRoleLabel,
     getCounterpartyHref,
+    archiving,
+    onArchiveCounterparty,
+    onEditCounterparty,
   ]);
 
   const search_placeholder_text = t('counterparty:search_placeholder');

@@ -7,7 +7,7 @@ import type {
 export interface CounterpartyUpdateDialogProps {
   counterpartyId?: string;
   type?: UCounterpartyType;
-  role: UCounterpartyRole | 'default';
+  role?: UCounterpartyRole | 'default';
   onClose: () => void;
 }
 
@@ -16,5 +16,5 @@ export interface RenderProps extends Pick<
   'counterpartyId' | 'onSuccess' | 'onCancel' | 'onBusyChange' | 'onLoaded'
 > {
   valid: boolean;
-  role: CounterpartyUpdateDialogProps['role'];
+  role: UCounterpartyRole | 'default';
 }

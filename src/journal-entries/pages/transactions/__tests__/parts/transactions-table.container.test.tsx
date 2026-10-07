@@ -31,7 +31,6 @@ const paymentEntry = {
   postedAt: '2026-09-16T10:00:00Z',
   voidedAt: null,
   voidingEntryId: null,
-  version: 1,
   createdBy: '00000000-0000-4000-8000-000000000100' as TEntityId,
   createdAt: '2026-09-16T10:00:00Z',
   updatedAt: '2026-09-16T10:00:00Z',
@@ -52,7 +51,6 @@ const paymentEntry = {
       functionalAmount: money,
       side: EJournalSide.Credit,
       description: null,
-      version: 1,
       createdAt: '2026-09-16T10:00:00Z',
       updatedAt: '2026-09-16T10:00:00Z',
     },
@@ -71,7 +69,6 @@ const paymentEntry = {
       functionalAmount: money,
       side: EJournalSide.Debit,
       description: null,
-      version: 1,
       createdAt: '2026-09-16T10:00:00Z',
       updatedAt: '2026-09-16T10:00:00Z',
     },
@@ -172,7 +169,7 @@ describe('TransactionsTableContainer', () => {
     );
   });
 
-  it('deletes the selected transaction at its current version', async () => {
+  it('deletes the selected transaction', async () => {
     const user = userEvent.setup();
     const deleteEntry = vi.fn().mockResolvedValue(undefined);
     vi.mocked(useDeleteJournalEntry).mockReturnValue({
@@ -196,10 +193,7 @@ describe('TransactionsTableContainer', () => {
       within(confirmationDialog).getByRole('button', { name: 'Delete' })
     );
 
-    expect(deleteEntry).toHaveBeenCalledWith({
-      id: 'payment-entry',
-      payload: { expectedVersion: 1 },
-    });
+    expect(deleteEntry).toHaveBeenCalledWith('payment-entry');
     await waitFor(() => {
       expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

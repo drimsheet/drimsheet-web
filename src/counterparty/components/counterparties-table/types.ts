@@ -5,6 +5,7 @@ import type {
 
 export interface CounterpartiesTableProps {
   data: ICounterpartyDto[];
+  archiving?: boolean;
   getCounterpartyHref?: (id: string) => string;
   loading?: boolean;
   selectable?: boolean;
@@ -26,4 +27,6 @@ export interface CounterpartiesTableProps {
   onSearchChange: (value: string) => void;
   filters: Record<string, (string | number)[]>;
   onAddCounterparty: () => void;
+  onArchiveCounterparty?: (counterparty: ICounterpartyDto) => Promise<void>;
+  onEditCounterparty?: (counterparty: ICounterpartyDto) => void;
 }

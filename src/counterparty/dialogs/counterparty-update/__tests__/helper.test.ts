@@ -11,12 +11,13 @@ describe('counterparty update helpers', () => {
     expect(
       helpers.isOpen(new URLSearchParams({ id, type: 'individual' }), id)
     ).toBe(false);
-    expect(
-      helpers.isOpen(new URLSearchParams({ id, type: 'individual' }))
-    ).toBe(true);
+    expect(helpers.isOpen(new URLSearchParams({ id, type: 'vendor' }))).toBe(
+      true
+    );
     expect(helpers.isOpen(new URLSearchParams({ id, edit: 'false' }))).toBe(
       false
     );
+    expect(helpers.isOpen(new URLSearchParams({ type: 'vendor' }))).toBe(false);
   });
   it('validates props before query hints while preserving route identity and fallback reads', () => {
     const params = new URLSearchParams(
@@ -43,7 +44,7 @@ describe('counterparty update helpers', () => {
     ).toBe(false);
     expect(
       helpers.isValidLink(
-        new URLSearchParams({ id, type: 'organization' }),
+        new URLSearchParams({ id, type: 'vendor' }),
         undefined
       )
     ).toBe(true);
@@ -68,42 +69,40 @@ describe('counterparty update helpers', () => {
     expect(helpers.normalizeParams(canonical, id, record)).toBe(canonical);
     expect(helpers.normalizeParams(params, 'other', record)).toBe(params);
   });
-  it('normalizes fallback type hints only for the fetched identity', () => {
+  it('preserves fallback form types only for the fetched identity', () => {
     const record = { ...party, id, type: 'organization' as const };
 
     const params = new URLSearchParams({
       id,
-      type: 'individual',
-      editCounterpartyRole: 'contractor',
+      type: 'contractor',
     });
 
-    expect(helpers.normalizeParams(params, undefined, record).toString()).toBe(
-      `id=${id}&type=organization`
-    );
-    const canonical = new URLSearchParams({ id, type: 'organization' });
-    expect(helpers.normalizeParams(canonical, undefined, record)).toBe(
-      canonical
-    );
-    const other = new URLSearchParams('id=other&type=individual');
+    expect(helpers.normalizeParams(params, undefined, record)).toBe(params);
+    const other = new URLSearchParams('id=other&type=vendor');
     expect(helpers.normalizeParams(other, undefined, record)).toBe(other);
   });
-  it('validates the edit identity and treats type and role as independent hints', () => {
+  it('validates the edit identity and uses type to select the form role', () => {
     expect(
       helpers.isValidLink(
         new URLSearchParams({
           id,
-          type: 'individual',
-          editCounterpartyRole: 'vendor',
+          type: 'vendor',
         }),
         id
       )
     ).toBe(true);
-    expect(helpers.isValidLink(new URLSearchParams({ id }), id)).toBe(true);
+    expect(helpers.getRole(new URLSearchParams({ type: 'vendor' }))).toBe(
+      'vendor'
+    );
+    expect(helpers.getRole(new URLSearchParams({ type: 'organization' }))).toBe(
+      'default'
+    );
+    expect(helpers.isValidLink(new URLSearchParams({ id }), id)).toBe(false);
     for (const values of [
       {},
       { id: 'invalid' },
-      { id, type: 'vendor' },
-      { id, editCounterpartyRole: 'organization' },
+      { id, type: 'organization' },
+      { id, type: 'individual' },
     ] as Record<string, string>[]) {
       expect(helpers.isValidLink(new URLSearchParams(values), id)).toBe(false);
     }

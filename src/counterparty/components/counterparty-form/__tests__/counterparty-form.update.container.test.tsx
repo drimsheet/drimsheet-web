@@ -30,7 +30,6 @@ const created: ICounterpartyDto = {
   status: 'active',
   roles: [],
   meta: {},
-  version: 1,
   createdBy: 'user',
   accountingEntityId: 'entity',
   createdAt: '2026-10-05T00:00:00Z',
@@ -39,13 +38,12 @@ const created: ICounterpartyDto = {
 
 beforeEach(() => vi.resetAllMocks());
 
-it('fetches by ID and PATCHes the captured version instead of creating', async () => {
+it('fetches by ID and PATCHes changes instead of creating', async () => {
   const baseline: ICounterpartyDto = {
     id: '00000000-0000-4000-8000-000000000100',
     name: 'Original',
     type: 'organization',
     status: 'active',
-    version: 8,
     roles: [],
     meta: {},
     createdBy: 'user',
@@ -62,7 +60,6 @@ it('fetches by ID and PATCHes the captured version instead of creating', async (
   vi.mocked(counterpartyService.updateCounterparty).mockResolvedValue({
     ...baseline,
     name: 'Changed',
-    version: 9,
   });
   vi.mocked(counterpartyService.createCounterparty).mockClear();
 
@@ -91,7 +88,6 @@ it('fetches by ID and PATCHes the captured version instead of creating', async (
   expect(
     counterpartyService.updateCounterparty
   ).toHaveBeenCalledExactlyOnceWith(baseline.id, {
-    expectedVersion: 8,
     name: 'Changed',
   });
   expect(counterpartyService.createCounterparty).not.toHaveBeenCalled();
@@ -102,14 +98,12 @@ it('starts a fresh edit session when its counterparty ID changes', async () => {
   const first = {
     ...created,
     id: '00000000-0000-4000-8000-000000000100',
-    version: 8,
   };
 
   const second = {
     ...created,
     id: '00000000-0000-4000-8000-000000000101',
     name: 'Second',
-    version: 12,
   };
 
   vi.mocked(counterpartyService.getCounterparty).mockImplementation(
@@ -122,7 +116,6 @@ it('starts a fresh edit session when its counterparty ID changes', async () => {
   vi.mocked(counterpartyService.updateCounterparty).mockResolvedValue({
     ...second,
     name: 'Changed',
-    version: 13,
   });
 
   const client = new QueryClient({
@@ -166,7 +159,6 @@ it('starts a fresh edit session when its counterparty ID changes', async () => {
   expect(
     counterpartyService.updateCounterparty
   ).toHaveBeenCalledExactlyOnceWith(second.id, {
-    expectedVersion: 12,
     name: 'Changed',
   });
   client.clear();

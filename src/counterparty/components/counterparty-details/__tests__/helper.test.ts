@@ -13,7 +13,6 @@ const party: ICounterpartyDto = {
   id: 'one',
   accountingEntityId: 'entity',
   createdBy: '00000000-0000-4000-8000-000000000100',
-  version: 1,
   name: 'Adenike',
   type: 'organization',
   status: 'active',

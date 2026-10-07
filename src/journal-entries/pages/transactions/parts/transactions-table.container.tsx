@@ -76,10 +76,7 @@ export function TransactionsTableContainer({
     if (archiving) return;
 
     try {
-      await archive({
-        id: entry.id,
-        payload: { expectedVersion: entry.version },
-      });
+      await archive(entry.id);
       navigate('/transactions');
     } catch (error) {
       handleApiError(error, { showToast: true });
@@ -88,10 +85,7 @@ export function TransactionsTableContainer({
 
   const handleDeleteTransaction = async (entry: IJournalEntryListDto) => {
     try {
-      await deleteEntry({
-        id: entry.id,
-        payload: { expectedVersion: entry.version },
-      });
+      await deleteEntry(entry.id);
       navigate('/transactions');
     } catch (error) {
       handleApiError(error, { showToast: true });

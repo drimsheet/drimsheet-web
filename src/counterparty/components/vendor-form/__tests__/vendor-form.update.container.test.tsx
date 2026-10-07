@@ -23,13 +23,12 @@ vi.mock('@/counterparty/lib/services/counterparty.service', () => ({
   },
 }));
 
-it('fetches by ID and PATCHes the captured version instead of creating', async () => {
+it('fetches by ID and PATCHes changes instead of creating', async () => {
   const baseline: ICounterpartyDto = {
     id: '00000000-0000-4000-8000-000000000100',
     name: 'Original',
     type: 'organization',
     status: 'active',
-    version: 8,
     roles: ['vendor'],
     meta: {
       vendor: {
@@ -70,7 +69,6 @@ it('fetches by ID and PATCHes the captured version instead of creating', async (
   vi.mocked(counterpartyService.updateCounterparty).mockResolvedValue({
     ...baseline,
     name: 'Changed',
-    version: 9,
   });
   vi.mocked(counterpartyService.createCounterparty).mockClear();
 
@@ -99,7 +97,6 @@ it('fetches by ID and PATCHes the captured version instead of creating', async (
   expect(
     counterpartyService.updateCounterparty
   ).toHaveBeenCalledExactlyOnceWith(baseline.id, {
-    expectedVersion: 8,
     name: 'Changed',
   });
   expect(counterpartyService.createCounterparty).not.toHaveBeenCalled();
