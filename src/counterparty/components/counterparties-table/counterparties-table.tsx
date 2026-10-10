@@ -47,6 +47,8 @@ export function CounterpartiesTable({
   filters,
   onAddCounterparty,
   onArchiveCounterparty,
+  onCheckCounterpartyDeleteEligibility,
+  onDeleteCounterparty,
   onEditCounterparty,
 }: Readonly<CounterpartiesTableProps>) {
   const { t } = useTranslation(['counterparty', 'shared']);
@@ -170,6 +172,8 @@ export function CounterpartiesTable({
             archiving={archiving}
             counterparty={row}
             onArchive={onArchiveCounterparty}
+            onCheckDeleteEligibility={onCheckCounterpartyDeleteEligibility}
+            onDelete={onDeleteCounterparty}
             onEdit={onEditCounterparty}
           />
         ),
@@ -182,6 +186,8 @@ export function CounterpartiesTable({
     getCounterpartyHref,
     archiving,
     onArchiveCounterparty,
+    onCheckCounterpartyDeleteEligibility,
+    onDeleteCounterparty,
     onEditCounterparty,
   ]);
 

@@ -28,5 +28,9 @@ export interface CounterpartiesTableProps {
   filters: Record<string, (string | number)[]>;
   onAddCounterparty: () => void;
   onArchiveCounterparty?: (counterparty: ICounterpartyDto) => Promise<void>;
+  onCheckCounterpartyDeleteEligibility?: (
+    counterparty: ICounterpartyDto
+  ) => Promise<boolean>;
+  onDeleteCounterparty?: (counterparty: ICounterpartyDto) => void;
   onEditCounterparty?: (counterparty: ICounterpartyDto) => void;
 }

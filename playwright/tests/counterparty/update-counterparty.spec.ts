@@ -238,7 +238,12 @@ for (const status of ['posted', 'archived'] as const)
     page,
   }) => {
     const state = await setup(page, { [status]: 1 });
-    await page.getByPlaceholder('Search transactions...').fill('no matches');
+    await expect(
+      page.getByRole('heading', { name: 'No transactions yet' })
+    ).toBeVisible();
+    await expect(
+      page.getByPlaceholder('Search transactions...')
+    ).not.toBeVisible();
     const dialog = await open(page);
     await expect(dialog.getByRole('combobox', { name: 'Type' })).toBeDisabled();
     await expect(dialog.getByText(restriction)).toBeVisible();

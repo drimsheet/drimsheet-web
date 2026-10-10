@@ -24,11 +24,7 @@ export function CounterpartyArchiveAction({
   const archive_label = t('archive_label');
 
   return (
-    <DropdownMenuItem
-      disabled={disabled}
-      onSelect={onSelect}
-      variant="destructive"
-    >
+    <DropdownMenuItem disabled={disabled} onSelect={onSelect}>
       <Archive aria-hidden="true" />
       {archive_label}
     </DropdownMenuItem>
@@ -72,13 +68,12 @@ export function CounterpartyArchiveConfirmation({
       cancelText={cancel_label}
       confirmationText={busy ? archiving_label : confirmation_action}
       loading={busy}
-      media={<Archive aria-hidden="true" className="text-destructive" />}
+      media={<Archive aria-hidden="true" />}
       onConfirm={handleArchive}
       onOpenChange={onOpenChange}
       open={open}
       title={confirmation_title}
       trigger={null}
-      variant="destructive"
     >
       {confirmation_description}
     </ConfirmationDialog>

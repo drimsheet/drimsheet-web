@@ -363,9 +363,11 @@
   "repo_error_transaction_required_unexpected": "An error occurred.",
   "user_error_actor_id_invalid": "Invalid user actor ID.",
   "user_error_created_by_invalid": "Invalid user creator.",
-  "counterparty_error_deletion_with_transaction_references_conflict": "You are trying to delete a stale version of this transaction. Refresh and try again.",
+  "counterparty_error_deletion_with_transaction_references_conflict": "This counterparty cannot be deleted because it is referenced by one or more transactions.",
   "journal_entry_error_archived_ledger_account_not_allowed_invalid": "You cannot associate an archived account to this transaction.",
   "ledger_error_archived_control_account_invalid": "Invalid account.",
   "ledger_error_header_account_archive_invalid": "Header account cannot be archived.",
-  "ledger_error_ledger_account_not_found": "Account not found."
+  "ledger_error_ledger_account_not_found": "Account not found.",
+  "ledger_error_asset_account_opening_balance_locked_conflict": "Opening balance is locked and cannot be changed.",
+  "ledger_error_ledger_account_update_invalid": "Invalid ledger account update."
 }

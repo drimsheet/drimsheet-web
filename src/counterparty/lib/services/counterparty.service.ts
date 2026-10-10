@@ -7,6 +7,17 @@ import type {
 } from '@/shared/lib/api/Api';
 
 export const counterpartyService = {
+  async deleteCounterparty(id: string) {
+    await drimsheetApi.counterparties.deleteCounterparty(id);
+  },
+
+  async getCounterpartyDeletionEligibility(id: string) {
+    const response =
+      await drimsheetApi.counterparties.getCounterpartyDeletionEligibility(id);
+
+    return response.data;
+  },
+
   async archiveCounterparty(id: string) {
     const response = await drimsheetApi.counterparties.archiveCounterparty(id);
 

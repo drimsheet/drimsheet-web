@@ -22,6 +22,8 @@ const meta = {
   args: {
     counterparty,
     onArchive: async () => undefined,
+    onCheckDeleteEligibility: async () => true,
+    onDelete: () => undefined,
     onEdit: () => undefined,
   },
 } satisfies Meta<typeof CounterpartyRowActions>;
