@@ -1,6 +1,8 @@
+import { CounterpartyDeletionDialog } from '@/counterparty/dialogs/counterparty-deletion';
 import { CounterpartyUpdateDialog } from '@/counterparty/dialogs/counterparty-update';
 import { useArchiveCounterparty } from '@/counterparty/hooks/use-archive-counterparty';
 import { useCounterparties } from '@/counterparty/hooks/use-counterparties';
+import { useCheckCounterpartyDeletionEligibility } from '@/counterparty/hooks/use-counterparty-deletion-eligibility';
 import { counterpartyMapper } from '@/counterparty/lib/mappers/counterparty.mapper';
 import { getCounterpartyFormRole } from '@/counterparty/lib/utils/counterparty-form';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
@@ -27,6 +29,8 @@ export function CounterpartiesTableContainer({
   const { mutateAsync: archive, isPending: archiving } =
     useArchiveCounterparty();
 
+  const checkDeletionEligibility = useCheckCounterpartyDeletionEligibility();
+
   const tableQuery = useTableQueryParams<
     keyof ICounterpartyDto,
     'status' | 'counterpartyType' | 'roles'
@@ -36,6 +40,10 @@ export function CounterpartiesTableContainer({
 
   const debouncedSearchQuery = useDebounce(tableQuery.searchQuery, 300);
   const [selectedRowIds, setSelectedRowIds] = useState<(string | number)[]>([]);
+
+  const [counterpartyToDelete, setCounterpartyToDelete] =
+    useState<ICounterpartyDto | null>(null);
+
   const limit = 10;
 
   const filters = useMemo(() => {
@@ -119,6 +127,26 @@ export function CounterpartiesTableContainer({
     }
   };
 
+  const handleCheckCounterpartyDeleteEligibility = async (
+    counterparty: ICounterpartyDto
+  ) => {
+    try {
+      const eligibility = await checkDeletionEligibility(counterparty.id);
+
+      return eligibility.canDelete;
+    } catch (error) {
+      handleApiError(error);
+
+      return false;
+    }
+  };
+
+  const handleCounterpartyDeleted = (counterpartyId: string) => {
+    setSelectedRowIds((current) =>
+      current.filter((selectedId) => selectedId !== counterpartyId)
+    );
+  };
+
   return (
     <>
       <CounterpartiesTable
@@ -128,6 +156,10 @@ export function CounterpartiesTableContainer({
         }
         onAddCounterparty={onAddCounterparty}
         onArchiveCounterparty={handleArchiveCounterparty}
+        onCheckCounterpartyDeleteEligibility={
+          handleCheckCounterpartyDeleteEligibility
+        }
+        onDeleteCounterparty={setCounterpartyToDelete}
         onEditCounterparty={handleEditCounterparty}
         data={counterpartiesData?.data ?? []}
         loading={isLoading}
@@ -146,6 +178,11 @@ export function CounterpartiesTableContainer({
       />
 
       <CounterpartyUpdateDialog onClose={handleCloseEdit} />
+      <CounterpartyDeletionDialog
+        counterparty={counterpartyToDelete}
+        onClose={() => setCounterpartyToDelete(null)}
+        onDeleted={handleCounterpartyDeleted}
+      />
     </>
   );
 }

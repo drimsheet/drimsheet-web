@@ -1169,6 +1169,10 @@ export interface IGetCounterpartiesQuery {
   status?: UCounterpartyStatus;
 }
 
+export interface ICounterpartyDeletionEligibilityDto {
+  canDelete: boolean;
+}
+
 export interface ICounterpartyCreateMetaReq {
   employer?: {
     address: IAddressDto;
@@ -2130,6 +2134,24 @@ export class Api<
       this.request<void, IHttpErrorDto>({
         path: `/counterparties/${id}`,
         method: 'DELETE',
+        ...params,
+      }),
+
+    /**
+     * @description Check whether a counterparty has no transaction references and can be deleted. This result is advisory; deletion rechecks eligibility atomically.
+     *
+     * @tags Counterparty
+     * @name GetCounterpartyDeletionEligibility
+     * @request GET:/counterparties/{id}/deletion-eligibility
+     */
+    getCounterpartyDeletionEligibility: (
+      id: string,
+      params: RequestParams = {}
+    ) =>
+      this.request<ICounterpartyDeletionEligibilityDto, IHttpErrorDto>({
+        path: `/counterparties/${id}/deletion-eligibility`,
+        method: 'GET',
+        format: 'json',
         ...params,
       }),
 

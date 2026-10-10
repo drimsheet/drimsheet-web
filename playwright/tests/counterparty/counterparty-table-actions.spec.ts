@@ -9,6 +9,7 @@ import type { Page } from '@playwright/test';
 const counterpartyId = '00000000-0000-4000-8000-000000000010';
 const detailEndpoint = `**/api/v1/counterparties/${counterpartyId}`;
 const archiveEndpoint = `${detailEndpoint}/archive`;
+const deletionEligibilityEndpoint = `${detailEndpoint}/deletion-eligibility`;
 
 const counterparty: ICounterpartyDto = {
   id: counterpartyId,
@@ -33,7 +34,10 @@ async function signIn(page: Page) {
 
 async function setup(page: Page) {
   let current = structuredClone(counterparty);
+  let deleted = false;
   const archiveRequestBodies: (string | null)[] = [];
+  const deleteRequestBodies: (string | null)[] = [];
+  const deletionEligibilityRequests: string[] = [];
 
   await registerAuthenticatedAppRoutes(page);
 
@@ -69,13 +73,33 @@ async function setup(page: Page) {
   await page.route('**/api/v1/counterparties?*', (route) =>
     route.fulfill({
       json: {
-        data: [current],
-        meta: { page: 1, limit: 10, total: 1, totalPages: 1 },
+        data: deleted ? [] : [current],
+        meta: {
+          page: 1,
+          limit: 10,
+          total: deleted ? 0 : 1,
+          totalPages: deleted ? 0 : 1,
+        },
       },
     })
   );
 
-  await page.route(detailEndpoint, (route) => route.fulfill({ json: current }));
+  await page.route(detailEndpoint, async (route) => {
+    if (route.request().method() === 'DELETE') {
+      deleteRequestBodies.push(route.request().postData());
+      deleted = true;
+      await route.fulfill({ status: 204 });
+
+      return;
+    }
+
+    await route.fulfill({ json: current });
+  });
+
+  await page.route(deletionEligibilityEndpoint, async (route) => {
+    deletionEligibilityRequests.push(route.request().url());
+    await route.fulfill({ json: { canDelete: true } });
+  });
 
   await page.route(archiveEndpoint, async (route) => {
     archiveRequestBodies.push(route.request().postData());
@@ -88,7 +112,11 @@ async function setup(page: Page) {
 
   await signIn(page);
 
-  return { archiveRequestBodies };
+  return {
+    archiveRequestBodies,
+    deleteRequestBodies,
+    deletionEligibilityRequests,
+  };
 }
 
 test('opens the role-specific update dialog from the table and keeps its identity in the URL', async ({
@@ -166,4 +194,89 @@ test('asks for confirmation and archives the selected counterparty', async ({
   await expect(
     page.getByRole('row').filter({ hasText: counterparty.name })
   ).toContainText('Archived');
+});
+
+test('checks eligibility after opening the row menu and deletes the selected counterparty', async ({
+  page,
+}) => {
+  const state = await setup(page);
+  await page.goto('/counterparties');
+
+  const row = page.getByRole('row').filter({ hasText: counterparty.name });
+  await expect(row).toBeVisible();
+  expect(state.deletionEligibilityRequests).toEqual([]);
+
+  await row.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
+  expect(state.deletionEligibilityRequests).toHaveLength(1);
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
+
+  const confirmation = page.getByRole('alertdialog', {
+    name: 'Delete counterparty?',
+  });
+
+  const deleteButton = confirmation.getByRole('button', {
+    name: 'Delete',
+    exact: true,
+  });
+
+  await expect(confirmation).toContainText(
+    'This action will permanently delete Adenike Supplies and cannot be undone.'
+  );
+  await confirmation.getByLabel('Type "delete" to confirm').fill('Delete');
+  await expect(deleteButton).toBeDisabled();
+  await confirmation.getByLabel('Type "delete" to confirm').fill('delete');
+  await deleteButton.click();
+
+  await expect(confirmation).not.toBeVisible();
+  await expect(row).not.toBeVisible();
+  await expect(
+    page.getByText('Counterparty deleted successfully')
+  ).toBeVisible();
+  expect(state.deleteRequestBodies).toEqual([null]);
+});
+
+test('closes the confirmation and reports a deletion conflict', async ({
+  page,
+}) => {
+  await setup(page);
+  await page.route(detailEndpoint, async (route) => {
+    if (route.request().method() !== 'DELETE') {
+      await route.fallback();
+
+      return;
+    }
+
+    await route.fulfill({
+      status: 409,
+      json: {
+        name: 'ConflictError',
+        errorKey:
+          'counterparty_error_deletion_with_transaction_references_conflict',
+        validationErrors: [],
+      },
+    });
+  });
+
+  await page.goto('/counterparties');
+  const row = page.getByRole('row').filter({ hasText: counterparty.name });
+  await row.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
+
+  const confirmation = page.getByRole('alertdialog', {
+    name: 'Delete counterparty?',
+  });
+
+  await confirmation.getByLabel('Type "delete" to confirm').fill('delete');
+  await confirmation
+    .getByRole('button', { name: 'Delete', exact: true })
+    .click();
+
+  await expect(confirmation).not.toBeVisible();
+  await expect(
+    page.getByText(
+      'This counterparty cannot be deleted because it is referenced by one or more transactions.'
+    )
+  ).toBeVisible();
+  await expect(row).toBeVisible();
 });

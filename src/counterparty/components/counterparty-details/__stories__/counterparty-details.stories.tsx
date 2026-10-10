@@ -13,6 +13,8 @@ const meta = {
   component: CounterpartyDetails,
   tags: ['autodocs'],
   args: {
+    deletable: true,
+    onDelete: () => {},
     onEdit: () => {},
     counterparty: {
       id: 'counterparty-1',
@@ -32,6 +34,9 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const CheckingDeletionEligibility: Story = {
+  args: { deleteEligibilityChecking: true },
+};
 export const WithoutAddress: Story = {
   args: {
     counterparty: {

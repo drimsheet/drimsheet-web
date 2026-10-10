@@ -10,6 +10,17 @@ export function useCounterpartyTransactions(
     queryKey: ['counterpartyService', 'getCounterpartyTransactions', query],
     queryFn: () => counterpartyService.getCounterpartyTransactions(query),
     enabled: enabled && Boolean(query.counterpartyId),
+    placeholderData: (previousData, previousQuery) => {
+      const previousFilter = previousQuery?.queryKey[2];
+      if (
+        typeof previousFilter === 'object' &&
+        previousFilter?.counterpartyId === query.counterpartyId
+      ) {
+        return previousData;
+      }
+
+      return undefined;
+    },
     throwOnError: true,
   });
 }
