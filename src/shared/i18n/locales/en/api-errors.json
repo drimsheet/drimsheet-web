@@ -367,5 +367,7 @@
   "journal_entry_error_archived_ledger_account_not_allowed_invalid": "You cannot associate an archived account to this transaction.",
   "ledger_error_archived_control_account_invalid": "Invalid account.",
   "ledger_error_header_account_archive_invalid": "Header account cannot be archived.",
-  "ledger_error_ledger_account_not_found": "Account not found."
+  "ledger_error_ledger_account_not_found": "Account not found.",
+  "ledger_error_asset_account_opening_balance_locked_conflict": "Opening balance is locked and cannot be changed.",
+  "ledger_error_ledger_account_update_invalid": "Invalid ledger account update."
 }
