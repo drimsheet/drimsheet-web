@@ -336,7 +336,7 @@ test('creates an additional entity without running initial bootstrap', async ({
     });
   });
   for (const endpoint of [
-    '**/api/v1/accounts/**',
+    '**/api/v1/ledger/**',
     '**/api/v1/ledger/header-accounts/setup',
   ]) {
     await page.route(endpoint, async (route) => {

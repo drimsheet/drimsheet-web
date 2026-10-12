@@ -1,4 +1,4 @@
-import type { IBankAccountFormValues } from '@/account/components/bank-account-form';
+import type { IBankDetailsFormValues } from '@/account/components/bank-details-form';
 import type { IPettyCashAccountFormValues } from '@/account/components/petty-cash-account-form';
 import type { IOpeningBalanceExchangeRateContext } from '@/account/lib/types/opening-balance-exchange-rate.types';
 import type {
@@ -104,7 +104,7 @@ function toPettyCashAccountCreationDto(
 }
 
 function toBankAccountCreationDto(
-  values: IBankAccountFormValues,
+  values: IBankDetailsFormValues,
   accountingCurrencyCode: string,
   officialExchangeRate?: IExchangeRate
 ): IBankAccountCreationReq {

@@ -150,7 +150,7 @@ test('creates headers and all posting accounts sequentially before closing onboa
   await expect
     .poll(
       () =>
-        state.calls.filter((call) => call.path === '/accounts/suspense').length
+        state.calls.filter((call) => call.path === '/ledger/suspense').length
     )
     .toBe(2);
   await expect(dialog).toBeVisible();
@@ -165,12 +165,12 @@ test('creates headers and all posting accounts sequentially before closing onboa
   expect(calls.map((call) => call.path)).toEqual([
     '/accounting/accounting-entity',
     '/ledger/header-accounts/setup',
-    '/accounts/asset/receivables/statutory',
-    '/accounts/liability/payables/statutory',
-    ...Array(6).fill('/accounts/revenues'),
-    ...Array(8).fill('/accounts/expenses'),
-    '/accounts/suspense',
-    '/accounts/suspense',
+    '/ledger/asset/receivables/statutory',
+    '/ledger/liability/payables/statutory',
+    ...Array(6).fill('/ledger/revenues'),
+    ...Array(8).fill('/ledger/expenses'),
+    '/ledger/suspense',
+    '/ledger/suspense',
   ]);
   expect(calls[0].body).toEqual(
     expect.objectContaining({
@@ -296,7 +296,10 @@ test('stops at a failed posting request without issuing subsequent writes', asyn
   expect(state.createdAccounts).toHaveLength(4);
   expect(
     state.calls.filter(
-      (call) => call.method === 'POST' && call.path.startsWith('/accounts/')
+      (call) =>
+        call.method === 'POST' &&
+        call.path.startsWith('/ledger/') &&
+        call.path !== '/ledger/header-accounts/setup'
     )
   ).toHaveLength(5);
 });
@@ -334,10 +337,7 @@ test('retains the unchanged Manual path without any bootstrap calls', async ({
     page.getByRole('dialog', { name: 'Account setup' })
   ).not.toBeVisible();
   expect(
-    state.calls.filter(
-      (call) =>
-        call.path.startsWith('/accounts/') || call.path.startsWith('/ledger')
-    )
+    state.calls.filter((call) => call.path.startsWith('/ledger'))
   ).toHaveLength(0);
 });
 
@@ -348,7 +348,7 @@ for (const invalidField of ['key', 'behavior'] as const) {
     await registerAuthenticatedAppRoutes(page);
     const state = await registerOnboardingRoutes(page);
     await page.route(
-      '**/api/v1/accounts/recommended-bootstrap',
+      '**/api/v1/ledger/recommended-bootstrap',
       async (route) => {
         await route.fulfill({
           json: {

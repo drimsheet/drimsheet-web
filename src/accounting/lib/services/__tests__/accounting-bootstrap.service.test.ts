@@ -3,7 +3,8 @@ import { drimsheetApi } from '@/shared/lib/api';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@/shared/lib/api', () => ({
   drimsheetApi: {
-    accounts: {
+    ledger: {
+      setupHeaderAccounts: vi.fn(),
       getRecommendedBootstrap: vi.fn(),
       createStatutoryReceivableAccount: vi.fn(),
       createStatutoryPayableAccount: vi.fn(),
@@ -11,7 +12,6 @@ vi.mock('@/shared/lib/api', () => ({
       createExpenseAccount: vi.fn(),
       createSuspenseAccount: vi.fn(),
     },
-    ledger: { setupHeaderAccounts: vi.fn(), getLedgerAccounts: vi.fn() },
   },
 }));
 describe('accountingBootstrapService', () => {
@@ -25,17 +25,17 @@ describe('accountingBootstrapService', () => {
     ],
     [
       service.createReceivable,
-      drimsheetApi.accounts.createStatutoryReceivableAccount,
+      drimsheetApi.ledger.createStatutoryReceivableAccount,
       { name: 'Tax', isControlAccount: false, currencyCode: 'NGN' },
     ],
     [
       service.createPayable,
-      drimsheetApi.accounts.createStatutoryPayableAccount,
+      drimsheetApi.ledger.createStatutoryPayableAccount,
       { name: 'Tax', isControlAccount: false, currencyCode: 'NGN', meta: null },
     ],
     [
       service.createRevenue,
-      drimsheetApi.accounts.createRevenueAccount,
+      drimsheetApi.ledger.createRevenueAccount,
       {
         name: 'Salary',
         isControlAccount: false,
@@ -44,24 +44,22 @@ describe('accountingBootstrapService', () => {
     ],
     [
       service.createExpense,
-      drimsheetApi.accounts.createExpenseAccount,
+      drimsheetApi.ledger.createExpenseAccount,
       { name: 'Rent', isControlAccount: false, behavior: 'rent_and_utilities' },
     ],
     [
       service.createSuspense,
-      drimsheetApi.accounts.createSuspenseAccount,
+      drimsheetApi.ledger.createSuspenseAccount,
       { name: 'Suspense', type: 'asset', currencyCode: 'NGN' },
     ],
   ] as const;
 
   it('fetches the recommendation catalog and returns response data', async () => {
-    vi.mocked(drimsheetApi.accounts.getRecommendedBootstrap).mockResolvedValue({
+    vi.mocked(drimsheetApi.ledger.getRecommendedBootstrap).mockResolvedValue({
       data: { catalog: true },
     } as never);
     expect(await service.getRecommendations()).toEqual({ catalog: true });
-    expect(
-      drimsheetApi.accounts.getRecommendedBootstrap
-    ).toHaveBeenCalledWith();
+    expect(drimsheetApi.ledger.getRecommendedBootstrap).toHaveBeenCalledWith();
   });
   it.each(calls)(
     'delegates unchanged DTOs and returns response data (%#)',
@@ -76,7 +74,7 @@ describe('accountingBootstrapService', () => {
   );
   it('propagates a server error unchanged', async () => {
     const error = new Error('API failed');
-    vi.mocked(drimsheetApi.accounts.getRecommendedBootstrap).mockRejectedValue(
+    vi.mocked(drimsheetApi.ledger.getRecommendedBootstrap).mockRejectedValue(
       error
     );
     await expect(service.getRecommendations()).rejects.toBe(error);

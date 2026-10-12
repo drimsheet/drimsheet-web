@@ -650,7 +650,7 @@ export async function registerOnboardingRoutes(
       },
     });
   });
-  await page.route('**/api/v1/accounts/**', async (route) => {
+  await page.route('**/api/v1/ledger/**', async (route) => {
     const request = route.request();
     const path = new URL(request.url()).pathname.replace('/api/v1', '');
     if (request.method() === 'GET') {

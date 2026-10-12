@@ -10,7 +10,7 @@ import type {
 
 export const accountingBootstrapService = Object.freeze({
   async getRecommendations() {
-    return (await drimsheetApi.accounts.getRecommendedBootstrap()).data;
+    return (await drimsheetApi.ledger.getRecommendedBootstrap()).data;
   },
 
   async setupHeaders(payload?: IHeaderAccountNameAliasesReq) {
@@ -18,25 +18,24 @@ export const accountingBootstrapService = Object.freeze({
   },
 
   async createReceivable(payload: ICreateStatutoryReceivableAccountDto) {
-    return (
-      await drimsheetApi.accounts.createStatutoryReceivableAccount(payload)
-    ).data;
+    return (await drimsheetApi.ledger.createStatutoryReceivableAccount(payload))
+      .data;
   },
 
   async createPayable(payload: ICreateStatutoryPayableAccountDto) {
-    return (await drimsheetApi.accounts.createStatutoryPayableAccount(payload))
+    return (await drimsheetApi.ledger.createStatutoryPayableAccount(payload))
       .data;
   },
 
   async createRevenue(payload: ICreateRevenueAccountDto) {
-    return (await drimsheetApi.accounts.createRevenueAccount(payload)).data;
+    return (await drimsheetApi.ledger.createRevenueAccount(payload)).data;
   },
 
   async createExpense(payload: ICreateExpenseAccountDto) {
-    return (await drimsheetApi.accounts.createExpenseAccount(payload)).data;
+    return (await drimsheetApi.ledger.createExpenseAccount(payload)).data;
   },
 
   async createSuspense(payload: ICreateSuspenseAccountDto) {
-    return (await drimsheetApi.accounts.createSuspenseAccount(payload)).data;
+    return (await drimsheetApi.ledger.createSuspenseAccount(payload)).data;
   },
 });
