@@ -1,4 +1,4 @@
-import type { IBankAccountFormValues } from '@/account/components/bank-account-form';
+import type { IBankDetailsFormValues } from '@/account/components/bank-details-form';
 import type { IPettyCashAccountFormValues } from '@/account/components/petty-cash-account-form';
 import { assetAccountMapper } from '@/account/lib/mappers/asset-account.mapper';
 import { EExchangeRateType, type IExchangeRate } from '@/shared/lib/api/Api';
@@ -14,7 +14,7 @@ const values: IPettyCashAccountFormValues = {
   isSubAccount: false,
 };
 
-const bankFormValues: IBankAccountFormValues = {
+const bankFormValues: IBankDetailsFormValues = {
   name: 'Operating Account',
   currencyCode: 'NGN',
   bankLocation: 'NG',

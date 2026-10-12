@@ -9,7 +9,7 @@ import type { Page } from '@playwright/test';
 const loginEndpoint = '**/api/v1/auth/login-with-email';
 const refreshEndpoint = '**/api/v1/auth/refresh-access-token';
 const ledgerAccountsEndpoint = '**/api/v1/ledger*';
-const createBankAccountEndpoint = '**/api/v1/accounts/asset/bank';
+const createBankAccountEndpoint = '**/api/v1/ledger/asset/bank';
 const currenciesEndpoint = '**/api/v1/currencies*';
 const banksEndpoint = '**/api/v1/banks*';
 
@@ -76,7 +76,7 @@ async function signInAndNavigateToAccounts(page: Page) {
   await page.getByRole('button', { name: 'Sign In' }).click();
   await expect(page).toHaveURL('/dashboard');
 
-  await page.goto('/accounts');
+  await page.getByRole('link', { name: 'Accounts', exact: true }).click();
   await expect(page).toHaveURL('/accounts');
 }
 
@@ -268,7 +268,14 @@ test.describe('Bank Account Creation Flow', () => {
     await bankDialog.getByRole('button', { name: /opening date/i }).click();
     await page.getByRole('gridcell', { name: '15' }).first().click();
 
+    const creationResponse = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/v1/ledger/asset/bank') &&
+        response.request().method() === 'POST'
+    );
+
     await bankDialog.getByRole('button', { name: /create account/i }).click();
+    expect((await creationResponse).status()).toBe(500);
 
     // Dialog stays open, values and statement file are retained
     await expect(bankDialog).toBeVisible();

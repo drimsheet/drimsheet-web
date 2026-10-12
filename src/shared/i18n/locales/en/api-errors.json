@@ -369,5 +369,19 @@
   "ledger_error_header_account_archive_invalid": "Header account cannot be archived.",
   "ledger_error_ledger_account_not_found": "Account not found.",
   "ledger_error_asset_account_opening_balance_locked_conflict": "Opening balance is locked and cannot be changed.",
-  "ledger_error_ledger_account_update_invalid": "Invalid ledger account update."
+  "ledger_error_ledger_account_update_invalid": "Invalid ledger account update.",
+  "accounting_error_period_overlap_conflict": "Accounting periods overlap with an existing period.",
+  "accounting_error_period_posting_period_ambiguous_unexpected": "Multiple accounting periods match the posting date.",
+  "ledger_error_bank_details_missing_unexpected": "Bank account details are missing.",
+  "ledger_error_non_draft_child_of_draft_control_account_invalid": "Accounts under a draft control account must also be drafts.",
+  "app_error_reporting_account_id_invalid": "Invalid report account ID.",
+  "app_error_reporting_account_invalid": "This account is not supported for this report.",
+  "app_error_reporting_account_not_found": "Report account not found.",
+  "app_error_reporting_amount_limit_invalid": "Report amounts exceed the supported limit.",
+  "app_error_reporting_amount_out_of_range_unexpected": "Report amounts are outside the supported range.",
+  "app_error_reporting_bucket_days_invalid": "Invalid number of days per report interval.",
+  "app_error_reporting_from_date_invalid": "Invalid report start date.",
+  "app_error_reporting_period_invalid": "The report end date must be after the start date.",
+  "app_error_reporting_period_limit_invalid": "The report period exceeds the supported limit. Select a shorter date range.",
+  "app_error_reporting_to_date_invalid": "Invalid report end date."
 }

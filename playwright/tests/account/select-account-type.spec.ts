@@ -92,7 +92,7 @@ async function signInAndNavigateToAccounts(page: Page) {
   await page.getByRole('button', { name: 'Sign In' }).click();
   await expect(page).toHaveURL('/dashboard');
 
-  await page.goto('/accounts');
+  await page.getByRole('link', { name: 'Accounts', exact: true }).click();
   await expect(page).toHaveURL('/accounts');
 }
 

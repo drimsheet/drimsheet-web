@@ -10,6 +10,6 @@ export const assetAccountService = {
   },
 
   async createBankAccount(payload: IBankAccountCreationReq) {
-    await drimsheetApi.accounts.createBankAccount(payload);
+    await drimsheetApi.ledger.createBankAccount(payload);
   },
 };

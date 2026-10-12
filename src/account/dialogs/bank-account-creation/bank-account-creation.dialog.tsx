@@ -1,7 +1,7 @@
 import {
-  BankAccountFormContainer,
-  type IBankAccountFormValues,
-} from '@/account/components/bank-account-form';
+  BankDetailsFormContainer,
+  type IBankDetailsFormValues,
+} from '@/account/components/bank-details-form';
 import { useCreateBankAccount } from '@/account/hooks/use-create-bank-account';
 import { assetAccountMapper } from '@/account/lib/mappers/asset-account.mapper';
 import type { IOpeningBalanceExchangeRateContext } from '@/account/lib/types/opening-balance-exchange-rate.types';
@@ -79,7 +79,7 @@ export function BankAccountCreationDialog({
     }
   };
 
-  const handleSubmit = async (values: IBankAccountFormValues) => {
+  const handleSubmit = async (values: IBankDetailsFormValues) => {
     try {
       const request = assetAccountMapper.toBankAccountCreationDto(
         values,
@@ -125,7 +125,7 @@ export function BankAccountCreationDialog({
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_auto_1fr] md:items-start">
           <div className="order-2 min-w-0 md:order-1">
-            <BankAccountFormContainer
+            <BankDetailsFormContainer
               key={initialJurisdiction}
               accountingCurrencyCode={accountingCurrencyCode}
               bankLocations={countries}

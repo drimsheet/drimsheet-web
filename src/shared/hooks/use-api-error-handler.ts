@@ -58,6 +58,8 @@ export function useApiErrorHandler() {
     (errorValue: unknown, options?: THandleErrorOptions) => {
       const error = parseApiError(errorValue);
 
+      console.error(errorValue);
+
       observabilityService.addApiFailureBreadcrumb({
         kind: error.kind,
         ...(error.method ? { method: error.method } : {}),
