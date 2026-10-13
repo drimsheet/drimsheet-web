@@ -9,6 +9,7 @@ import { AccountBehaviorLabel } from './account-behavior-label';
 export function LedgerAccountSummary({
   account,
   hasSubAccounts = false,
+  actions,
   className,
   ...props
 }: Readonly<LedgerAccountSummaryProps>) {
@@ -47,9 +48,12 @@ export function LedgerAccountSummary({
     <div className={cn('flex min-w-0 flex-col gap-7', className)} {...props}>
       <div className="flex min-w-0 flex-col gap-4">
         <AccountBehaviorLabel behavior={account.behavior} />
-        <h1 className="m-0 font-heading text-2xl/none font-medium tracking-tight wrap-anywhere sm:text-3xl/none">
-          {account.name}
-        </h1>
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-4">
+          <h1 className="m-0 min-w-0 flex-1 font-heading text-2xl/none font-medium tracking-tight wrap-anywhere sm:text-3xl/none">
+            {account.name}
+          </h1>
+          {actions}
+        </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <StatusBadge
             variant="neutral"

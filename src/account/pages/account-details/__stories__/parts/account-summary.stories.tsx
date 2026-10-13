@@ -1,3 +1,4 @@
+import { AccountActions } from '@/account/pages/account-details/parts/account-actions';
 import { LedgerAccountSummary } from '@/account/pages/account-details/parts/account-summary';
 import type { ILedgerAccountDto, TEntityId } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -34,7 +35,10 @@ const meta = {
   parameters: {
     layout: 'fullscreen',
   },
-  args: { account },
+  args: {
+    account,
+    actions: <AccountActions onArchive={async () => undefined} />,
+  },
   tags: ['autodocs'],
   decorators: [
     (Story) => (
@@ -77,7 +81,12 @@ export const PettyCash: Story = {
 };
 
 export const Archived: Story = {
-  args: { account: { ...account, status: 'archived' } },
+  args: {
+    account: { ...account, status: 'archived' },
+    actions: (
+      <AccountActions archiveDisabled onArchive={async () => undefined} />
+    ),
+  },
 };
 
 export const DraftWithZeroBalance: Story = {
