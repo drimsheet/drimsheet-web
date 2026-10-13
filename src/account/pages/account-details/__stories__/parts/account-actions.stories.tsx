@@ -5,7 +5,7 @@ const meta = {
   title: 'Ledger Accounts/AccountActions',
   component: AccountActions,
   tags: ['autodocs'],
-  args: { onArchive: async () => undefined },
+  args: { onArchive: async () => undefined, onDelete: () => undefined },
 } satisfies Meta<typeof AccountActions>;
 
 export default meta;
@@ -15,3 +15,10 @@ export const Default: TStory = {};
 export const ArchivedOrHeader: TStory = { args: { archiveDisabled: true } };
 export const Archiving: TStory = { args: { loading: true } };
 export const ControlAccount: TStory = { args: { isControlAccount: true } };
+export const Deletable: TStory = { args: { deletable: true } };
+export const CheckingDeletion: TStory = {
+  args: { deleteEligibilityChecking: true },
+};
+export const DeletionCheckFailed: TStory = {
+  args: { deleteEligibilityFailed: true },
+};
