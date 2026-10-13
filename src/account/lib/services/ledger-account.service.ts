@@ -32,6 +32,17 @@ async function archiveLedgerAccount(id: string) {
   await drimsheetApi.ledger.archiveLedgerAccount(id);
 }
 
+async function getLedgerAccountDeletionEligibility(id: string) {
+  const response =
+    await drimsheetApi.ledger.getLedgerAccountDeletionEligibility(id);
+
+  return response.data;
+}
+
+async function deleteLedgerAccount(id: string) {
+  await drimsheetApi.ledger.deleteLedgerAccount(id);
+}
+
 async function getPermittedPostingAccounts(
   query: IGetPermittedPostingAccountsQuery
 ) {
@@ -72,6 +83,8 @@ export const ledgerAccountService = Object.freeze({
   getPettyBaseCashFilters,
   getLedgerAccount,
   archiveLedgerAccount,
+  getLedgerAccountDeletionEligibility,
+  deleteLedgerAccount,
   getPermittedPostingAccounts,
   getBankDetails,
   getSubAccounts,

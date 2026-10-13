@@ -108,6 +108,9 @@ async function setup(
   options: { bank?: boolean; children?: boolean; pettyCash?: boolean } = {}
 ) {
   await registerAuthenticatedAppRoutes(page);
+  await page.route(`${endpoint}/deletion-eligibility`, (route) =>
+    route.fulfill({ json: { canDelete: false, reason: 'has_journal_entries' } })
+  );
   for (const auth of ['login-with-email', 'refresh-access-token']) {
     await page.route(`**/api/v1/auth/${auth}`, (route) =>
       route.fulfill({ json: { accessToken: 'integration-test-token' } })
@@ -496,7 +499,7 @@ test('confirms archiving, prevents duplicate submissions and refreshes the accou
   ).toBeDisabled();
   const actions = page.getByRole('button', { name: 'Open account actions' });
   await actions.click();
-  await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeDisabled();
+  await expect(page.getByRole('menuitem', { name: 'Delete' })).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath('account-actions.png') });
   await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
   const dialog = page.getByRole('alertdialog', { name: 'Archive account?' });
@@ -609,4 +612,245 @@ test('explains that archiving a control account includes its sub-accounts', asyn
   await expect(page.getByRole('alertdialog')).toContainText(
     'This account and all its sub-accounts'
   );
+});
+
+test('checks deletion eligibility only when opening the menu and hides stale eligibility while rechecking', async ({
+  page,
+}) => {
+  await setup(page);
+  let checks = 0;
+  let resolveCheck: () => void = () => undefined;
+
+  const response = new Promise<void>((resolve) => {
+    resolveCheck = resolve;
+  });
+
+  await page.route(`${endpoint}/deletion-eligibility`, async (route) => {
+    checks += 1;
+    await response;
+    await route.fulfill({
+      json:
+        checks === 1
+          ? { canDelete: true }
+          : { canDelete: false, reason: 'has_journal_entries' },
+    });
+  });
+  await page.goto(`/accounts/${accountId}`);
+  const actions = page.getByRole('button', { name: 'Open account actions' });
+  await expect(actions).toBeVisible();
+  expect(checks).toBe(0);
+  await actions.click();
+  await expect(
+    page.getByRole('status', { name: 'Checking deletion availability' })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toHaveCount(0);
+  resolveCheck();
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await actions.click();
+  await expect.poll(() => checks).toBe(2);
+  await expect(
+    page.getByRole('status', { name: 'Checking deletion availability' })
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toHaveCount(0);
+});
+
+for (const reason of ['header_account', 'has_journal_entries'] as const) {
+  test(`hides Delete when eligibility returns ${reason}`, async ({ page }) => {
+    await setup(page);
+    await page.route(`${endpoint}/deletion-eligibility`, (route) =>
+      route.fulfill({ json: { canDelete: false, reason } })
+    );
+    await page.goto(`/accounts/${accountId}`);
+    await page.getByRole('button', { name: 'Open account actions' }).click();
+    await expect(
+      page.getByRole('menuitem', { name: 'Archive', exact: true })
+    ).toBeVisible();
+    await expect(
+      page.getByRole('status', { name: 'Checking deletion availability' })
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole('menuitem', { name: 'Delete', exact: true })
+    ).toHaveCount(0);
+  });
+}
+
+test('hides Delete after a failed eligibility check and retries when reopening', async ({
+  page,
+}) => {
+  await setup(page);
+  let checks = 0;
+  await page.route(`${endpoint}/deletion-eligibility`, (route) => {
+    checks += 1;
+
+    return checks === 1
+      ? route.fulfill({ status: 500, json: { name: 'UnexpectedError' } })
+      : route.fulfill({ json: { canDelete: true } });
+  });
+  await page.goto(`/accounts/${accountId}`);
+  const actions = page.getByRole('button', { name: 'Open account actions' });
+  await actions.click();
+  await expect(
+    page.getByText(
+      'Unable to check deletion availability. Reopen the menu to try again.'
+    )
+  ).toBeVisible();
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await actions.click();
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toBeVisible();
+  expect(checks).toBe(2);
+});
+
+test('confirms deletion, blocks duplicate submissions and returns to the refreshed accounts list', async ({
+  page,
+}, testInfo) => {
+  await setup(page, { children: false });
+  let deleted = false;
+  const requests: { method: string; body: string | null }[] = [];
+  let finishDelete: () => void = () => undefined;
+
+  const response = new Promise<void>((resolve) => {
+    finishDelete = resolve;
+  });
+
+  await page.route(`${endpoint}/deletion-eligibility`, (route) =>
+    route.fulfill({ json: { canDelete: true } })
+  );
+  await page.route('**/api/v1/ledger?*', (route) =>
+    route.fulfill({
+      json: {
+        data: deleted ? [] : [account],
+        meta: {
+          page: 1,
+          limit: 10,
+          total: deleted ? 0 : 1,
+          totalPages: deleted ? 0 : 1,
+        },
+      },
+    })
+  );
+  await page.route(endpoint, async (route) => {
+    if (route.request().method() !== 'DELETE') {
+      await route.fulfill({ json: account });
+
+      return;
+    }
+
+    requests.push({
+      method: route.request().method(),
+      body: route.request().postData(),
+    });
+    await response;
+    deleted = true;
+    await route.fulfill({ status: 204 });
+  });
+  // Seed the list cache to verify that returning after deletion refreshes it.
+  await page.goto('/accounts');
+  await page.getByRole('cell', { name: account.name, exact: true }).click();
+  await expect(page).toHaveURL(`/accounts/${accountId}`);
+  const actions = page.getByRole('button', { name: 'Open account actions' });
+  await actions.click();
+  await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
+  const dialog = page.getByRole('alertdialog', { name: 'Delete account?' });
+  await expect(dialog).toContainText(account.name);
+  await dialog.getByLabel('Type "delete" to confirm').fill('delete');
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(dialog).not.toBeVisible();
+  expect(requests).toEqual([]);
+  await actions.click();
+  await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
+  const input = dialog.getByLabel('Type "delete" to confirm');
+  await expect(input).toHaveValue('');
+  await expect(
+    dialog.getByRole('button', { name: 'Delete', exact: true })
+  ).toBeDisabled();
+  await input.fill('delete');
+  await page.screenshot({
+    path: testInfo.outputPath('delete-account-confirmation.png'),
+  });
+  await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
+  await expect(
+    dialog.getByRole('button', { name: 'Deleting…' })
+  ).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+  await expect(input).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeVisible();
+  await expect.poll(() => requests).toEqual([{ method: 'DELETE', body: null }]);
+  finishDelete();
+  await expect(page).toHaveURL('/accounts');
+  await expect(dialog).not.toBeVisible();
+  await expect(page.getByText('Account deleted successfully')).toBeVisible();
+  await expect(
+    page.getByText('No records found', { exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('cell', { name: account.name, exact: true })
+  ).toHaveCount(0);
+});
+
+test('retains the account and rechecks eligibility after deletion is rejected', async ({
+  page,
+}) => {
+  await setup(page);
+  let deleteRequests = 0;
+  await page.route(`${endpoint}/deletion-eligibility`, (route) =>
+    route.fulfill({
+      json:
+        deleteRequests === 0
+          ? { canDelete: true }
+          : { canDelete: false, reason: 'has_journal_entries' },
+    })
+  );
+  await page.route(endpoint, async (route) => {
+    if (route.request().method() !== 'DELETE') {
+      await route.fallback();
+
+      return;
+    }
+
+    deleteRequests += 1;
+    await route.fulfill({
+      status: 400,
+      json: {
+        name: 'InvalidError',
+        errorKey: 'ledger_error_non_draft_account_deletion_invalid',
+        validationErrors: [],
+      },
+    });
+  });
+  await page.goto(`/accounts/${accountId}`);
+  const actions = page.getByRole('button', { name: 'Open account actions' });
+  await actions.click();
+  await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
+  const dialog = page.getByRole('alertdialog', { name: 'Delete account?' });
+  await dialog.getByLabel('Type "delete" to confirm').fill('delete');
+  await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(page).toHaveURL(`/accounts/${accountId}`);
+  await expect(page.getByRole('heading', { name: account.name })).toBeVisible();
+  await expect(
+    page.getByText(
+      'This account cannot be deleted because it or one of its subaccounts has journal entries.'
+    )
+  ).toBeVisible();
+  await actions.click();
+  await expect(
+    page.getByRole('status', { name: 'Checking deletion availability' })
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toHaveCount(0);
+  expect(deleteRequests).toBe(1);
 });

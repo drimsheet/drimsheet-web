@@ -18,12 +18,25 @@ export interface AccountActionsProps {
   isControlAccount?: boolean;
   loading?: boolean;
   onArchive: () => Promise<void>;
+  deleteEligibilityChecking?: boolean;
+  deleteEligibilityFailed?: boolean;
+  deletable?: boolean;
+  onActionsOpenChange?: (open: boolean) => void;
+  onDelete?: () => void;
+}
+
+export interface AccountDeleteConfirmationProps {
+  accountName: string;
+  isControlAccount: boolean;
+  onDelete: () => Promise<void>;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
 }
 
 export interface AccountActionsContainerProps {
   account: Pick<
     ILedgerAccountDto,
-    'id' | 'status' | 'controlAccountId' | 'isControlAccount'
+    'id' | 'name' | 'status' | 'controlAccountId' | 'isControlAccount'
   >;
 }
 
