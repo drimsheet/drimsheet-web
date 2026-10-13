@@ -69,3 +69,40 @@ export const Disabled: Story = {
     disabled: true,
   },
 };
+
+export const Update: Story = {
+  args: {
+    mode: 'update',
+    hasExistingOpeningBalance: true,
+    canUpdateCurrency: false,
+    initialValues: {
+      name: 'Office petty cash',
+      currencyCode: 'NGN',
+      createWithoutOpeningBalance: true,
+      openingBalance: 100,
+      openingDate: '2026-10-01',
+    },
+    onCancel: () => undefined,
+  },
+};
+
+export const UpdateWithoutOpeningBalance: Story = {
+  args: {
+    ...Update.args,
+    hasExistingOpeningBalance: false,
+    canUpdateCurrency: true,
+    initialValues: {
+      ...Update.args?.initialValues,
+      createWithoutOpeningBalance: false,
+      openingBalance: '',
+      openingDate: '',
+    },
+  },
+};
+
+export const UpdateWithCurrencyLocked: Story = {
+  args: {
+    ...UpdateWithoutOpeningBalance.args,
+    canUpdateCurrency: false,
+  },
+};

@@ -108,6 +108,17 @@ async function setup(
   options: { bank?: boolean; children?: boolean; pettyCash?: boolean } = {}
 ) {
   await registerAuthenticatedAppRoutes(page);
+  await page.route('**/api/v1/currencies', (route) =>
+    route.fulfill({
+      json: [
+        { code: 'NGN', name: 'Nigerian Naira', symbol: '₦', minorUnit: 2 },
+        { code: 'USD', name: 'US Dollar', symbol: '$', minorUnit: 2 },
+      ],
+    })
+  );
+  await page.route(`${endpoint}/currency-update-eligibility`, (route) =>
+    route.fulfill({ json: { canUpdateCurrency: true } })
+  );
   await page.route(`${endpoint}/deletion-eligibility`, (route) =>
     route.fulfill({ json: { canDelete: false, reason: 'has_journal_entries' } })
   );
@@ -121,6 +132,9 @@ async function setup(
     route.fulfill({
       json: { ...account, behavior: options.pettyCash ? 'petty_cash' : 'bank' },
     })
+  );
+  await page.route(`${endpoint}/opening-balance`, (route) =>
+    route.fulfill({ json: { openingBalance: null } })
   );
   await page.route(`${endpoint}/bank-details`, (route) => {
     if (options.bank === false)
@@ -351,6 +365,9 @@ test('petty cash skips the bank endpoint and retains other sections when cash fl
 }) => {
   await setup(page, { pettyCash: true, children: false });
   let bankCalls = 0;
+  await page.route(`${endpoint}/opening-balance`, (route) =>
+    route.fulfill({ json: { openingBalance: null } })
+  );
   await page.route(`${endpoint}/bank-details`, (route) => {
     bankCalls++;
 
@@ -496,7 +513,7 @@ test('confirms archiving, prevents duplicate submissions and refreshes the accou
   await page.goto(`/accounts/${accountId}`);
   await expect(
     page.getByRole('button', { name: 'Edit', exact: true })
-  ).toBeDisabled();
+  ).toBeEnabled();
   const actions = page.getByRole('button', { name: 'Open account actions' });
   await actions.click();
   await expect(page.getByRole('menuitem', { name: 'Delete' })).toHaveCount(0);
@@ -664,6 +681,9 @@ test('checks deletion eligibility only when opening the menu and hides stale eli
 for (const reason of ['header_account', 'has_journal_entries'] as const) {
   test(`hides Delete when eligibility returns ${reason}`, async ({ page }) => {
     await setup(page);
+    await page.route(`${endpoint}/currency-update-eligibility`, (route) =>
+      route.fulfill({ json: { canUpdateCurrency: true } })
+    );
     await page.route(`${endpoint}/deletion-eligibility`, (route) =>
       route.fulfill({ json: { canDelete: false, reason } })
     );
@@ -686,6 +706,9 @@ test('hides Delete after a failed eligibility check and retries when reopening',
 }) => {
   await setup(page);
   let checks = 0;
+  await page.route(`${endpoint}/currency-update-eligibility`, (route) =>
+    route.fulfill({ json: { canUpdateCurrency: true } })
+  );
   await page.route(`${endpoint}/deletion-eligibility`, (route) => {
     checks += 1;
 
@@ -724,6 +747,9 @@ test('confirms deletion, blocks duplicate submissions and returns to the refresh
     finishDelete = resolve;
   });
 
+  await page.route(`${endpoint}/currency-update-eligibility`, (route) =>
+    route.fulfill({ json: { canUpdateCurrency: true } })
+  );
   await page.route(`${endpoint}/deletion-eligibility`, (route) =>
     route.fulfill({ json: { canDelete: true } })
   );
@@ -805,6 +831,9 @@ test('retains the account and rechecks eligibility after deletion is rejected', 
 }) => {
   await setup(page);
   let deleteRequests = 0;
+  await page.route(`${endpoint}/currency-update-eligibility`, (route) =>
+    route.fulfill({ json: { canUpdateCurrency: true } })
+  );
   await page.route(`${endpoint}/deletion-eligibility`, (route) =>
     route.fulfill({
       json:
@@ -854,3 +883,592 @@ test('retains the account and rechecks eligibility after deletion is rejected', 
   ).toHaveCount(0);
   expect(deleteRequests).toBe(1);
 });
+
+for (const behavior of ['petty_cash', 'bank'] as const) {
+  test(`edits ${behavior} using its update endpoint and refreshes account details`, async ({
+    page,
+  }) => {
+    await setup(page, {
+      pettyCash: behavior === 'petty_cash',
+      children: false,
+    });
+    let current = { ...account, behavior };
+
+    let bankDetails = {
+      countryCode: 'NG',
+      bankName: 'Example Bank',
+      accountName: 'Acme Studio Ltd',
+      accountNumber: '0123456789',
+    };
+
+    const requests: unknown[] = [];
+    await page.route(endpoint, (route) => route.fulfill({ json: current }));
+    await page.route(`${endpoint}/bank-details`, (route) =>
+      route.fulfill({ json: bankDetails })
+    );
+    await page.route('**/api/v1/banks*', (route) =>
+      route.fulfill({
+        json: [
+          { countryCode: 'NG', bankCode: 'EXAMPLE', bankName: 'Example Bank' },
+        ],
+      })
+    );
+    await page.route(
+      `**/api/v1/ledger/asset/${behavior === 'bank' ? 'bank' : 'petty-cash'}/${accountId}`,
+      (route) => {
+        expect(route.request().method()).toBe('PATCH');
+        const request = route.request().postDataJSON();
+        requests.push(request);
+        current = { ...current, name: request.name };
+        if (request.bankAccount)
+          bankDetails = { ...bankDetails, ...request.bankAccount };
+
+        return route.fulfill({ json: current });
+      }
+    );
+    await page.goto(`/accounts/${accountId}`);
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+
+    const dialog = page.getByRole('dialog', {
+      name:
+        behavior === 'bank' ? 'Edit bank account' : 'Edit petty cash account',
+    });
+
+    await expect(dialog.getByLabel('Account display name')).toHaveValue(
+      account.name
+    );
+    await expect(dialog.getByLabel('Currency', { exact: true })).toHaveValue(
+      'NGN'
+    );
+    await expect(
+      dialog.getByRole('combobox', { name: 'Currency', exact: true })
+    ).toBeEnabled();
+    await expect(dialog.getByLabel('Create as a sub account')).toHaveCount(0);
+
+    const skipBalance = dialog.getByRole('checkbox', {
+      name: 'Leave opening balance unset',
+    });
+
+    await expect(skipBalance).not.toBeChecked();
+    await expect(
+      dialog.getByLabel('Opening balance', { exact: true })
+    ).toBeEnabled();
+    await skipBalance.check();
+    await expect(dialog.getByText('Keep existing opening balance')).toHaveCount(
+      0
+    );
+    await dialog.getByLabel('Account display name').fill('Updated account');
+    if (behavior === 'bank') {
+      await expect(dialog.getByLabel('Bank account name')).toHaveValue(
+        'Acme Studio Ltd'
+      );
+      await dialog.getByLabel('Bank account name').fill('New holder');
+    }
+
+    await dialog.getByRole('button', { name: 'Save changes' }).click();
+    await expect(dialog).not.toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Updated account' })
+    ).toBeVisible();
+    await expect(page.getByText('Account updated successfully')).toBeVisible();
+    expect(requests).toEqual([
+      behavior === 'bank'
+        ? {
+            name: 'Updated account',
+            bankAccount: {
+              bankName: 'Example Bank',
+              accountName: 'New holder',
+              accountNumber: '0123456789',
+            },
+          }
+        : { name: 'Updated account' },
+    ]);
+    if (behavior === 'bank')
+      await expect(page.getByText('New holder', { exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    await expect(dialog.getByLabel('Account display name')).toHaveValue(
+      'Updated account'
+    );
+    await skipBalance.check();
+    await dialog.getByRole('button', { name: 'Save changes' }).click();
+    await expect(dialog).not.toBeVisible();
+    expect(requests).toHaveLength(1);
+  });
+}
+
+for (const behavior of ['petty_cash', 'bank'] as const) {
+  test(`updates only the currency of ${behavior} without an opening balance`, async ({
+    page,
+  }) => {
+    await setup(page, {
+      pettyCash: behavior === 'petty_cash',
+      children: false,
+    });
+    let current = { ...account, behavior };
+    const requests: unknown[] = [];
+    await page.route(endpoint, (route) => route.fulfill({ json: current }));
+    await page.route(
+      `**/api/v1/ledger/asset/${behavior === 'bank' ? 'bank' : 'petty-cash'}/${accountId}`,
+      (route) => {
+        expect(route.request().method()).toBe('PATCH');
+        const request = route.request().postDataJSON();
+        requests.push(request);
+        current = {
+          ...current,
+          balance: { ...current.balance, currencyCode: request.currencyCode },
+        };
+
+        return route.fulfill({ json: current });
+      }
+    );
+    await page.goto(`/accounts/${accountId}`);
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+
+    const dialog = page.getByRole('dialog', {
+      name:
+        behavior === 'bank' ? 'Edit bank account' : 'Edit petty cash account',
+    });
+
+    await dialog
+      .getByRole('checkbox', { name: 'Leave opening balance unset' })
+      .check();
+    await dialog
+      .getByRole('combobox', { name: 'Currency', exact: true })
+      .fill('USD');
+    await page.getByRole('option', { name: /US Dollar/ }).click();
+    await dialog.getByRole('button', { name: 'Save changes' }).click();
+    await expect(dialog).not.toBeVisible();
+    expect(requests).toEqual([{ currencyCode: 'USD' }]);
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    await expect(
+      dialog.getByRole('combobox', { name: 'Currency', exact: true })
+    ).toHaveValue('USD');
+  });
+}
+
+test('preserves unsaved edits after update failure and resets them after cancellation', async ({
+  page,
+}) => {
+  await setup(page, { pettyCash: true, children: false });
+  await page.route(`**/api/v1/ledger/asset/petty-cash/${accountId}`, (route) =>
+    route.fulfill({ status: 500, json: { name: 'UnexpectedError' } })
+  );
+  await page.goto(`/accounts/${accountId}`);
+  const edit = page.getByRole('button', { name: 'Edit', exact: true });
+  await edit.click();
+  const dialog = page.getByRole('dialog', { name: 'Edit petty cash account' });
+  await dialog.getByLabel('Account display name').fill('Unsaved name');
+  await dialog
+    .getByRole('checkbox', { name: 'Leave opening balance unset' })
+    .check();
+  await dialog.getByRole('button', { name: 'Save changes' }).click();
+  await expect(
+    page.getByText('An error occurred', { exact: true })
+  ).toBeVisible();
+  await expect(dialog.getByLabel('Account display name')).toHaveValue(
+    'Unsaved name'
+  );
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(dialog).not.toBeVisible();
+  await edit.click();
+  await expect(dialog.getByLabel('Account display name')).toHaveValue(
+    account.name
+  );
+});
+
+for (const behavior of ['petty_cash', 'bank'] as const) {
+  test(`adds a first opening balance to ${behavior} and prevents dismissal while saving`, async ({
+    page,
+  }) => {
+    await setup(page, {
+      pettyCash: behavior === 'petty_cash',
+      children: false,
+    });
+    await page.clock.setFixedTime(new Date('2026-10-13T12:00:00Z'));
+    await page.route('**/api/v1/currencies/exchange-rates?*', (route) =>
+      route.fulfill({ json: [] })
+    );
+    let finishUpdate: () => void = () => undefined;
+
+    const response = new Promise<void>((resolve) => {
+      finishUpdate = resolve;
+    });
+
+    const requests: unknown[] = [];
+    await page.route(
+      `**/api/v1/ledger/asset/${behavior === 'bank' ? 'bank' : 'petty-cash'}/${accountId}`,
+      async (route) => {
+        requests.push(route.request().postDataJSON());
+        await response;
+        await route.fulfill({ json: { ...account, behavior } });
+      }
+    );
+    await page.goto(`/accounts/${accountId}`);
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+
+    const dialog = page.getByRole('dialog', {
+      name:
+        behavior === 'bank' ? 'Edit bank account' : 'Edit petty cash account',
+    });
+
+    await expect(
+      dialog.getByRole('checkbox', { name: 'Leave opening balance unset' })
+    ).not.toBeChecked();
+    await expect(
+      dialog.getByLabel('Opening balance', { exact: true })
+    ).toBeEnabled();
+    await expect(
+      dialog.getByLabel('Opening date', { exact: true })
+    ).toBeEnabled();
+    await dialog.getByLabel('Opening balance', { exact: true }).fill('');
+    await dialog.getByRole('button', { name: 'Save changes' }).click();
+    await expect(dialog.getByText('Opening balance is required')).toBeVisible();
+    expect(requests).toEqual([]);
+    await dialog
+      .getByRole('combobox', { name: 'Currency', exact: true })
+      .fill('USD');
+    await page.getByRole('option', { name: /US Dollar/ }).click();
+    await dialog.getByLabel('Opening balance', { exact: true }).fill('500');
+    await expect(
+      dialog.getByText('Opening balance is required')
+    ).not.toBeVisible();
+    await dialog.getByRole('button', { name: 'Opening date' }).click();
+    await page
+      .getByRole('button', { name: 'Thursday, October 1st, 2026', exact: true })
+      .click();
+    await dialog.getByLabel('Exchange rate', { exact: true }).fill('1500');
+    await dialog.getByRole('button', { name: 'Save changes' }).click();
+    await expect(
+      dialog.getByRole('button', { name: 'Save changes' })
+    ).toBeDisabled();
+    await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeVisible();
+    await expect.poll(() => requests.length).toBe(1);
+    expect(requests).toEqual([
+      {
+        currencyCode: 'USD',
+        openingBalance: {
+          amount: { amount: 500, currencyCode: 'USD', isMinorUnit: false },
+          date: '2026-10-01',
+          exchangeRate: {
+            baseCurrencyCode: 'USD',
+            targetCurrencyCode: 'NGN',
+            rate: 1500,
+            type: 'market',
+            asOf: '2026-10-01',
+            source: 'manual',
+          },
+        },
+      },
+    ]);
+    finishUpdate();
+    await expect(dialog).not.toBeVisible();
+  });
+}
+
+for (const state of ['unsupported', 'archived'] as const) {
+  test(`rejects editing an ${state} account with a translated error`, async ({
+    page,
+  }) => {
+    await setup(page, { children: false });
+    await page.route(endpoint, (route) =>
+      route.fulfill({
+        json: {
+          ...account,
+          behavior: state === 'unsupported' ? 'virtual_account' : 'bank',
+          status: state === 'archived' ? 'archived' : 'active',
+        },
+      })
+    );
+    await page.goto(`/accounts/${accountId}`);
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    await expect(
+      page.getByText(
+        state === 'unsupported'
+          ? 'This account is not editable. Only bank and petty cash accounts can be edited.'
+          : 'Archived accounts cannot be edited.'
+      )
+    ).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  });
+}
+
+test('allows retrying a failed bank-details load before editing', async ({
+  page,
+}) => {
+  await setup(page, { children: false });
+  await page.route('**/api/v1/banks*', (route) => route.fulfill({ json: [] }));
+  await page.goto(`/accounts/${accountId}`);
+  await expect(
+    page.getByText('Acme Studio Ltd', { exact: true })
+  ).toBeVisible();
+  let reads = 0;
+  await page.route(`${endpoint}/opening-balance`, (route) =>
+    route.fulfill({ json: { openingBalance: null } })
+  );
+  await page.route(`${endpoint}/bank-details`, (route) => {
+    reads += 1;
+
+    return reads === 1
+      ? route.fulfill({ status: 500, json: { name: 'UnexpectedError' } })
+      : route.fulfill({
+          json: {
+            countryCode: 'NG',
+            bankName: 'Example Bank',
+            accountName: 'Acme Studio Ltd',
+            accountNumber: '0123456789',
+          },
+        });
+  });
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Edit bank account' });
+  await expect(dialog.getByRole('alert')).toContainText(
+    'Unable to load bank details. Please try again.'
+  );
+  await dialog.getByRole('button', { name: 'Try again' }).click();
+  await expect(dialog.getByLabel('Bank account name')).toHaveValue(
+    'Acme Studio Ltd'
+  );
+});
+
+for (const behavior of ['petty_cash', 'bank'] as const) {
+  test(`loads and locks the ${behavior} opening balance, including zero`, async ({
+    page,
+  }) => {
+    await setup(page, {
+      pettyCash: behavior === 'petty_cash',
+      children: false,
+    });
+    const requests: unknown[] = [];
+    await page.route(
+      `**/api/v1/ledger/asset/${behavior === 'bank' ? 'bank' : 'petty-cash'}/${accountId}`,
+      (route) => {
+        const request = route.request().postDataJSON();
+        requests.push(request);
+
+        return route.fulfill({
+          json: { ...account, behavior, name: request.name },
+        });
+      }
+    );
+    await page.route(`${endpoint}/currency-update-eligibility`, (route) =>
+      route.fulfill({
+        json: {
+          canUpdateCurrency: false,
+          reason: 'has_posted_journal_entries',
+        },
+      })
+    );
+    let amount = 2550;
+    await page.route(`${endpoint}/opening-balance`, (route) =>
+      route.fulfill({
+        json: {
+          openingBalance: {
+            amount: { amount, currencyCode: 'NGN', isMinorUnit: true },
+            date: '2026-10-01T00:00:00Z',
+            exchangeRate: null,
+          },
+        },
+      })
+    );
+    await page.goto(`/accounts/${accountId}`);
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+
+    const openingBalanceToggle = dialog.getByRole('checkbox');
+
+    await expect(openingBalanceToggle).toHaveCount(0);
+    await expect(
+      dialog.getByLabel('Opening balance', { exact: true })
+    ).toHaveValue('25.5');
+    await expect(
+      dialog.getByLabel('Opening date', { exact: true })
+    ).toContainText('1 Oct 2026');
+    await expect(
+      dialog.getByLabel('Opening balance', { exact: true })
+    ).toBeDisabled();
+    await expect(
+      dialog.getByLabel('Currency', { exact: true })
+    ).toHaveAttribute('readonly', '');
+    await expect(
+      dialog.getByLabel('Opening date', { exact: true })
+    ).toBeDisabled();
+    await dialog.getByLabel('Account display name').fill('Renamed account');
+    await dialog.getByRole('button', { name: 'Save changes' }).click();
+    await expect(dialog).not.toBeVisible();
+    expect(requests).toEqual([{ name: 'Renamed account' }]);
+    amount = 0;
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    await expect(openingBalanceToggle).toHaveCount(0);
+    await expect(
+      dialog.getByLabel('Opening balance', { exact: true })
+    ).toHaveValue('0');
+    await expect(
+      dialog.getByLabel('Opening balance', { exact: true })
+    ).toBeDisabled();
+  });
+
+  test(`blocks ${behavior} editing until the opening balance loads and supports retry`, async ({
+    page,
+  }) => {
+    await setup(page, {
+      pettyCash: behavior === 'petty_cash',
+      children: false,
+    });
+    let finishRead: () => void = () => undefined;
+
+    const pending = new Promise<void>((resolve) => {
+      finishRead = resolve;
+    });
+
+    let reads = 0;
+    await page.route(`${endpoint}/opening-balance`, async (route) => {
+      reads += 1;
+      if (reads === 1) {
+        await pending;
+
+        return route.fulfill({
+          status: 500,
+          json: { name: 'UnexpectedError' },
+        });
+      }
+
+      return route.fulfill({ json: { openingBalance: null } });
+    });
+    await page.goto(`/accounts/${accountId}`);
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('status')).toBeVisible();
+    await expect(
+      dialog.getByRole('button', { name: 'Save changes' })
+    ).toHaveCount(0);
+    finishRead();
+    await expect(dialog.getByRole('alert')).toContainText(
+      'Unable to load the opening balance'
+    );
+    await expect(
+      dialog.getByRole('button', { name: 'Save changes' })
+    ).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Try again' }).click();
+    await expect(
+      dialog.getByRole('button', { name: 'Save changes' })
+    ).toBeVisible();
+    await expect(dialog.getByText('Keep existing opening balance')).toHaveCount(
+      0
+    );
+  });
+}
+
+for (const behavior of ['petty_cash', 'bank'] as const) {
+  test(`uses currency eligibility to lock ${behavior} without an opening balance and rechecks on reopening`, async ({
+    page,
+  }) => {
+    await setup(page, {
+      pettyCash: behavior === 'petty_cash',
+      children: false,
+    });
+    let eligible = true;
+    let reads = 0;
+    let finishRead: () => void = () => undefined;
+
+    const response = new Promise<void>((resolve) => {
+      finishRead = resolve;
+    });
+
+    await page.route(
+      `${endpoint}/currency-update-eligibility`,
+      async (route) => {
+        reads += 1;
+        if (!eligible) await response;
+
+        await route.fulfill({
+          json: eligible
+            ? { canUpdateCurrency: true }
+            : {
+                canUpdateCurrency: false,
+                reason: 'has_posted_journal_entries',
+              },
+        });
+      }
+    );
+    const requests: unknown[] = [];
+    await page.route(
+      `**/api/v1/ledger/asset/${behavior === 'bank' ? 'bank' : 'petty-cash'}/${accountId}`,
+      (route) => {
+        requests.push(route.request().postDataJSON());
+
+        return route.fulfill({
+          json: { ...account, behavior, name: 'Renamed account' },
+        });
+      }
+    );
+    await page.goto(`/accounts/${accountId}`);
+    const edit = page.getByRole('button', { name: 'Edit', exact: true });
+    await edit.click();
+    const dialog = page.getByRole('dialog');
+    await expect(
+      dialog.getByRole('combobox', { name: 'Currency', exact: true })
+    ).toBeEnabled();
+    await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+    eligible = false;
+    await edit.click();
+    await expect.poll(() => reads).toBe(2);
+    await expect(dialog.getByRole('status')).toBeVisible();
+    await expect(
+      dialog.getByRole('combobox', { name: 'Currency', exact: true })
+    ).toHaveCount(0);
+    await expect(
+      dialog.getByRole('button', { name: 'Save changes' })
+    ).toHaveCount(0);
+    finishRead();
+    await expect(
+      dialog.getByLabel('Currency', { exact: true })
+    ).toHaveAttribute('readonly', '');
+    await expect(
+      dialog.getByLabel('Opening balance', { exact: true })
+    ).toBeEnabled();
+    await dialog
+      .getByRole('checkbox', { name: 'Leave opening balance unset' })
+      .check();
+    await dialog.getByLabel('Account display name').fill('Renamed account');
+    await dialog.getByRole('button', { name: 'Save changes' }).click();
+    await expect(dialog).not.toBeVisible();
+    expect(requests).toEqual([{ name: 'Renamed account' }]);
+  });
+
+  test(`keeps ${behavior} currency editing unavailable after an eligibility error and supports retry`, async ({
+    page,
+  }) => {
+    await setup(page, {
+      pettyCash: behavior === 'petty_cash',
+      children: false,
+    });
+    let reads = 0;
+    await page.route(`${endpoint}/currency-update-eligibility`, (route) => {
+      reads += 1;
+
+      return reads === 1
+        ? route.fulfill({ status: 500, json: { name: 'UnexpectedError' } })
+        : route.fulfill({ json: { canUpdateCurrency: true } });
+    });
+    await page.goto(`/accounts/${accountId}`);
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('alert')).toContainText(
+      'Unable to check whether the currency can be updated. Please try again.'
+    );
+    await expect(
+      dialog.getByRole('combobox', { name: 'Currency', exact: true })
+    ).toHaveCount(0);
+    await expect(
+      dialog.getByRole('button', { name: 'Save changes' })
+    ).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Try again' }).click();
+    await expect(
+      dialog.getByRole('combobox', { name: 'Currency', exact: true })
+    ).toBeEnabled();
+    expect(reads).toBe(2);
+  });
+}

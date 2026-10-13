@@ -7,6 +7,7 @@ import type {
   IExchangeRate,
   IExchangeRateDto,
   IExchangeRateQueryParam,
+  IOpeningBalanceDto,
   IPettyCashAccountCreationReq,
 } from '@/shared/lib/api/Api';
 import { EExchangeRateType } from '@/shared/lib/api/Api';
@@ -50,19 +51,19 @@ function toOpeningBalanceExchangeRateQuery(
   };
 }
 
-function toPettyCashAccountCreationDto(
-  values: IPettyCashAccountFormValues,
+function toOpeningBalanceDto(
+  values: Pick<
+    IPettyCashAccountFormValues,
+    | 'currencyCode'
+    | 'createWithoutOpeningBalance'
+    | 'openingBalance'
+    | 'openingDate'
+    | 'exchangeRate'
+  >,
   accountingCurrencyCode: string,
   officialExchangeRate?: IExchangeRate
-): IPettyCashAccountCreationReq {
-  if (values.createWithoutOpeningBalance) {
-    return {
-      name: values.name,
-      currencyCode: values.currencyCode,
-      isControlAccount: false,
-      openingBalance: null,
-    };
-  }
+): IOpeningBalanceDto | null {
+  if (values.createWithoutOpeningBalance) return null;
 
   const hasForeignCurrency = values.currencyCode !== accountingCurrencyCode;
   let exchangeRate: IExchangeRateDto | null = null;
@@ -89,17 +90,26 @@ function toPettyCashAccountCreationDto(
   }
 
   return {
+    amount: moneyMapper.toMoneyDto(values.openingBalance, values.currencyCode),
+    date: values.openingDate,
+    exchangeRate,
+  };
+}
+
+function toPettyCashAccountCreationDto(
+  values: IPettyCashAccountFormValues,
+  accountingCurrencyCode: string,
+  officialExchangeRate?: IExchangeRate
+): IPettyCashAccountCreationReq {
+  return {
     name: values.name,
     currencyCode: values.currencyCode,
     isControlAccount: false,
-    openingBalance: {
-      amount: moneyMapper.toMoneyDto(
-        values.openingBalance,
-        values.currencyCode
-      ),
-      date: values.openingDate,
-      exchangeRate,
-    },
+    openingBalance: toOpeningBalanceDto(
+      values,
+      accountingCurrencyCode,
+      officialExchangeRate
+    ),
   };
 }
 
@@ -114,56 +124,21 @@ function toBankAccountCreationDto(
     accountNumber: values.accountNumber,
   };
 
-  if (values.createWithoutOpeningBalance) {
-    return {
-      name: values.name,
-      currencyCode: values.currencyCode,
-      bankAccount,
-      openingBalance: null,
-    };
-  }
-
-  const hasForeignCurrency = values.currencyCode !== accountingCurrencyCode;
-  let exchangeRate: IExchangeRateDto | null = null;
-
-  if (hasForeignCurrency) {
-    const enteredExchangeRate = values.exchangeRate ?? {
-      value: officialExchangeRate?.rate ?? null,
-      inverted: false,
-    };
-
-    exchangeRate = currencyMapper.toUserEnteredExchangeRate(
-      {
-        baseCurrencyCode: values.currencyCode,
-        targetCurrencyCode: accountingCurrencyCode,
-        rate: enteredExchangeRate.value,
-        asOf: values.openingDate,
-      },
-      toEnteredExchangeRatePair(
-        values.currencyCode,
-        accountingCurrencyCode,
-        enteredExchangeRate.inverted
-      )
-    );
-  }
-
   return {
     name: values.name,
     currencyCode: values.currencyCode,
     bankAccount,
-    openingBalance: {
-      amount: moneyMapper.toMoneyDto(
-        values.openingBalance,
-        values.currencyCode
-      ),
-      date: values.openingDate,
-      exchangeRate,
-    },
+    openingBalance: toOpeningBalanceDto(
+      values,
+      accountingCurrencyCode,
+      officialExchangeRate
+    ),
   };
 }
 
 export const assetAccountMapper = Object.freeze({
   toOpeningBalanceExchangeRateQuery,
+  toOpeningBalanceDto,
   toPettyCashAccountCreationDto,
   toBankAccountCreationDto,
 });

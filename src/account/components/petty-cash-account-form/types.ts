@@ -1,6 +1,10 @@
 import type { IOpeningBalanceExchangeRateContext } from '@/account/lib/types/opening-balance-exchange-rate.types';
 import type { ICurrencyExchangeRateInputValue } from '@/shared/components/currency-exchange-rate-input';
-import type { ICurrencyDto, IExchangeRate } from '@/shared/lib/api/Api';
+import type {
+  ICurrencyDto,
+  IExchangeRate,
+  ILedgerAccountDto,
+} from '@/shared/lib/api/Api';
 
 export interface IPettyCashAccountFormValues {
   name: string;
@@ -13,6 +17,10 @@ export interface IPettyCashAccountFormValues {
 }
 
 export interface PettyCashAccountFormProps {
+  mode?: 'create' | 'update';
+  hasExistingOpeningBalance?: boolean;
+  canUpdateCurrency?: boolean;
+  onCancel?: () => void;
   accountingCurrencyCode: string;
   currencies: ICurrencyDto[];
   officialExchangeRate?: IExchangeRate;
@@ -23,4 +31,11 @@ export interface PettyCashAccountFormProps {
     context: IOpeningBalanceExchangeRateContext
   ) => void;
   onSubmit: (values: IPettyCashAccountFormValues) => Promise<void> | void;
+}
+
+export interface PettyCashAccountFormUpdateContainerProps {
+  account: ILedgerAccountDto;
+  onSuccess: () => void;
+  onCancel: () => void;
+  onBusyChange: (busy: boolean) => void;
 }

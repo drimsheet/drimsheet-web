@@ -293,14 +293,6 @@ export const EJournalSide = {
 } as const;
 export type UJournalSide = (typeof EJournalSide)[keyof typeof EJournalSide];
 
-export const EExchangeRateType = {
-  Official: 'official',
-  Negotiated: 'negotiated',
-  Market: 'market',
-} as const;
-export type UExchangeRateType =
-  (typeof EExchangeRateType)[keyof typeof EExchangeRateType];
-
 export const EJournalEntryStatus = {
   Archived: 'archived',
   Draft: 'draft',
@@ -318,12 +310,27 @@ export const ELedgerAccountBalanceEffect = {
 export type ULedgerAccountBalanceEffect =
   (typeof ELedgerAccountBalanceEffect)[keyof typeof ELedgerAccountBalanceEffect];
 
+export const EExchangeRateType = {
+  Official: 'official',
+  Negotiated: 'negotiated',
+  Market: 'market',
+} as const;
+export type UExchangeRateType =
+  (typeof EExchangeRateType)[keyof typeof EExchangeRateType];
+
 export const ELedgerAccountDeletionReason = {
   HeaderAccount: 'header_account',
   HasJournalEntries: 'has_journal_entries',
 } as const;
 export type ULedgerAccountDeletionReason =
   (typeof ELedgerAccountDeletionReason)[keyof typeof ELedgerAccountDeletionReason];
+
+export const ELedgerAccountCurrencyUpdateReason = {
+  NotAssetAccount: 'not_asset_account',
+  HasPostedJournalEntries: 'has_posted_journal_entries',
+} as const;
+export type ULedgerAccountCurrencyUpdateReason =
+  (typeof ELedgerAccountCurrencyUpdateReason)[keyof typeof ELedgerAccountCurrencyUpdateReason];
 
 export const EJournalEntrySourceType = {
   Expense: 'expense',
@@ -714,6 +721,15 @@ export interface IBankDetails {
   accountNumber: string;
 }
 
+export type TLedgerAccountCurrencyUpdateEligibilityDto =
+  | {
+      canUpdateCurrency: true;
+    }
+  | {
+      reason: ULedgerAccountCurrencyUpdateReason;
+      canUpdateCurrency: false;
+    };
+
 export type TLedgerAccountDeletionEligibilityDto =
   | {
       canDelete: true;
@@ -722,6 +738,28 @@ export type TLedgerAccountDeletionEligibilityDto =
       reason: ULedgerAccountDeletionReason;
       canDelete: false;
     };
+
+export interface IExchangeRateDto {
+  baseCurrencyCode: string;
+  targetCurrencyCode: string;
+  /** @format double */
+  rate: number;
+  type: UExchangeRateType;
+  /** @format date-time */
+  asOf: string;
+  source: string;
+}
+
+export interface IOpeningBalanceDto {
+  amount: IMoneyDto;
+  exchangeRate: IExchangeRateDto | null;
+  /** @format date-time */
+  date: string;
+}
+
+export interface ILedgerAccountOpeningBalanceDto {
+  openingBalance: IOpeningBalanceDto | null;
+}
 
 export interface IJournalHeaderDto {
   sourceType: UJournalEntrySourceType;
@@ -824,24 +862,6 @@ export interface IBankDetailsCreationReq {
   accountNumber: string;
 }
 
-export interface IExchangeRateDto {
-  baseCurrencyCode: string;
-  targetCurrencyCode: string;
-  /** @format double */
-  rate: number;
-  type: UExchangeRateType;
-  /** @format date-time */
-  asOf: string;
-  source: string;
-}
-
-export interface IOpeningBalanceDto {
-  amount: IMoneyDto;
-  exchangeRate: IExchangeRateDto | null;
-  /** @format date-time */
-  date: string;
-}
-
 export interface IBankAccountCreationReq {
   name: string;
   /** Defaults to active when omitted. */
@@ -939,8 +959,9 @@ export interface ICreateSuspenseAccountDto {
   currencyCode: string;
 }
 
-/** Editable bank ledger and bank details; currency is retained. */
+/** Editable bank ledger and bank details; currency changes require no journal references. */
 export interface IBankAccountUpdateReq {
+  currencyCode?: string;
   /** Replaces bank details when supplied; omitted details are retained. */
   bankAccount?: IBankDetailsCreationReq;
   name?: string;
@@ -948,6 +969,7 @@ export interface IBankAccountUpdateReq {
 }
 
 export interface IPettyCashAccountUpdateReq {
+  currencyCode?: string;
   name?: string;
   openingBalance?: IOpeningBalanceDto;
 }
@@ -1895,6 +1917,24 @@ export class Api<
       }),
 
     /**
+     * @description Check whether an account is an asset with no historically posted journal entries. Draft entries do not block eligibility. Ineligible results include the reason. This result is advisory; currency updates also enforce their own validation.
+     *
+     * @tags Ledger
+     * @name GetLedgerAccountCurrencyUpdateEligibility
+     * @request GET:/ledger/{accountId}/currency-update-eligibility
+     */
+    getLedgerAccountCurrencyUpdateEligibility: (
+      accountId: string,
+      params: RequestParams = {}
+    ) =>
+      this.request<TLedgerAccountCurrencyUpdateEligibilityDto, IHttpErrorDto>({
+        path: `/ledger/${accountId}/currency-update-eligibility`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
      * @description Check whether a ledger account is not a header and is either draft or has no associated journal entries. Ineligible results include the blocking reason. This result is advisory.
      *
      * @tags Ledger
@@ -1907,6 +1947,24 @@ export class Api<
     ) =>
       this.request<TLedgerAccountDeletionEligibilityDto, IHttpErrorDto>({
         path: `/ledger/${accountId}/deletion-eligibility`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Get the current draft or posted opening balance, or null when none exists.
+     *
+     * @tags Ledger
+     * @name GetLedgerAccountOpeningBalance
+     * @request GET:/ledger/{accountId}/opening-balance
+     */
+    getLedgerAccountOpeningBalance: (
+      accountId: string,
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerAccountOpeningBalanceDto, IHttpErrorDto>({
+        path: `/ledger/${accountId}/opening-balance`,
         method: 'GET',
         format: 'json',
         ...params,
@@ -2236,6 +2294,48 @@ export class Api<
         body: data,
         type: EContentType.Json,
         format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Activates a draft petty cash or bank account beneath an active parent and posts its associated draft opening-balance journal atomically. Requires no body; other account families and non-draft accounts return 400.
+     *
+     * @tags Asset Accounts, Ledger
+     * @name ActivateCashAccount
+     * @request POST:/ledger/asset/cash/{accountId}/activate
+     */
+    activateCashAccount: (accountId: string, params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/ledger/asset/cash/${accountId}/activate`,
+        method: 'POST',
+        ...params,
+      }),
+
+    /**
+     * @description Activates a draft expense account beneath an active parent. Requires no body; non-expense and non-draft accounts return 400.
+     *
+     * @tags Expense Accounts, Ledger
+     * @name ActivateExpenseAccount
+     * @request POST:/ledger/expense/{accountId}/activate
+     */
+    activateExpenseAccount: (accountId: string, params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/ledger/expense/${accountId}/activate`,
+        method: 'POST',
+        ...params,
+      }),
+
+    /**
+     * @description Activates a draft revenue account beneath an active parent. Requires no body; non-revenue and non-draft accounts return 400.
+     *
+     * @tags Revenue Accounts, Ledger
+     * @name ActivateRevenueAccount
+     * @request POST:/ledger/revenue/{accountId}/activate
+     */
+    activateRevenueAccount: (accountId: string, params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/ledger/revenue/${accountId}/activate`,
+        method: 'POST',
         ...params,
       }),
 

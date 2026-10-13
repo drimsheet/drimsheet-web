@@ -30,6 +30,10 @@ const defaultInitialValues: IPettyCashAccountFormValues = {
 };
 
 export function PettyCashAccountForm({
+  mode = 'create',
+  hasExistingOpeningBalance = false,
+  canUpdateCurrency = false,
+  onCancel,
   accountingCurrencyCode,
   currencies,
   officialExchangeRate,
@@ -73,7 +77,7 @@ export function PettyCashAccountForm({
 
   const handleCreateWithoutOpeningBalanceChange = (checked: boolean) => {
     void formik.setFieldValue('createWithoutOpeningBalance', checked);
-    if (checked) {
+    if (checked && mode === 'create') {
       void formik.setFieldValue('exchangeRate', null);
     }
 
@@ -96,7 +100,16 @@ export function PettyCashAccountForm({
   const account_name_label = t('account_display_name');
   const currency_label = t('currency_label');
   const create_as_sub_account_label = t('create_as_sub_account_label');
-  const create_account_text = t('create_account_text');
+
+  const submit_label = t(
+    mode === 'update' ? 'save_changes_label' : 'create_account_text'
+  );
+
+  const cancel_label = t('update_cancel_label');
+
+  const leave_opening_balance_unset_label = t(
+    'leave_opening_balance_unset_label'
+  );
 
   return (
     <form
@@ -107,14 +120,25 @@ export function PettyCashAccountForm({
       <FieldSet disabled={disabled || loading}>
         <FieldGroup>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-[1fr_1fr]">
-            <CurrencySelect
-              currencies={currencies}
-              displayCode
-              error={getErrorMessage('currencyCode')}
-              label={currency_label}
-              onChange={handleCurrencyChange}
-              value={formik.values.currencyCode}
-            />
+            {mode === 'update' && !canUpdateCurrency ? (
+              <Field>
+                <Label htmlFor="account-currency">{currency_label}</Label>
+                <Input
+                  id="account-currency"
+                  value={formik.values.currencyCode}
+                  readOnly
+                />
+              </Field>
+            ) : (
+              <CurrencySelect
+                currencies={currencies}
+                displayCode
+                error={getErrorMessage('currencyCode')}
+                label={currency_label}
+                onChange={handleCurrencyChange}
+                value={formik.values.currencyCode}
+              />
+            )}
 
             <Field data-invalid={Boolean(getErrorMessage('name').length)}>
               <Label htmlFor="name">{account_name_label}</Label>
@@ -131,12 +155,22 @@ export function PettyCashAccountForm({
           </div>
 
           <OpeningBalanceFields
+            skipOpeningBalanceLabel={
+              mode === 'update' ? leave_opening_balance_unset_label : undefined
+            }
+            showSkipOpeningBalance={
+              mode !== 'update' || !hasExistingOpeningBalance
+            }
             accountingCurrencyCode={accountingCurrencyCode}
             createWithoutOpeningBalance={
               formik.values.createWithoutOpeningBalance
             }
             currencyCode={formik.values.currencyCode}
-            disabled={disabled || loading}
+            disabled={
+              disabled ||
+              loading ||
+              (mode === 'update' && hasExistingOpeningBalance)
+            }
             exchangeRate={formik.values.exchangeRate}
             exchangeRateError={getErrorMessage('exchangeRate')}
             officialExchangeRate={officialExchangeRate}
@@ -154,28 +188,42 @@ export function PettyCashAccountForm({
             openingDateError={getErrorMessage('openingDate')}
           />
 
-          <Field orientation="horizontal">
-            <Checkbox
-              aria-label={create_as_sub_account_label}
-              checked={formik.values.isSubAccount}
-              disabled={disabled || loading}
-              id="isSubAccount"
-              name="isSubAccount"
-              onCheckedChange={(checked) => {
-                void formik.setFieldValue('isSubAccount', checked === true);
-              }}
-            />
-            <Label htmlFor="isSubAccount">{create_as_sub_account_label}</Label>
-          </Field>
+          {mode === 'create' && (
+            <Field orientation="horizontal">
+              <Checkbox
+                aria-label={create_as_sub_account_label}
+                checked={formik.values.isSubAccount}
+                disabled={disabled || loading}
+                id="isSubAccount"
+                name="isSubAccount"
+                onCheckedChange={(checked) => {
+                  void formik.setFieldValue('isSubAccount', checked === true);
+                }}
+              />
+              <Label htmlFor="isSubAccount">
+                {create_as_sub_account_label}
+              </Label>
+            </Field>
+          )}
 
-          <Field>
+          <Field orientation="horizontal" className="justify-end">
+            {onCancel && (
+              <Button
+                variant="outline"
+                type="button"
+                disabled={loading}
+                onClick={onCancel}
+              >
+                {cancel_label}
+              </Button>
+            )}
             <Button
-              className="w-full sm:ml-auto sm:w-auto"
+              className={onCancel ? 'w-auto' : 'w-full sm:w-auto'}
               disabled={disabled}
               loading={loading}
               type="submit"
             >
-              {create_account_text}
+              {submit_label}
             </Button>
           </Field>
         </FieldGroup>

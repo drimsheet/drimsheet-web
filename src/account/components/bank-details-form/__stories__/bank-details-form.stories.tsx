@@ -65,3 +65,44 @@ export const Disabled: Story = {
     disabled: true,
   },
 };
+
+export const Update: Story = {
+  args: {
+    mode: 'update',
+    hasExistingOpeningBalance: true,
+    canUpdateCurrency: false,
+    initialValues: {
+      name: 'Main business account',
+      currencyCode: 'NGN',
+      bankLocation: 'NG',
+      bankName: 'Access Bank',
+      accountName: 'Acme Ltd',
+      accountNumber: '0123456789',
+      createWithoutOpeningBalance: true,
+      openingBalance: 100,
+      openingDate: '2026-10-01',
+    },
+    onCancel: () => undefined,
+  },
+};
+
+export const UpdateWithoutOpeningBalance: Story = {
+  args: {
+    ...Update.args,
+    hasExistingOpeningBalance: false,
+    canUpdateCurrency: true,
+    initialValues: {
+      ...Update.args?.initialValues,
+      createWithoutOpeningBalance: false,
+      openingBalance: '',
+      openingDate: '',
+    },
+  },
+};
+
+export const UpdateWithCurrencyLocked: Story = {
+  args: {
+    ...UpdateWithoutOpeningBalance.args,
+    canUpdateCurrency: false,
+  },
+};

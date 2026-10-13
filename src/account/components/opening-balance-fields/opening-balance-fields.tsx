@@ -8,6 +8,8 @@ import { useTranslation } from 'react-i18next';
 import type { OpeningBalanceFieldsProps } from './types';
 
 export function OpeningBalanceFields({
+  showSkipOpeningBalance = true,
+  skipOpeningBalanceLabel,
   accountingCurrencyCode,
   currencyCode,
   createWithoutOpeningBalance,
@@ -33,9 +35,8 @@ export function OpeningBalanceFields({
 
   const openingBalanceDisabled = disabled || createWithoutOpeningBalance;
 
-  const create_without_opening_balance_label = t(
-    'create_without_opening_balance_label'
-  );
+  const create_without_opening_balance_label =
+    skipOpeningBalanceLabel ?? t('create_without_opening_balance_label');
 
   const opening_balance_label = t('opening_balance_label');
   const opening_date_label = t('opening_date_label');
@@ -44,21 +45,23 @@ export function OpeningBalanceFields({
 
   return (
     <FieldGroup>
-      <Field orientation="horizontal">
-        <Checkbox
-          aria-label={create_without_opening_balance_label}
-          checked={createWithoutOpeningBalance}
-          disabled={disabled}
-          id="createWithoutOpeningBalance"
-          name="createWithoutOpeningBalance"
-          onCheckedChange={(checked) =>
-            onCreateWithoutOpeningBalanceChange(checked === true)
-          }
-        />
-        <Label htmlFor="createWithoutOpeningBalance">
-          {create_without_opening_balance_label}
-        </Label>
-      </Field>
+      {showSkipOpeningBalance && (
+        <Field orientation="horizontal">
+          <Checkbox
+            aria-label={create_without_opening_balance_label}
+            checked={createWithoutOpeningBalance}
+            disabled={disabled}
+            id="createWithoutOpeningBalance"
+            name="createWithoutOpeningBalance"
+            onCheckedChange={(checked) =>
+              onCreateWithoutOpeningBalanceChange(checked === true)
+            }
+          />
+          <Label htmlFor="createWithoutOpeningBalance">
+            {create_without_opening_balance_label}
+          </Label>
+        </Field>
+      )}
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Field data-invalid={Boolean(openingBalanceError?.length)}>
