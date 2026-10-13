@@ -1,3 +1,4 @@
+import { AccountUpdateDialog } from '@/account/dialogs/account-update';
 import { useArchiveLedgerAccount } from '@/account/hooks/use-archive-ledger-account';
 import { useDeleteLedgerAccount } from '@/account/hooks/use-delete-ledger-account';
 import { useLedgerAccountDeletionEligibility } from '@/account/hooks/use-ledger-account-deletion-eligibility';
@@ -17,6 +18,8 @@ export function AccountActionsContainer({
   const navigate = useNavigate();
   const [actionsOpen, setActionsOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editSession, setEditSession] = useState(0);
   const handleApiError = useApiErrorHandler();
   const { mutateAsync: archive, isPending } = useArchiveLedgerAccount();
   const { mutateAsync: deleteAccount } = useDeleteLedgerAccount();
@@ -33,6 +36,23 @@ export function AccountActionsContainer({
       eligibility.data.canDelete
     ) {
       setDeleteOpen(true);
+    }
+  };
+
+  const handleEdit = () => {
+    try {
+      if (account.behavior !== 'bank' && account.behavior !== 'petty_cash') {
+        throw new Error(t('account_not_editable_error_text'));
+      }
+
+      if (account.status === 'archived') {
+        throw new Error(t('archived_account_not_editable_error_text'));
+      }
+
+      setEditSession((current) => current + 1);
+      setEditOpen(true);
+    } catch (error) {
+      if (error instanceof Error) toast.error(error.message);
     }
   };
 
@@ -74,6 +94,7 @@ export function AccountActionsContainer({
         deletable={eligibility.isSuccess && eligibility.data.canDelete}
         onActionsOpenChange={setActionsOpen}
         onDelete={handleOpenDelete}
+        onEdit={handleEdit}
       />
       <AccountDeleteConfirmation
         accountName={account.name}
@@ -81,6 +102,12 @@ export function AccountActionsContainer({
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         onDelete={handleDelete}
+      />
+      <AccountUpdateDialog
+        account={account}
+        open={editOpen}
+        session={editSession}
+        onClose={() => setEditOpen(false)}
       />
     </>
   );

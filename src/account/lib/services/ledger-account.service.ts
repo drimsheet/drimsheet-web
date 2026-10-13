@@ -39,6 +39,13 @@ async function getLedgerAccountDeletionEligibility(id: string) {
   return response.data;
 }
 
+async function getLedgerAccountCurrencyUpdateEligibility(id: string) {
+  const response =
+    await drimsheetApi.ledger.getLedgerAccountCurrencyUpdateEligibility(id);
+
+  return response.data;
+}
+
 async function deleteLedgerAccount(id: string) {
   await drimsheetApi.ledger.deleteLedgerAccount(id);
 }
@@ -55,6 +62,12 @@ async function getBankDetails(id: string) {
   const response = await drimsheetApi.ledger.getBankDetails(id);
 
   return response.data;
+}
+
+async function getOpeningBalance(id: string) {
+  const response = await drimsheetApi.ledger.getLedgerAccountOpeningBalance(id);
+
+  return response.data.openingBalance;
 }
 
 async function getSubAccounts(id: string) {
@@ -84,9 +97,11 @@ export const ledgerAccountService = Object.freeze({
   getLedgerAccount,
   archiveLedgerAccount,
   getLedgerAccountDeletionEligibility,
+  getLedgerAccountCurrencyUpdateEligibility,
   deleteLedgerAccount,
   getPermittedPostingAccounts,
   getBankDetails,
+  getOpeningBalance,
   getSubAccounts,
   getAccountCashFlow,
   getTransactions,

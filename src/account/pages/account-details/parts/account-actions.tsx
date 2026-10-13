@@ -24,6 +24,7 @@ export function AccountActions({
   deletable = false,
   onActionsOpenChange,
   onDelete,
+  onEdit,
 }: Readonly<AccountActionsProps>) {
   const { t } = useTranslation('ledger-accounts');
   const [open, setOpen] = useState(false);
@@ -67,7 +68,7 @@ export function AccountActions({
 
   return (
     <div className="flex shrink-0 items-center gap-2">
-      <Button variant="outline" disabled>
+      <Button variant="outline" disabled={busy || !onEdit} onClick={onEdit}>
         {edit_label}
       </Button>
       <DropdownMenu onOpenChange={onActionsOpenChange}>

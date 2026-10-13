@@ -76,3 +76,13 @@ export const Invalid: Story = {
     exchangeRateError: [{ message: 'Exchange rate is required' }],
   },
 };
+
+export const LockedOpeningBalance: Story = {
+  args: {
+    showSkipOpeningBalance: false,
+    disabled: true,
+    createWithoutOpeningBalance: true,
+    openingBalance: 100,
+    openingDate: '2026-10-01',
+  },
+};

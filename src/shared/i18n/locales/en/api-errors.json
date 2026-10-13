@@ -386,5 +386,7 @@
   "app_error_reporting_to_date_invalid": "Invalid report end date.",
   "ledger_error_draft_account_journal_entry_unexpected": "Unable to delete this account because it is linked to an unexpected journal entry.",
   "ledger_error_header_account_delete_invalid": "Header account cannot be deleted.",
-  "ledger_error_non_draft_account_deletion_invalid": "This account cannot be deleted because it or one of its subaccounts has journal entries."
+  "ledger_error_non_draft_account_deletion_invalid": "This account cannot be deleted because it or one of its subaccounts has journal entries.",
+  "ledger_error_currency_change_has_journal_entries_conflict": "Account currency cannot be changed because the account has journal entries.",
+  "ledger_error_currency_change_transaction_required_unexpected": "Unable to change account currency."
 }

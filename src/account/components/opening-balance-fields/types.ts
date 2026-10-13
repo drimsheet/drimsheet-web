@@ -6,6 +6,8 @@ interface FieldError {
 }
 
 export interface OpeningBalanceFieldsProps {
+  showSkipOpeningBalance?: boolean;
+  skipOpeningBalanceLabel?: string;
   accountingCurrencyCode: string;
   currencyCode: string;
   createWithoutOpeningBalance: boolean;

@@ -85,6 +85,27 @@ describe('BankDetailsForm', () => {
       vi.fn() as unknown as typeof window.HTMLElement.prototype.scrollIntoView;
   });
 
+  it('locks existing opening balances and exchange rates even if the local skip flag is false', () => {
+    renderForm({
+      mode: 'update',
+      hasExistingOpeningBalance: true,
+      initialValues: {
+        ...validInitialValues,
+        currencyCode: 'USD',
+        createWithoutOpeningBalance: false,
+        exchangeRate: { value: 1500, inverted: false },
+      },
+    });
+
+    expect(screen.getByLabelText('Currency')).toHaveAttribute('readonly');
+    expect(screen.getByLabelText('Opening balance')).toBeDisabled();
+    expect(screen.getByLabelText('Opening date')).toBeDisabled();
+    expect(screen.getByLabelText('Exchange rate')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Invert rates' })).toBeDisabled();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Account display name')).toBeEnabled();
+  });
+
   it('renders all form controls with accessible labels and info alert', () => {
     renderForm();
 

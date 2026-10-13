@@ -4,6 +4,7 @@ import type {
   IBankDirectoryDto,
   ICurrencyDto,
   IExchangeRate,
+  ILedgerAccountDto,
 } from '@/shared/lib/api/Api';
 
 export interface IBankDetailsFormValues {
@@ -21,6 +22,10 @@ export interface IBankDetailsFormValues {
 }
 
 export interface BankDetailsFormProps {
+  mode?: 'create' | 'update';
+  hasExistingOpeningBalance?: boolean;
+  canUpdateCurrency?: boolean;
+  onCancel?: () => void;
   accountingCurrencyCode: string;
   currencies: ICurrencyDto[];
   bankLocations: Array<{ code: string; name: string }>;
@@ -39,6 +44,10 @@ export interface BankDetailsFormProps {
 
 export type BankDetailsFormContainerProps = Pick<
   BankDetailsFormProps,
+  | 'mode'
+  | 'hasExistingOpeningBalance'
+  | 'canUpdateCurrency'
+  | 'onCancel'
   | 'accountingCurrencyCode'
   | 'currencies'
   | 'bankLocations'
@@ -51,3 +60,10 @@ export type BankDetailsFormContainerProps = Pick<
 > & {
   initialBankLocation?: string;
 };
+
+export interface BankDetailsFormUpdateContainerProps {
+  account: ILedgerAccountDto;
+  onSuccess: () => void;
+  onCancel: () => void;
+  onBusyChange: (busy: boolean) => void;
+}

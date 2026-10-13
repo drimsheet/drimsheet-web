@@ -23,6 +23,7 @@ export interface AccountActionsProps {
   deletable?: boolean;
   onActionsOpenChange?: (open: boolean) => void;
   onDelete?: () => void;
+  onEdit?: () => void;
 }
 
 export interface AccountDeleteConfirmationProps {
@@ -34,10 +35,7 @@ export interface AccountDeleteConfirmationProps {
 }
 
 export interface AccountActionsContainerProps {
-  account: Pick<
-    ILedgerAccountDto,
-    'id' | 'name' | 'status' | 'controlAccountId' | 'isControlAccount'
-  >;
+  account: ILedgerAccountDto;
 }
 
 export type AccountBehaviorLabelProps = Pick<ILedgerAccountDto, 'behavior'>;
