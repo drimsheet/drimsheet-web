@@ -383,5 +383,8 @@
   "app_error_reporting_from_date_invalid": "Invalid report start date.",
   "app_error_reporting_period_invalid": "The report end date must be after the start date.",
   "app_error_reporting_period_limit_invalid": "The report period exceeds the supported limit. Select a shorter date range.",
-  "app_error_reporting_to_date_invalid": "Invalid report end date."
+  "app_error_reporting_to_date_invalid": "Invalid report end date.",
+  "ledger_error_draft_account_journal_entry_unexpected": "Unable to delete this account because it is linked to an unexpected journal entry.",
+  "ledger_error_header_account_delete_invalid": "Header account cannot be deleted.",
+  "ledger_error_non_draft_account_deletion_invalid": "This account cannot be deleted because it or one of its subaccounts has journal entries."
 }

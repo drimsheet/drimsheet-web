@@ -3,6 +3,7 @@ import { AppBody, AppHeader } from '@/shared/components/app';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useSubAccounts } from './hooks/use-account-details';
+import { AccountActionsContainer } from './parts/account-actions.container';
 import { LedgerAccountSummary } from './parts/account-summary';
 import { AccountSummarySkeleton } from './parts/account-summary-skeleton';
 import { BankDetailsSkeleton } from './parts/bank-details-skeleton';
@@ -60,6 +61,9 @@ export function AccountDetailsPage() {
               <LedgerAccountSummary
                 account={account}
                 hasSubAccounts={!!subAccounts.data?.length}
+                actions={
+                  <AccountActionsContainer key={account.id} account={account} />
+                }
               />
               {account.behavior === 'bank' && (
                 <BankDetailsContainer

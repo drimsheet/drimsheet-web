@@ -5,11 +5,26 @@ import type {
   ILedgerAccountDto,
   IPaginationResponseMeta,
 } from '@/shared/lib/api/Api';
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 
 export interface LedgerAccountSummaryProps extends ComponentProps<'div'> {
   account: ILedgerAccountDto;
   hasSubAccounts?: boolean;
+  actions?: ReactNode;
+}
+
+export interface AccountActionsProps {
+  archiveDisabled?: boolean;
+  isControlAccount?: boolean;
+  loading?: boolean;
+  onArchive: () => Promise<void>;
+}
+
+export interface AccountActionsContainerProps {
+  account: Pick<
+    ILedgerAccountDto,
+    'id' | 'status' | 'controlAccountId' | 'isControlAccount'
+  >;
 }
 
 export type AccountBehaviorLabelProps = Pick<ILedgerAccountDto, 'behavior'>;

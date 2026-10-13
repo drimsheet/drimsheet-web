@@ -25,6 +25,7 @@ const account: ILedgerAccountDto = {
   behavior: 'bank',
   normalBalance: 'debit',
   isControlAccount: false,
+  controlAccountId: '00000000-0000-4000-8000-000000000019' as TEntityId,
   name: 'Main business account',
   status: 'active',
   contraAccountRule: 'contra_permitted',
@@ -464,4 +465,148 @@ test('searches and sorts account transactions and opens the shared details drawe
   await expect(search).toHaveValue('Unmatched');
   await search.clear();
   await expect(recent.getByText('Sales', { exact: true })).toBeVisible();
+});
+
+test('confirms archiving, prevents duplicate submissions and refreshes the account status', async ({
+  page,
+}, testInfo) => {
+  await setup(page, { children: false });
+  let current = account;
+  const requests: { method: string; body: string | null }[] = [];
+  let finishArchive: () => void = () => undefined;
+
+  const archiveResponse = new Promise<void>((resolve) => {
+    finishArchive = resolve;
+  });
+
+  await page.route(endpoint, (route) => route.fulfill({ json: current }));
+  await page.route(`${endpoint}/archive`, async (route) => {
+    requests.push({
+      method: route.request().method(),
+      body: route.request().postData(),
+    });
+    await archiveResponse;
+    current = { ...account, status: 'archived' };
+    await route.fulfill({ status: 204 });
+  });
+
+  await page.goto(`/accounts/${accountId}`);
+  await expect(
+    page.getByRole('button', { name: 'Edit', exact: true })
+  ).toBeDisabled();
+  const actions = page.getByRole('button', { name: 'Open account actions' });
+  await actions.click();
+  await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeDisabled();
+  await page.screenshot({ path: testInfo.outputPath('account-actions.png') });
+  await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
+  const dialog = page.getByRole('alertdialog', { name: 'Archive account?' });
+  await expect(dialog).toBeVisible();
+  expect(requests).toEqual([]);
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(dialog).not.toBeVisible();
+  expect(requests).toEqual([]);
+
+  await actions.click();
+  await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
+  await dialog
+    .getByRole('button', { name: 'Archive account', exact: true })
+    .click();
+  await expect(
+    dialog.getByRole('button', { name: 'Archiving…' })
+  ).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeVisible();
+  await expect.poll(() => requests).toEqual([{ method: 'POST', body: null }]);
+  finishArchive();
+
+  await expect(dialog).not.toBeVisible();
+  await expect(page.getByText('Account archived successfully')).toBeVisible();
+  await expect(page.getByText('Archived', { exact: true })).toBeVisible();
+  await actions.click();
+  await expect(
+    page.getByRole('menuitem', { name: 'Archive', exact: true })
+  ).toBeDisabled();
+});
+
+test('retains the archive confirmation after failure and allows retry', async ({
+  page,
+}) => {
+  await setup(page, { children: false });
+  let attempts = 0;
+  await page.route(`${endpoint}/archive`, async (route) => {
+    attempts += 1;
+    if (attempts === 1) {
+      await route.fulfill({
+        status: 500,
+        json: { name: 'UnexpectedError', validationErrors: [] },
+      });
+
+      return;
+    }
+
+    await route.fulfill({ status: 204 });
+  });
+  await page.route(endpoint, (route) =>
+    route.fulfill({
+      json: { ...account, status: attempts > 1 ? 'archived' : 'active' },
+    })
+  );
+  await page.goto(`/accounts/${accountId}`);
+  await page.getByRole('button', { name: 'Open account actions' }).click();
+  await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
+  const dialog = page.getByRole('alertdialog', { name: 'Archive account?' });
+  await dialog
+    .getByRole('button', { name: 'Archive account', exact: true })
+    .click();
+  await expect(
+    page.getByText('An error occurred', { exact: true })
+  ).toBeVisible();
+  await expect(dialog).toBeVisible();
+  await expect(
+    dialog.getByRole('button', { name: 'Archive account', exact: true })
+  ).toBeEnabled();
+  await expect(page.getByText('Active', { exact: true })).toBeVisible();
+  await dialog
+    .getByRole('button', { name: 'Archive account', exact: true })
+    .click();
+  await expect(dialog).not.toBeVisible();
+  await expect(page.getByText('Archived', { exact: true })).toBeVisible();
+  expect(attempts).toBe(2);
+});
+
+for (const state of ['header', 'archived'] as const) {
+  test(`disables archive for ${state} accounts`, async ({ page }) => {
+    await setup(page, { children: false });
+    await page.route(endpoint, (route) =>
+      route.fulfill({
+        json: {
+          ...account,
+          controlAccountId:
+            state === 'header' ? undefined : account.controlAccountId,
+          status: state === 'archived' ? 'archived' : 'active',
+        },
+      })
+    );
+    await page.goto(`/accounts/${accountId}`);
+    await page.getByRole('button', { name: 'Open account actions' }).click();
+    await expect(
+      page.getByRole('menuitem', { name: 'Archive', exact: true })
+    ).toBeDisabled();
+  });
+}
+
+test('explains that archiving a control account includes its sub-accounts', async ({
+  page,
+}) => {
+  await setup(page);
+  await page.route(endpoint, (route) =>
+    route.fulfill({ json: { ...account, isControlAccount: true } })
+  );
+  await page.goto(`/accounts/${accountId}`);
+  await page.getByRole('button', { name: 'Open account actions' }).click();
+  await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
+  await expect(page.getByRole('alertdialog')).toContainText(
+    'This account and all its sub-accounts'
+  );
 });

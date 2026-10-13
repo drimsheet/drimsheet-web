@@ -318,6 +318,13 @@ export const ELedgerAccountBalanceEffect = {
 export type ULedgerAccountBalanceEffect =
   (typeof ELedgerAccountBalanceEffect)[keyof typeof ELedgerAccountBalanceEffect];
 
+export const ELedgerAccountDeletionReason = {
+  HeaderAccount: 'header_account',
+  HasJournalEntries: 'has_journal_entries',
+} as const;
+export type ULedgerAccountDeletionReason =
+  (typeof ELedgerAccountDeletionReason)[keyof typeof ELedgerAccountDeletionReason];
+
 export const EJournalEntrySourceType = {
   Expense: 'expense',
   OpeningBalance: 'opening_balance',
@@ -706,6 +713,15 @@ export interface IBankDetails {
   accountName: string;
   accountNumber: string;
 }
+
+export type TLedgerAccountDeletionEligibilityDto =
+  | {
+      canDelete: true;
+    }
+  | {
+      reason: ULedgerAccountDeletionReason;
+      canDelete: false;
+    };
 
 export interface IJournalHeaderDto {
   sourceType: UJournalEntrySourceType;
@@ -1850,6 +1866,20 @@ export class Api<
       }),
 
     /**
+     * @description Deletes an eligible account and its eligible subtree with all associated draft journals. Accounts without a controlAccountId and non-draft accounts with journal entries return 400; a non-draft journal associated with a draft account is an unexpected invariant violation (500).
+     *
+     * @tags Ledger
+     * @name DeleteLedgerAccount
+     * @request DELETE:/ledger/{accountId}
+     */
+    deleteLedgerAccount: (accountId: string, params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/ledger/${accountId}`,
+        method: 'DELETE',
+        ...params,
+      }),
+
+    /**
      * @description Get the bank details of a ledger account with bank behavior.
      *
      * @tags Ledger
@@ -1859,6 +1889,24 @@ export class Api<
     getBankDetails: (accountId: string, params: RequestParams = {}) =>
       this.request<IBankDetails, IHttpErrorDto>({
         path: `/ledger/${accountId}/bank-details`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Check whether a ledger account is not a header and is either draft or has no associated journal entries. Ineligible results include the blocking reason. This result is advisory.
+     *
+     * @tags Ledger
+     * @name GetLedgerAccountDeletionEligibility
+     * @request GET:/ledger/{accountId}/deletion-eligibility
+     */
+    getLedgerAccountDeletionEligibility: (
+      accountId: string,
+      params: RequestParams = {}
+    ) =>
+      this.request<TLedgerAccountDeletionEligibilityDto, IHttpErrorDto>({
+        path: `/ledger/${accountId}/deletion-eligibility`,
         method: 'GET',
         format: 'json',
         ...params,

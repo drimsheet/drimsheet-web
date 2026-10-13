@@ -28,6 +28,10 @@ async function getLedgerAccount(id: string) {
   return res.data;
 }
 
+async function archiveLedgerAccount(id: string) {
+  await drimsheetApi.ledger.archiveLedgerAccount(id);
+}
+
 async function getPermittedPostingAccounts(
   query: IGetPermittedPostingAccountsQuery
 ) {
@@ -67,6 +71,7 @@ export const ledgerAccountService = Object.freeze({
   getLedgerAccounts,
   getPettyBaseCashFilters,
   getLedgerAccount,
+  archiveLedgerAccount,
   getPermittedPostingAccounts,
   getBankDetails,
   getSubAccounts,
