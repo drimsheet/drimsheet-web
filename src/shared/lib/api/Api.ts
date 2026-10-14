@@ -433,14 +433,6 @@ export const EContraAccountRule = {
 export type UContraAccountRule =
   (typeof EContraAccountRule)[keyof typeof EContraAccountRule];
 
-export const ELedgerAccountStatus = {
-  Active: 'active',
-  Archived: 'archived',
-  Draft: 'draft',
-} as const;
-export type ULedgerAccountStatus =
-  (typeof ELedgerAccountStatus)[keyof typeof ELedgerAccountStatus];
-
 export const ELedgerAccountBehavior = {
   Bank: 'bank',
   PettyCash: 'petty_cash',
@@ -511,6 +503,14 @@ export const ELedgerType = {
 } as const;
 export type ULedgerType = (typeof ELedgerType)[keyof typeof ELedgerType];
 
+export const ELedgerAccountStatus = {
+  Active: 'active',
+  Archived: 'archived',
+  Draft: 'draft',
+} as const;
+export type ULedgerAccountStatus =
+  (typeof ELedgerAccountStatus)[keyof typeof ELedgerAccountStatus];
+
 export const EAppUsageModePreference = {
   PowerUser: 'power_user',
   NonPowerUser: 'non_power_user',
@@ -580,6 +580,13 @@ export interface IUserPreferencesUpdateDto {
   appUsageMode?: UAppUsageModePreference;
 }
 
+export interface IDateRangeDto {
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to: string;
+}
+
 export interface IMoneyDto {
   /** @format double */
   amount: number;
@@ -587,33 +594,122 @@ export interface IMoneyDto {
   isMinorUnit: boolean;
 }
 
+export interface IAccountCashFlowBucketDto {
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to: string;
+  moneyIn: IMoneyDto;
+  moneyOut: IMoneyDto;
+}
+
 export interface IAccountCashFlowDto {
   accountId: string;
   currencyCode: string;
-  period: {
-    to: string;
-    from: string;
-  };
+  period: IDateRangeDto;
   totalMoneyIn: IMoneyDto;
   totalMoneyOut: IMoneyDto;
-  buckets: {
-    moneyOut: IMoneyDto;
-    moneyIn: IMoneyDto;
-    to: string;
-    from: string;
-  }[];
+  buckets: IAccountCashFlowBucketDto[];
 }
 
+/** The requested period may span at most 366 days. */
 export interface IGetAccountCashFlowQuery {
   /** Inclusive calendar date in YYYY-MM-DD format. */
   from: string;
-  /** Inclusive calendar date; the period may span at most 366 days. */
+  /** Inclusive calendar date in YYYY-MM-DD format. */
   to: string;
   /**
    * Positive integer number of calendar days per bucket, anchored at from.
    * @format double
    */
   bucketDays: number;
+}
+
+export interface IRevenueExpenseAccountDto {
+  accountId: string;
+  accountName: string;
+  code: string;
+  type: 'revenue' | 'expense' | 'asset' | 'liability';
+  /** Suspense accounts supply the UI's Uncategorized rows. */
+  subType: string;
+  status: ULedgerAccountStatus;
+  /** Current accumulated functional balance of this posting account. */
+  amount: IMoneyDto;
+  /**
+   * Share of root header balances of this type; null for suspense or a zero total.
+   * @format double
+   */
+  sharePercentage: number | null;
+  /**
+   * Journal lines on this posting account, including all journal states.
+   * @format double
+   */
+  transactionCount: number;
+}
+
+export interface IPaginationResponseMeta {
+  /** @format double */
+  page: number;
+  /** @format double */
+  limit: number;
+  /** @format double */
+  total: number;
+  /** @format double */
+  totalPages: number;
+}
+
+export interface IPaginatedResponseIRevenueExpenseAccountDto {
+  data: IRevenueExpenseAccountDto[];
+  meta: IPaginationResponseMeta;
+}
+
+export interface IGetRevenueExpenseAccountsQuery {
+  /** @format double */
+  page?: number;
+  /** @format double */
+  limit?: number;
+  search?: string;
+  /** Omit for all revenue, expense and suspense posting accounts. */
+  type?: 'revenue' | 'expense';
+}
+
+export interface IRevenueExpenseSectionDto {
+  total: IMoneyDto;
+  previousTotal: IMoneyDto;
+  /**
+   * Percentage change using the absolute previous total; null when it is zero.
+   * @format double
+   */
+  percentageChange: number | null;
+  /** Nonzero net amounts, descending by amount, with account ID as a tie-breaker. */
+  accounts: {
+    /**
+     * Signed share of the total, rounded to two decimals; null when total is zero.
+     * @format double
+     */
+    sharePercentage: number | null;
+    amount: IMoneyDto;
+    accountName: string;
+    accountId: string;
+  }[];
+}
+
+export interface IRevenueExpenseSummaryDto {
+  currencyCode: string;
+  period: IDateRangeDto;
+  /** Immediately preceding equal-length period, with inclusive dates. */
+  comparisonPeriod: IDateRangeDto;
+  revenue: IRevenueExpenseSectionDto;
+  expenses: IRevenueExpenseSectionDto;
+  suspense: {
+    /** Sum of suspense-line amounts; debit and credit activity do not cancel. */
+    amount: IMoneyDto;
+    /**
+     * Distinct journal entries with a suspense line in the selected period.
+     * @format double
+     */
+    transactionCount: number;
+  };
 }
 
 export interface ILedgerAccountDto {
@@ -644,17 +740,6 @@ export interface ILedgerAccountDto {
   functionalBalance: IMoneyDto;
 }
 
-export interface IPaginationResponseMeta {
-  /** @format double */
-  page: number;
-  /** @format double */
-  limit: number;
-  /** @format double */
-  total: number;
-  /** @format double */
-  totalPages: number;
-}
-
 export interface IPaginatedResponseILedgerAccountDto {
   data: ILedgerAccountDto[];
   meta: IPaginationResponseMeta;
@@ -664,17 +749,17 @@ export interface IPaginatedResponseILedgerAccountDto {
 export interface PickIPaginationParamsExcludeKeysOffset {
   /** @format double */
   limit?: number;
+  search?: string;
   orderBy?: string;
   sortDirection?: UPaginationSortDirection;
-  search?: string;
 }
 
 export interface IGetLedgerAccountsQuery {
   /** @format double */
   limit?: number;
+  search?: string;
   orderBy?: ULedgerAccountSortBy;
   sortDirection?: UPaginationSortDirection;
-  search?: string;
   /** @format double */
   page?: number;
   status?: ULedgerAccountStatus;
@@ -822,9 +907,9 @@ export interface IPaginatedResponseIAccountTransactionRes {
 export interface IPaginationDto {
   /** @format double */
   limit?: number;
+  search?: string;
   orderBy?: string;
   sortDirection?: UPaginationSortDirection;
-  search?: string;
   /** @format double */
   page?: number;
 }
@@ -984,6 +1069,11 @@ export interface IUpdateRevenueAccountDto {
   name: string;
 }
 
+export interface ICashAccountActivationDto {
+  /** Posts the associated draft opening balance atomically with account activation when true. */
+  activateOpeningBalance: boolean;
+}
+
 export interface IFileAttachment {
   url: string;
   name: string;
@@ -1047,9 +1137,9 @@ export interface IPaginatedResponseIJournalEntryListDto {
 export interface IGetJournalEntriesQuery {
   /** @format double */
   limit?: number;
+  search?: string;
   orderBy?: UJournalEntrySortBy;
   sortDirection?: UPaginationSortDirection;
-  search?: string;
   /** @format double */
   page?: number;
   accountId?: string;
@@ -1305,18 +1395,18 @@ export interface ICurrencyDto {
 /** From T, pick a set of properties whose keys are in the union K */
 export interface PickIPaginationDtoExcludeKeysSearchOrSortDirection {
   /** @format double */
+  page?: number;
+  /** @format double */
   limit?: number;
   orderBy?: string;
-  /** @format double */
-  page?: number;
 }
 
 export interface IExchangeRateQueryParam {
   /** @format double */
+  page?: number;
+  /** @format double */
   limit?: number;
   orderBy?: string;
-  /** @format double */
-  page?: number;
   currencyPair: string;
   type?: UExchangeRateType;
   /** @format date-time */
@@ -1368,9 +1458,9 @@ export interface IPaginatedResponseICounterpartyDto {
 export interface IGetCounterpartiesQuery {
   /** @format double */
   limit?: number;
+  search?: string;
   orderBy?: UCounterpartySortBy;
   sortDirection?: UPaginationSortDirection;
-  search?: string;
   /** @format double */
   page?: number;
   roles?: UCounterpartyRole[];
@@ -1778,7 +1868,7 @@ export class Api<
       query: {
         /** Inclusive calendar date in YYYY-MM-DD format. */
         from: string;
-        /** Inclusive calendar date; the period may span at most 366 days. */
+        /** Inclusive calendar date in YYYY-MM-DD format. */
         to: string;
         /**
          * Positive integer number of calendar days per bucket, anchored at from.
@@ -1790,6 +1880,57 @@ export class Api<
     ) =>
       this.request<IAccountCashFlowDto, IHttpErrorDto>({
         path: `/reporting/accounts/${accountId}/cash-flow`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Revenue/expense and suspense posting accounts (isControlAccount=false) with current accumulated functional balances. Balances update asynchronously; counts read each posting account's own live journal lines in all states. All account statuses and zero balances remain visible. Shares use the summed balances of root revenue/expense headers (controlAccountId=null) of the same type before search/pagination; headers are never included as table rows; suspense and zero totals have null shares. Omit type for All. Search matches account name or code; rows sort by code then ID. No date range is applied. Amount magnitudes above 1 trillion major units return 400; missing balances or unsafe numeric serialization return 500.
+     *
+     * @tags Reporting
+     * @name GetRevenueExpenseAccounts
+     * @request GET:/reporting/revenue-expense-accounts
+     */
+    getRevenueExpenseAccounts: (
+      query?: {
+        /** @format double */
+        page?: number;
+        /** @format double */
+        limit?: number;
+        search?: string;
+        /** Omit for all revenue, expense and suspense posting accounts. */
+        type?: 'revenue' | 'expense';
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<IPaginatedResponseIRevenueExpenseAccountDto, IHttpErrorDto>({
+        path: `/reporting/revenue-expense-accounts`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Revenue, expenses and suspense activity in the entity's functional currency. Dates are inclusive, up to 366 days, compared with the immediately preceding equal-length period. Revenue is credits less debits; expenses are debits less credits. Suspense counts distinct entries and sums suspense-line amounts. Drafts, never-posted entries, voided originals, reversals and opening balances are excluded. Archived account activity remains included. Historical results can change after rectification. Zero denominators produce null percentages. Amount magnitudes above 1 trillion major units return 400; unsafe numeric serialization returns 500. Returns posting-account breakdowns, not rollups.
+     *
+     * @tags Reporting
+     * @name GetRevenueExpenseSummary
+     * @request GET:/reporting/revenue-expense-summary
+     */
+    getRevenueExpenseSummary: (
+      query: {
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        from: string;
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        to: string;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<IRevenueExpenseSummaryDto, IHttpErrorDto>({
+        path: `/reporting/revenue-expense-summary`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -1808,9 +1949,9 @@ export class Api<
       query?: {
         /** @format double */
         limit?: number;
+        search?: string;
         orderBy?: ULedgerAccountSortBy;
         sortDirection?: UPaginationSortDirection;
-        search?: string;
         /** @format double */
         page?: number;
         status?: ULedgerAccountStatus;
@@ -1997,9 +2138,9 @@ export class Api<
       query?: {
         /** @format double */
         limit?: number;
+        search?: string;
         orderBy?: string;
         sortDirection?: UPaginationSortDirection;
-        search?: string;
         /** @format double */
         page?: number;
       },
@@ -2298,16 +2439,22 @@ export class Api<
       }),
 
     /**
-     * @description Activates a draft petty cash or bank account beneath an active parent and posts its associated draft opening-balance journal atomically. Requires no body; other account families and non-draft accounts return 400.
+     * @description Activates a draft petty cash or bank account beneath an active parent. Requires activateOpeningBalance; when true, posts the associated draft opening-balance journal atomically. When false, leaves the opening balance untouched. Other account families and non-draft accounts return 400.
      *
      * @tags Asset Accounts, Ledger
      * @name ActivateCashAccount
      * @request POST:/ledger/asset/cash/{accountId}/activate
      */
-    activateCashAccount: (accountId: string, params: RequestParams = {}) =>
+    activateCashAccount: (
+      accountId: string,
+      data: ICashAccountActivationDto,
+      params: RequestParams = {}
+    ) =>
       this.request<void, IHttpErrorDto>({
         path: `/ledger/asset/cash/${accountId}/activate`,
         method: 'POST',
+        body: data,
+        type: EContentType.Json,
         ...params,
       }),
 
@@ -2365,9 +2512,9 @@ export class Api<
       query?: {
         /** @format double */
         limit?: number;
+        search?: string;
         orderBy?: UJournalEntrySortBy;
         sortDirection?: UPaginationSortDirection;
-        search?: string;
         /** @format double */
         page?: number;
         accountId?: string;
@@ -2486,6 +2633,20 @@ export class Api<
       }),
 
     /**
+     * @description Posts only the associated draft opening balance, preserving the ledger account's status. Requires a draft opening-balance journal and an active posting account. No request body is required.
+     *
+     * @tags Journal Entry
+     * @name PostOpeningBalance
+     * @request POST:/journal-entries/opening-balance/{id}/post
+     */
+    postOpeningBalance: (id: string, params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/journal-entries/opening-balance/${id}/post`,
+        method: 'POST',
+        ...params,
+      }),
+
+    /**
      * @description Archive a journal entry without changing its financial effect.
      *
      * @tags Journal Entry
@@ -2544,10 +2705,10 @@ export class Api<
     getExchangeRates: (
       query: {
         /** @format double */
+        page?: number;
+        /** @format double */
         limit?: number;
         orderBy?: string;
-        /** @format double */
-        page?: number;
         currencyPair: string;
         type?: UExchangeRateType;
         /** @format date-time */
@@ -2575,9 +2736,9 @@ export class Api<
       query?: {
         /** @format double */
         limit?: number;
+        search?: string;
         orderBy?: UCounterpartySortBy;
         sortDirection?: UPaginationSortDirection;
-        search?: string;
         /** @format double */
         page?: number;
         roles?: UCounterpartyRole[];

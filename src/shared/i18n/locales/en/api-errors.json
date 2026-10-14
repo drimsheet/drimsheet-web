@@ -388,5 +388,7 @@
   "ledger_error_header_account_delete_invalid": "Header account cannot be deleted.",
   "ledger_error_non_draft_account_deletion_invalid": "This account cannot be deleted because it or one of its subaccounts has journal entries.",
   "ledger_error_currency_change_has_journal_entries_conflict": "Account currency cannot be changed because the account has journal entries.",
-  "ledger_error_currency_change_transaction_required_unexpected": "Unable to change account currency."
+  "ledger_error_currency_change_transaction_required_unexpected": "Unable to change account currency.",
+  "app_error_ledger_activate_opening_balance_invalid": "Invalid opening balance activation option.",
+  "ledger_balance_error_currency_change_non_zero_balance_conflict": "Account currency cannot be changed because the account has a non-zero balance."
 }

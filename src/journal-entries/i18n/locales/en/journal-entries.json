@@ -156,5 +156,7 @@
   "delete_entry_confirmation_description": "This action cannot be undone. Type delete below to confirm.",
   "delete_entry_confirmation_input_label": "Type \"delete\" to confirm",
   "delete_entry_confirmation_keyword": "delete",
-  "delete_entry_archive_instead_text": "Archive instead"
+  "delete_entry_archive_instead_text": "Archive instead",
+  "category_filter_description": "Showing transactions for the selected category, across all dates.",
+  "clear_category_filter_label": "Show all transactions"
 }
