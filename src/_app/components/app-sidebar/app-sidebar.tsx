@@ -70,7 +70,8 @@ export function AppSidebar({
         },
         {
           name: t('shared:categories'),
-          url: '#',
+          url: '/categories',
+          isActive: isRouteActive(currentPath, '/categories'),
           icon: <Tags />,
         },
         {

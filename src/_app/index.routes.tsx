@@ -1,6 +1,7 @@
 import { FeatureFlagGuard } from '@/_app/containers/feature-flag-guard';
 import { AppLayout } from '@/_app/layouts/app-layout';
 import { ProtectedAppLayout } from '@/_app/layouts/protected-app-layout';
+import { useCategoryRoutes } from '@/account/routes/categories';
 import { useLedgerAccountRoutes } from '@/account/routes/ledger-account';
 import { useAuthRoutes } from '@/auth/routes/auth';
 import { useCounterpartiesRoutes } from '@/counterparty/routes/counterparties';
@@ -18,6 +19,7 @@ export function AppRoutes() {
   const ledgerAccountRoutes = useLedgerAccountRoutes('/accounts');
   const counterpartiesRoutes = useCounterpartiesRoutes('/counterparties');
   const journalEntriesRoutes = useJournalEntriesRoutes('/transactions');
+  const categoryRoutes = useCategoryRoutes('/categories');
 
   const routes = useSentryRoutes([
     {
@@ -33,6 +35,7 @@ export function AppRoutes() {
         ledgerAccountRoutes,
         counterpartiesRoutes,
         journalEntriesRoutes,
+        categoryRoutes,
       ],
     },
     authRoutes,

@@ -13,7 +13,7 @@ import {
   type IJournalEntryListDto,
 } from '@/shared/lib/api/Api';
 import { useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { TransactionsTableContainerProps } from '../types';
 
 const TRANSACTIONS_PAGE_SIZE = 10;
@@ -22,6 +22,8 @@ export function TransactionsTableContainer({
   actionButton,
 }: Readonly<TransactionsTableContainerProps>) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const accountId = searchParams.get('accountId') || undefined;
   const handleApiError = useApiErrorHandler();
 
   const { mutateAsync: archive, isPending: archiving } =
@@ -40,11 +42,12 @@ export function TransactionsTableContainer({
     () => ({
       page: tableQuery.page,
       limit: TRANSACTIONS_PAGE_SIZE,
+      accountId,
       ...(debouncedSearchQuery ? { search: debouncedSearchQuery } : {}),
       orderBy: EJournalEntrySortBy.EffectiveDate,
       sortDirection: tableQuery.sortDirection ?? EPaginationSortDirection.Desc,
     }),
-    [debouncedSearchQuery, tableQuery.page, tableQuery.sortDirection]
+    [accountId, debouncedSearchQuery, tableQuery.page, tableQuery.sortDirection]
   );
 
   const { data: journalEntries, isPending } = useJournalEntries(query);
