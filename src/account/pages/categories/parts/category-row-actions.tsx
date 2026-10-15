@@ -24,7 +24,12 @@ export function CategoryRowActions({
     name: account.accountName,
   });
 
-  const view_label = t('categories_view_transactions_label');
+  const view_label = t(
+    isCategory
+      ? 'category_details_view_label'
+      : 'categories_view_transactions_label'
+  );
+
   const edit_label = t('categories_edit_label');
   const archive_label = t('categories_archive_label');
 

@@ -1,7 +1,7 @@
 import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
 import { AppBody, AppHeader } from '@/shared/components/app';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { useSubAccounts } from './hooks/use-account-details';
 import { AccountActionsContainer } from './parts/account-actions.container';
 import { LedgerAccountSummary } from './parts/account-summary';
@@ -30,6 +30,14 @@ export function AccountDetailsPage() {
 
   const accounts_label = t('shared:accounts');
   const error_title = t('ledger-accounts:details_account_error_title');
+
+  if (
+    account &&
+    !account.isControlAccount &&
+    (account.type === 'revenue' || account.type === 'expense')
+  ) {
+    return <Navigate replace to={`/categories/${account.id}`} />;
+  }
 
   return (
     <>

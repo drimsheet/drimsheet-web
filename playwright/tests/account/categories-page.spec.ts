@@ -305,7 +305,7 @@ test('keeps loading, independent errors, retry and empty states useful', async (
   await expect(page.getByText('No categories found')).toBeVisible();
 });
 
-test('renames and archives categories, then opens account-filtered transactions', async ({
+test('renames and archives categories, then opens category details', async ({
   page,
 }) => {
   await setup(page);
@@ -354,6 +354,16 @@ test('renames and archives categories, then opens account-filtered transactions'
     page.getByRole('cell', { name: 'Archived', exact: true })
   ).toBeVisible();
   const requests: URLSearchParams[] = [];
+  await page.route(
+    `**/api/v1/reporting/accounts/${account.accountId}/counterparty-participation?*`,
+    (route) =>
+      route.fulfill({
+        json: {
+          data: [],
+          meta: { page: 1, limit: 5, total: 0, totalPages: 0 },
+        },
+      })
+  );
   await page.route('**/api/v1/journal-entries?*', (route) => {
     requests.push(new URL(route.request().url()).searchParams);
 
@@ -361,6 +371,19 @@ test('renames and archives categories, then opens account-filtered transactions'
       json: { data: [], meta: { page: 1, totalPages: 0, total: 0, limit: 10 } },
     });
   });
+  await page.route(`**/api/v1/ledger/${account.accountId}`, (route) =>
+    route.fulfill({
+      json: {
+        id: account.accountId,
+        name: 'Advisory',
+        type: 'revenue',
+        isControlAccount: false,
+        status: 'archived',
+        balance: money,
+        functionalBalance: money,
+      },
+    })
+  );
   await page
     .getByRole('table')
     .getByRole('button', { name: 'Advisory', exact: true })
@@ -368,13 +391,9 @@ test('renames and archives categories, then opens account-filtered transactions'
   await expect
     .poll(() => requests.at(-1)?.get('accountId'))
     .toBe(account.accountId);
-  await expect(
-    page.getByText(
-      'Showing transactions for the selected category, across all dates.'
-    )
-  ).toBeVisible();
-  await page.getByRole('button', { name: 'Show all transactions' }).click();
-  await expect.poll(() => requests.at(-1)?.has('accountId')).toBe(false);
+  await expect(page).toHaveURL(`/categories/${account.accountId}`);
+  await expect(page.getByRole('heading', { name: 'Advisory' })).toBeVisible();
+  await expect(page.getByText('No counterparty activity yet.')).toBeVisible();
 });
 
 test('keeps category management in view when the reporting period has no activity', async ({
