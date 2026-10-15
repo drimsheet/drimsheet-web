@@ -224,7 +224,7 @@ export const headers: ILedgerAccountDto[] = [
     ...baseAccount(100, accountingLocale.header_cash_and_cash_equivalent_name),
     code: '100000',
     type: 'asset',
-    subType: 'default',
+    subType: 'cash_and_cash_equivalent',
     isControlAccount: true,
   },
   {
@@ -238,7 +238,7 @@ export const headers: ILedgerAccountDto[] = [
     ...baseAccount(102, accountingLocale.header_short_term_debt_name),
     code: '200000',
     type: 'liability',
-    subType: 'default',
+    subType: 'short_term_debt',
     isControlAccount: true,
   },
   {
@@ -252,14 +252,14 @@ export const headers: ILedgerAccountDto[] = [
     ...baseAccount(104, accountingLocale.header_retained_earnings_name),
     code: '301000',
     type: 'equity',
-    subType: 'default',
+    subType: 'retained_earnings',
     isControlAccount: false,
   },
   {
     ...baseAccount(105, accountingLocale.header_opening_balance_name),
     code: '399000',
     type: 'equity',
-    subType: 'default',
+    subType: 'opening_balance',
     isControlAccount: false,
   },
   {

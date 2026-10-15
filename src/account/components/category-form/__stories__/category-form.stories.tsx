@@ -6,8 +6,7 @@ const meta = {
   component: CategoryForm,
   tags: ['autodocs'],
   args: {
-    initialValues: { name: '', type: 'revenue', behavior: 'services' },
-    editing: false,
+    initialValues: { name: 'Consulting services' },
     pending: false,
     error: false,
     onSubmit: async () => {},
@@ -20,11 +19,8 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const Editing: Story = {
   args: {
-    editing: true,
     initialValues: {
       name: 'Consulting services',
-      type: 'revenue',
-      behavior: 'services',
     },
   },
 };

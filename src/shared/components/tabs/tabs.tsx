@@ -59,9 +59,9 @@ export function Tabs({
             onClick={() => onValueChange(item.value)}
             onKeyDown={handleKeyDown}
             className={cn(
-              'rounded-sm px-4 py-2 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50',
+              'rounded-sm px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',
               isSelected
-                ? 'bg-background text-foreground shadow-xs'
+                ? 'bg-primary text-primary-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >

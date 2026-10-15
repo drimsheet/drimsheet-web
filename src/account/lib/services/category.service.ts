@@ -3,12 +3,16 @@ import type {
   ICreateExpenseAccountDto,
   ICreateRevenueAccountDto,
   IDateRangeDto,
+  IGetChartOfAccountsQuery,
   IGetRevenueExpenseAccountsQuery,
   IUpdateExpenseAccountDto,
   IUpdateRevenueAccountDto,
 } from '@/shared/lib/api/Api';
 
 export const categoryService = Object.freeze({
+  async getChartOfAccounts(query: IGetChartOfAccountsQuery) {
+    return (await drimsheetApi.ledger.getChartOfAccounts(query)).data;
+  },
   async createRevenue(payload: ICreateRevenueAccountDto) {
     return (await drimsheetApi.ledger.createRevenueAccount(payload)).data;
   },

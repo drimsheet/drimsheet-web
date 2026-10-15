@@ -32,9 +32,7 @@ export function CategoriesPage() {
 
   const [period, setPeriod] = useState(periods[0].value);
 
-  const [editor, setEditor] = useState<
-    IRevenueExpenseAccountDto | 'create' | null
-  >(null);
+  const [editor, setEditor] = useState<IRevenueExpenseAccountDto | null>(null);
 
   const [archiveAccount, setArchiveAccount] =
     useState<IRevenueExpenseAccountDto | null>(null);
@@ -85,30 +83,39 @@ export function CategoriesPage() {
   const title = t('shared:categories');
   const add_label = t('ledger-accounts:categories_add_label');
   const table_title = t('ledger-accounts:categories_table_title');
+  const overview_title = t('ledger-accounts:categories_overview_title');
 
   return (
     <>
       <AppHeader breadcrumbs={[{ label: title }]} />
       <AppBody>
-        <div className="flex min-w-0 flex-col gap-10 pb-8 md:gap-14">
-          <div className="flex flex-wrap items-center justify-between gap-6">
-            <h1 className="text-2xl font-semibold">{title}</h1>
-            <div className="flex flex-wrap items-center gap-4">
+        <div className="flex min-w-0 flex-col gap-8 pb-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h1 className="my-0 text-2xl font-semibold tracking-tight">
+              {title}
+            </h1>
+            <Button onClick={() => navigate('/categories/new')}>
+              <Plus data-icon="inline-start" />
+              {add_label}
+            </Button>
+          </div>
+          <section
+            aria-label={overview_title}
+            className="flex min-w-0 flex-col gap-4"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-base font-medium">{overview_title}</h2>
               <CategoryPeriod
                 period={period}
                 periods={periods}
                 onPeriodChange={setPeriod}
               />
-              <Button onClick={() => setEditor('create')}>
-                <Plus data-icon="inline-start" />
-                {add_label}
-              </Button>
             </div>
-          </div>
-          <CategoryOverviewContainer
-            query={categoriesHelpers.periodQuery(period, now)}
-            onViewAccount={handleViewAccount}
-          />
+            <CategoryOverviewContainer
+              query={categoriesHelpers.periodQuery(period, now)}
+              onViewAccount={handleViewAccount}
+            />
+          </section>
           {accounts.isError && (
             <CategorySectionError
               title={table_title}
@@ -129,7 +136,7 @@ export function CategoriesPage() {
           />
           {editor !== null && (
             <CategoryEditorDialog
-              account={editor === 'create' ? undefined : editor}
+              account={editor}
               onClose={() => setEditor(null)}
             />
           )}

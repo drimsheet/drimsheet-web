@@ -363,7 +363,25 @@ export const ELedgerAccountSortBy = {
 export type ULedgerAccountSortBy =
   (typeof ELedgerAccountSortBy)[keyof typeof ELedgerAccountSortBy];
 
-export const ELedgerAccountSubType = {
+export const EAdjunctAccountRule = {
+  AdjunctPermitted: 'adjunct_permitted',
+  AdjunctNotPermitted: 'adjunct_not_permitted',
+  AdjunctOnly: 'adjunct_only',
+  AdjunctNotApplicable: 'adjunct_not_applicable',
+} as const;
+export type UAdjunctAccountRule =
+  (typeof EAdjunctAccountRule)[keyof typeof EAdjunctAccountRule];
+
+export const EContraAccountRule = {
+  ContraPermitted: 'contra_permitted',
+  ContraNotPermitted: 'contra_not_permitted',
+  ContraOnly: 'contra_only',
+  ContraNotApplicable: 'contra_not_applicable',
+} as const;
+export type UContraAccountRule =
+  (typeof EContraAccountRule)[keyof typeof EContraAccountRule];
+
+export const ELedgerAccountBehavior = {
   RetainedEarnings: 'retained_earnings',
   Sales: 'sales',
   Services: 'services',
@@ -386,6 +404,38 @@ export const ELedgerAccountSubType = {
   UnrealizedLoss: 'unrealized_loss',
   ImpairmentLoss: 'impairment_loss',
   OtherLoss: 'other_loss',
+  Bank: 'bank',
+  PettyCash: 'petty_cash',
+  DefaultCash: 'default_cash',
+  StockAndEtfs: 'stock_and_etfs',
+  Bonds: 'bonds',
+  StatutoryReceivable: 'statutory_receivable',
+  TradeReceivable: 'trade_receivable',
+  DefaultReceivables: 'default_receivables',
+  Default: 'default',
+  CreditCard: 'credit_card',
+  Overdraft: 'overdraft',
+  ShortTermLoan: 'short_term_loan',
+  DefaultShortTermDebt: 'default_short_term_debt',
+  TaxPayable: 'tax_payable',
+  TradePayable: 'trade_payable',
+  DefaultPayable: 'default_payable',
+  Mortgage: 'mortgage',
+  OtherLongTermLoan: 'other_long_term_loan',
+  OwnerCapital: 'owner_capital',
+  RevaluationReserve: 'revaluation_reserve',
+  OpeningBalanceEquity: 'opening_balance_equity',
+  Cogs: 'cogs',
+  CostOfServices: 'cost_of_services',
+  CostOfRevenue: 'cost_of_revenue',
+  DefaultDirectCost: 'default_direct_cost',
+  TaxExpense: 'tax_expense',
+  AssetDisposalLoss: 'asset_disposal_loss',
+} as const;
+export type ULedgerAccountBehavior =
+  (typeof ELedgerAccountBehavior)[keyof typeof ELedgerAccountBehavior];
+
+export const ELedgerAccountSubType = {
   CashAndCashEquivalent: 'cash_and_cash_equivalent',
   ShortTermInvestment: 'short_term_investment',
   Receivables: 'receivables',
@@ -406,56 +456,9 @@ export const ELedgerAccountSubType = {
   LeaseLiability: 'lease_liability',
   Provision: 'provision',
   Capital: 'capital',
+  RetainedEarnings: 'retained_earnings',
   Reserve: 'reserve',
   OpeningBalance: 'opening_balance',
-  DirectCosts: 'direct_costs',
-  IncomeTaxExpense: 'income_tax_expense',
-  LossOnAssetDisposal: 'loss_on_asset_disposal',
-} as const;
-export type ULedgerAccountSubType =
-  (typeof ELedgerAccountSubType)[keyof typeof ELedgerAccountSubType];
-
-export const EAdjunctAccountRule = {
-  AdjunctPermitted: 'adjunct_permitted',
-  AdjunctNotPermitted: 'adjunct_not_permitted',
-  AdjunctOnly: 'adjunct_only',
-  AdjunctNotApplicable: 'adjunct_not_applicable',
-} as const;
-export type UAdjunctAccountRule =
-  (typeof EAdjunctAccountRule)[keyof typeof EAdjunctAccountRule];
-
-export const EContraAccountRule = {
-  ContraPermitted: 'contra_permitted',
-  ContraNotPermitted: 'contra_not_permitted',
-  ContraOnly: 'contra_only',
-  ContraNotApplicable: 'contra_not_applicable',
-} as const;
-export type UContraAccountRule =
-  (typeof EContraAccountRule)[keyof typeof EContraAccountRule];
-
-export const ELedgerAccountBehavior = {
-  Bank: 'bank',
-  PettyCash: 'petty_cash',
-  DefaultCash: 'default_cash',
-  StockAndEtfs: 'stock_and_etfs',
-  Bonds: 'bonds',
-  StatutoryReceivable: 'statutory_receivable',
-  TradeReceivable: 'trade_receivable',
-  DefaultReceivables: 'default_receivables',
-  Default: 'default',
-  CreditCard: 'credit_card',
-  Overdraft: 'overdraft',
-  ShortTermLoan: 'short_term_loan',
-  DefaultShortTermDebt: 'default_short_term_debt',
-  TaxPayable: 'tax_payable',
-  TradePayable: 'trade_payable',
-  DefaultPayable: 'default_payable',
-  Mortgage: 'mortgage',
-  OtherLongTermLoan: 'other_long_term_loan',
-  OwnerCapital: 'owner_capital',
-  RetainedEarnings: 'retained_earnings',
-  RevaluationReserve: 'revaluation_reserve',
-  OpeningBalanceEquity: 'opening_balance_equity',
   Sales: 'sales',
   Services: 'services',
   Subscriptions: 'subscriptions',
@@ -465,10 +468,7 @@ export const ELedgerAccountBehavior = {
   UnrealizedGains: 'unrealized_gains',
   Grants: 'grants',
   Gifts: 'gifts',
-  Cogs: 'cogs',
-  CostOfServices: 'cost_of_services',
-  CostOfRevenue: 'cost_of_revenue',
-  DefaultDirectCost: 'default_direct_cost',
+  DirectCosts: 'direct_costs',
   PayrollAndPersonnel: 'payroll_and_personnel',
   RentAndUtilities: 'rent_and_utilities',
   AdminAndGeneral: 'admin_and_general',
@@ -478,14 +478,14 @@ export const ELedgerAccountBehavior = {
   BankCharge: 'bank_charge',
   FinanceCost: 'finance_cost',
   Interest: 'interest',
-  TaxExpense: 'tax_expense',
+  IncomeTaxExpense: 'income_tax_expense',
   UnrealizedLoss: 'unrealized_loss',
-  AssetDisposalLoss: 'asset_disposal_loss',
+  LossOnAssetDisposal: 'loss_on_asset_disposal',
   ImpairmentLoss: 'impairment_loss',
   OtherLoss: 'other_loss',
 } as const;
-export type ULedgerAccountBehavior =
-  (typeof ELedgerAccountBehavior)[keyof typeof ELedgerAccountBehavior];
+export type ULedgerAccountSubType =
+  (typeof ELedgerAccountSubType)[keyof typeof ELedgerAccountSubType];
 
 export const ENormalBalance = {
   Debit: 'debit',
@@ -719,7 +719,7 @@ export interface ILedgerAccountDto {
   accountingEntityId: TEntityId;
   type: ULedgerType;
   normalBalance: UNormalBalance;
-  subType: any;
+  subType: ULedgerAccountSubType;
   behavior: ULedgerAccountBehavior;
   isControlAccount: boolean;
   controlAccountId?: TEntityId;
@@ -767,6 +767,43 @@ export interface IGetLedgerAccountsQuery {
   subType?: ULedgerAccountSubType;
   behavior?: string;
   isControlAccount?: boolean;
+}
+
+export interface IChartOfAccountsNodeDto {
+  id: TEntityId;
+  code: string;
+  materializedPath: string;
+  accountingEntityId: TEntityId;
+  type: ULedgerType;
+  normalBalance: UNormalBalance;
+  subType: ULedgerAccountSubType;
+  behavior: ULedgerAccountBehavior;
+  isControlAccount: boolean;
+  controlAccountId?: TEntityId;
+  name: string;
+  status: ULedgerAccountStatus;
+  contraAccountRule: UContraAccountRule;
+  adjunctAccountRule: UAdjunctAccountRule;
+  /** @format date-time */
+  openingBalanceDate: string | null;
+  createdBy: TEntityId;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+  /** @format date-time */
+  deletedAt?: string;
+  balance: IMoneyDto;
+  functionalBalance: IMoneyDto;
+  children: IChartOfAccountsNodeDto[];
+}
+
+export interface IGetChartOfAccountsQuery {
+  class: ULedgerType;
+  /** Omit accounts without a controlAccountId, retaining their descendants. Defaults to false. */
+  omitHeaderAccounts?: boolean;
+  /** Case-insensitive partial name search. Returns topmost matches with all descendants. Empty search returns the full tree. Omitted headers cannot match. */
+  search?: string;
 }
 
 export interface IGetPermittedPostingAccountsQuery {
@@ -941,6 +978,12 @@ export interface IHeaderAccountNameAliasesReq {
   statutory_payables?: string;
 }
 
+/** Client-localized names applied only when a posting account is promoted. */
+export interface ILedgerAccountPromotionNames {
+  newControlAccountName: string;
+  newPostingAccountName: string;
+}
+
 export interface IBankDetailsCreationReq {
   bankName: string;
   accountName: string;
@@ -953,6 +996,8 @@ export interface IBankAccountCreationReq {
   status?: ULedgerAccountCreationStatus;
   currencyCode: string;
   controlAccountId?: string;
+  /** Applied only during promotion; omitted names retain the original account name. */
+  promotionNames?: ILedgerAccountPromotionNames;
   bankAccount: IBankDetailsCreationReq;
   openingBalance: IOpeningBalanceDto | null;
 }
@@ -964,6 +1009,8 @@ export interface IPettyCashAccountCreationReq {
   currencyCode: string;
   isControlAccount: boolean;
   controlAccountId?: string;
+  /** Applied only during promotion; omitted names retain the original account name. */
+  promotionNames?: ILedgerAccountPromotionNames;
   openingBalance: IOpeningBalanceDto | null;
 }
 
@@ -974,6 +1021,8 @@ export interface ICreateStatutoryReceivableAccountDto {
   isControlAccount: boolean;
   /** @format uuid */
   controlAccountId?: string;
+  /** Applied only during promotion; omitted names retain the original account name. */
+  promotionNames?: ILedgerAccountPromotionNames;
   currencyCode: string;
 }
 
@@ -984,6 +1033,8 @@ export interface ICreateTradeReceivableAccountDto {
   isControlAccount: boolean;
   /** @format uuid */
   controlAccountId?: string;
+  /** Applied only during promotion; omitted names retain the original account name. */
+  promotionNames?: ILedgerAccountPromotionNames;
   currencyCode: string;
 }
 
@@ -994,6 +1045,8 @@ export interface ICreateExpenseAccountDto {
   isControlAccount: boolean;
   /** @format uuid */
   controlAccountId?: string;
+  /** Applied only during promotion; omitted names retain the original account name. */
+  promotionNames?: ILedgerAccountPromotionNames;
   behavior: TSupportedExpenseAccountBehavior;
 }
 
@@ -1009,6 +1062,8 @@ export interface ICreateStatutoryPayableAccountDto {
   isControlAccount: boolean;
   /** @format uuid */
   controlAccountId?: string;
+  /** Applied only during promotion; omitted names retain the original account name. */
+  promotionNames?: ILedgerAccountPromotionNames;
   currencyCode: string;
   meta?: IStatutoryPayableAccountMeta | null;
 }
@@ -1020,6 +1075,8 @@ export interface ICreateTradePayableAccountDto {
   isControlAccount: boolean;
   /** @format uuid */
   controlAccountId?: string;
+  /** Applied only during promotion; omitted names retain the original account name. */
+  promotionNames?: ILedgerAccountPromotionNames;
   meta?: {
     /** @format uuid */
     invoiceId: string;
@@ -1035,6 +1092,8 @@ export interface ICreateRevenueAccountDto {
   isControlAccount: boolean;
   /** @format uuid */
   controlAccountId?: string;
+  /** Applied only during promotion; omitted names retain the original account name. */
+  promotionNames?: ILedgerAccountPromotionNames;
   behavior: TSupportedRevenueAccountBehavior;
 }
 
@@ -1971,6 +2030,31 @@ export class Api<
       }),
 
     /**
+     * @description Get the complete chart of accounts for a required class, across all statuses. Returns roots with nested children, ordered by materialized path. Omit header accounts to promote their direct children to response roots. Search names case-insensitively to return topmost matches with complete subtrees. Omitted headers are excluded from matching.
+     *
+     * @tags Ledger
+     * @name GetChartOfAccounts
+     * @request GET:/ledger/chart-of-accounts
+     */
+    getChartOfAccounts: (
+      query: {
+        class: ULedgerType;
+        /** Omit accounts without a controlAccountId, retaining their descendants. Defaults to false. */
+        omitHeaderAccounts?: boolean;
+        /** Case-insensitive partial name search. Returns topmost matches with all descendants. Empty search returns the full tree. Omitted headers cannot match. */
+        search?: string;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<IChartOfAccountsNodeDto[], IHttpErrorDto>({
+        path: `/ledger/chart-of-accounts`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
      * @description Get paginated posting accounts permitted by a journal-entry rule
      *
      * @tags Ledger
@@ -2642,6 +2726,48 @@ export class Api<
     postOpeningBalance: (id: string, params: RequestParams = {}) =>
       this.request<void, IHttpErrorDto>({
         path: `/journal-entries/opening-balance/${id}/post`,
+        method: 'POST',
+        ...params,
+      }),
+
+    /**
+     * @description Posts a draft payment while preserving its financial content. Revalidates accounts, counterparties, and the effective accounting period. No request body is required.
+     *
+     * @tags Journal Entry
+     * @name PostPayment
+     * @request POST:/journal-entries/payment/{id}/post
+     */
+    postPayment: (id: string, params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/journal-entries/payment/${id}/post`,
+        method: 'POST',
+        ...params,
+      }),
+
+    /**
+     * @description Posts a draft receipt while preserving its financial content. Revalidates accounts, counterparties, and the effective accounting period. No request body is required.
+     *
+     * @tags Journal Entry
+     * @name PostReceipt
+     * @request POST:/journal-entries/receipt/{id}/post
+     */
+    postReceipt: (id: string, params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/journal-entries/receipt/${id}/post`,
+        method: 'POST',
+        ...params,
+      }),
+
+    /**
+     * @description Posts a draft transfer while preserving its financial content. Revalidates accounts, counterparties, and the effective accounting period. No request body is required.
+     *
+     * @tags Journal Entry
+     * @name PostTransfer
+     * @request POST:/journal-entries/transfer/{id}/post
+     */
+    postTransfer: (id: string, params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/journal-entries/transfer/${id}/post`,
         method: 'POST',
         ...params,
       }),

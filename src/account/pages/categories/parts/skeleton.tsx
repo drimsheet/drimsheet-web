@@ -9,17 +9,14 @@ export function CategoriesSkeleton() {
     <div
       role="status"
       aria-label={loading_label}
-      className="flex flex-col gap-10 md:gap-14"
+      className="flex flex-col gap-4"
     >
       <span className="sr-only">{loading_label}</span>
-      <div className="grid gap-6 md:grid-cols-3">
-        {[0, 1, 2].map((index) => (
-          <Skeleton key={index} className="h-48 rounded-xl" />
-        ))}
-      </div>
-      <div className="grid gap-10 lg:grid-cols-2 lg:gap-x-16">
-        <Skeleton className="h-64" />
-        <Skeleton className="h-64" />
+      <Skeleton className="h-9 w-56" />
+      <Skeleton className="h-56 rounded-xl md:h-36" />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Skeleton className="h-48 rounded-xl" />
+        <Skeleton className="h-48 rounded-xl" />
       </div>
     </div>
   );

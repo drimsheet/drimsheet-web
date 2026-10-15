@@ -390,5 +390,7 @@
   "ledger_error_currency_change_has_journal_entries_conflict": "Account currency cannot be changed because the account has journal entries.",
   "ledger_error_currency_change_transaction_required_unexpected": "Unable to change account currency.",
   "app_error_ledger_activate_opening_balance_invalid": "Invalid opening balance activation option.",
-  "ledger_balance_error_currency_change_non_zero_balance_conflict": "Account currency cannot be changed because the account has a non-zero balance."
+  "ledger_balance_error_currency_change_non_zero_balance_conflict": "Account currency cannot be changed because the account has a non-zero balance.",
+  "app_error_ledger_balance_hierarchy_changed_conflict": "The account hierarchy changed while updating balances. Please try again.",
+  "ledger_error_promotion_balance_missing_unexpected": "Unable to create a control account because the existing account balance is missing."
 }
