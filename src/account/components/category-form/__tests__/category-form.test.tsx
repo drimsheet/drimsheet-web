@@ -9,23 +9,22 @@ describe('CategoryForm', () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
     render(
       <CategoryForm
-        initialValues={{ name: '', type: 'revenue', behavior: 'services' }}
-        editing={false}
+        initialValues={{ name: '' }}
         pending={false}
         error={false}
         onCancel={() => {}}
         onSubmit={onSubmit}
       />
     );
-    await user.click(screen.getByRole('button', { name: 'Add category' }));
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(
       await screen.findByText('Enter a category name.')
     ).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
     await user.type(screen.getByLabelText('Category name'), 'Consulting');
-    await user.click(screen.getByRole('button', { name: 'Add category' }));
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(onSubmit).toHaveBeenCalledWith(
-      { name: 'Consulting', type: 'revenue', behavior: 'services' },
+      { name: 'Consulting' },
       expect.anything()
     );
   });
@@ -35,10 +34,7 @@ describe('CategoryForm', () => {
       <CategoryForm
         initialValues={{
           name: 'Rent',
-          type: 'expense',
-          behavior: 'rent_and_utilities',
         }}
-        editing
         pending={false}
         error
         onCancel={() => {}}

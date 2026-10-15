@@ -25,22 +25,16 @@ export function CategoryEditorDialog({
   const mutation = useMutation({
     retry: false,
     mutationFn: async (values: ICategoryFormValues) => {
-      if (account?.type === 'revenue')
+      if (account.type === 'revenue')
         return categoryService.updateRevenue(
           account.accountId,
           categoryMapper.toUpdate(values)
         );
 
-      if (account?.type === 'expense')
-        return categoryService.updateExpense(
-          account.accountId,
-          categoryMapper.toUpdate(values)
-        );
-
-      if (values.type === 'revenue')
-        return categoryService.createRevenue(categoryMapper.toRevenue(values));
-
-      return categoryService.createExpense(categoryMapper.toExpense(values));
+      return categoryService.updateExpense(
+        account.accountId,
+        categoryMapper.toUpdate(values)
+      );
     },
   });
 
@@ -62,15 +56,8 @@ export function CategoryEditorDialog({
     if (!open) handleClose();
   };
 
-  const type = account?.type === 'expense' ? 'expense' : 'revenue';
-
-  const title = account
-    ? t('categories_edit_title')
-    : t('categories_add_label');
-
-  const description = account
-    ? t('categories_edit_description')
-    : t('categories_create_description');
+  const title = t('categories_edit_title');
+  const description = t('categories_edit_description');
 
   return (
     <Dialog open onOpenChange={handleOpenChange}>
@@ -83,12 +70,7 @@ export function CategoryEditorDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <CategoryForm
-          initialValues={{
-            name: account?.accountName ?? '',
-            type,
-            behavior: type === 'revenue' ? 'services' : 'default_direct_cost',
-          }}
-          editing={!!account}
+          initialValues={{ name: account.accountName }}
           pending={mutation.isPending}
           error={mutation.isError}
           onSubmit={handleSubmit}

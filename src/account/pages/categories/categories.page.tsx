@@ -32,9 +32,7 @@ export function CategoriesPage() {
 
   const [period, setPeriod] = useState(periods[0].value);
 
-  const [editor, setEditor] = useState<
-    IRevenueExpenseAccountDto | 'create' | null
-  >(null);
+  const [editor, setEditor] = useState<IRevenueExpenseAccountDto | null>(null);
 
   const [archiveAccount, setArchiveAccount] =
     useState<IRevenueExpenseAccountDto | null>(null);
@@ -96,7 +94,7 @@ export function CategoriesPage() {
             <h1 className="my-0 text-2xl font-semibold tracking-tight">
               {title}
             </h1>
-            <Button onClick={() => setEditor('create')}>
+            <Button onClick={() => navigate('/categories/new')}>
               <Plus data-icon="inline-start" />
               {add_label}
             </Button>
@@ -138,7 +136,7 @@ export function CategoriesPage() {
           />
           {editor !== null && (
             <CategoryEditorDialog
-              account={editor === 'create' ? undefined : editor}
+              account={editor}
               onClose={() => setEditor(null)}
             />
           )}

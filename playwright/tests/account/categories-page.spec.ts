@@ -305,58 +305,6 @@ test('keeps loading, independent errors, retry and empty states useful', async (
   await expect(page.getByText('No categories found')).toBeVisible();
 });
 
-test('creates an expense category, retaining values after a failed save', async ({
-  page,
-}) => {
-  await setup(page);
-  let saved: unknown;
-  await page.route('**/api/v1/ledger/expenses', async (route) => {
-    saved = route.request().postDataJSON();
-    await route.fulfill({ status: 500, json: { message: 'failure' } });
-  });
-  await page.goto('/categories');
-  await page.getByRole('button', { name: 'Add category' }).click();
-  const dialog = page.getByRole('dialog');
-  await dialog.getByLabel('Category name').fill('Office rent');
-  await dialog.getByRole('combobox', { name: 'Type', exact: true }).click();
-  await page.getByRole('option', { name: 'Expense', exact: true }).click();
-  await dialog.getByRole('combobox', { name: 'Account behavior' }).click();
-  await page
-    .getByRole('option', { name: 'Rent and utilities', exact: true })
-    .click();
-  await dialog.getByRole('button', { name: 'Add category' }).click();
-  await expect(dialog.getByRole('alert')).toContainText(
-    'We couldn’t save this category.'
-  );
-  await expect(dialog.getByLabel('Category name')).toHaveValue('Office rent');
-  expect(saved).toEqual({
-    name: 'Office rent',
-    isControlAccount: false,
-    behavior: 'rent_and_utilities',
-  });
-  await page.route('**/api/v1/ledger/expenses', (route) =>
-    route.fulfill({ json: { id: 'rent' } })
-  );
-  await page.route(accountsEndpoint, (route) =>
-    route.fulfill({
-      json: {
-        data: [{ ...account, accountName: 'Office rent', type: 'expense' }],
-        meta: { page: 1, limit: 10, total: 1, totalPages: 1 },
-      },
-    })
-  );
-  await dialog.getByRole('button', { name: 'Add category' }).click();
-  await expect(dialog).not.toBeVisible();
-  await expect(
-    page.getByRole('cell', { name: 'Office rent', exact: true })
-  ).toBeVisible();
-  await page.getByRole('button', { name: 'Add category' }).click();
-  await expect(
-    page.getByRole('dialog').getByLabel('Category name')
-  ).toHaveValue('');
-  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
-});
-
 test('renames and archives categories, then opens account-filtered transactions', async ({
   page,
 }) => {
