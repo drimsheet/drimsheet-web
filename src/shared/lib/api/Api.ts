@@ -208,14 +208,6 @@ export const ECounterpartySortBy = {
 export type UCounterpartySortBy =
   (typeof ECounterpartySortBy)[keyof typeof ECounterpartySortBy];
 
-export const ECounterpartyRole = {
-  Employer: 'employer',
-  Vendor: 'vendor',
-  Contractor: 'contractor',
-} as const;
-export type UCounterpartyRole =
-  (typeof ECounterpartyRole)[keyof typeof ECounterpartyRole];
-
 export const EFileUploadPurpose = {
   JournalEntryAttachment: 'journal_entry_attachment',
 } as const;
@@ -230,27 +222,12 @@ export const EJournalEntryRectificationMode = {
 export type UJournalEntryRectificationMode =
   (typeof EJournalEntryRectificationMode)[keyof typeof EJournalEntryRectificationMode];
 
-export const ECounterpartyType = {
-  Individual: 'individual',
-  Organization: 'organization',
-} as const;
-export type UCounterpartyType =
-  (typeof ECounterpartyType)[keyof typeof ECounterpartyType];
-
 export const EJournalEntrySortBy = {
   CreatedAt: 'createdAt',
   EffectiveDate: 'effectiveDate',
 } as const;
 export type UJournalEntrySortBy =
   (typeof EJournalEntrySortBy)[keyof typeof EJournalEntrySortBy];
-
-export const ECounterpartyStatus = {
-  Active: 'active',
-  Archived: 'archived',
-  Draft: 'draft',
-} as const;
-export type UCounterpartyStatus =
-  (typeof ECounterpartyStatus)[keyof typeof ECounterpartyStatus];
 
 export const ETSupportedRevenueAccountBehavior = {
   Services: 'services',
@@ -294,8 +271,8 @@ export const EJournalSide = {
 export type UJournalSide = (typeof EJournalSide)[keyof typeof EJournalSide];
 
 export const EJournalEntryStatus = {
-  Archived: 'archived',
   Draft: 'draft',
+  Archived: 'archived',
   Posted: 'posted',
   Voided: 'voided',
 } as const;
@@ -504,12 +481,35 @@ export const ELedgerType = {
 export type ULedgerType = (typeof ELedgerType)[keyof typeof ELedgerType];
 
 export const ELedgerAccountStatus = {
+  Draft: 'draft',
   Active: 'active',
   Archived: 'archived',
-  Draft: 'draft',
 } as const;
 export type ULedgerAccountStatus =
   (typeof ELedgerAccountStatus)[keyof typeof ELedgerAccountStatus];
+
+export const ECounterpartyRole = {
+  Employer: 'employer',
+  Vendor: 'vendor',
+  Contractor: 'contractor',
+} as const;
+export type UCounterpartyRole =
+  (typeof ECounterpartyRole)[keyof typeof ECounterpartyRole];
+
+export const ECounterpartyType = {
+  Individual: 'individual',
+  Organization: 'organization',
+} as const;
+export type UCounterpartyType =
+  (typeof ECounterpartyType)[keyof typeof ECounterpartyType];
+
+export const ECounterpartyStatus = {
+  Draft: 'draft',
+  Active: 'active',
+  Archived: 'archived',
+} as const;
+export type UCounterpartyStatus =
+  (typeof ECounterpartyStatus)[keyof typeof ECounterpartyStatus];
 
 export const EAppUsageModePreference = {
   PowerUser: 'power_user',
@@ -625,6 +625,83 @@ export interface IGetAccountCashFlowQuery {
   bucketDays: number;
 }
 
+export interface IAddressDto {
+  line1: string;
+  line2?: string;
+  city: string;
+  region?: string;
+  postalCode?: string;
+  countryCode: string;
+}
+
+export interface ICounterpartyMetaDto {
+  employer?: {
+    address: IAddressDto;
+    displayName: string | null;
+  };
+  vendor?: {
+    address: IAddressDto | null;
+  };
+  contractor?: {
+    address: IAddressDto;
+  };
+}
+
+export interface ICounterpartyDto {
+  createdBy: string;
+  id: string;
+  accountingEntityId: string;
+  name: string;
+  status: UCounterpartyStatus;
+  type: UCounterpartyType;
+  roles: UCounterpartyRole[];
+  meta: ICounterpartyMetaDto;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+}
+
+export interface IAccountCounterpartyParticipationDto {
+  counterparty: ICounterpartyDto | null;
+  /** True only for transfer lines without a counterparty. */
+  isSelf: boolean;
+  participation: {
+    /**
+     * Percentage of the stored account balance, before filtering; null at zero.
+     * @format double
+     */
+    totalShare: number | null;
+    functionalAmount: IMoneyDto;
+    /** Net contribution in account currency, or functional currency when unset. */
+    amount: IMoneyDto;
+  };
+}
+
+export interface IPaginationResponseMeta {
+  /** @format double */
+  page: number;
+  /** @format double */
+  limit: number;
+  /** @format double */
+  total: number;
+  /** @format double */
+  totalPages: number;
+}
+
+export interface IPaginatedResponseIAccountCounterpartyParticipationDto {
+  data: IAccountCounterpartyParticipationDto[];
+  meta: IPaginationResponseMeta;
+}
+
+export interface IGetAccountCounterpartyParticipationQuery {
+  /** @format double */
+  page?: number;
+  /** @format double */
+  limit?: number;
+  search?: string;
+}
+
 export interface IRevenueExpenseAccountDto {
   accountId: string;
   accountName: string;
@@ -645,17 +722,6 @@ export interface IRevenueExpenseAccountDto {
    * @format double
    */
   transactionCount: number;
-}
-
-export interface IPaginationResponseMeta {
-  /** @format double */
-  page: number;
-  /** @format double */
-  limit: number;
-  /** @format double */
-  total: number;
-  /** @format double */
-  totalPages: number;
 }
 
 export interface IPaginatedResponseIRevenueExpenseAccountDto {
@@ -1472,43 +1538,6 @@ export interface IExchangeRateQueryParam {
   asOf?: string;
 }
 
-export interface IAddressDto {
-  line1: string;
-  line2?: string;
-  city: string;
-  region?: string;
-  postalCode?: string;
-  countryCode: string;
-}
-
-export interface ICounterpartyMetaDto {
-  employer?: {
-    address: IAddressDto;
-    displayName: string | null;
-  };
-  vendor?: {
-    address: IAddressDto | null;
-  };
-  contractor?: {
-    address: IAddressDto;
-  };
-}
-
-export interface ICounterpartyDto {
-  createdBy: string;
-  id: string;
-  accountingEntityId: string;
-  name: string;
-  status: UCounterpartyStatus;
-  type: UCounterpartyType;
-  roles: UCounterpartyRole[];
-  meta: ICounterpartyMetaDto;
-  /** @format date-time */
-  createdAt: string;
-  /** @format date-time */
-  updatedAt: string;
-}
-
 export interface IPaginatedResponseICounterpartyDto {
   data: ICounterpartyDto[];
   meta: IPaginationResponseMeta;
@@ -1660,6 +1689,26 @@ export interface IAccountingEntityCreationDto {
   accountingPeriod: IPeriodCreationDto;
   reportingPeriod: IPeriodCreationDto;
   appPreferences: IUserAppPreferences;
+}
+
+export interface IAccountingEntityDto {
+  id: string;
+  createdBy: string;
+  ownerId: string;
+  name: string;
+  type: UAccountingEntityType;
+  functionalCurrencyCode: UCurrencyCode;
+  jurisdictionCode: UJurisdictionCode;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+}
+
+export interface IAccountingEntityUpdateReq {
+  name?: string;
+  entityType?: UAccountingEntityType;
+  functionalCurrencyCode?: UCurrencyCode;
 }
 
 export interface IAccountingEntitySwitchReq {
@@ -1939,6 +1988,35 @@ export class Api<
     ) =>
       this.request<IAccountCashFlowDto, IHttpErrorDto>({
         path: `/reporting/accounts/${accountId}/cash-flow`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Counterparty contributions to the current balance of a posting or control account, including descendants. Reads journals through only the requested account's adjustments, excluding drafts, never-posted entries, voided originals and reversals. Archived records and opening balances remain included. Amounts use account currency, falling back to functional currency. Shares use the stored account balance before search/pagination, rounded to two decimals; zero balances yield null. Balances update asynchronously. Counterparty-less transfers have isSelf=true and search by entity name; other unattributed lines have isSelf=false. Counterparties sort by name/ID, followed by self and unattributed rows. Defaults to page 1, limit 10. Amount magnitudes above 1 trillion major units return 400; missing accounts or balances return 404; unsafe numeric serialization returns 500.
+     *
+     * @tags Reporting
+     * @name GetAccountCounterpartyParticipation
+     * @request GET:/reporting/accounts/{accountId}/counterparty-participation
+     */
+    getAccountCounterpartyParticipation: (
+      accountId: string,
+      query?: {
+        /** @format double */
+        page?: number;
+        /** @format double */
+        limit?: number;
+        search?: string;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<
+        IPaginatedResponseIAccountCounterpartyParticipationDto,
+        IHttpErrorDto
+      >({
+        path: `/reporting/accounts/${accountId}/counterparty-participation`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -3200,6 +3278,26 @@ export class Api<
       this.request<IAccountingEntity, IHttpErrorDto>({
         path: `/accounting/accounting-entity`,
         method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Updates the entity selected by x-accounting-entity-id. Currency changes require no journal entries.
+     *
+     * @tags Accounting
+     * @name UpdateAccountingEntity
+     * @request PATCH:/accounting/accounting-entity
+     */
+    updateAccountingEntity: (
+      data: IAccountingEntityUpdateReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IAccountingEntityDto, IHttpErrorDto>({
+        path: `/accounting/accounting-entity`,
+        method: 'PATCH',
         body: data,
         type: EContentType.Json,
         format: 'json',

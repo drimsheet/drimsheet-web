@@ -392,5 +392,9 @@
   "app_error_ledger_activate_opening_balance_invalid": "Invalid opening balance activation option.",
   "ledger_balance_error_currency_change_non_zero_balance_conflict": "Account currency cannot be changed because the account has a non-zero balance.",
   "app_error_ledger_balance_hierarchy_changed_conflict": "The account hierarchy changed while updating balances. Please try again.",
-  "ledger_error_promotion_balance_missing_unexpected": "Unable to create a control account because the existing account balance is missing."
+  "ledger_error_promotion_balance_missing_unexpected": "Unable to create a control account because the existing account balance is missing.",
+  "accounting_error_accounting_entity_functional_currency_change_conflict": "Functional currency cannot be changed because the accounting entity has journal entries.",
+  "accounting_error_accounting_entity_functional_currency_mismatch_conflict": "Functional currency does not match the accounting entity's functional currency.",
+  "accounting_error_accounting_entity_type_change_conflict": "This change of accounting entity type is not allowed.",
+  "accounting_error_accounting_entity_update_invalid": "Provide at least one accounting entity field to update."
 }

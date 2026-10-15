@@ -56,8 +56,18 @@ export function CategoriesPage() {
     retry: false,
   });
 
-  const handleViewAccount = (id: string) =>
-    navigate(`/transactions?accountId=${encodeURIComponent(id)}`);
+  const handleViewAccount = (id: string) => {
+    const account = accounts.data?.data.find((item) => item.accountId === id);
+
+    const isSuspense =
+      account && account.type !== 'revenue' && account.type !== 'expense';
+
+    navigate(
+      isSuspense
+        ? `/transactions?accountId=${encodeURIComponent(id)}`
+        : `/categories/${encodeURIComponent(id)}`
+    );
+  };
 
   const handleTypeChange = (value: string) => {
     table.handleFilterChange({ type: value === 'all' ? [] : [value] });

@@ -3,6 +3,7 @@ import {
   ELedgerAccountSubType,
   ELedgerType,
   type IGetAccountCashFlowQuery,
+  type IGetAccountCounterpartyParticipationQuery,
   type IGetJournalEntriesQuery,
   type IGetLedgerAccountsQuery,
   type IGetPermittedPostingAccountsQuery,
@@ -82,16 +83,39 @@ async function getAccountCashFlow(id: string, query: IGetAccountCashFlowQuery) {
   return response.data;
 }
 
-async function getTransactions(id: string, query: IGetJournalEntriesQuery) {
-  const response = await drimsheetApi.journalEntries.getJournalEntries({
-    ...query,
-    accountId: id,
-  });
+async function getTransactions(
+  id: string,
+  query: IGetJournalEntriesQuery,
+  signal?: AbortSignal
+) {
+  const response = await drimsheetApi.journalEntries.getJournalEntries(
+    {
+      ...query,
+      accountId: id,
+    },
+    { signal }
+  );
+
+  return response.data;
+}
+
+async function getAccountCounterpartyParticipation(
+  accountId: string,
+  query: IGetAccountCounterpartyParticipationQuery,
+  signal?: AbortSignal
+) {
+  const response =
+    await drimsheetApi.reporting.getAccountCounterpartyParticipation(
+      accountId,
+      query,
+      { signal }
+    );
 
   return response.data;
 }
 
 export const ledgerAccountService = Object.freeze({
+  getAccountCounterpartyParticipation,
   getLedgerAccounts,
   getPettyBaseCashFilters,
   getLedgerAccount,
