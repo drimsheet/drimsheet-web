@@ -93,3 +93,27 @@ export const NoComparison: Story = {
     },
   },
 };
+
+export const ZeroActivity: Story = {
+  args: {
+    summary: {
+      ...categorySummary,
+      revenue: {
+        total: { amount: 0, currencyCode: 'NGN', isMinorUnit: false },
+        previousTotal: { amount: 0, currencyCode: 'NGN', isMinorUnit: false },
+        percentageChange: null,
+        accounts: [],
+      },
+      expenses: {
+        total: { amount: 0, currencyCode: 'NGN', isMinorUnit: false },
+        previousTotal: { amount: 0, currencyCode: 'NGN', isMinorUnit: false },
+        percentageChange: null,
+        accounts: [],
+      },
+      suspense: {
+        amount: { amount: 0, currencyCode: 'NGN', isMinorUnit: false },
+        transactionCount: 0,
+      },
+    },
+  },
+};

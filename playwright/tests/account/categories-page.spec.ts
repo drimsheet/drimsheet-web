@@ -118,7 +118,37 @@ test('opens from navigation, shows API totals, and keeps both chart sections wit
   await expect(
     page.getByRole('cell', { name: 'Consulting services', exact: true })
   ).toBeVisible();
-  await expect(page.getByText(/Current accumulated balances/)).toBeVisible();
+  await expect(
+    page.getByText(/Current accumulated balances/)
+  ).not.toBeVisible();
+
+  const tableHelp = page.getByRole('button', {
+    name: 'About category balances and counts',
+  });
+
+  await tableHelp.focus();
+  await page.keyboard.press('Enter');
+
+  const tableHelpDialog = page.getByRole('dialog', {
+    name: 'About category balances and counts',
+  });
+
+  await expect(tableHelpDialog).toContainText(
+    'Current accumulated balances, independent of the reporting month.'
+  );
+  await expect(tableHelpDialog).toContainText(
+    'Transaction counts include journal lines in all states.'
+  );
+  await page.keyboard.press('Escape');
+  await expect(tableHelpDialog).not.toBeVisible();
+  await expect(tableHelp).toBeFocused();
+  await page
+    .getByRole('button', { name: 'About the reporting period' })
+    .click();
+  await expect(
+    page.getByRole('dialog', { name: 'About the reporting period' })
+  ).toContainText('Compared with Sep 17, 2026 – Sep 30, 2026.');
+  await page.keyboard.press('Escape');
   await expect(page.getByRole('table')).not.toContainText(account.code);
   for (const title of ['Revenue by category', 'Expenses by category']) {
     const chart = page.getByRole('region', { name: title, exact: true });
@@ -142,6 +172,7 @@ test('opens from navigation, shows API totals, and keeps both chart sections wit
   await page.screenshot({
     path: testInfo.outputPath('categories-desktop.png'),
     fullPage: true,
+    animations: 'disabled',
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
@@ -156,6 +187,7 @@ test('opens from navigation, shows API totals, and keeps both chart sections wit
   await page.screenshot({
     path: testInfo.outputPath('categories-mobile.png'),
     fullPage: true,
+    animations: 'disabled',
   });
 });
 
@@ -203,9 +235,7 @@ test('filters and paginates accounts on the server while the month only changes 
   await page.getByRole('tab', { name: 'Expenses', exact: true }).click();
   await expect.poll(() => accountQueries.at(-1)?.get('type')).toBe('expense');
   expect(accountQueries.at(-1)?.get('page')).toBe('1');
-  await page
-    .getByRole('searchbox', { name: 'Search categories by name or code' })
-    .fill('rent');
+  await page.getByRole('searchbox', { name: 'Search by name' }).fill('rent');
   await expect.poll(() => accountQueries.at(-1)?.get('search')).toBe('rent');
   const countBefore = accountQueries.length;
   await page.getByRole('combobox', { name: 'Reporting month' }).click();
@@ -397,4 +427,101 @@ test('renames and archives categories, then opens account-filtered transactions'
   ).toBeVisible();
   await page.getByRole('button', { name: 'Show all transactions' }).click();
   await expect.poll(() => requests.at(-1)?.has('accountId')).toBe(false);
+});
+
+test('keeps category management in view when the reporting period has no activity', async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await setup(page);
+  const zeroAmount = { ...money, amount: 0 };
+
+  const emptySection = {
+    total: zeroAmount,
+    previousTotal: zeroAmount,
+    percentageChange: null,
+    accounts: [],
+  };
+
+  await page.route(summaryEndpoint, (route) =>
+    route.fulfill({
+      json: {
+        ...summary,
+        revenue: emptySection,
+        expenses: emptySection,
+        suspense: { amount: zeroAmount, transactionCount: 0 },
+      },
+    })
+  );
+  await page.route(accountsEndpoint, (route) =>
+    route.fulfill({
+      json: {
+        data: [
+          'Services (Default)',
+          'Employment Income (Default)',
+          'Gain on Sale of Assets (Default)',
+          'Unrealized Gains (Default)',
+          'Grants (Default)',
+          'Gifts (Default)',
+          'Direct Costs (Default)',
+          'Rent and Utilities (Default)',
+        ].map((name, index) => ({
+          ...account,
+          accountId: `category-${index}`,
+          accountName: name,
+          type: index < 6 ? 'revenue' : 'expense',
+          amount: zeroAmount,
+          sharePercentage: null,
+          transactionCount: 0,
+        })),
+        meta: { page: 1, totalPages: 1, limit: 10, total: 8 },
+      },
+    })
+  );
+  await page.goto('/categories');
+  await expect(page.getByText('No activity in this period')).toHaveCount(2);
+  await expect(
+    page.getByRole('region', { name: 'Uncategorized', exact: true })
+  ).toContainText('0 transactions');
+  await expect(
+    page.getByRole('cell', { name: 'Services (Default)', exact: true })
+  ).toBeInViewport();
+  await expect(page.getByRole('searchbox')).toBeInViewport();
+
+  for (const theme of ['dark', 'light']) {
+    await page.evaluate((value) => {
+      localStorage.setItem('theme', value);
+      document.documentElement.classList.toggle('dark', value === 'dark');
+    }, theme);
+    await page.screenshot({
+      path: testInfo.outputPath(`categories-empty-${theme}.png`),
+      fullPage: true,
+      animations: 'disabled',
+    });
+  }
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(
+    page.getByRole('button', { name: 'Add category' })
+  ).toBeInViewport();
+  await page
+    .getByRole('button', { name: 'About the reporting period' })
+    .click();
+  await expect(
+    page.getByRole('dialog', { name: 'About the reporting period' })
+  ).toBeInViewport();
+  await page
+    .getByRole('button', { name: 'About the reporting period' })
+    .click();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth
+    )
+  ).toBe(true);
+  await page.screenshot({
+    path: testInfo.outputPath('categories-empty-mobile.png'),
+    fullPage: true,
+    animations: 'disabled',
+  });
 });

@@ -1,3 +1,4 @@
+import { Badge } from '@/shared/components/badge';
 import { DataTable, type ITableColumn } from '@/shared/components/data-table';
 import {
   Empty,
@@ -16,6 +17,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import categoriesHelpers from '../helper';
 import type { CategoryTableProps, ICategoryTableRow } from '../types';
+import { CategoryHelp } from './category-help';
 import { CategoryRowActions } from './category-row-actions';
 
 export function CategoryTable({
@@ -54,7 +56,7 @@ export function CategoryTable({
         render: (_, account) => (
           <button
             type="button"
-            className="text-left underline-offset-4 hover:underline focus-visible:underline"
+            className="block min-h-8 w-full min-w-48 whitespace-normal break-words text-left underline-offset-4 hover:text-primary hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
             onClick={() => onViewAccount(account.accountId)}
           >
             {account.accountName}
@@ -130,6 +132,9 @@ export function CategoryTable({
 
   const title = t('categories_table_title');
   const description = t('categories_table_description');
+  const details_text = t('categories_table_details');
+  const scope_label = t('categories_table_scope_label');
+  const table_help_label = t('categories_table_help_label');
   const search_label = t('categories_search_label');
   const filter_label = t('categories_type_filter_label');
   const empty_title = t('categories_empty_title');
@@ -147,15 +152,22 @@ export function CategoryTable({
   ];
 
   return (
-    <section
-      aria-label={title}
-      className="flex min-w-0 flex-col gap-6 md:gap-8"
-    >
-      <div className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">{title}</h2>
-        <p className="max-w-3xl text-sm text-muted-foreground">{description}</p>
+    <section aria-label={title} className="flex min-w-0 flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <h2 className="text-lg font-semibold">{title}</h2>
+        <Badge variant="outline">{scope_label}</Badge>
+        <CategoryHelp label={table_help_label}>
+          <p>{description}</p>
+          <p>{details_text}</p>
+        </CategoryHelp>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Tabs
+          ariaLabel={filter_label}
+          value={type}
+          onValueChange={onTypeChange}
+          items={tabs}
+        />
         <div className="w-full max-w-sm">
           <SearchField
             type="search"
@@ -165,12 +177,6 @@ export function CategoryTable({
             onChange={(event) => onSearchChange(event.target.value)}
           />
         </div>
-        <Tabs
-          ariaLabel={filter_label}
-          value={type}
-          onValueChange={onTypeChange}
-          items={tabs}
-        />
       </div>
       <div aria-busy={loading}>
         {loading && (

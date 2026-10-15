@@ -19,7 +19,7 @@ export function CategoryOverviewContainer({
   const overview_title = t('categories_overview_title');
 
   return (
-    <div className="flex flex-col gap-10 md:gap-14">
+    <div className="flex min-w-0 flex-col gap-4">
       {summary.isPending && <CategoriesSkeleton />}
       {summary.isError && (
         <CategorySectionError
@@ -30,7 +30,7 @@ export function CategoryOverviewContainer({
       {summary.isSuccess && (
         <>
           <CategorySummary summary={summary.data} />
-          <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-x-16">
+          <div className="grid min-w-0 items-start gap-4 lg:grid-cols-2">
             <CategoryChart
               title={revenue_title}
               description={revenue_description}

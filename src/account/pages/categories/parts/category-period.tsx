@@ -20,7 +20,7 @@ export function CategoryPeriod({
   const period_label = t('categories_period_label');
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-wrap items-center gap-2">
       <label htmlFor={id} className="text-sm text-muted-foreground">
         {period_label}
       </label>

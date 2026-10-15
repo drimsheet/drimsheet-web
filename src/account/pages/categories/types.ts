@@ -5,6 +5,12 @@ import type {
   IRevenueExpenseSectionDto,
   IRevenueExpenseSummaryDto,
 } from '@/shared/lib/api/Api';
+import type { ReactNode } from 'react';
+
+export interface CategoryHelpProps {
+  label: string;
+  children: ReactNode;
+}
 
 export type UCategoryTypeFilter = 'all' | 'revenue' | 'expense';
 

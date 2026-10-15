@@ -1,18 +1,11 @@
-import { BalanceEffectIcon } from '@/shared/components/balance-effect-icon';
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/card';
+import { Card, CardContent } from '@/shared/components/card';
 import { Money } from '@/shared/components/money';
-import { ELedgerAccountBalanceEffect } from '@/shared/lib/api/Api';
-import { Tags } from 'lucide-react';
+import { cn } from '@/shared/lib/utils/cn';
+import { ArrowDownLeft, ArrowUpRight, Tags } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import categoriesHelpers from '../helper';
 import type { CategorySummaryProps } from '../types';
+import { CategoryHelp } from './category-help';
 
 export function CategorySummary({ summary }: Readonly<CategorySummaryProps>) {
   const { t, i18n } = useTranslation('ledger-accounts');
@@ -21,17 +14,20 @@ export function CategorySummary({ summary }: Readonly<CategorySummaryProps>) {
   const cards = [
     {
       title: t('categories_revenue_label'),
-      effect: ELedgerAccountBalanceEffect.Increase,
+      icon: ArrowUpRight,
+      iconColor: 'text-success',
       section: summary.revenue,
     },
     {
       title: t('categories_expenses_label'),
-      effect: ELedgerAccountBalanceEffect.Decrease,
+      icon: ArrowDownLeft,
+      iconColor: 'text-destructive',
       section: summary.expenses,
     },
   ];
 
   const uncategorized_label = t('categories_uncategorized_label');
+  const reporting_help_label = t('categories_reporting_help_label');
 
   const transactions_text = t('categories_transaction_count', {
     count: summary.suspense.transactionCount,
@@ -44,67 +40,62 @@ export function CategorySummary({ summary }: Readonly<CategorySummaryProps>) {
   });
 
   return (
-    <div className="flex flex-col gap-5 md:gap-6">
-      <p className="text-sm text-muted-foreground">{period_text}</p>
-      <div className="grid gap-6 md:grid-cols-3">
-        {cards.map(({ title, effect, section }) => (
-          <Card
-            key={title}
-            className="gap-6 py-8 bg-muted/50 shadow-none ring-0 border-0"
-            role="region"
-            aria-label={title}
-          >
-            <CardHeader className="px-6 xl:px-8">
-              <CardTitle>{title}</CardTitle>
-              <CardAction>
-                <BalanceEffectIcon
-                  effect={effect}
-                  aria-hidden
-                  className="size-10 [&_svg]:size-5"
-                />
-              </CardAction>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4 px-6 xl:px-8">
-              <Money
-                value={section.total}
-                className="text-2xl font-medium tabular-nums break-all"
-              />
-              <CardDescription>
-                {section.percentageChange === null
-                  ? t('categories_no_comparison_text')
-                  : t('categories_change_text', {
-                      change: categoriesHelpers.formatPercentage(
-                        section.percentageChange,
-                        locale,
-                        true
-                      ),
-                    })}
-              </CardDescription>
-            </CardContent>
-          </Card>
-        ))}
-        <Card
-          className="gap-6 py-8 bg-muted/50 shadow-none ring-0 border-0"
-          role="region"
-          aria-label={uncategorized_label}
-        >
-          <CardHeader className="px-6 xl:px-8">
-            <CardTitle>{uncategorized_label}</CardTitle>
-            <CardAction>
-              <Tags aria-hidden className="size-5 text-muted-foreground" />
-            </CardAction>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4 px-6 xl:px-8">
-            <p className="text-2xl font-medium tabular-nums">
-              {transactions_text}
-            </p>
-            <CardDescription>
-              <Money value={summary.suspense.amount} />
-            </CardDescription>
-          </CardContent>
-        </Card>
+    <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex items-center gap-1">
+        <p className="text-xs text-muted-foreground">{period_text}</p>
+        <CategoryHelp label={reporting_help_label}>
+          <p>{comparison_text}</p>
+        </CategoryHelp>
       </div>
-      <p className="text-xs text-muted-foreground">{comparison_text}</p>
+      <Card size="sm">
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3">
+            {cards.map(({ title, icon: Icon, iconColor, section }) => (
+              <section
+                key={title}
+                aria-label={title}
+                className="flex min-w-0 flex-col gap-3 py-1 pl-4 first:border-r first:border-border/50 first:pr-4 first:pl-0 md:px-5"
+              >
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Icon aria-hidden className={cn('size-4', iconColor)} />
+                  <h3 className="text-sm font-medium">{title}</h3>
+                </div>
+                <Money
+                  value={section.total}
+                  className="text-2xl font-semibold tracking-tight tabular-nums break-all md:text-3xl"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {section.percentageChange === null
+                    ? t('categories_no_comparison_text')
+                    : t('categories_change_text', {
+                        change: categoriesHelpers.formatPercentage(
+                          section.percentageChange,
+                          locale,
+                          true
+                        ),
+                      })}
+                </p>
+              </section>
+            ))}
+            <section
+              aria-label={uncategorized_label}
+              className="col-span-2 mt-4 grid min-w-0 grid-cols-2 items-center gap-2 border-t border-border/50 pt-4 md:col-span-1 md:mt-0 md:flex md:flex-col md:items-start md:gap-3 md:border-t-0 md:border-l md:py-1 md:pl-5"
+            >
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Tags aria-hidden className="size-4" />
+                <h3 className="text-sm font-medium">{uncategorized_label}</h3>
+              </div>
+              <Money
+                value={summary.suspense.amount}
+                className="min-w-0 max-w-full text-right text-2xl font-semibold tracking-tight tabular-nums break-all md:text-left md:text-3xl"
+              />
+              <p className="text-xs text-muted-foreground">
+                {transactions_text}
+              </p>
+            </section>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
