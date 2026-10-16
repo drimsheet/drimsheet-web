@@ -5,8 +5,10 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/shared/components/dropdown-menu';
+import { Skeleton } from '@/shared/components/skeleton';
 import { Archive, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +21,11 @@ export function CategoryActions({
   loading = false,
   onEdit,
   editDisabled = false,
+  deleteEligibilityChecking = false,
+  deleteEligibilityFailed = false,
+  deletable = false,
+  onActionsOpenChange,
+  onDelete,
 }: Readonly<CategoryActionsProps>) {
   const { t } = useTranslation('ledger-accounts');
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -55,6 +62,8 @@ export function CategoryActions({
   );
 
   const cancel_label = t('archive_cancel_label');
+  const checking_label = t('checking_deletion_eligibility_text');
+  const eligibility_error_text = t('deletion_eligibility_error_text');
 
   return (
     <div className="flex shrink-0 items-center gap-2">
@@ -65,7 +74,7 @@ export function CategoryActions({
       >
         {edit_label}
       </Button>
-      <DropdownMenu>
+      <DropdownMenu onOpenChange={onActionsOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
@@ -85,10 +94,31 @@ export function CategoryActions({
               <Archive aria-hidden="true" />
               {archive_label}
             </DropdownMenuItem>
-            <DropdownMenuItem variant="destructive">
-              <Trash2 aria-hidden="true" />
-              {delete_label}
-            </DropdownMenuItem>
+            {deleteEligibilityChecking && (
+              <DropdownMenuItem disabled aria-label={checking_label}>
+                <output aria-label={checking_label} className="w-full">
+                  <Skeleton className="h-5 w-full" />
+                </output>
+              </DropdownMenuItem>
+            )}
+            {!deleteEligibilityChecking && deleteEligibilityFailed && (
+              <DropdownMenuLabel className="whitespace-normal">
+                {eligibility_error_text}
+              </DropdownMenuLabel>
+            )}
+            {!deleteEligibilityChecking &&
+              !deleteEligibilityFailed &&
+              deletable &&
+              onDelete && (
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={onDelete}
+                  disabled={busy}
+                >
+                  <Trash2 aria-hidden="true" />
+                  {delete_label}
+                </DropdownMenuItem>
+              )}
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>

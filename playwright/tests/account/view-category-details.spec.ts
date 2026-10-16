@@ -2,6 +2,8 @@ import type {
   IAccountCounterpartyParticipationDto,
   IJournalEntryListDto,
   ILedgerAccountDto,
+  IRevenueExpenseAccountDto,
+  IRevenueExpenseSummaryDto,
   TEntityId,
 } from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
@@ -128,6 +130,13 @@ async function setup(page: Page, type: 'revenue' | 'expense' = 'expense') {
   );
   await page.route(`**/api/v1/ledger/${accountId}/sub-accounts`, (route) =>
     route.fulfill({ json: [] })
+  );
+  await page.route(
+    `**/api/v1/ledger/${accountId}/deletion-eligibility`,
+    (route) =>
+      route.fulfill({
+        json: { canDelete: false, reason: 'has_journal_entries' },
+      })
   );
   await page.route('**/api/v1/journal-entries?*', (route) => {
     const params = new URL(route.request().url()).searchParams;
@@ -612,4 +621,270 @@ test('retains category archive confirmation after failure and retries', async ({
   await expect(dialog).not.toBeVisible();
   await expect(page.getByText('Archived', { exact: true })).toBeVisible();
   expect(attempts).toBe(2);
+});
+
+test('checks deletion eligibility on menu open and hides stale permission while rechecking', async ({
+  page,
+}) => {
+  await setup(page);
+  let checks = 0;
+  let finishCheck = () => {};
+
+  const response = new Promise<void>((resolve) => {
+    finishCheck = resolve;
+  });
+
+  await page.route(
+    `**/api/v1/ledger/${accountId}/deletion-eligibility`,
+    async (route) => {
+      checks += 1;
+      if (checks > 1) await response;
+
+      await route.fulfill({ json: { canDelete: checks === 1 } });
+    }
+  );
+  await page.goto(`/categories/${accountId}`);
+  const actions = page.getByRole('button', { name: 'Open category actions' });
+  await expect(actions).toBeVisible();
+  expect(checks).toBe(0);
+  await actions.click();
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await actions.click();
+  await expect(
+    page.getByRole('status', { name: 'Checking deletion availability' })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toHaveCount(0);
+  finishCheck();
+  await expect(
+    page.getByRole('status', { name: 'Checking deletion availability' })
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toHaveCount(0);
+  expect(checks).toBe(2);
+});
+
+test('retries failed category deletion eligibility when reopening the menu', async ({
+  page,
+}) => {
+  await setup(page);
+  let checks = 0;
+
+  await page.route(
+    `**/api/v1/ledger/${accountId}/deletion-eligibility`,
+    (route) => {
+      checks += 1;
+
+      return checks === 1
+        ? route.fulfill({ status: 500, json: { name: 'UnexpectedError' } })
+        : route.fulfill({ json: { canDelete: true } });
+    }
+  );
+  await page.goto(`/categories/${accountId}`);
+  const actions = page.getByRole('button', { name: 'Open category actions' });
+  await actions.click();
+  await expect(
+    page.getByText(
+      'Unable to check deletion availability. Reopen the menu to try again.'
+    )
+  ).toBeVisible();
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await actions.click();
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toBeVisible();
+  expect(checks).toBe(2);
+});
+
+for (const status of ['active', 'archived'] as const) {
+  test(`deletes an eligible ${status} category and refreshes the categories list`, async ({
+    page,
+  }, testInfo) => {
+    await setup(page);
+    let deleted = false;
+    let detailReadsAfterDelete = 0;
+    const requests: { method: string; body: string | null }[] = [];
+    let finishDelete = () => {};
+
+    const response = new Promise<void>((resolve) => {
+      finishDelete = resolve;
+    });
+
+    const row: IRevenueExpenseAccountDto = {
+      accountId,
+      accountName: category.name,
+      code: category.code,
+      type: 'expense',
+      subType: category.subType,
+      status,
+      amount: money,
+      sharePercentage: 100,
+      transactionCount: 0,
+    };
+
+    const emptySection = {
+      total: { ...money, amount: 0 },
+      previousTotal: { ...money, amount: 0 },
+      percentageChange: null,
+      accounts: [],
+    };
+
+    const summary: IRevenueExpenseSummaryDto = {
+      currencyCode: 'NGN',
+      period: { from: '2026-10-01', to: '2026-10-15' },
+      comparisonPeriod: { from: '2026-09-16', to: '2026-09-30' },
+      revenue: emptySection,
+      expenses: emptySection,
+      suspense: { amount: { ...money, amount: 0 }, transactionCount: 0 },
+    };
+
+    await page.route('**/api/v1/reporting/revenue-expense-summary?*', (route) =>
+      route.fulfill({ json: summary })
+    );
+    await page.route(
+      '**/api/v1/reporting/revenue-expense-accounts?*',
+      (route) =>
+        route.fulfill({
+          json: {
+            data: deleted ? [] : [row],
+            meta: {
+              page: 1,
+              limit: 10,
+              total: deleted ? 0 : 1,
+              totalPages: deleted ? 0 : 1,
+            },
+          },
+        })
+    );
+    await page.route(
+      `**/api/v1/ledger/${accountId}/deletion-eligibility`,
+      (route) => route.fulfill({ json: { canDelete: true } })
+    );
+    await page.route(`**/api/v1/ledger/${accountId}`, async (route) => {
+      if (route.request().method() !== 'DELETE') {
+        if (deleted) detailReadsAfterDelete += 1;
+
+        await route.fulfill({ json: { ...category, status } });
+
+        return;
+      }
+
+      requests.push({
+        method: route.request().method(),
+        body: route.request().postData(),
+      });
+      await response;
+      deleted = true;
+      await route.fulfill({ status: 204 });
+    });
+    await page.goto('/categories');
+    await page
+      .getByRole('button', { name: category.name, exact: true })
+      .click();
+    await expect(page).toHaveURL(`/categories/${accountId}`);
+    const actions = page.getByRole('button', { name: 'Open category actions' });
+    await actions.click();
+    await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
+    const dialog = page.getByRole('alertdialog', { name: 'Delete category?' });
+    const input = dialog.getByLabel('Type "delete" to confirm');
+    await expect(dialog).toContainText(category.name);
+    await expect(dialog).toContainText('cannot be undone');
+    await input.fill('delete');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).not.toBeVisible();
+    expect(requests).toEqual([]);
+    await actions.click();
+    await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
+    await expect(input).toHaveValue('');
+    const confirm = dialog.getByRole('button', { name: 'Delete', exact: true });
+    await expect(confirm).toBeDisabled();
+    await input.fill('DELETE');
+    await expect(confirm).toBeDisabled();
+    await input.fill('delete');
+    await expect(confirm).toBeEnabled();
+    await expect(page.getByRole('menu')).not.toBeVisible();
+    await page.screenshot({
+      path: testInfo.outputPath('delete-category.png'),
+      animations: 'disabled',
+    });
+    await confirm.click();
+    await expect(
+      dialog.getByRole('button', { name: 'Deleting…' })
+    ).toBeDisabled();
+    await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    await expect(input).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeVisible();
+    await expect
+      .poll(() => requests)
+      .toEqual([{ method: 'DELETE', body: null }]);
+    finishDelete();
+    await expect(page).toHaveURL('/categories');
+    await expect(dialog).not.toBeVisible();
+    await expect(page.getByText('Category deleted successfully')).toBeVisible();
+    await expect(
+      page.getByText('No categories found', { exact: true })
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: category.name, exact: true })
+    ).toHaveCount(0);
+    expect(requests).toHaveLength(1);
+    expect(detailReadsAfterDelete).toBe(0);
+  });
+}
+
+test('retains the category and rechecks eligibility after deletion fails', async ({
+  page,
+}) => {
+  await setup(page);
+  let attempts = 0;
+
+  await page.route(
+    `**/api/v1/ledger/${accountId}/deletion-eligibility`,
+    (route) => route.fulfill({ json: { canDelete: attempts === 0 } })
+  );
+  await page.route(`**/api/v1/ledger/${accountId}`, async (route) => {
+    if (route.request().method() !== 'DELETE') {
+      await route.fallback();
+
+      return;
+    }
+
+    attempts += 1;
+    await route.fulfill({
+      status: 500,
+      json: { name: 'UnexpectedError', validationErrors: [] },
+    });
+  });
+  await page.goto(`/categories/${accountId}`);
+  const actions = page.getByRole('button', { name: 'Open category actions' });
+  await actions.click();
+  await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
+  const dialog = page.getByRole('alertdialog', { name: 'Delete category?' });
+  await dialog.getByLabel('Type "delete" to confirm').fill('delete');
+  await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(page).toHaveURL(`/categories/${accountId}`);
+  await expect(
+    page.getByRole('heading', { name: category.name })
+  ).toBeVisible();
+  await expect(
+    page.getByText('An error occurred', { exact: true })
+  ).toBeVisible();
+  await actions.click();
+  await expect(
+    page.getByRole('status', { name: 'Checking deletion availability' })
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toHaveCount(0);
+  expect(attempts).toBe(1);
 });

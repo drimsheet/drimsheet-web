@@ -34,6 +34,18 @@ export interface CategoryActionsProps {
   loading?: boolean;
   onEdit: () => void;
   editDisabled?: boolean;
+  deleteEligibilityChecking?: boolean;
+  deleteEligibilityFailed?: boolean;
+  deletable?: boolean;
+  onActionsOpenChange?: (open: boolean) => void;
+  onDelete?: () => void;
+}
+
+export interface CategoryDeleteConfirmationProps {
+  accountName: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDelete: () => Promise<void>;
 }
 
 export interface CategoryActionsContainerProps {
