@@ -28,6 +28,10 @@ export interface CategorySummaryProps {
 }
 
 export interface CategoryActionsProps {
+  accountName: string;
+  onArchive: () => Promise<void>;
+  archiveDisabled?: boolean;
+  loading?: boolean;
   onEdit: () => void;
   editDisabled?: boolean;
 }

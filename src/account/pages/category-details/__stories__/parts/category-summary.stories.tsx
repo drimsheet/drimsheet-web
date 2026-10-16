@@ -36,7 +36,13 @@ const meta = {
   args: {
     account: category,
     transactionCount: 48,
-    actions: <CategoryActions onEdit={() => undefined} />,
+    actions: (
+      <CategoryActions
+        accountName={category.name}
+        onEdit={() => undefined}
+        onArchive={async () => undefined}
+      />
+    ),
   },
 } satisfies Meta<typeof CategorySummary>;
 
@@ -53,6 +59,14 @@ export const Unavailable: TStory = { args: { transactionCount: null } };
 export const Archived: TStory = {
   args: {
     account: { ...category, status: 'archived' },
-    actions: <CategoryActions onEdit={() => undefined} editDisabled />,
+    actions: (
+      <CategoryActions
+        accountName={category.name}
+        onEdit={() => undefined}
+        onArchive={async () => undefined}
+        editDisabled
+        archiveDisabled
+      />
+    ),
   },
 };

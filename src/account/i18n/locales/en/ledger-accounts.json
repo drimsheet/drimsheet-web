@@ -262,6 +262,7 @@
   "categories_archive_title": "Archive category",
   "categories_archive_description": "Archive {{name}}? Its historical activity will remain available.",
   "categories_archive_error_text": "We couldn’t archive this category. Please try again.",
+  "category_archived_success_text": "Category archived successfully",
   "categories_cancel_label": "Cancel",
   "categories_add_label": "Add category",
   "categories_save_label": "Save changes",

@@ -5,10 +5,17 @@ const meta = {
   title: 'Account/Category details/Actions',
   component: CategoryActions,
   tags: ['autodocs'],
-  args: { onEdit: () => undefined },
+  args: {
+    accountName: 'Software & subscriptions',
+    onEdit: () => undefined,
+    onArchive: async () => undefined,
+  },
 } satisfies Meta<typeof CategoryActions>;
 
 export default meta;
 type TStory = StoryObj<typeof meta>;
 export const Default: TStory = {};
-export const Archived: TStory = { args: { editDisabled: true } };
+export const Archived: TStory = {
+  args: { editDisabled: true, archiveDisabled: true },
+};
+export const Archiving: TStory = { args: { loading: true } };
