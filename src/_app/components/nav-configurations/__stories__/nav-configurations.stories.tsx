@@ -1,7 +1,8 @@
 import { NavConfigurations } from '@/_app/components/nav-configurations';
 import { SidebarProvider } from '@/shared/components/sidebar';
+import { TooltipProvider } from '@/shared/components/tooltip';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Settings } from 'lucide-react';
+import { Building2, UserRound, UsersRound } from 'lucide-react';
 import { MemoryRouter } from 'react-router-dom';
 
 const meta = {
@@ -11,11 +12,13 @@ const meta = {
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <SidebarProvider>
-          <div className="w-64 border p-2">
-            <Story />
-          </div>
-        </SidebarProvider>
+        <TooltipProvider>
+          <SidebarProvider>
+            <div className="w-64 border p-2">
+              <Story />
+            </div>
+          </SidebarProvider>
+        </TooltipProvider>
       </MemoryRouter>
     ),
   ],
@@ -27,7 +30,14 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     items: [
-      { name: 'Settings', url: '#', icon: <Settings className="size-4" /> },
+      {
+        title: 'Counterparties',
+        url: '/counterparties',
+        icon: <UsersRound />,
+        isActive: true,
+      },
+      { title: 'Legal Entities', icon: <Building2 /> },
+      { title: 'Profile', icon: <UserRound /> },
     ],
   },
 };

@@ -1,5 +1,5 @@
 import { NavConfigurations } from '@/_app/components/nav-configurations';
-import { NavMain } from '@/_app/components/nav-main';
+import { NavMain, type INavItem } from '@/_app/components/nav-main';
 import logoImg from '@/shared/assets/logo.svg';
 import { Badge } from '@/shared/components/badge';
 import {
@@ -10,107 +10,102 @@ import {
 } from '@/shared/components/sidebar';
 import {
   ArrowLeftRight,
+  Building2,
   Calculator,
-  CircleMinus,
+  HandCoins,
   Landmark,
   LayoutDashboard,
   Tags,
+  UserRound,
   UsersRound,
 } from 'lucide-react';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AppSidebarProps } from './types';
-
-function isRouteActive(currentPath: string, itemUrl: string) {
-  return (
-    itemUrl !== '#' &&
-    (currentPath === itemUrl || currentPath.startsWith(`${itemUrl}/`))
-  );
-}
 
 export function AppSidebar({
   currentPath,
   ...props
 }: Readonly<AppSidebarProps>) {
-  const { t } = useTranslation(['shared']);
+  const { t } = useTranslation(['shared', 'navigation']);
 
-  const sidebarData = useMemo(
-    () => ({
-      navMain: [
-        {
-          title: t('shared:dashboard'),
-          url: '/dashboard',
-          icon: <LayoutDashboard />,
-          isActive: isRouteActive(currentPath, '/dashboard'),
-        },
-        {
-          title: t('shared:accounts'),
-          url: '/accounts',
-          icon: <Landmark />,
-          isActive: isRouteActive(currentPath, '/accounts'),
-        },
-        {
-          title: t('shared:transactions'),
-          url: '/transactions',
-          icon: <ArrowLeftRight />,
-          isActive: isRouteActive(currentPath, '/transactions'),
-        },
-        {
-          title: t('shared:liabilities'),
-          url: '#',
-          icon: <CircleMinus />,
-        },
-      ],
-      configurations: [
-        {
-          name: t('shared:counterparties'),
-          url: '/counterparties',
-          isActive: isRouteActive(currentPath, '/counterparties'),
-          icon: <UsersRound />,
-        },
-        {
-          name: t('shared:categories'),
-          url: '/categories',
-          isActive: isRouteActive(currentPath, '/categories'),
-          icon: <Tags />,
-        },
-        {
-          name: t('shared:tax'),
-          url: '#',
-          icon: <Calculator />,
-        },
-      ],
-    }),
-    [currentPath, t]
+  const accountingItems: INavItem[] = [
+    {
+      title: t('shared:dashboard'),
+      url: '/dashboard',
+      icon: <LayoutDashboard aria-hidden />,
+    },
+    {
+      title: t('shared:accounts'),
+      url: '/accounts',
+      icon: <Landmark aria-hidden />,
+    },
+    {
+      title: t('shared:transactions'),
+      url: '/transactions',
+      icon: <ArrowLeftRight aria-hidden />,
+    },
+    {
+      title: t('shared:categories'),
+      url: '/categories',
+      icon: <Tags aria-hidden />,
+    },
+    { title: t('navigation:debt'), icon: <HandCoins aria-hidden /> },
+    { title: t('shared:tax'), icon: <Calculator aria-hidden /> },
+  ];
+
+  const configurationItems: INavItem[] = [
+    {
+      title: t('shared:counterparties'),
+      url: '/counterparties',
+      icon: <UsersRound aria-hidden />,
+    },
+    { title: t('navigation:legal_entities'), icon: <Building2 aria-hidden /> },
+    { title: t('navigation:profile'), icon: <UserRound aria-hidden /> },
+  ];
+
+  const [accountingNavigation, configurationNavigation] = [
+    accountingItems,
+    configurationItems,
+  ].map((items) =>
+    items.map((item) => ({
+      ...item,
+      isActive:
+        !!item.url &&
+        (currentPath === item.url || currentPath.startsWith(`${item.url}/`)),
+    }))
   );
 
-  const drimsheetText = t('shared:drimsheet');
-  const betaText = t('shared:beta');
+  const drimsheet_text = t('shared:drimsheet');
+  const beta_text = t('shared:beta');
+  const toggle_sidebar_label = t('navigation:toggle_sidebar');
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <div className="flex items-center gap-2">
+      <SidebarHeader className="app-sidebar-header px-5 py-6 group-data-[collapsible=icon]:px-2">
+        <div className="flex items-center gap-3">
           <img
             src={logoImg}
-            width={40}
-            height={40}
-            className="rounded-lg"
-            alt={drimsheetText}
+            width={32}
+            height={32}
+            className="size-8 shrink-0 rounded-lg"
+            alt={drimsheet_text}
           />
-          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <p className="text-sm font-semibold">{drimsheetText}</p>
-            <Badge variant="outline" className="w-fit">
-              {betaText}
-            </Badge>
+          <div className="flex min-w-0 flex-1 items-center gap-2 group-data-[collapsible=icon]:hidden">
+            <p className="text-base font-semibold tracking-tight">
+              {drimsheet_text}
+            </p>
+            <Badge variant="outline">{beta_text}</Badge>
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={sidebarData.navMain} />
-        <NavConfigurations items={sidebarData.configurations} />
+      <SidebarContent className="gap-8 pb-4 group-data-[collapsible=icon]:overflow-y-auto">
+        <NavMain items={accountingNavigation} />
+        <NavConfigurations items={configurationNavigation} />
       </SidebarContent>
-      <SidebarRail />
+      <SidebarRail
+        aria-label={toggle_sidebar_label}
+        title={toggle_sidebar_label}
+      />
     </Sidebar>
   );
 }

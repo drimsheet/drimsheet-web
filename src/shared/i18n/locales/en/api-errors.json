@@ -396,5 +396,7 @@
   "accounting_error_accounting_entity_functional_currency_change_conflict": "Functional currency cannot be changed because the accounting entity has journal entries.",
   "accounting_error_accounting_entity_functional_currency_mismatch_conflict": "Functional currency does not match the accounting entity's functional currency.",
   "accounting_error_accounting_entity_type_change_conflict": "This change of accounting entity type is not allowed.",
-  "accounting_error_accounting_entity_update_invalid": "Provide at least one accounting entity field to update."
+  "accounting_error_accounting_entity_update_invalid": "Provide at least one accounting entity field to update.",
+  "accounting_error_accounting_entity_archived_conflict": "This accounting entity is archived.",
+  "accounting_error_accounting_entity_deletion_with_journal_entries_conflict": "This accounting entity cannot be deleted because it has journal entries."
 }

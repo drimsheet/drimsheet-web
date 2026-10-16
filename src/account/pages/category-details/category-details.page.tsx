@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
 import categoryDetailsHelpers from './helper';
 import { useCategoryHistory } from './hooks/use-category-history';
+import { CategoryActionsContainer } from './parts/category-actions.container';
 import { CategorySummary } from './parts/category-summary';
 import { CategoryTransactions } from './parts/category-transactions';
 import { CategoryTrend } from './parts/category-trend';
@@ -120,6 +121,12 @@ export function CategoryDetailsPage() {
               <CategorySummary
                 account={account}
                 transactionCount={transactionCount}
+                actions={
+                  <CategoryActionsContainer
+                    key={account.id}
+                    account={account}
+                  />
+                }
               />
               <div className="grid min-w-0 items-start gap-5 lg:grid-cols-2">
                 {history.isPending && (
