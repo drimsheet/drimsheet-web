@@ -59,7 +59,11 @@ export function AppSidebar({
       url: '/counterparties',
       icon: <UsersRound aria-hidden />,
     },
-    { title: t('navigation:legal_entities'), icon: <Building2 aria-hidden /> },
+    {
+      title: t('navigation:legal_entity'),
+      url: '/legal-entity',
+      icon: <Building2 aria-hidden />,
+    },
     {
       title: t('navigation:profile'),
       url: '/profile',
