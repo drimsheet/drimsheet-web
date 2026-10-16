@@ -2,7 +2,7 @@ import { NavMain } from '@/_app/components/nav-main';
 import { SidebarProvider } from '@/shared/components/sidebar';
 import { TooltipProvider } from '@/shared/components/tooltip';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Home, Settings } from 'lucide-react';
+import { Landmark, LayoutDashboard } from 'lucide-react';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -32,15 +32,15 @@ export const Default: Story = {
   args: {
     items: [
       {
-        title: 'Home',
-        url: '/',
-        icon: React.createElement(Home),
+        title: 'Dashboard',
+        url: '/dashboard',
+        icon: React.createElement(LayoutDashboard),
         isActive: true,
       },
       {
-        title: 'Settings',
-        url: '/settings',
-        icon: React.createElement(Settings),
+        title: 'Accounts',
+        url: '/accounts',
+        icon: React.createElement(Landmark),
       },
     ],
   },

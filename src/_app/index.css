@@ -283,3 +283,44 @@
   animation: none;
   mix-blend-mode: normal;
 }
+
+/* App navigation: a quiet ledger margin, with blue marking the current page. */
+[data-sidebar='sidebar']:has(.app-sidebar-header) {
+  --sidebar: var(--background);
+}
+
+.app-nav [data-sidebar='group-label'] {
+  margin-bottom: 0.5rem;
+  font-family: var(--sans);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.app-nav [data-sidebar='menu-button'] {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+.app-nav [data-sidebar='menu-button']:hover {
+  color: var(--foreground);
+}
+
+.app-nav [data-sidebar='menu-button'][data-active='true'] {
+  color: var(--sidebar-accent-foreground);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--sidebar-primary);
+}
+
+.app-nav [data-sidebar='menu-button']:disabled {
+  opacity: 1;
+}
+
+.app-nav [data-slot='badge'] {
+  font-size: 0.5625rem;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}

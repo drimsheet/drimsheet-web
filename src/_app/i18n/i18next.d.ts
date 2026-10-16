@@ -1,3 +1,4 @@
+import navigationEn from '@/_app/i18n/locales/en/navigation.json';
 import ledgerAccountsEn from '@/account/i18n/locales/en/ledger-accounts.json';
 import accountingEn from '@/accounting/i18n/locales/en/accounting.json';
 import authEn from '@/auth/i18n/locales/en/auth.json';
@@ -12,6 +13,7 @@ declare module 'i18next' {
   interface CustomTypeOptions {
     defaultNS: 'shared';
     resources: {
+      navigation: typeof navigationEn;
       auth: typeof authEn;
       shared: typeof sharedEn;
       counterparty: typeof counterpartyEn;

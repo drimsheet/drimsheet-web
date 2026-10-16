@@ -1,3 +1,4 @@
+import navigationEn from '@/_app/i18n/locales/en/navigation.json';
 import i18nInstance from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
@@ -13,6 +14,7 @@ import userEn from '@/user/i18n/locales/en/user.json';
 
 const resources = {
   en: {
+    navigation: navigationEn,
     auth: authEn,
     shared: sharedEn,
     counterparty: counterpartyEn,

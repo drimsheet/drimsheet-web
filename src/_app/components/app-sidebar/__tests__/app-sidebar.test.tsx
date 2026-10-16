@@ -2,7 +2,7 @@ import { AppSidebar } from '@/_app/components/app-sidebar';
 import { SidebarProvider } from '@/shared/components/sidebar';
 import { TooltipProvider } from '@/shared/components/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 
@@ -66,5 +66,77 @@ describe('AppSidebar', () => {
     expect(
       screen.queryByRole('link', { name: 'Expenses' })
     ).not.toBeInTheDocument();
+  });
+  it('groups financial work separately from configuration', () => {
+    render(
+      <MemoryRouter>
+        <TooltipProvider>
+          <SidebarProvider>
+            <AppSidebar currentPath="/categories" />
+          </SidebarProvider>
+        </TooltipProvider>
+      </MemoryRouter>
+    );
+
+    const accounting = within(
+      screen.getByRole('navigation', { name: 'Accounting' })
+    );
+
+    const configuration = within(
+      screen.getByRole('navigation', { name: 'Configuration' })
+    );
+
+    expect(
+      accounting.getAllByRole('link').map((link) => link.textContent)
+    ).toEqual(['Dashboard', 'Accounts', 'Transactions', 'Categories']);
+    expect(
+      accounting.getByRole('link', { name: 'Categories' })
+    ).toHaveAttribute('aria-current', 'page');
+    expect(
+      configuration.getByRole('link', { name: 'Counterparties' })
+    ).toHaveAttribute('href', '/counterparties');
+    expect(
+      configuration.queryByRole('link', { name: 'Categories' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('marks unfinished destinations as unavailable instead of linking to nowhere', () => {
+    render(
+      <MemoryRouter>
+        <TooltipProvider>
+          <SidebarProvider>
+            <AppSidebar currentPath="/dashboard" />
+          </SidebarProvider>
+        </TooltipProvider>
+      </MemoryRouter>
+    );
+
+    for (const title of ['Debt', 'Tax', 'Legal Entities', 'Profile']) {
+      expect(
+        screen.getByRole('button', { name: `${title} — Not available` })
+      ).toBeDisabled();
+      expect(
+        screen.queryByRole('link', { name: title })
+      ).not.toBeInTheDocument();
+    }
+  });
+
+  it('keeps configuration navigation available when collapsed', () => {
+    render(
+      <MemoryRouter>
+        <TooltipProvider>
+          <SidebarProvider defaultOpen={false}>
+            <AppSidebar currentPath="/counterparties/company-1" />
+          </SidebarProvider>
+        </TooltipProvider>
+      </MemoryRouter>
+    );
+
+    expect(
+      screen.getByRole('link', { name: 'Counterparties' })
+    ).toHaveAttribute('aria-current', 'page');
+    expect(
+      screen.getByRole('navigation', { name: 'Configuration' })
+    ).toBeVisible();
   });
 });
