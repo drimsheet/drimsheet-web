@@ -4,9 +4,11 @@ import type {
   IUserPreferencesUpdateDto,
   IUserProfileDto,
 } from '@/shared/lib/api/Api';
+import type { ReactNode } from 'react';
 
 export interface ProfileDetailsProps {
   profile: IUserProfileDto;
+  editAction?: ReactNode;
 }
 
 export interface ProfilePreferencesProps {

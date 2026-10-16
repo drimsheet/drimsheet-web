@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback } from '@/shared/components/avatar';
 import { Badge } from '@/shared/components/badge';
 import {
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
@@ -11,7 +12,10 @@ import { BadgeCheck, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { ProfileDetailsProps } from '../types';
 
-export function ProfileDetails({ profile }: Readonly<ProfileDetailsProps>) {
+export function ProfileDetails({
+  profile,
+  editAction,
+}: Readonly<ProfileDetailsProps>) {
   const { t, i18n } = useTranslation('user');
 
   const fullName = [profile.firstName, profile.lastName]
@@ -63,6 +67,7 @@ export function ProfileDetails({ profile }: Readonly<ProfileDetailsProps>) {
         <CardTitle role="heading" aria-level={2} id="profile-details-title">
           {details_title}
         </CardTitle>
+        {editAction && <CardAction>{editAction}</CardAction>}
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         <div className="flex items-center gap-4">

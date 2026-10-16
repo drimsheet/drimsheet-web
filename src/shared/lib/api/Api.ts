@@ -201,6 +201,13 @@ export const EAccountingEntityType = {
 export type UAccountingEntityType =
   (typeof EAccountingEntityType)[keyof typeof EAccountingEntityType];
 
+export const EAccountingEntityStatus = {
+  Active: 'active',
+  Archived: 'archived',
+} as const;
+export type UAccountingEntityStatus =
+  (typeof EAccountingEntityStatus)[keyof typeof EAccountingEntityStatus];
+
 export const ECounterpartySortBy = {
   CreatedAt: 'createdAt',
   Name: 'name',
@@ -578,6 +585,11 @@ export interface IUserProfileDto {
 export interface IUserPreferencesUpdateDto {
   theme?: UAppThemePreference;
   appUsageMode?: UAppUsageModePreference;
+}
+
+export interface IUserProfileUpdateDto {
+  firstName?: string;
+  lastName?: string;
 }
 
 export interface IDateRangeDto {
@@ -1633,6 +1645,7 @@ export interface IAccountingEntity {
   createdBy: TEntityId;
   id: TEntityId;
   name: string;
+  status: UAccountingEntityStatus;
   type: UAccountingEntityType;
   ownerId: TEntityId;
   functionalCurrencyCode: UCurrencyCode;
@@ -1692,6 +1705,7 @@ export interface IAccountingEntityCreationDto {
 }
 
 export interface IAccountingEntityDto {
+  status: UAccountingEntityStatus;
   id: string;
   createdBy: string;
   ownerId: string;
@@ -1959,6 +1973,28 @@ export class Api<
         path: `/users/profile`,
         method: 'GET',
         secure: true,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Update the authenticated user's first and/or last name.
+     *
+     * @tags User
+     * @name UpdateAuthUserProfile
+     * @request PATCH:/users/profile
+     * @secure
+     */
+    updateAuthUserProfile: (
+      data: IUserProfileUpdateDto,
+      params: RequestParams = {}
+    ) =>
+      this.request<IUserProfileDto, IHttpErrorDto>({
+        path: `/users/profile`,
+        method: 'PATCH',
+        body: data,
+        secure: true,
+        type: EContentType.Json,
         format: 'json',
         ...params,
       }),
@@ -3305,6 +3341,20 @@ export class Api<
       }),
 
     /**
+     * @description Deletes the selected entity only when it has no journal entries; otherwise returns 409.
+     *
+     * @tags Accounting
+     * @name DeleteAccountingEntity
+     * @request DELETE:/accounting/accounting-entity
+     */
+    deleteAccountingEntity: (params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/accounting/accounting-entity`,
+        method: 'DELETE',
+        ...params,
+      }),
+
+    /**
      * @description Get jurisdictions
      *
      * @tags Accounting
@@ -3316,6 +3366,20 @@ export class Api<
         path: `/accounting/jurisdictions`,
         method: 'GET',
         format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Archives the selected entity, retaining all accounting records.
+     *
+     * @tags Accounting
+     * @name ArchiveAccountingEntity
+     * @request POST:/accounting/accounting-entity/archive
+     */
+    archiveAccountingEntity: (params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/accounting/accounting-entity/archive`,
+        method: 'POST',
         ...params,
       }),
 

@@ -1,6 +1,8 @@
+import { Button } from '@/shared/components/button';
 import type { TEntityId } from '@/shared/lib/api/Api';
 import { ProfileDetails } from '@/user/pages/profile/parts/profile-details';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Pencil } from 'lucide-react';
 
 const meta = {
   title: 'User/Profile/Details',
@@ -14,6 +16,12 @@ const meta = {
     ),
   ],
   args: {
+    editAction: (
+      <Button variant="outline" size="sm">
+        <Pencil className="size-3.5" data-icon="inline-start" aria-hidden />
+        Edit
+      </Button>
+    ),
     profile: {
       id: 'profile-id' as TEntityId,
       firstName: 'Amara',

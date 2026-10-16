@@ -1,12 +1,15 @@
 import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entities';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
 import { AppBody, AppHeader } from '@/shared/components/app';
+import { Button } from '@/shared/components/button';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import type { IUserPreferencesUpdateDto } from '@/shared/lib/api/Api';
 import { storageService } from '@/shared/lib/services/storage.service';
+import { ProfileUpdateDialog } from '@/user/dialogs/profile-update';
 import { usePreferences } from '@/user/hooks/use-preferences';
 import { useProfile } from '@/user/hooks/use-profile';
 import { useUpdatePreferences } from '@/user/hooks/use-update-preferences';
+import { Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ProfileDetails } from './parts/profile-details';
 import { ProfileEntities } from './parts/profile-entities';
@@ -54,6 +57,7 @@ export function ProfilePage() {
   const details_title = t('profile_details_title');
   const preferences_title = t('profile_preferences_title');
   const entities_title = t('profile_entities_title');
+  const edit_label = t('profile_edit_label');
 
   return (
     <>
@@ -70,7 +74,24 @@ export function ProfilePage() {
           </div>
           <div className="grid items-stretch gap-6 lg:grid-cols-2">
             {profile ? (
-              <ProfileDetails profile={profile} />
+              <ProfileDetails
+                profile={profile}
+                editAction={
+                  <ProfileUpdateDialog
+                    profile={profile}
+                    trigger={
+                      <Button variant="outline" size="sm">
+                        <Pencil
+                          className="size-3.5"
+                          data-icon="inline-start"
+                          aria-hidden
+                        />
+                        {edit_label}
+                      </Button>
+                    }
+                  />
+                }
+              />
             ) : (
               <ProfileSectionState
                 isLoading={profileQuery.isPending}
