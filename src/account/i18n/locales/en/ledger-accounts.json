@@ -329,6 +329,7 @@
   "category_creation_preview_category": "New category",
   "category_creation_success": "Category created successfully",
   "category_details_view_label": "View category",
+  "category_details_actions_aria_label": "Open category actions",
   "category_details_scope_text": "All time · {{currency}}",
   "category_details_balance_label": "Total balance",
   "category_details_count_description": "Includes drafts and voided transactions",

@@ -1,3 +1,4 @@
+import { CategoryActions } from '@/account/pages/category-details/parts/category-actions';
 import { CategorySummary } from '@/account/pages/category-details/parts/category-summary';
 import type { ILedgerAccountDto, TEntityId } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -32,7 +33,11 @@ const meta = {
   title: 'Account/Category details/Summary',
   component: CategorySummary,
   tags: ['autodocs'],
-  args: { account: category, transactionCount: 48 },
+  args: {
+    account: category,
+    transactionCount: 48,
+    actions: <CategoryActions onEdit={() => undefined} />,
+  },
 } satisfies Meta<typeof CategorySummary>;
 
 export default meta;
@@ -46,5 +51,8 @@ export const Revenue: TStory = {
 export const Loading: TStory = { args: { transactionCount: undefined } };
 export const Unavailable: TStory = { args: { transactionCount: null } };
 export const Archived: TStory = {
-  args: { account: { ...category, status: 'archived' } },
+  args: {
+    account: { ...category, status: 'archived' },
+    actions: <CategoryActions onEdit={() => undefined} editDisabled />,
+  },
 };

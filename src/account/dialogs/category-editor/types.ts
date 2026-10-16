@@ -1,6 +1,9 @@
 import type { IRevenueExpenseAccountDto } from '@/shared/lib/api/Api';
 
 export interface CategoryEditorDialogProps {
-  account: IRevenueExpenseAccountDto;
+  account: Pick<
+    IRevenueExpenseAccountDto,
+    'accountId' | 'accountName' | 'type'
+  >;
   onClose: () => void;
 }

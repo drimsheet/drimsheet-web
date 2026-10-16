@@ -5,6 +5,7 @@ import type {
   IPaginationResponseMeta,
   UJournalEntryStatus,
 } from '@/shared/lib/api/Api';
+import type { ReactNode } from 'react';
 
 export interface ICategoryMonth {
   month: string;
@@ -23,6 +24,16 @@ export interface ICategoryTransaction {
 export interface CategorySummaryProps {
   account: ILedgerAccountDto;
   transactionCount?: number | null;
+  actions?: ReactNode;
+}
+
+export interface CategoryActionsProps {
+  onEdit: () => void;
+  editDisabled?: boolean;
+}
+
+export interface CategoryActionsContainerProps {
+  account: ILedgerAccountDto;
 }
 
 export interface CategoryTrendProps {

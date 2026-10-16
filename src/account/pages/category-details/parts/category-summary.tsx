@@ -8,6 +8,7 @@ import type { CategorySummaryProps } from '../types';
 export function CategorySummary({
   account,
   transactionCount,
+  actions,
 }: Readonly<CategorySummaryProps>) {
   const { t, i18n } = useTranslation('ledger-accounts');
 
@@ -18,10 +19,6 @@ export function CategorySummary({
   );
 
   const status_label = t(`categories_status_${account.status}`);
-
-  const scope_text = t('category_details_scope_text', {
-    currency: account.functionalBalance.currencyCode,
-  });
 
   const balance_label = t('category_details_balance_label');
   const transactions_label = t('categories_transactions_label');
@@ -45,7 +42,7 @@ export function CategorySummary({
             {account.name}
           </h1>
         </div>
-        <p className="text-sm text-muted-foreground">{scope_text}</p>
+        {actions}
       </header>
       <dl className="flex flex-wrap items-start gap-x-12 gap-y-6">
         <div className="flex min-w-0 flex-col gap-2">

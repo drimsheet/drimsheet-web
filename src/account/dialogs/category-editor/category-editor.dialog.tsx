@@ -41,7 +41,10 @@ export function CategoryEditorDialog({
   const handleSubmit = async (values: ICategoryFormValues) => {
     try {
       await mutation.mutateAsync(values);
-      await queryClient.invalidateQueries({ queryKey: ['categoryService'] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['categoryService'] }),
+        queryClient.invalidateQueries({ queryKey: ['ledgerAccountService'] }),
+      ]);
       onClose();
     } catch {
       // Keep input in place; the form displays a translated retryable error.

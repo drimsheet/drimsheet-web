@@ -365,3 +365,115 @@ test('keeps transactions usable when participation fails and retries the share c
   await share.getByRole('button', { name: 'Try again' }).click();
   await expect(share.getByText('No counterparty activity yet.')).toBeVisible();
 });
+
+for (const type of ['revenue', 'expense'] as const) {
+  test(`edits a ${type} category and refreshes its details`, async ({
+    page,
+  }) => {
+    await setup(page, type);
+    let current = { ...category, type };
+    const updates: unknown[] = [];
+
+    await page.route(`**/api/v1/ledger/${accountId}`, (route) =>
+      route.fulfill({ json: current })
+    );
+    await page.route(`**/api/v1/ledger/${type}/${accountId}`, (route) => {
+      expect(route.request().method()).toBe('PATCH');
+      updates.push(route.request().postDataJSON());
+      current = { ...current, name: 'Updated category' };
+
+      return route.fulfill({ json: current });
+    });
+    await page.goto(`/categories/${accountId}`);
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Edit category' });
+    await expect(dialog.getByLabel('Category name')).toHaveValue(category.name);
+    await dialog.getByLabel('Category name').fill('Discarded name');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).not.toBeVisible();
+    expect(updates).toEqual([]);
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    await expect(dialog.getByLabel('Category name')).toHaveValue(category.name);
+    await dialog.getByLabel('Category name').fill('  Updated category  ');
+    await dialog.getByRole('button', { name: 'Save changes' }).click();
+    await expect(dialog).not.toBeVisible();
+    expect(updates).toEqual([{ name: 'Updated category' }]);
+    await expect(
+      page.getByRole('heading', { name: 'Updated category' })
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation')
+        .getByText('Updated category', { exact: true })
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    await expect(dialog.getByLabel('Category name')).toHaveValue(
+      'Updated category'
+    );
+  });
+}
+
+test('retains category edits after a failed save and allows retry', async ({
+  page,
+}) => {
+  await setup(page);
+  let current = category;
+  let attempts = 0;
+  let release = () => {};
+
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  await page.route(`**/api/v1/ledger/${accountId}`, (route) =>
+    route.fulfill({ json: current })
+  );
+  await page.route(`**/api/v1/ledger/expense/${accountId}`, async (route) => {
+    attempts += 1;
+    expect(route.request().postDataJSON()).toEqual({
+      name: 'Updated category',
+    });
+    if (attempts === 1) {
+      await gate;
+      await route.fulfill({ status: 503, json: { errorKey: 'unavailable' } });
+
+      return;
+    }
+
+    current = { ...category, name: 'Updated category' };
+    await route.fulfill({ json: current });
+  });
+  await page.goto(`/categories/${accountId}`);
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Edit category' });
+  await dialog.getByLabel('Category name').fill('Updated category');
+  await dialog.getByRole('button', { name: 'Save changes' }).click();
+  await expect(dialog.getByLabel('Category name')).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeVisible();
+  release();
+  await expect(dialog.getByRole('alert')).toContainText(
+    'We couldn’t save this category'
+  );
+  await expect(dialog.getByLabel('Category name')).toHaveValue(
+    'Updated category'
+  );
+  await dialog.getByRole('button', { name: 'Save changes' }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Updated category' })
+  ).toBeVisible();
+  expect(attempts).toBe(2);
+});
+
+test('disables editing an archived category', async ({ page }) => {
+  await setup(page);
+  await page.route(`**/api/v1/ledger/${accountId}`, (route) =>
+    route.fulfill({ json: { ...category, status: 'archived' } })
+  );
+  await page.goto(`/categories/${accountId}`);
+  await expect(
+    page.getByRole('button', { name: 'Edit', exact: true })
+  ).toBeDisabled();
+});
