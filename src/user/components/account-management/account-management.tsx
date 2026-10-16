@@ -20,6 +20,7 @@ export function AccountManagement({
   activeEntity,
   email,
   onAddAccount,
+  onProfileClick,
   onLogoutClick,
   onSelectEntity,
   themeAction,
@@ -84,7 +85,8 @@ export function AccountManagement({
           type="button"
           variant="ghost"
           className="w-full justify-start rounded-none px-5"
-          disabled
+          disabled={!onProfileClick}
+          onClick={onProfileClick}
         >
           <SettingsIcon />
           {profile_settings_action}

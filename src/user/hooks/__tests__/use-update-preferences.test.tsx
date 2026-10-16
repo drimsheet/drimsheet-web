@@ -31,7 +31,7 @@ const preferences = {
 } satisfies IUserPreferences;
 
 describe('useUpdatePreferences', () => {
-  it('maps the theme, updates preferences, and replaces the cached resource', async () => {
+  it('updates preferences using the DTO and replaces the cached resource', async () => {
     const queryClient = new QueryClient({
       defaultOptions: { mutations: { retry: false } },
     });
@@ -45,7 +45,7 @@ describe('useUpdatePreferences', () => {
     const { result } = renderHook(() => useUpdatePreferences(), { wrapper });
 
     await act(async () => {
-      await result.current.mutateAsync(EAppThemePreference.Light);
+      await result.current.mutateAsync({ theme: EAppThemePreference.Light });
     });
 
     expect(userService.updatePreferences).toHaveBeenCalledWith({

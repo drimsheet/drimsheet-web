@@ -60,7 +60,11 @@ export function AppSidebar({
       icon: <UsersRound aria-hidden />,
     },
     { title: t('navigation:legal_entities'), icon: <Building2 aria-hidden /> },
-    { title: t('navigation:profile'), icon: <UserRound aria-hidden /> },
+    {
+      title: t('navigation:profile'),
+      url: '/profile',
+      icon: <UserRound aria-hidden />,
+    },
   ];
 
   const [accountingNavigation, configurationNavigation] = [

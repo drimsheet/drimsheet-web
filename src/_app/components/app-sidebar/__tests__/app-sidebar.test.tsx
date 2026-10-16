@@ -111,7 +111,7 @@ describe('AppSidebar', () => {
       </MemoryRouter>
     );
 
-    for (const title of ['Debt', 'Tax', 'Legal Entities', 'Profile']) {
+    for (const title of ['Debt', 'Tax', 'Legal Entities']) {
       expect(
         screen.getByRole('button', { name: `${title} — Not available` })
       ).toBeDisabled();
