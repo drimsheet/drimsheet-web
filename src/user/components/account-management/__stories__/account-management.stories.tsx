@@ -9,6 +9,7 @@ const ownerId = '00000000-0000-4000-8000-000000000100' as TEntityId;
 const activeEntity = {
   id: '00000000-0000-4000-8000-000000000001' as TEntityId,
   name: 'Drimsheet',
+  status: 'active',
   type: 'private_company',
   ownerId,
   createdBy: ownerId,

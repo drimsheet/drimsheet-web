@@ -20,6 +20,7 @@ export const authenticatedUser = {
 export const authenticatedAccountingEntity = {
   id: '00000000-0000-4000-8000-000000000002' as TEntityId,
   name: 'Integration Entity',
+  status: 'active',
   type: 'individual',
   ownerId: authenticatedUser.id,
   createdBy: authenticatedUser.id,
