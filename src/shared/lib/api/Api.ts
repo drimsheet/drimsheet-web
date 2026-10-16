@@ -10,54 +10,6 @@
  * ---------------------------------------------------------------
  */
 
-export const EPeriodUnit = {
-  Day: 'day',
-  Week: 'week',
-  Month: 'month',
-  Quarter: 'quarter',
-  Year: 'year',
-} as const;
-export type UPeriodUnit = (typeof EPeriodUnit)[keyof typeof EPeriodUnit];
-
-export const EAccountingStandardCode = {
-  AASB: 'AASB',
-  ASPE: 'ASPE',
-  CAS: 'CAS',
-  CGNC: 'CGNC',
-  EAS: 'EAS',
-  HGB: 'HGB',
-  HKFRS: 'HKFRS',
-  IFRS: 'IFRS',
-  IND_AS: 'IND_AS',
-  ISRAELI_GAAP: 'ISRAELI_GAAP',
-  J_GAAP: 'J_GAAP',
-  K_IFRS: 'K_IFRS',
-  MFRS: 'MFRS',
-  NIF: 'NIF',
-  NZ_IFRS: 'NZ_IFRS',
-  OIC: 'OIC',
-  PCG: 'PCG',
-  PFRS: 'PFRS',
-  PGC: 'PGC',
-  PSAK: 'PSAK',
-  RAS: 'RAS',
-  RJ: 'RJ',
-  SCF: 'SCF',
-  SFRS: 'SFRS',
-  SWISS_GAAP_FER: 'SWISS_GAAP_FER',
-  SYSCOHADA: 'SYSCOHADA',
-  TFRS: 'TFRS',
-  THAI_FRS: 'THAI_FRS',
-  TIFRS: 'TIFRS',
-  UK_GAAP: 'UK_GAAP',
-  US_GAAP: 'US_GAAP',
-  VAS: 'VAS',
-  LOCAL_GAAP: 'LOCAL_GAAP',
-  CASH_BASIS: 'CASH_BASIS',
-} as const;
-export type UAccountingStandardCode =
-  (typeof EAccountingStandardCode)[keyof typeof EAccountingStandardCode];
-
 export const EJurisdictionCode = {
   AD: 'AD',
   AE: 'AE',
@@ -207,6 +159,62 @@ export const EAccountingEntityStatus = {
 } as const;
 export type UAccountingEntityStatus =
   (typeof EAccountingEntityStatus)[keyof typeof EAccountingEntityStatus];
+
+export const EPeriodUnit = {
+  Day: 'day',
+  Week: 'week',
+  Month: 'month',
+  Quarter: 'quarter',
+  Year: 'year',
+} as const;
+export type UPeriodUnit = (typeof EPeriodUnit)[keyof typeof EPeriodUnit];
+
+export const EPeriodStatus = {
+  Pending: 'pending',
+  Open: 'open',
+  Closing: 'closing',
+  Closed: 'closed',
+} as const;
+export type UPeriodStatus = (typeof EPeriodStatus)[keyof typeof EPeriodStatus];
+
+export const EAccountingStandardCode = {
+  AASB: 'AASB',
+  ASPE: 'ASPE',
+  CAS: 'CAS',
+  CGNC: 'CGNC',
+  EAS: 'EAS',
+  HGB: 'HGB',
+  HKFRS: 'HKFRS',
+  IFRS: 'IFRS',
+  IND_AS: 'IND_AS',
+  ISRAELI_GAAP: 'ISRAELI_GAAP',
+  J_GAAP: 'J_GAAP',
+  K_IFRS: 'K_IFRS',
+  MFRS: 'MFRS',
+  NIF: 'NIF',
+  NZ_IFRS: 'NZ_IFRS',
+  OIC: 'OIC',
+  PCG: 'PCG',
+  PFRS: 'PFRS',
+  PGC: 'PGC',
+  PSAK: 'PSAK',
+  RAS: 'RAS',
+  RJ: 'RJ',
+  SCF: 'SCF',
+  SFRS: 'SFRS',
+  SWISS_GAAP_FER: 'SWISS_GAAP_FER',
+  SYSCOHADA: 'SYSCOHADA',
+  TFRS: 'TFRS',
+  THAI_FRS: 'THAI_FRS',
+  TIFRS: 'TIFRS',
+  UK_GAAP: 'UK_GAAP',
+  US_GAAP: 'US_GAAP',
+  VAS: 'VAS',
+  LOCAL_GAAP: 'LOCAL_GAAP',
+  CASH_BASIS: 'CASH_BASIS',
+} as const;
+export type UAccountingStandardCode =
+  (typeof EAccountingStandardCode)[keyof typeof EAccountingStandardCode];
 
 export const ECounterpartySortBy = {
   CreatedAt: 'createdAt',
@@ -1641,6 +1649,62 @@ export interface IResetPasswordReq {
   confirmPassword: string;
 }
 
+export interface IFiscalYearDto {
+  id: string;
+  createdBy: string;
+  name: string;
+  accountingEntityId: string;
+  /** @format date-time */
+  startDate: string;
+  /** @format date-time */
+  endDate: string;
+  status: UPeriodStatus;
+  /** @format date-time */
+  closedAt: string | null;
+  /** @format date-time */
+  updatedAt: string;
+}
+
+export interface IAccountingPeriodDto {
+  id: string;
+  createdBy: string;
+  name: string;
+  accountingEntityId: string;
+  fiscalYearId: string;
+  unit: UPeriodUnit;
+  /** @format double */
+  count: number;
+  /** @format date-time */
+  startDate: string;
+  /** @format date-time */
+  endDate: string;
+  status: UPeriodStatus;
+  /** @format date-time */
+  closedAt: string | null;
+  /** @format date-time */
+  updatedAt: string;
+}
+
+export interface IAccountingContextDto {
+  id: string;
+  createdBy: string;
+  name: string;
+  description: string | null;
+  accountingEntityId: string;
+  accountingStandardCode: UAccountingStandardCode;
+  fiscalYearId: string;
+  /** Stored working-period selection, maintained independently of this read. */
+  currentAccountingPeriodId: string;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+  /** @format date-time */
+  closedAt: string | null;
+  fiscalYear: IFiscalYearDto;
+  accountingPeriods: IAccountingPeriodDto[];
+}
+
 export interface IAccountingEntity {
   createdBy: TEntityId;
   id: TEntityId;
@@ -1669,6 +1733,44 @@ export interface IJurisdictionDto {
   /** @format double */
   maxFiscalMonths: number;
   accountingStandards: IAccountingStandardDto;
+}
+
+export interface IReportingPeriodDto {
+  id: string;
+  createdBy: string;
+  name: string;
+  accountingEntityId: string;
+  fiscalYearId: string;
+  unit: UPeriodUnit;
+  /** @format double */
+  count: number;
+  /** @format date-time */
+  startDate: string;
+  /** @format date-time */
+  endDate: string;
+  /** @format date-time */
+  updatedAt: string;
+}
+
+export interface IReportingContextDto {
+  id: string;
+  createdBy: string;
+  name: string;
+  description: string | null;
+  accountingEntityId: string;
+  accountingStandardCode: UAccountingStandardCode;
+  accountingContextId: string;
+  reportingCurrencyCode: UCurrencyCode;
+  /** Stored working-period selection, maintained independently of this read. */
+  currentReportingPeriodId: string;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+  /** @format date-time */
+  closedAt: string | null;
+  fiscalYear: IFiscalYearDto;
+  reportingPeriods: IReportingPeriodDto[];
 }
 
 /** Fiscal year creation DTO */
@@ -3271,6 +3373,21 @@ export class Api<
   };
   accounting = {
     /**
+     * @description Returns all unclosed contexts for x-accounting-entity-id, with each fiscal year and its periods.
+     *
+     * @tags Accounting
+     * @name GetAccountingContexts
+     * @request GET:/accounting/accounting-contexts
+     */
+    getAccountingContexts: (params: RequestParams = {}) =>
+      this.request<IAccountingContextDto[], IHttpErrorDto>({
+        path: `/accounting/accounting-contexts`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
      * @description Get user accounting entities
      *
      * @tags Accounting
@@ -3364,6 +3481,21 @@ export class Api<
     getJurisdictions: (params: RequestParams = {}) =>
       this.request<IJurisdictionDto[], IHttpErrorDto>({
         path: `/accounting/jurisdictions`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Returns all unclosed reporting contexts for x-accounting-entity-id, with each fiscal year and its reporting periods.
+     *
+     * @tags Accounting
+     * @name GetReportingContexts
+     * @request GET:/accounting/reporting-contexts
+     */
+    getReportingContexts: (params: RequestParams = {}) =>
+      this.request<IReportingContextDto[], IHttpErrorDto>({
+        path: `/accounting/reporting-contexts`,
         method: 'GET',
         format: 'json',
         ...params,

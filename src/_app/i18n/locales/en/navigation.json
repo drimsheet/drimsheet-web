@@ -1,8 +1,8 @@
 {
   "configuration": "Configuration",
   "debt": "Debt",
-  "legal_entities": "Legal Entities",
   "profile": "Profile",
   "unavailable": "Not available",
-  "toggle_sidebar": "Toggle sidebar"
+  "toggle_sidebar": "Toggle sidebar",
+  "legal_entity": "Legal Entity"
 }

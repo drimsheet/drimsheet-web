@@ -36,7 +36,7 @@ export const Default: Story = {
         icon: <UsersRound />,
         isActive: true,
       },
-      { title: 'Legal Entities', icon: <Building2 /> },
+      { title: 'Legal Entity', url: '/legal-entity', icon: <Building2 /> },
       { title: 'Profile', icon: <UserRound /> },
     ],
   },

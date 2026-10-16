@@ -18,6 +18,18 @@ function setActiveAccountingEntity(accountingEntity: IAccountingEntity) {
 }
 
 export const accountingService = {
+  async getAccountingContexts() {
+    const { data } = await drimsheetApi.accounting.getAccountingContexts();
+
+    return data;
+  },
+
+  async getReportingContexts() {
+    const { data } = await drimsheetApi.accounting.getReportingContexts();
+
+    return data;
+  },
+
   getAccountingEntityId() {
     return activeAccountingEntity?.id ?? reloadAccountingEntityId;
   },
