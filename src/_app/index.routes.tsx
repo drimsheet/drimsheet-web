@@ -8,6 +8,7 @@ import { useCounterpartiesRoutes } from '@/counterparty/routes/counterparties';
 import { useJournalEntriesRoutes } from '@/journal-entries/routes/journal-entries';
 import { useReportingRoutes } from '@/reporting/routes/reporting';
 import { featureFlagKeys } from '@/shared/hooks/use-feature-flag';
+import { useUserRoutes } from '@/user/routes/user';
 import { wrapUseRoutesV7 } from '@sentry/react';
 import { useRoutes } from 'react-router-dom';
 
@@ -19,6 +20,7 @@ export function AppRoutes() {
   const ledgerAccountRoutes = useLedgerAccountRoutes('/accounts');
   const counterpartiesRoutes = useCounterpartiesRoutes('/counterparties');
   const journalEntriesRoutes = useJournalEntriesRoutes('/transactions');
+  const userRoutes = useUserRoutes('/profile');
   const categoryRoutes = useCategoryRoutes('/categories');
 
   const routes = useSentryRoutes([
@@ -36,6 +38,7 @@ export function AppRoutes() {
         counterpartiesRoutes,
         journalEntriesRoutes,
         categoryRoutes,
+        userRoutes,
       ],
     },
     authRoutes,

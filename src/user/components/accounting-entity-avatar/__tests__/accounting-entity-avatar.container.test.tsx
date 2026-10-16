@@ -14,6 +14,7 @@ import {
 } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/accounting/dialogs/accounting-entity-creation', () => ({
@@ -103,7 +104,9 @@ function renderAvatarContainer() {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <AccountingEntityAvatarContainer onLogoutClick={() => {}} />
+      <MemoryRouter>
+        <AccountingEntityAvatarContainer onLogoutClick={() => {}} />
+      </MemoryRouter>
     </QueryClientProvider>
   );
 }

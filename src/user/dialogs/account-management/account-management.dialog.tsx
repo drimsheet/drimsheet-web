@@ -9,26 +9,21 @@ import {
   PopoverTrigger,
 } from '@/shared/components/popover';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
-import type {
-  IAccountingEntity,
-  UAppThemePreference,
-} from '@/shared/lib/api/Api';
+import type { UAppThemePreference } from '@/shared/lib/api/Api';
 import { AccountManagement } from '@/user/components/account-management';
 import { useProfile } from '@/user/hooks/use-profile';
 import { useUpdatePreferences } from '@/user/hooks/use-update-preferences';
-import { type ReactNode, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-interface AccountManagementDialogProps {
-  activeEntity: IAccountingEntity;
-  children: ReactNode;
-  onLogoutClick: () => void;
-}
+import type { AccountManagementDialogProps } from './types';
 
 export function AccountManagementDialog({
   activeEntity,
   children,
   onLogoutClick,
 }: Readonly<AccountManagementDialogProps>) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [showAccountCreation, setShowAccountCreation] = useState(false);
   const logoutRequestedRef = useRef(false);
@@ -48,6 +43,11 @@ export function AccountManagementDialog({
     } catch (error) {
       handleApiError(error, { showToast: true });
     }
+  };
+
+  const handleProfileClick = () => {
+    setOpen(false);
+    navigate('/profile');
   };
 
   const handleAddAccount = () => {
@@ -74,9 +74,12 @@ export function AccountManagementDialog({
   };
 
   const handleThemeChange = (theme: UAppThemePreference) => {
-    updatePreferences(theme, {
-      onError: (error) => handleApiError(error, { showToast: true }),
-    });
+    updatePreferences(
+      { theme },
+      {
+        onError: (error) => handleApiError(error, { showToast: true }),
+      }
+    );
   };
 
   return (
@@ -95,6 +98,7 @@ export function AccountManagementDialog({
             activeEntity={activeEntity}
             email={profile?.email}
             onAddAccount={handleAddAccount}
+            onProfileClick={handleProfileClick}
             onLogoutClick={handleLogoutClick}
             onSelectEntity={handleSelectEntity}
             themeAction={
