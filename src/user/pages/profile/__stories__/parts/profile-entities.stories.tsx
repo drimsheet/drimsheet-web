@@ -5,6 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 const entity: IAccountingEntity = {
   id: 'entity-id' as TEntityId,
   name: 'Northstar Studio',
+  status: 'active',
   type: 'private_company',
   ownerId: 'user-id' as TEntityId,
   createdBy: 'user-id' as TEntityId,

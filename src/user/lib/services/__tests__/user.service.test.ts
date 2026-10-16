@@ -13,6 +13,7 @@ vi.mock('@/shared/lib/api', () => ({
   drimsheetApi: {
     users: {
       getAuthUserProfile: vi.fn(),
+      updateAuthUserProfile: vi.fn(),
       getUserPreferences: vi.fn(),
       updateUserPreferences: vi.fn(),
     },
@@ -35,6 +36,28 @@ describe('userService preferences', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+  });
+
+  it('delegates profile updates and returns the server profile', async () => {
+    const payload = { firstName: 'Ada', lastName: 'Okafor' };
+
+    const profile = {
+      id: preferences.userId,
+      email: 'ada@example.com',
+      emailVerified: true,
+      ...payload,
+      createdAt: preferences.createdAt,
+      updatedAt: preferences.updatedAt,
+    };
+
+    vi.mocked(drimsheetApi.users.updateAuthUserProfile).mockResolvedValue({
+      data: profile,
+    } as never);
+
+    await expect(userService.updateProfile(payload)).resolves.toEqual(profile);
+    expect(drimsheetApi.users.updateAuthUserProfile).toHaveBeenCalledWith(
+      payload
+    );
   });
 
   it('returns and stores fetched preferences', async () => {

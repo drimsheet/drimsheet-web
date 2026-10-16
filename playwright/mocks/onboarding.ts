@@ -14,6 +14,7 @@ export const entity = {
   ownerId: userId,
   createdBy: userId,
   name: 'Drimsheet',
+  status: 'active',
   type: 'private_company',
   functionalCurrencyCode: 'NGN',
   jurisdictionCode: 'NG',

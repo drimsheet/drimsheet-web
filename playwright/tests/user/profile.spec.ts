@@ -1,6 +1,7 @@
 import type {
   IUserPreferences,
   IUserPreferencesUpdateDto,
+  IUserProfileUpdateDto,
 } from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@integration/mocks/authenticated-app';
 
 const preferencesEndpoint = '**/api/v1/users/preferences';
+const profileEndpoint = '**/api/v1/users/profile';
 
 const preferences: IUserPreferences = {
   userId: authenticatedUser.id,
@@ -215,4 +217,153 @@ test('retries an unavailable preferences section without hiding profile details'
   await expect(
     page.getByRole('radio', { name: 'Light', exact: true })
   ).toBeChecked();
+});
+
+test('updates profile names and keeps the saved result on reopening and reload', async ({
+  page,
+}, testInfo) => {
+  let savedProfile = structuredClone(authenticatedUser);
+  const updates: IUserProfileUpdateDto[] = [];
+  let finishSave: () => void = () => {};
+
+  const saveGate = new Promise<void>((resolve) => {
+    finishSave = resolve;
+  });
+
+  await page.route(profileEndpoint, async (route) => {
+    if (route.request().method() === 'PATCH') {
+      const update = route.request().postDataJSON() as IUserProfileUpdateDto;
+      updates.push(update);
+      await saveGate;
+      savedProfile = {
+        ...savedProfile,
+        ...update,
+        updatedAt: '2026-10-16T10:00:00Z',
+      };
+    }
+
+    await route.fulfill({ json: savedProfile });
+  });
+  await page.goto('/profile');
+  const edit = page.getByRole('button', { name: 'Edit', exact: true });
+  await edit.click();
+  const dialog = page.getByRole('dialog', { name: 'Edit profile' });
+  await expect(dialog.getByLabel('First name')).toBeFocused();
+  await expect(dialog.getByLabel('First name')).toHaveValue('Integration');
+  await expect(
+    dialog.getByRole('button', { name: 'Save changes' })
+  ).toBeDisabled();
+  await dialog.getByLabel('First name').fill('  Ada  ');
+  await dialog.getByLabel('Last name').fill('Okafor');
+  await page.screenshot({
+    path: testInfo.outputPath('profile-edit-desktop.png'),
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(
+    dialog.getByRole('button', { name: 'Save changes' })
+  ).toBeInViewport();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth
+    )
+  ).toBe(true);
+  await page.screenshot({
+    path: testInfo.outputPath('profile-edit-mobile.png'),
+    fullPage: true,
+  });
+  await dialog.getByRole('button', { name: 'Save changes' }).click();
+  await expect(dialog.getByRole('button', { name: 'Saving…' })).toBeDisabled();
+  await expect(dialog.getByLabel('First name')).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeVisible();
+  finishSave();
+  await expect(dialog).not.toBeVisible();
+  await expect(edit).toBeFocused();
+  const details = page.getByRole('region', { name: 'Details', exact: true });
+  await expect(details).toContainText('Ada Okafor');
+  await expect(details).toContainText('AO');
+  await expect(details).toContainText(authenticatedUser.email);
+  expect(updates).toEqual([{ firstName: 'Ada', lastName: 'Okafor' }]);
+  await edit.click();
+  await expect(dialog.getByLabel('First name')).toHaveValue('Ada');
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await page.reload();
+  await expect(details).toContainText('Ada Okafor');
+});
+
+test('retains profile edits after a failed save and retries successfully', async ({
+  page,
+}) => {
+  let shouldFail = true;
+  await page.route(profileEndpoint, async (route) => {
+    if (route.request().method() !== 'PATCH') {
+      await route.fulfill({ json: authenticatedUser });
+
+      return;
+    }
+
+    if (shouldFail) {
+      await route.fulfill({
+        status: 400,
+        json: { errorKey: 'user_error_first_name_invalid' },
+      });
+
+      return;
+    }
+
+    await route.fulfill({
+      json: { ...authenticatedUser, ...route.request().postDataJSON() },
+    });
+  });
+  await page.goto('/profile');
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Edit profile' });
+  await dialog.getByLabel('First name').fill('Ada');
+  await dialog.getByRole('button', { name: 'Save changes' }).click();
+  await expect(dialog.getByRole('alert')).toContainText(
+    'Your profile could not be saved.'
+  );
+  await expect(dialog.getByLabel('First name')).toHaveValue('Ada');
+  await expect(
+    page.getByText('Integration User', { exact: true })
+  ).toBeVisible();
+  shouldFail = false;
+  await dialog.getByRole('button', { name: 'Save changes' }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(
+    page.getByRole('region', { name: 'Details', exact: true })
+  ).toContainText('Ada User');
+});
+
+test('discards cancelled edits and resets the form when reopened', async ({
+  page,
+}) => {
+  const updates: unknown[] = [];
+  await page.route(profileEndpoint, async (route) => {
+    if (route.request().method() === 'PATCH')
+      updates.push(route.request().postDataJSON());
+
+    await route.fulfill({ json: authenticatedUser });
+  });
+  await page.goto('/profile');
+  const edit = page.getByRole('button', { name: 'Edit', exact: true });
+  await edit.click();
+  const dialog = page.getByRole('dialog', { name: 'Edit profile' });
+  await dialog.getByLabel('First name').fill('Unsaved');
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(edit).toBeFocused();
+  await edit.click();
+  await expect(dialog.getByLabel('First name')).toHaveValue('Integration');
+  await dialog.getByLabel('First name').fill('');
+  await dialog.getByRole('button', { name: 'Save changes' }).click();
+  await expect(dialog.getByText('Enter your first name.')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
+  await edit.click();
+  await expect(dialog.getByLabel('First name')).toHaveValue('Integration');
+  await expect(dialog.getByText('Enter your first name.')).not.toBeVisible();
+  expect(updates).toEqual([]);
 });
