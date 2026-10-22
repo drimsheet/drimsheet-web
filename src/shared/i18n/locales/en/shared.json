@@ -82,5 +82,7 @@
   "feature_not_available_description": "Your account does not currently have access to this feature.",
   "request_access_action": "Request access",
   "country_select_placeholder": "Select a country",
-  "countries_empty_text": "No countries found."
+  "countries_empty_text": "No countries found.",
+  "currency_select_placeholder": "Select a currency",
+  "currencies_empty_text": "No currencies found."
 }

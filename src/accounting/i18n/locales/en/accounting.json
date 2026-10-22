@@ -41,5 +41,19 @@
   "legal_entity_error_text": "We couldn’t load {{section}}. Please try again.",
   "legal_entity_retry_label": "Try again",
   "legal_entity_empty_title": "No open contexts",
-  "legal_entity_empty_description": "Open contexts for this entity will appear here when available."
+  "legal_entity_empty_description": "Open contexts for this entity will appear here when available.",
+  "entity_form_loading_status": "Loading legal entity form",
+  "entity_type_label": "Who is this for?",
+  "entity_type_placeholder": "Select a type",
+  "entity_type_individual_label": "Individual",
+  "entity_type_sole_trader_label": "Sole proprietorship",
+  "entity_type_company_label": "Company",
+  "entity_name_label": "Name",
+  "entity_name_placeholder": "Person or business name",
+  "entity_country_label": "Country of residence",
+  "entity_currency_label": "Main currency for your records",
+  "entity_type_required_error": "Select who these records are for.",
+  "entity_name_required_error": "Enter a person or business name.",
+  "entity_country_required_error": "Select a country of residence.",
+  "entity_currency_required_error": "Select the main currency for your records."
 }

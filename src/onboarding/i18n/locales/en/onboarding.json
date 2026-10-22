@@ -1,10 +1,16 @@
 {
-  "hello_world_title": "Hello world",
   "steps_label": "Onboarding steps",
   "step_status": "Step {{step}} of {{total}}",
   "entity_step_label": "Who it’s for",
   "financial_year_step_label": "Financial year",
   "reports_step_label": "Reports",
   "income_categories_step_label": "Income categories",
-  "expense_categories_step_label": "Expense categories"
+  "expense_categories_step_label": "Expense categories",
+  "entity_step_title": "Create a Legal Entity",
+  "entity_step_description": "Add the person or business details.",
+  "entity_about_title": "What is a Legal Entity",
+  "entity_about_description": "An accounting entity is the person or business whose records you keep.",
+  "entity_continue_label": "Continue to financial year",
+  "entity_options_error_text": "We couldn’t load countries and currencies. Please try again.",
+  "entity_options_retry_label": "Try again"
 }
