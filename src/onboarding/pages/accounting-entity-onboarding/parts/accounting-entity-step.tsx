@@ -20,9 +20,11 @@ export function AccountingEntityStep({
   isLoading = false,
   hasError = false,
   onRetry,
+  onSubmit,
 }: Readonly<AccountingEntityStepProps>) {
   const { t } = useTranslation('onboarding');
   const titleId = useId();
+  const formId = useId();
 
   const title = t('entity_step_title');
   const description = t('entity_step_description');
@@ -85,6 +87,8 @@ export function AccountingEntityStep({
         )}
         {!isLoading && (
           <AccountingEntityForm
+            id={formId}
+            onSubmit={onSubmit}
             currencies={currencies}
             jurisdictions={jurisdictions}
             disabled={hasError}
@@ -92,7 +96,7 @@ export function AccountingEntityStep({
         )}
       </div>
       <footer className="mt-auto flex justify-end">
-        <Button type="button">
+        <Button type="submit" form={formId} disabled={isLoading || hasError}>
           {continue_label}
           <ArrowRight data-icon="inline-end" />
         </Button>

@@ -2,7 +2,11 @@ import { Sidebar, SidebarContent } from '@/shared/components/sidebar';
 import { cn } from '@/shared/lib/utils/cn';
 import { useTranslation } from 'react-i18next';
 
-export function AccountingEntityOnboardingSidebar() {
+import type { AccountingEntityOnboardingSidebarProps } from '../types';
+
+export function AccountingEntityOnboardingSidebar({
+  currentStep = 1,
+}: Readonly<AccountingEntityOnboardingSidebarProps>) {
   const { t } = useTranslation('onboarding');
 
   const steps = [
@@ -26,10 +30,10 @@ export function AccountingEntityOnboardingSidebar() {
             {steps.map((label, index) => (
               <li
                 key={label}
-                aria-current={index === 0 ? 'step' : undefined}
+                aria-current={index + 1 === currentStep ? 'step' : undefined}
                 className={cn(
                   'flex items-start gap-3 rounded-md border border-transparent px-3 py-3 text-sm',
-                  index === 0
+                  index + 1 === currentStep
                     ? 'border-border bg-accent font-semibold text-accent-foreground'
                     : 'text-muted-foreground'
                 )}
@@ -38,7 +42,7 @@ export function AccountingEntityOnboardingSidebar() {
                   aria-hidden
                   className={cn(
                     'mt-1.5 size-2 shrink-0 rounded-full',
-                    index === 0
+                    index + 1 === currentStep
                       ? 'animate-pulse-scale bg-primary motion-reduce:animate-none'
                       : 'bg-muted-foreground/40'
                   )}

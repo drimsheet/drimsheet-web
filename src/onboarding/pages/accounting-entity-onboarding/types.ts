@@ -2,9 +2,19 @@ import type { AccountingEntityFormProps } from '@/accounting/components/accounti
 
 export interface AccountingEntityStepProps extends Pick<
   AccountingEntityFormProps,
-  'currencies' | 'jurisdictions'
+  'currencies' | 'jurisdictions' | 'onSubmit'
 > {
   isLoading?: boolean;
   hasError?: boolean;
   onRetry: () => void;
+}
+
+export interface FinancialYearStepProps {
+  currentDate: string;
+  maxFiscalMonths?: number;
+  onBack: () => void;
+}
+
+export interface AccountingEntityOnboardingSidebarProps {
+  currentStep?: number;
 }

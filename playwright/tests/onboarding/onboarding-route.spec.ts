@@ -204,7 +204,7 @@ for (const viewport of [
   });
 }
 
-test('keeps entered details when help is collapsed and Continue has no action', async ({
+test('keeps entered details when help is collapsed and blocks incomplete submission', async ({
   page,
 }) => {
   await page.route(entityListEndpoint, async (route) => {
@@ -228,7 +228,9 @@ test('keeps entered details when help is collapsed and Continue has no action', 
     .click();
   await expect(page).toHaveURL('/onboarding');
   await expect(name).toHaveValue('Ada Okafor');
-  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(
+    page.getByText('Select who these records are for.')
+  ).toBeVisible();
 });
 
 test('recovers from unavailable country options using retry', async ({
@@ -251,3 +253,115 @@ test('recovers from unavailable country options using retry', async ({
   await expect(page.getByRole('textbox', { name: 'Name' })).toBeEnabled();
   await expect(page.getByRole('alert')).toHaveCount(0);
 });
+
+for (const viewport of [
+  { name: 'desktop', width: 1280, height: 900 },
+  { name: 'mobile', width: 375, height: 812 },
+]) {
+  test(`builds the financial year with bounded period scrolling on ${viewport.name}`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize(viewport);
+    await page.clock.setFixedTime(new Date('2026-10-22T12:00:00Z'));
+    await page.route(entityListEndpoint, async (route) => {
+      await route.fulfill({ json: [] });
+    });
+    await page.goto(verificationUrl);
+    await page.getByRole('combobox', { name: 'Who is this for?' }).click();
+    await page.getByRole('option', { name: 'Individual', exact: true }).click();
+    await page
+      .getByRole('textbox', { name: 'Name', exact: true })
+      .fill('Ada Okafor');
+    await page.getByRole('combobox', { name: 'Country of residence' }).click();
+    await page.getByRole('option', { name: /Nigeria/ }).click();
+    await page
+      .getByRole('combobox', { name: 'Main currency for your records' })
+      .click();
+    await page.getByRole('option', { name: /Nigerian Naira/ }).click();
+    await page
+      .getByRole('button', { name: 'Continue to financial year' })
+      .click();
+    await expect(
+      page.getByRole('heading', { name: 'Set up your financial year' })
+    ).toBeVisible();
+    await expect(page.getByRole('main')).toContainText('Step 2 of 5');
+    if (viewport.name === 'desktop') {
+      await expect(
+        page
+          .getByRole('navigation', { name: 'Onboarding steps' })
+          .getByRole('listitem')
+          .nth(1)
+      ).toHaveAttribute('aria-current', 'step');
+    }
+
+    await page
+      .getByRole('textbox', { name: 'Financial year name' })
+      .fill('FY 2026');
+    await page
+      .getByRole('textbox', { name: 'Quarter 1', exact: true })
+      .fill('Launch');
+    await page.screenshot({
+      path: testInfo.outputPath('financial-year.png'),
+      animations: 'disabled',
+    });
+    await page.getByRole('button', { name: 'Continue to reports' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Set up your financial year' })
+    ).toBeVisible();
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(
+      page.getByRole('textbox', { name: 'Name', exact: true })
+    ).toHaveValue('Ada Okafor');
+    await page
+      .getByRole('button', { name: 'Continue to financial year' })
+      .click();
+    await expect(
+      page.getByRole('textbox', { name: 'Quarter 1', exact: true })
+    ).toHaveValue('Launch');
+    await page
+      .getByRole('combobox', {
+        name: 'How would you like to group your records?',
+      })
+      .click();
+    await page.getByRole('option', { name: 'By day', exact: true }).click();
+
+    const periods = page.getByRole('region', {
+      name: 'Name your accounting periods',
+    });
+
+    await expect(periods.getByRole('textbox')).toHaveCount(365);
+    expect(
+      await periods.evaluate((element) => ({
+        maxHeight: getComputedStyle(element).maxHeight,
+        overflowY: getComputedStyle(element).overflowY,
+        height: element.getBoundingClientRect().height,
+        canScroll: element.scrollHeight > element.clientHeight,
+      }))
+    ).toEqual({
+      maxHeight: '400px',
+      overflowY: 'auto',
+      height: 400,
+      canScroll: true,
+    });
+    await periods.focus();
+    await page.keyboard.press('End');
+    await expect
+      .poll(() => periods.evaluate((element) => element.scrollTop))
+      .toBeGreaterThan(0);
+    await expect(
+      page.getByRole('textbox', { name: 'Day 365', exact: true })
+    ).toBeInViewport();
+    expect(
+      await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth <= innerWidth &&
+          document.documentElement.scrollHeight <= innerHeight
+      )
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath('financial-year-daily.png'),
+      animations: 'disabled',
+    });
+  });
+}
