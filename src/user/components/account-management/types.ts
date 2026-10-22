@@ -6,7 +6,6 @@ export interface AccountManagementProps {
   activeEntity: IAccountingEntity;
   email?: string;
   onProfileClick?: () => void;
-  onAddAccount: () => void;
   onLogoutClick: () => void;
   onSelectEntity: (entityId: string) => void;
   themeAction: ReactNode;

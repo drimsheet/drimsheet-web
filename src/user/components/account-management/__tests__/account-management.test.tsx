@@ -29,7 +29,6 @@ const otherEntity = {
 describe('AccountManagement', () => {
   it('renders account details and delegates account actions', async () => {
     const user = userEvent.setup();
-    const onAddAccount = vi.fn();
     const onSelectEntity = vi.fn();
 
     render(
@@ -37,7 +36,6 @@ describe('AccountManagement', () => {
         accountingEntities={[activeEntity, otherEntity]}
         activeEntity={activeEntity}
         email="member@example.com"
-        onAddAccount={onAddAccount}
         onLogoutClick={() => {}}
         onSelectEntity={onSelectEntity}
         themeAction={<button type="button">Switch theme</button>}
@@ -59,9 +57,6 @@ describe('AccountManagement', () => {
       screen.getByRole('button', { name: 'Switch to Jane Doe Sole Trader' })
     );
     expect(onSelectEntity).toHaveBeenCalledWith(otherEntity.id);
-
-    await user.click(screen.getByRole('button', { name: 'Add a new account' }));
-    expect(onAddAccount).toHaveBeenCalledOnce();
   });
 
   it('renders the empty other-accounts state', () => {
@@ -69,7 +64,6 @@ describe('AccountManagement', () => {
       <AccountManagement
         accountingEntities={[activeEntity]}
         activeEntity={activeEntity}
-        onAddAccount={() => {}}
         onLogoutClick={() => {}}
         onSelectEntity={() => {}}
         themeAction={null}
@@ -88,7 +82,6 @@ describe('AccountManagement', () => {
       <AccountManagement
         accountingEntities={[activeEntity]}
         activeEntity={activeEntity}
-        onAddAccount={() => {}}
         onLogoutClick={onLogoutClick}
         onSelectEntity={() => {}}
         themeAction={null}

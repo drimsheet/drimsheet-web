@@ -1,7 +1,6 @@
 import { drimsheetApi } from '@/shared/lib/api';
 import type {
   IAccountingEntity,
-  IAccountingEntityCreationDto,
   IAccountingEntitySwitchReq,
 } from '@/shared/lib/api/Api';
 import { parseApiError } from '@/shared/lib/api/errors';
@@ -76,14 +75,5 @@ export const accountingService = {
     setActiveAccountingEntity(res.data);
 
     return res.data;
-  },
-
-  async createAccountingEntity(payload: IAccountingEntityCreationDto) {
-    const { data } =
-      await drimsheetApi.accounting.createAccountingEntity(payload);
-
-    setActiveAccountingEntity(data);
-
-    return data;
   },
 };

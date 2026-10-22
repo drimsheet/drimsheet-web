@@ -17,12 +17,6 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/accounting/dialogs/accounting-entity-creation', () => ({
-  AccountingEntityCreationDialog: ({ open }: { open: boolean }) => (
-    <div data-testid="accounting-entity-creation-dialog" data-open={open} />
-  ),
-}));
-
 vi.mock('@/accounting/hooks/use-accounting-entities', () => ({
   useAccountingEntities: vi.fn(),
 }));

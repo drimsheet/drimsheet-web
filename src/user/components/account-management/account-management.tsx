@@ -7,19 +7,13 @@ import {
 } from '@/shared/lib/api/Api';
 import type { AccountManagementProps } from '@/user/components/account-management/types';
 import { AccountingEntityAvatar } from '@/user/components/accounting-entity-avatar/accounting-entity-avatar';
-import {
-  LogOutIcon,
-  MessageSquareMoreIcon,
-  PlusIcon,
-  SettingsIcon,
-} from 'lucide-react';
+import { LogOutIcon, MessageSquareMoreIcon, SettingsIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export function AccountManagement({
   accountingEntities,
   activeEntity,
   email,
-  onAddAccount,
   onProfileClick,
   onLogoutClick,
   onSelectEntity,
@@ -43,7 +37,6 @@ export function AccountManagement({
   const profile_settings_action = t('profile_settings_action');
   const other_accounts_title = t('other_accounts_title');
   const no_other_accounts_text = t('no_other_accounts_text');
-  const add_new_account_action = t('add_new_account_action');
   const log_out_text = t('auth:log_out_text');
 
   return (
@@ -132,16 +125,6 @@ export function AccountManagement({
             ))}
           </div>
         )}
-
-        <Button
-          type="button"
-          variant="ghost"
-          className="mt-2 w-full justify-start px-2"
-          onClick={onAddAccount}
-        >
-          <PlusIcon />
-          {add_new_account_action}
-        </Button>
       </div>
     </>
   );

@@ -2,7 +2,6 @@ import { AppSidebar } from '@/_app/components/app-sidebar';
 import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entities';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
 import { LogoutConfirmationDialog } from '@/auth/dialogs/logout-confirmation';
-import { OnboardingManagerContainer } from '@/onboarding/components/onboarding-manager';
 import { AppHeaderActionsProvider } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
 import { FullPageLoader } from '@/shared/components/full-page-loader';
@@ -68,7 +67,6 @@ export function AppLayout() {
           </AppHeaderActionsProvider>
         </SidebarInset>
       </SidebarProvider>
-      <OnboardingManagerContainer />
       <LogoutConfirmationDialog
         open={showLogoutConfirmation}
         onOpenChange={setShowLogoutConfirmation}

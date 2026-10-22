@@ -42,7 +42,6 @@ const meta = {
     accountingEntities: [activeEntity, otherEntity],
     activeEntity,
     email: 'member@example.com',
-    onAddAccount: () => {},
     onLogoutClick: () => {},
     onSelectEntity: () => {},
     themeAction: (
