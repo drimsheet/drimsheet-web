@@ -5,6 +5,15 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 
 describe('AppHeader', () => {
+  it('omits the sidebar trigger when the layout has no collapsible navigation', () => {
+    render(<AppHeader showSidebarTrigger={false}>Onboarding</AppHeader>);
+
+    expect(screen.getByRole('banner')).toHaveTextContent('Onboarding');
+    expect(
+      screen.queryByRole('button', { name: 'Toggle Sidebar' })
+    ).not.toBeInTheDocument();
+  });
+
   it('renders children correctly', () => {
     render(
       <MemoryRouter>
@@ -17,6 +26,9 @@ describe('AppHeader', () => {
     );
 
     expect(screen.getByText('Test Header Content')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Toggle Sidebar' })
+    ).toBeInTheDocument();
   });
 
   it('renders breadcrumbs when passed as props', () => {

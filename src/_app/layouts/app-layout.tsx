@@ -10,7 +10,7 @@ import { AccountingEntityAvatarContainer } from '@/user/components/accounting-en
 import { BellIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 export function AppLayout() {
   const { pathname } = useLocation();
@@ -33,6 +33,10 @@ export function AppLayout() {
 
   if (isLoading) {
     return <FullPageLoader label={tShared('loading_application_status')} />;
+  }
+
+  if (accountingEntities?.length === 0) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   const notificationsAriaLabel = tUser('notifications_aria_label');

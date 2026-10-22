@@ -1,0 +1,10 @@
+{
+  "hello_world_title": "Hello world",
+  "steps_label": "Onboarding steps",
+  "step_status": "Step {{step}} of {{total}}",
+  "entity_step_label": "Who it’s for",
+  "financial_year_step_label": "Financial year",
+  "reports_step_label": "Reports",
+  "income_categories_step_label": "Income categories",
+  "expense_categories_step_label": "Expense categories"
+}
