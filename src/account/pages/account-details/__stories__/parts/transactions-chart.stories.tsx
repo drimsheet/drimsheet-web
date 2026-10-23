@@ -1,3 +1,4 @@
+import { TransactionsChartSkeleton } from '@/account/pages/account-details/parts/transactions-chart';
 import type {
   IAccountCashFlowDto,
   ILedgerAccountDto,
@@ -89,3 +90,5 @@ export const MoreMoneyOut: Story = {
     },
   },
 };
+
+export const Skeleton: Story = { render: () => <TransactionsChartSkeleton /> };

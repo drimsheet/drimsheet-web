@@ -1,4 +1,7 @@
-import { CategoryTrend } from '@/account/pages/category-details/parts/category-trend';
+import {
+  CategoryTrend,
+  CategoryTrendSkeleton,
+} from '@/account/pages/category-details/parts/category-trend';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
@@ -27,3 +30,5 @@ export const Refunds: TStory = {
     ],
   },
 };
+
+export const Skeleton: TStory = { render: () => <CategoryTrendSkeleton /> };

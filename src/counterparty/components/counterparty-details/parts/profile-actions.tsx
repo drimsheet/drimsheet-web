@@ -4,10 +4,10 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuItemSkeleton,
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/shared/components/dropdown-menu';
-import { Skeleton } from '@/shared/components/skeleton';
 import { MoreHorizontal, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { CounterpartyProfileActionsProps } from '../types';
@@ -46,11 +46,7 @@ export function CounterpartyProfileActions({
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuGroup>
               {deleteEligibilityChecking && (
-                <DropdownMenuItem disabled aria-label={checking_text}>
-                  <output aria-label={checking_text} className="w-full">
-                    <Skeleton className="h-5 w-full" />
-                  </output>
-                </DropdownMenuItem>
+                <DropdownMenuItemSkeleton aria-label={checking_text} />
               )}
               {!deleteEligibilityChecking && deletable && (
                 <DropdownMenuItem variant="destructive" onSelect={onDelete}>

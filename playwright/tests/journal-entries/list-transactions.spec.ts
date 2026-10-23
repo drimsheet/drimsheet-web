@@ -456,7 +456,8 @@ test('archives instead of deleting and returns to the refreshed transactions pag
     .click();
 
   const pendingButton = confirmation.getByRole('button', {
-    name: 'Archiving...',
+    name: 'Archive instead',
+    exact: true,
   });
 
   await expect(pendingButton).toBeDisabled();

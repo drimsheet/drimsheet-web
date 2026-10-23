@@ -17,7 +17,6 @@ import {
   FieldLabel,
 } from '@/shared/components/field';
 import { Input } from '@/shared/components/input';
-import { Spinner } from '@/shared/components/spinner';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import type { IAccountingEntity } from '@/shared/lib/api/Api';
 import { useQueryClient } from '@tanstack/react-query';
@@ -174,11 +173,8 @@ export function LegalEntityActionDialog({
             type="submit"
             form={formId}
             variant={action === 'delete' ? 'destructive' : 'default'}
-            disabled={form.isSubmitting}
+            loading={form.isSubmitting}
           >
-            {form.isSubmitting && (
-              <Spinner data-icon="inline-start" aria-hidden />
-            )}
             {confirm_label}
           </Button>
         </DialogFooter>

@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAccountTransactions } from '../hooks/use-account-transactions';
 import type { AccountSectionProps } from '../types';
-import { RecentTransactions } from './recent-transactions';
-import { RecentTransactionsSkeleton } from './recent-transactions-skeleton';
+import {
+  RecentTransactions,
+  RecentTransactionsSkeleton,
+} from './recent-transactions';
 import { SectionError } from './section-error';
 
 export function RecentTransactionsContainer({

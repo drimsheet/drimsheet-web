@@ -1,4 +1,7 @@
-import { CategoryChart } from '@/account/pages/categories/parts/category-chart';
+import {
+  CategoryChart,
+  CategoryChartSkeleton,
+} from '@/account/pages/categories/parts/category-chart';
 import type {
   IRevenueExpenseAccountDto,
   IRevenueExpenseSummaryDto,
@@ -109,4 +112,8 @@ export const SignedAmounts: Story = {
       ],
     },
   },
+};
+
+export const Skeleton: Story = {
+  render: ({ title }) => <CategoryChartSkeleton title={title} />,
 };

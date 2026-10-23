@@ -107,9 +107,11 @@ pages/<page>/
 
 - Export only the page component through `index.ts`, using an explicit named
   re-export from `./<page>.page`. Consumers import the page directory.
-- Keep private UI in `parts/`, including error views, skeletons, and containers.
-  Use `skeleton.tsx` for one page-owned skeleton, with a descriptive React name.
-  Skeletons owned by reusable components stay with those components.
+- Keep private UI in `parts/`, including error views and containers. Define and
+  export a part's skeleton in the same file as the part it represents; do not
+  create a standalone page-owned skeleton file. Compose reusable component
+  skeletons through their component barrels. See the skeleton ownership rules
+  in `file-responsibility-rules.md`.
 - Pure parts remain presentation-only; `.container.tsx` parts may orchestrate
   hooks, services, navigation, dialogs, and errors with page permissions.
 - Page-only hooks belong in `hooks/`; deterministic non-UI helpers belong in one
@@ -156,9 +158,11 @@ dialogs/<dialog>/
   re-export from `./<dialog>.dialog`. Define public dialog props in `types.ts`
   and re-export them directly from `./types` with `export type`; all other
   support code stays private. Consumers import the dialog directory.
-- Keep private UI in `parts/`, including error views, skeletons, and containers.
-  Use `skeleton.tsx` for one dialog-owned skeleton, with a descriptive React name.
-  Skeletons owned by reusable components stay with those components.
+- Keep private UI in `parts/`, including error views and containers. Define and
+  export a part's skeleton in the same file as the part it represents; do not
+  create a standalone dialog-owned skeleton file. Compose reusable component
+  skeletons through their component barrels. See the skeleton ownership rules
+  in `file-responsibility-rules.md`.
 - The `.dialog.tsx` entry may orchestrate effects directly and does not require
   a separate container. Pure parts remain presentation-only; `.container.tsx`
   parts may orchestrate hooks, services, navigation, dialogs, and errors with
@@ -212,10 +216,10 @@ components/<name>/
 - Put `<ui>.test.tsx` in the owner's `__tests__/` directory for Jest or Vitest
   UI tests.
 - Use `<ui>.container.tsx` only when the component requires side effects or orchestration.
-- Use `skeleton.tsx` for one owner-local loading skeleton. Keep its exported
-  React symbol descriptive, such as `<ComponentName>Skeleton`, and use
-  role-based filenames such as `table-skeleton.tsx` only when the owner has
-  multiple distinct skeletons.
+- Use `skeleton.tsx` for the component's loading skeleton and export
+  `<ComponentName>Skeleton` from the component's `index.ts`. A skeleton for a
+  private `parts/` component is instead defined and exported in that part's
+  own `.tsx` file and remains absent from the owner's public barrel.
 - Name dedicated skeleton support files `__tests__/skeleton.test.tsx` and
   `__stories__/skeleton.stories.tsx`.
 - Use `parts/` only for substantial UI subcomponents consumed exclusively by

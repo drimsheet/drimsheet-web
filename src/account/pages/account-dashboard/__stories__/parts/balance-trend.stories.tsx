@@ -1,3 +1,5 @@
+import { BalanceTrendSkeleton } from '@/account/pages/account-dashboard/parts/balance-trend';
+
 const money = {
   amount: 12480000,
   currencyCode: 'NGN',
@@ -40,3 +42,5 @@ export const NegativeBalance: Story = {
     ],
   },
 };
+
+export const Skeleton: Story = { render: () => <BalanceTrendSkeleton /> };

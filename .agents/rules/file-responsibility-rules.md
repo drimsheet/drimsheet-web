@@ -78,6 +78,39 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
 - Containers may connect hooks, services, dialogs, loaders, and page-level state to a pure component.
 - Containers should keep business logic thin and delegate reusable logic to hooks or `lib/`.
 
+## Loading UI
+
+- Pending button actions MUST use the shared `Button`'s `loading` prop, or the
+  equivalent prop forwarded by `AlertDialogAction` or `ConfirmationDialog`.
+  Keep the translated action label stable. Do not manually insert a spinner,
+  swap the label to "Saving…"/"Deleting…", or use `disabled` alone as the loading
+  indicator. Preserve unrelated reasons to disable the action.
+- Loading content MUST use the skeleton of the component being loaded. This
+  includes forms, tables, sections, and controls awaiting options or eligibility
+  checks. Do not render visible "Loading…"/"Checking…" paragraphs, placeholders,
+  or descriptions in place of a component skeleton.
+- Render skeletons only while the relevant request is loading. A disabled query
+  awaiting user input must not hide the control needed to enable that query.
+  Keep loading, loaded, empty, and error states distinct.
+- Translated accessible names and screen-reader-only loading announcements are
+  allowed alongside the loading UI. Preserve the existing profile preferences
+  autosave feedback; it describes saving already-loaded content.
+- ESLint's `local/prefer-loading-ui` rule rejects rendered progress copy and
+  hand-inserted button spinners. It checks literal text, progress translation
+  keys, local aliases/assignments, conditional labels, visible text props, and
+  spinner imports or `animate-spin` children. It runs during lint, staged-file
+  linting, pre-push, and CI; test/story fixtures are excluded.
+- The autosave exception is restricted to the existing
+  `profile_preferences_saving_text` translation rendered in an output by
+  `ProfilePreferences` in `src/user/pages/profile/parts/profile-preferences.tsx`.
+  It does not exempt other loading text or button spinners in that file.
+  Screen-reader-only outputs, accessible names, the shared `FullPageLoader`'s
+  screen-reader label, and the shared Button's internal spinner remain allowed.
+- These static checks recognize progress wording and translation-key
+  conventions; they cannot infer arbitrary runtime text or loading behavior
+  across component boundaries. Keep reviewing loading states and component
+  stories alongside the automated checks.
+
 ## Native Status Semantics
 
 - Prefer native `<output>` for status messages, operation results, autosave
@@ -115,16 +148,62 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
 </output>
 ```
 
-## Component `skeleton.tsx`
+## Component Skeleton Ownership and Exports
 
-- Use `skeleton.tsx` for a single loading skeleton owned by one component
-  directory; the owner is already clear from the path.
-- Keep the exported React symbol descriptive, such as
-  `CashTransferFormSkeleton`, so imports remain self-explanatory.
-- Name dedicated support artifacts `__tests__/skeleton.test.tsx` and
-  `__stories__/skeleton.stories.tsx`.
-- When one owner genuinely needs multiple loading skeletons, distinguish them
-  by UI role, such as `table-skeleton.tsx`, instead of repeating the owner name.
+- Every skeleton MUST represent a specific rendered component and mirror its
+  layout, field/row structure, spacing, and responsive behavior. Compose it from
+  the shared `Skeleton` primitive. Do not create generic page placeholders or
+  scatter bare skeleton primitives through orchestration files.
+- For a component with its own directory, put its skeleton in `skeleton.tsx`,
+  name it `<ComponentName>Skeleton`, and explicitly export it from that
+  component's `index.ts`. External consumers import the component barrel;
+  files inside the owner may import `./skeleton` directly.
+- For a component in `*/parts/*`, define and export `<PartName>Skeleton` in the
+  SAME `.tsx` file as the component it represents. Do not create a separate
+  `parts/skeleton.tsx` or `<part>-skeleton.tsx`. Owner-local consumers import the
+  skeleton from that part file. Do not add a `parts/index.ts` or re-export the
+  private part or its skeleton from the component, page, or dialog barrel.
+- Pages, dialogs, and containers compose these component skeletons. Extract a
+  real presentation component first if the content needing a skeleton does not
+  yet have one; a page or dialog directory alone is not a skeleton owner.
+- A component's dedicated skeleton support files use
+  `__stories__/skeleton.stories.tsx` and, when tests are warranted,
+  `__tests__/skeleton.test.tsx`. Document an inline part skeleton in the part's
+  mirrored story and test meaningful loading transitions in its mirrored tests.
+- Run `npm run check:skeletons` to enforce production skeleton ownership,
+  naming, placement, named runtime exports, explicit component-barrel exports,
+  private-part boundaries, and use of bare primitives only inside named
+  skeleton definitions. Lint, both structure commands, pre-push, and CI run it
+  automatically. The checker resolves local imports and re-exports, including
+  aliases and namespaces; test/story fixtures and declaration files are excluded.
+- The same checker enforces native screen-reader-only loading announcements
+  within skeleton definitions and around composed skeletons. Use an explicit,
+  static `className="sr-only"` on `<output>`, without prop spreads or
+  visibility overrides. Keep the announcement accessible to screen readers;
+  do not hide it with `hidden` or `aria-hidden`. Keep layout elements and visual
+  placeholders outside the output; it contains announcement text and optional
+  inline text markup.
+  Do not put `role="status"` or `aria-live` on the skeleton layout. Decorative
+  skeletons may rely on their parent's announcement to avoid duplicates. Visible
+  feedback for loaded content, including profile preferences autosave, is exempt.
+- Static checks cannot establish whether a skeleton visually matches its
+  component or whether a loading condition is correct. Keep those checks in
+  component stories, behavior tests, and UI review. Do not treat a passing
+  ownership check as a substitute for those requirements.
+
+```tsx
+// components/bank-details-form/index.ts
+export { BankDetailsForm } from './bank-details-form';
+export { BankDetailsFormSkeleton } from './skeleton';
+
+// components/bank-details-form/parts/bank-selection.tsx
+export function BankSelection(props: Readonly<BankSelectionProps>) {
+  /* ... */
+}
+export function BankSelectionSkeleton() {
+  /* ... */
+}
+```
 
 ## `*.stories.tsx` Files
 

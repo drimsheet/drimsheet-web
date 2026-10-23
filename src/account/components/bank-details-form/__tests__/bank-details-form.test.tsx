@@ -374,7 +374,12 @@ describe('BankDetailsForm', () => {
 describe('BankDetailsFormContainer', () => {
   it('updates bank query location while retaining previously entered form fields', async () => {
     const user = userEvent.setup();
-    const queryClient = new QueryClient();
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { staleTime: Infinity } },
+    });
+
+    queryClient.setQueryData(['bankService', 'getBanksByCountry', 'US'], []);
     render(
       <QueryClientProvider client={queryClient}>
         <BankDetailsFormContainer

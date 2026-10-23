@@ -1,6 +1,9 @@
 import { Button } from '@/shared/components/button';
 import type { TEntityId } from '@/shared/lib/api/Api';
-import { ProfileDetails } from '@/user/pages/profile/parts/profile-details';
+import {
+  ProfileDetails,
+  ProfileDetailsSkeleton,
+} from '@/user/pages/profile/parts/profile-details';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Pencil } from 'lucide-react';
 
@@ -50,3 +53,5 @@ export const LongDetails: TStory = {
     },
   },
 };
+
+export const Skeleton: TStory = { render: () => <ProfileDetailsSkeleton /> };

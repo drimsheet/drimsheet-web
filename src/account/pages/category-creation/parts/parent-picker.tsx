@@ -24,13 +24,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/shared/components/sheet';
-import { Skeleton } from '@/shared/components/skeleton';
 import { Info, X } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import categoryCreationHelpers from '../helper';
 import type { CategoryParentPickerProps } from '../types';
-import { AccountTreeNode } from './account-tree-node';
+import { AccountTreeNode, AccountTreeNodeSkeleton } from './account-tree-node';
 
 export function CategoryParentPicker({
   type,
@@ -146,9 +145,11 @@ export function CategoryParentPicker({
                 <output className="sr-only" aria-label={loading_label}>
                   {loading_label}
                 </output>
-                {[1, 2, 3, 4].map((row) => (
-                  <Skeleton key={row} className="h-12 w-full" />
-                ))}
+                <ul>
+                  {[1, 2, 3, 4].map((row) => (
+                    <AccountTreeNodeSkeleton key={row} />
+                  ))}
+                </ul>
               </div>
             )}
             {!loading && error && (

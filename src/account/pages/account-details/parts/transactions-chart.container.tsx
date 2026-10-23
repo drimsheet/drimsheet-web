@@ -6,8 +6,10 @@ import { useAccountCashFlow } from '../hooks/use-account-cash-flow';
 import type { AccountSectionProps } from '../types';
 import { CashFlowPeriod } from './cash-flow-period';
 import { SectionError } from './section-error';
-import { TransactionsChart } from './transactions-chart';
-import { TransactionsChartSkeleton } from './transactions-chart-skeleton';
+import {
+  TransactionsChart,
+  TransactionsChartSkeleton,
+} from './transactions-chart';
 
 export function TransactionsChartContainer({
   accountId,

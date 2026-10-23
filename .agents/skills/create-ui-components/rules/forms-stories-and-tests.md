@@ -46,9 +46,11 @@ Every form component must keep its types outside the component file:
   container.
 - Let the form emit validated values through `onSubmit`; do not make the form own
   the application workflow.
-- When a form owns one loading placeholder, put it in `skeleton.tsx`, retain a
-  descriptive `<FormName>Skeleton` export, and use `skeleton.test.tsx` and
-  `skeleton.stories.tsx` for dedicated support artifacts.
+- Apply the loading UI and skeleton ownership rules in
+  `.agents/rules/file-responsibility-rules.md`: use loading buttons for submits
+  and form/field component skeletons while data is loading. A form with its own
+  directory exports `<FormName>Skeleton` from `skeleton.tsx` through `index.ts`;
+  a form under `parts/` defines and exports its skeleton in the form's own file.
 
 ## Stories
 

@@ -18,6 +18,12 @@ Before making changes, follow the rules in:
 - Keep changes aligned with the existing feature-first structure.
 - Prefer the smallest file and folder change that satisfies the task.
 - Preserve dependency direction and file responsibility boundaries.
+- Use the shared button's `loading` prop for pending actions and component
+  skeletons for loading content. Never substitute manual loading text or
+  hand-inserted button spinners. Every skeleton must represent a component:
+  export it from that component's barrel, or define and export it in the same
+  file as its `*/parts/*` component. Follow the loading UI and skeleton rules in
+  `.agents/rules/file-responsibility-rules.md`.
 - Map form values directly to generated DTOs through explicit, validation-free
   mappers.
 - Prefer native `<output>` over `role="status"` for status messages and loading

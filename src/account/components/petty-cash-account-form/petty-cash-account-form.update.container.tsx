@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PettyCashAccountForm } from './petty-cash-account-form';
+import { PettyCashAccountFormSkeleton } from './skeleton';
 import type {
   IPettyCashAccountFormValues,
   PettyCashAccountFormUpdateContainerProps,
@@ -83,7 +84,6 @@ export function PettyCashAccountFormUpdateContainer({
     return () => onBusyChange(false);
   }, [update.isPending, onBusyChange]);
 
-  const loading_text = t('update_loading_text');
   const currencies_error_text = t('update_currencies_error_text');
 
   const currency_eligibility_error_text = t(
@@ -100,7 +100,7 @@ export function PettyCashAccountFormUpdateContainer({
     );
 
   if (opening.openingBalance === undefined)
-    return <output className="block">{loading_text}</output>;
+    return <PettyCashAccountFormSkeleton />;
 
   if (currencyEligibility.isError)
     return (
@@ -110,7 +110,7 @@ export function PettyCashAccountFormUpdateContainer({
     );
 
   if (currencyEligibility.isPending || !currencyEligibility.isFetchedAfterMount)
-    return <output className="block">{loading_text}</output>;
+    return <PettyCashAccountFormSkeleton />;
 
   if (canUpdateCurrency && currencies.isError)
     return (
@@ -120,7 +120,7 @@ export function PettyCashAccountFormUpdateContainer({
     );
 
   if (canUpdateCurrency && currencies.isPending)
-    return <output className="block">{loading_text}</output>;
+    return <PettyCashAccountFormSkeleton />;
 
   return (
     <PettyCashAccountForm

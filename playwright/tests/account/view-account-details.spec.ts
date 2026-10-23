@@ -538,7 +538,7 @@ test('confirms archiving, prevents duplicate submissions and refreshes the accou
     .getByRole('button', { name: 'Archive account', exact: true })
     .click();
   await expect(
-    dialog.getByRole('button', { name: 'Archiving…' })
+    dialog.getByRole('button', { name: 'Archive account', exact: true })
   ).toBeDisabled();
   await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
   await page.keyboard.press('Escape');
@@ -817,7 +817,7 @@ test('confirms deletion, blocks duplicate submissions and returns to the refresh
   });
   await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
   await expect(
-    dialog.getByRole('button', { name: 'Deleting…' })
+    dialog.getByRole('button', { name: 'Delete', exact: true })
   ).toBeDisabled();
   await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
   await expect(input).toBeDisabled();

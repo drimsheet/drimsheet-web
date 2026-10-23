@@ -1,7 +1,9 @@
 import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entities';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
-import { Skeleton } from '@/shared/components/skeleton';
-import { SidebarAccountButton } from '@/user/components/sidebar-account-button';
+import {
+  SidebarAccountButton,
+  SidebarAccountButtonSkeleton,
+} from '@/user/components/sidebar-account-button';
 import { AccountManagementDialog } from '@/user/dialogs/account-management';
 import { useProfile } from '@/user/hooks/use-profile';
 import { useTranslation } from 'react-i18next';
@@ -31,17 +33,7 @@ export function AccountingEntityAvatarContainer({
     isLoadingAccountingEntities ||
     (hasAccountingEntities && isLoadingAccountingEntity);
 
-  if (isLoading) {
-    const loading_label = t('account_management_loading_status');
-
-    return (
-      <Skeleton className="h-12 w-full rounded-md group-data-[collapsible=icon]:size-8">
-        <output className="sr-only" aria-label={loading_label}>
-          {loading_label}
-        </output>
-      </Skeleton>
-    );
-  }
+  if (isLoading) return <SidebarAccountButtonSkeleton />;
 
   if (!activeEntity) {
     const unavailable_label = t('account_management_unavailable_aria_label');

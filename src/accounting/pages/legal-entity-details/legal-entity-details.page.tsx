@@ -21,12 +21,17 @@ import helpers from './helper';
 import { useEntityDetails } from './hooks/use-entity-details';
 import { useFiscalYearContext } from './hooks/use-fiscal-year-context';
 import { useFiscalYears } from './hooks/use-fiscal-years';
-import { ContextDetails } from './parts/context-details';
+import {
+  ContextDetails,
+  ContextDetailsSkeleton,
+} from './parts/context-details';
 import { EntityActionsContainer } from './parts/entity-actions.container';
-import { EntitySummary } from './parts/entity-summary';
-import { FiscalYearSummary } from './parts/fiscal-year-summary';
+import { EntitySummary, EntitySummarySkeleton } from './parts/entity-summary';
+import {
+  FiscalYearSummary,
+  FiscalYearSummarySkeleton,
+} from './parts/fiscal-year-summary';
 import { SectionError } from './parts/section-error';
-import { EntityDetailsSkeleton } from './parts/skeleton';
 
 export function LegalEntityDetailsPage() {
   const { entityId = '' } = useParams();
@@ -66,7 +71,7 @@ export function LegalEntityDetailsPage() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        {entity.isPending && <EntityDetailsSkeleton />}
+        {entity.isPending && <EntitySummarySkeleton />}
         {entity.isError && <SectionError />}
         {entity.data && (
           <>
@@ -80,7 +85,7 @@ export function LegalEntityDetailsPage() {
               }
             />
             <PageSection title={context_title} className="gap-6 py-0">
-              {years.isPending && <EntityDetailsSkeleton />}
+              {years.isPending && <FiscalYearSummarySkeleton />}
               {years.isError && <SectionError />}
               {years.data?.length === 0 && (
                 <Empty>
@@ -96,7 +101,7 @@ export function LegalEntityDetailsPage() {
                     selected={selected}
                     onChange={setSelectedId}
                   />
-                  {context.isPending && <EntityDetailsSkeleton />}
+                  {context.isPending && <ContextDetailsSkeleton />}
                   {context.isError && <SectionError />}
                   {context.data && (
                     <ContextDetails context={context.data} now={now} />

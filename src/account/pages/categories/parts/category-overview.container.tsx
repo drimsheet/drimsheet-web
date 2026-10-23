@@ -1,10 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useCategorySummary } from '../hooks/use-category-summary';
 import type { CategoryOverviewProps } from '../types';
-import { CategoryChart } from './category-chart';
-import { CategorySummary } from './category-summary';
+import { CategoryChart, CategoryChartSkeleton } from './category-chart';
+import { CategorySummary, CategorySummarySkeleton } from './category-summary';
 import { CategorySectionError } from './section-error';
-import { CategoriesSkeleton } from './skeleton';
 
 export function CategoryOverviewContainer({
   query,
@@ -20,7 +19,15 @@ export function CategoryOverviewContainer({
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      {summary.isPending && <CategoriesSkeleton />}
+      {summary.isPending && (
+        <>
+          <CategorySummarySkeleton />
+          <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+            <CategoryChartSkeleton title={revenue_title} />
+            <CategoryChartSkeleton title={expenses_title} />
+          </div>
+        </>
+      )}
       {summary.isError && <CategorySectionError title={overview_title} />}
       {summary.isSuccess && (
         <>

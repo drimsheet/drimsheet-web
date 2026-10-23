@@ -1,4 +1,7 @@
-import { LegalEntityList } from '@/accounting/pages/legal-entity/parts/entity-list';
+import {
+  LegalEntityList,
+  LegalEntityListSkeleton,
+} from '@/accounting/pages/legal-entity/parts/entity-list';
 import type { IAccountingEntity, TEntityId } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MemoryRouter } from 'react-router-dom';
@@ -67,3 +70,5 @@ export const LongNames: TStory = {
     ],
   },
 };
+
+export const Skeleton: TStory = { render: () => <LegalEntityListSkeleton /> };

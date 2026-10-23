@@ -9,8 +9,7 @@ import { PageTitle } from '@/shared/components/page-title';
 import { Plus } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LegalEntityList } from './parts/entity-list';
-import { LegalEntityListSkeleton } from './parts/skeleton';
+import { LegalEntityList, LegalEntityListSkeleton } from './parts/entity-list';
 
 export function LegalEntityPage() {
   const { t } = useTranslation('accounting');

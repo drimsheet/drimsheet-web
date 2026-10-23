@@ -1,6 +1,7 @@
 import { Badge } from '@/shared/components/badge';
 import { PageSection } from '@/shared/components/page-section';
 import { PageTitle } from '@/shared/components/page-title';
+import { Skeleton } from '@/shared/components/skeleton';
 import { useTranslation } from 'react-i18next';
 import helpers from '../helper';
 import type { EntitySummaryProps } from '../types';
@@ -79,6 +80,45 @@ export function EntitySummary({
               {helpers.formatDate(entity.updatedAt, i18n.language)}
             </time>
           </span>
+        </div>
+      </div>
+    </PageSection>
+  );
+}
+
+export function EntitySummarySkeleton() {
+  const { t } = useTranslation('accounting');
+  const loading_label = t('details_loading_label');
+
+  const details_entity_title = t('details_entity_title');
+
+  return (
+    <PageSection
+      aria-busy="true"
+      title={details_entity_title}
+      className="gap-6 py-0"
+    >
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
+      <div className="grid min-w-0 grid-cols-[3rem_minmax(0,1fr)] items-center gap-x-4 gap-y-2 lg:grid-cols-[4rem_minmax(0,1fr)_auto] lg:gap-x-5">
+        <Skeleton className="row-span-2 size-12 rounded-lg lg:size-16" />
+        <Skeleton className="col-start-2 h-9 w-full max-w-80" />
+        <Skeleton className="col-span-2 row-start-3 mt-3 h-9 w-24 lg:col-span-1 lg:col-start-3 lg:row-start-1 lg:mt-0" />
+        <Skeleton className="col-start-2 row-start-2 h-5 w-full max-w-40" />
+      </div>
+      <div className="flex flex-col gap-4 lg:ml-21">
+        <div className="flex flex-wrap gap-x-8 gap-y-4">
+          {[0, 1].map((field) => (
+            <div key={field} className="flex flex-col gap-1">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-5 w-40" />
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-x-5 gap-y-1">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-4 w-40" />
         </div>
       </div>
     </PageSection>

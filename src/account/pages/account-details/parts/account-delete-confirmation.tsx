@@ -51,7 +51,6 @@ export function AccountDeleteConfirmation({
   };
 
   const delete_label = t('details_delete_label');
-  const deleting_label = t('deleting_label');
   const confirmation_title = t('delete_confirmation_title');
 
   const confirmation_description = t(
@@ -76,7 +75,7 @@ export function AccountDeleteConfirmation({
         size="sm"
         variant="destructive"
       >
-        {submitting ? deleting_label : delete_label}
+        {delete_label}
       </AlertDialogAction>
     </>
   );

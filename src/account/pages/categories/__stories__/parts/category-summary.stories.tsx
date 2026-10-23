@@ -1,4 +1,7 @@
-import { CategorySummary } from '@/account/pages/categories/parts/category-summary';
+import {
+  CategorySummary,
+  CategorySummarySkeleton,
+} from '@/account/pages/categories/parts/category-summary';
 import type {
   IRevenueExpenseAccountDto,
   IRevenueExpenseSummaryDto,
@@ -117,3 +120,5 @@ export const ZeroActivity: Story = {
     },
   },
 };
+
+export const Skeleton: Story = { render: () => <CategorySummarySkeleton /> };

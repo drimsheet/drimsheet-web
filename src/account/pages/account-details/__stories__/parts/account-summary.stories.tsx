@@ -1,5 +1,8 @@
 import { AccountActions } from '@/account/pages/account-details/parts/account-actions';
-import { LedgerAccountSummary } from '@/account/pages/account-details/parts/account-summary';
+import {
+  LedgerAccountSummary,
+  LedgerAccountSummarySkeleton,
+} from '@/account/pages/account-details/parts/account-summary';
 import type { ILedgerAccountDto, TEntityId } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -120,4 +123,8 @@ export const NarrowWithLongName: Story = {
       </div>
     ),
   ],
+};
+
+export const Skeleton: Story = {
+  render: () => <LedgerAccountSummarySkeleton />,
 };

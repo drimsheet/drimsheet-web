@@ -5,10 +5,10 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuItemSkeleton,
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/shared/components/dropdown-menu';
-import { Skeleton } from '@/shared/components/skeleton';
 import { Archive, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -58,9 +58,7 @@ export function AccountActions({
       : 'archive_confirmation_description'
   );
 
-  const confirmation_label = t(
-    busy ? 'archiving_label' : 'archive_confirmation_action'
-  );
+  const confirmation_label = t('archive_confirmation_action');
 
   const cancel_label = t('archive_cancel_label');
   const checking_label = t('checking_deletion_eligibility_text');
@@ -92,11 +90,7 @@ export function AccountActions({
               {archive_label}
             </DropdownMenuItem>
             {deleteEligibilityChecking && (
-              <DropdownMenuItem disabled aria-label={checking_label}>
-                <output aria-label={checking_label} className="w-full">
-                  <Skeleton className="h-5 w-full" />
-                </output>
-              </DropdownMenuItem>
+              <DropdownMenuItemSkeleton aria-label={checking_label} />
             )}
             {!deleteEligibilityChecking && deleteEligibilityFailed && (
               <DropdownMenuLabel className="whitespace-normal">

@@ -20,9 +20,8 @@ import { Inbox } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import dataTableHelpers from './helper';
-import { DataTableRow } from './parts/data-row';
+import { DataTableRow, DataTableRowSkeleton } from './parts/data-row';
 import { DataTableHeaderCell } from './parts/header-cell';
-import { DataTableSkeleton } from './skeleton';
 import type { IDataWithId, ITableColumn, TableProps } from './types';
 
 export function DataTable<T extends IDataWithId>({
@@ -198,12 +197,14 @@ export function DataTable<T extends IDataWithId>({
           </TableHeader>
           <TableBody>
             {loading &&
-              (loadingStateNode ?? (
-                <DataTableSkeleton
-                  columnsCount={visibleColumns.length}
-                  showSelection={selectable}
-                />
-              ))}
+              (loadingStateNode ??
+                Array.from({ length: 5 }, (_, row) => (
+                  <DataTableRowSkeleton
+                    key={row}
+                    columnsCount={visibleColumns.length}
+                    showSelection={selectable}
+                  />
+                )))}
             {!loading && !data.length && (
               <TableRow className="hover:bg-transparent">
                 <TableCell

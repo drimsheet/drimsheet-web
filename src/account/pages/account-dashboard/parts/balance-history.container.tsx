@@ -3,9 +3,8 @@ import { useTranslation } from 'react-i18next';
 import dashboardHelpers from '../helper';
 import { useBalanceSnapshots } from '../hooks/use-balance-snapshots';
 import type { BalanceHistoryContainerProps, IBalancePoint } from '../types';
-import { BalanceTrend } from './balance-trend';
+import { BalanceTrend, BalanceTrendSkeleton } from './balance-trend';
 import { DashboardError } from './section-error';
-import { DashboardSkeleton } from './skeleton';
 
 export function BalanceHistoryContainer({
   period,
@@ -71,7 +70,7 @@ export function BalanceHistoryContainer({
           items={['1M', '6M', '1Y'].map((value) => ({ value, label: value }))}
         />
       </div>
-      {!summaryError && loading && <DashboardSkeleton section="history" />}
+      {!summaryError && loading && <BalanceTrendSkeleton />}
       {!summaryError && !loading && failed && (
         <DashboardError title={error_title} />
       )}

@@ -9,6 +9,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import preferLoadingUi from './scripts/eslint-rules/prefer-loading-ui.js';
 import preferNativeStatus from './scripts/eslint-rules/prefer-native-status.js';
 
 export default defineConfig([
@@ -67,10 +68,16 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
     plugins: {
-      local: { rules: { 'prefer-native-status': preferNativeStatus } },
+      local: {
+        rules: {
+          'prefer-native-status': preferNativeStatus,
+          'prefer-loading-ui': preferLoadingUi,
+        },
+      },
     },
     rules: {
       'local/prefer-native-status': 'error',
+      'local/prefer-loading-ui': 'error',
     },
   },
   {

@@ -1,9 +1,14 @@
 import { Checkbox } from '@/shared/components/checkbox';
+import { Skeleton } from '@/shared/components/skeleton';
 import { TableCell, TableRow } from '@/shared/components/table';
 import { cn } from '@/shared/lib/utils/cn';
 import { useTranslation } from 'react-i18next';
 import dataTableHelpers from '../helper';
-import type { DataTableRowProps, IDataWithId } from '../types';
+import type {
+  DataTableRowProps,
+  DataTableRowSkeletonProps,
+  IDataWithId,
+} from '../types';
 
 export function DataTableRow<T extends IDataWithId>({
   row,
@@ -46,6 +51,29 @@ export function DataTableRow<T extends IDataWithId>({
           )}
         >
           {dataTableHelpers.cell(column, row)}
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+}
+
+export function DataTableRowSkeleton({
+  columnsCount,
+  showSelection = false,
+}: Readonly<DataTableRowSkeletonProps>) {
+  return (
+    <TableRow className="hover:bg-transparent">
+      {showSelection && (
+        <TableCell className="px-4">
+          <Skeleton className="size-4" />
+        </TableCell>
+      )}
+      {Array.from({ length: columnsCount }, (_, column) => (
+        <TableCell
+          key={column}
+          className="h-(--table-row-height,60px) px-4 py-2.5"
+        >
+          <Skeleton className="h-4 w-3/4" />
         </TableCell>
       ))}
     </TableRow>

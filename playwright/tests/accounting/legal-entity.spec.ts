@@ -184,7 +184,7 @@ test('creates an entity, prevents dismissal while saving, and updates the list w
     .getByRole('button', { name: 'Create legal entity', exact: true })
     .click();
   await expect(
-    dialog.getByRole('button', { name: 'Creating legal entity…' })
+    dialog.getByRole('button', { name: 'Create legal entity', exact: true })
   ).toBeDisabled();
   await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
   await page.keyboard.press('Escape');

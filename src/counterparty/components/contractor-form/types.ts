@@ -20,6 +20,7 @@ export interface IContractorFormValues {
 export interface ContractorFormProps {
   submitLabel?: string;
   onCancel?: () => void;
+  typeLoading?: boolean;
   typeRestriction?: { value: UCounterpartyType; description: string };
   fieldErrors?: Record<string, string>;
   showPostalCode?: boolean;

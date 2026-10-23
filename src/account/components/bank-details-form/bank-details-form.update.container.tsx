@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { BankDetailsFormContainer } from './bank-details-form.container';
+import { BankDetailsFormSkeleton } from './skeleton';
 import type {
   BankDetailsFormUpdateContainerProps,
   IBankDetailsFormValues,
@@ -102,7 +103,6 @@ export function BankDetailsFormUpdateContainer({
   }, [update.isPending, onBusyChange]);
 
   const error_text = t('update_bank_details_error_text');
-  const loading_text = t('update_loading_text');
   const currencies_error_text = t('update_currencies_error_text');
 
   const currency_eligibility_error_text = t(
@@ -118,8 +118,7 @@ export function BankDetailsFormUpdateContainer({
       </div>
     );
 
-  if (opening.openingBalance === undefined)
-    return <output className="block">{loading_text}</output>;
+  if (opening.openingBalance === undefined) return <BankDetailsFormSkeleton />;
 
   if (!bank && read.isError)
     return (
@@ -128,7 +127,7 @@ export function BankDetailsFormUpdateContainer({
       </div>
     );
 
-  if (!bank) return <output className="block">{loading_text}</output>;
+  if (!bank) return <BankDetailsFormSkeleton />;
 
   if (currencyEligibility.isError)
     return (
@@ -138,7 +137,7 @@ export function BankDetailsFormUpdateContainer({
     );
 
   if (currencyEligibility.isPending || !currencyEligibility.isFetchedAfterMount)
-    return <output className="block">{loading_text}</output>;
+    return <BankDetailsFormSkeleton />;
 
   if (canUpdateCurrency && currencies.isError)
     return (
@@ -148,7 +147,7 @@ export function BankDetailsFormUpdateContainer({
     );
 
   if (canUpdateCurrency && currencies.isPending)
-    return <output className="block">{loading_text}</output>;
+    return <BankDetailsFormSkeleton />;
 
   return (
     <BankDetailsFormContainer

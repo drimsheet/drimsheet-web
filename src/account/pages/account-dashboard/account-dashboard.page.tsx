@@ -22,11 +22,13 @@ import { useDashboardAccounts } from './hooks/use-dashboard-accounts';
 import { useDashboardSummary } from './hooks/use-dashboard-summary';
 import { AccountBreakdown } from './parts/account-breakdown';
 import { AccountPageEmptyState } from './parts/account-page-empty-state';
-import { AccountsSummary } from './parts/account-summary';
+import {
+  AccountsSummary,
+  AccountsSummarySkeleton,
+} from './parts/account-summary';
 import { AccountsTable } from './parts/accounts-table';
 import { BalanceHistoryContainer } from './parts/balance-history.container';
 import { DashboardError } from './parts/section-error';
-import { DashboardSkeleton } from './parts/skeleton';
 import type { UAccountTypeFilter, UBalancePeriod } from './types';
 
 export function AccountsDashboardPage() {
@@ -126,7 +128,7 @@ export function AccountsDashboardPage() {
         {!pageError && !noAccounts && (
           <>
             <PageSection title={overview_title}>
-              {summary.isPending && <DashboardSkeleton section="summary" />}
+              {summary.isPending && <AccountsSummarySkeleton />}
               {summary.isError && (
                 <DashboardError title={summary_error_title} />
               )}

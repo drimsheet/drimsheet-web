@@ -82,3 +82,8 @@ export interface CategoryTransactionsProps {
   onClearCounterparty: () => void;
   transactionsHref?: string;
 }
+
+export type CategoryTransactionCountProps = Pick<
+  CategorySummaryProps,
+  'transactionCount'
+>;

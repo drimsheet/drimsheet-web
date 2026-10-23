@@ -32,8 +32,14 @@ jobs:
       - name: Test Hook Checks
         run: npm test -- --run scripts/check-hooks.test.js --maxWorkers=2
 
+      - name: Test Skeleton Checks
+        run: npm test -- --run scripts/check-skeletons.test.js --maxWorkers=2
+
       - name: Test Native Status Lint Rule
         run: npm test -- --run scripts/prefer-native-status.test.js --maxWorkers=2
+
+      - name: Test Loading UI Lint Rule
+        run: npm test -- --run scripts/prefer-loading-ui.test.js --maxWorkers=2
 
       - name: Check Stories
         run: npm run check-stories

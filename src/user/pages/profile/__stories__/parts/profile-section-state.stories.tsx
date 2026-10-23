@@ -5,10 +5,9 @@ const meta = {
   title: 'User/Profile/SectionState',
   component: ProfileSectionState,
   tags: ['autodocs'],
-  args: { label: 'Preferences', isLoading: true },
+  args: { label: 'Preferences' },
 } satisfies Meta<typeof ProfileSectionState>;
 
 export default meta;
 type TStory = StoryObj<typeof meta>;
-export const Loading: TStory = {};
-export const Failed: TStory = { args: { isLoading: false } };
+export const Failed: TStory = {};

@@ -1,4 +1,7 @@
-import { BankSelection } from '@/account/components/bank-details-form/parts/bank-selection';
+import {
+  BankSelection,
+  BankSelectionSkeleton,
+} from '@/account/components/bank-details-form/parts/bank-selection';
 import type { IBankDirectoryDto } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -50,4 +53,8 @@ export const Disabled: Story = {
   args: {
     disabled: true,
   },
+};
+
+export const Skeleton: Story = {
+  render: () => <BankSelectionSkeleton />,
 };

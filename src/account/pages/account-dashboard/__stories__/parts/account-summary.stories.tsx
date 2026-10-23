@@ -1,3 +1,4 @@
+import { AccountsSummarySkeleton } from '@/account/pages/account-dashboard/parts/account-summary';
 import type { IAssetLiabilitySummaryDto } from '@/shared/lib/api/Api';
 
 const money = {
@@ -57,3 +58,5 @@ export const ZeroBalance: Story = {
     },
   },
 };
+
+export const Skeleton: Story = { render: () => <AccountsSummarySkeleton /> };

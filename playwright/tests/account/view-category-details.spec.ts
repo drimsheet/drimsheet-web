@@ -547,7 +547,7 @@ for (const type of ['revenue', 'expense'] as const) {
     });
     await dialog.getByRole('button', { name: 'Archive', exact: true }).click();
     await expect(
-      dialog.getByRole('button', { name: 'Archiving…' })
+      dialog.getByRole('button', { name: 'Archive', exact: true })
     ).toBeDisabled();
     await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
     await expect(
@@ -824,7 +824,7 @@ for (const status of ['active', 'archived'] as const) {
     });
     await confirm.click();
     await expect(
-      dialog.getByRole('button', { name: 'Deleting…' })
+      dialog.getByRole('button', { name: 'Delete', exact: true })
     ).toBeDisabled();
     await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
     await expect(input).toBeDisabled();

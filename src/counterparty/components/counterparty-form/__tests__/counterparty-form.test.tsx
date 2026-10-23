@@ -65,7 +65,7 @@ describe('CounterpartyForm', () => {
 
     rerender(<CounterpartyForm onSubmit={vi.fn()} loading />);
     expect(screen.getByLabelText(/Name/i)).toBeDisabled();
-    expect(screen.getByRole('button', { name: /Continue/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Create/i })).toBeDisabled();
   });
 });
 

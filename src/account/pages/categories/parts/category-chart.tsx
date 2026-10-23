@@ -12,6 +12,7 @@ import {
   EmptyTitle,
 } from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
+import { Skeleton } from '@/shared/components/skeleton';
 import { cn } from '@/shared/lib/utils/cn';
 import { ChartNoAxesCombined } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -99,6 +100,40 @@ export function CategoryChart({
             </li>
           ))}
         </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function CategoryChartSkeleton({
+  title,
+}: Readonly<Pick<CategoryChartProps, 'title'>>) {
+  return (
+    <Card
+      aria-busy="true"
+      className="max-h-[400px] min-w-0 gap-2 overflow-y-auto py-0"
+    >
+      <output className="sr-only" aria-label={title} aria-busy="true">
+        {title}
+      </output>
+      <CardHeader className="sticky top-0 z-1 shrink-0 bg-card px-4 pt-4 pb-2">
+        <h2 className="text-sm font-medium text-muted-foreground">{title}</h2>
+        <Skeleton className="h-4 w-full max-w-64" />
+      </CardHeader>
+      <CardContent className="px-4 pb-4">
+        <div className="flex flex-col gap-4">
+          {[0, 1, 2].map((row) => (
+            <div key={row} className="flex flex-col gap-2 py-2">
+              <div className="flex flex-wrap justify-between gap-x-6 gap-y-2">
+                <h2 className="text-sm font-medium text-muted-foreground">
+                  {title}
+                </h2>
+                <Skeleton className="h-5 w-24" />
+              </div>
+              <Skeleton className="h-2 w-full" />
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

@@ -12,9 +12,18 @@ import { useProfile } from '@/user/hooks/use-profile';
 import { useUpdatePreferences } from '@/user/hooks/use-update-preferences';
 import { Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { ProfileDetails } from './parts/profile-details';
-import { ProfileEntities } from './parts/profile-entities';
-import { ProfilePreferences } from './parts/profile-preferences';
+import {
+  ProfileDetails,
+  ProfileDetailsSkeleton,
+} from './parts/profile-details';
+import {
+  ProfileEntities,
+  ProfileEntitiesSkeleton,
+} from './parts/profile-entities';
+import {
+  ProfilePreferences,
+  ProfilePreferencesSkeleton,
+} from './parts/profile-preferences';
 import { ProfileSectionState } from './parts/profile-section-state';
 
 export function ProfilePage() {
@@ -71,7 +80,7 @@ export function ProfilePage() {
             </p>
           </div>
           <div className="grid items-stretch gap-x-6 lg:grid-cols-2">
-            {profile ? (
+            {profile && (
               <ProfileDetails
                 profile={profile}
                 editAction={
@@ -90,13 +99,12 @@ export function ProfilePage() {
                   />
                 }
               />
-            ) : (
-              <ProfileSectionState
-                isLoading={profileQuery.isPending}
-                label={details_title}
-              />
             )}
-            {preferences ? (
+            {!profile && profileQuery.isPending && <ProfileDetailsSkeleton />}
+            {!profile && !profileQuery.isPending && (
+              <ProfileSectionState label={details_title} />
+            )}
+            {preferences && (
               <ProfilePreferences
                 preferences={preferences.appPreferences}
                 onChange={handlePreferenceChange}
@@ -104,24 +112,24 @@ export function ProfilePage() {
                 isSaved={updatePreferences.isSuccess}
                 hasError={updatePreferences.isError}
               />
-            ) : (
-              <ProfileSectionState
-                isLoading={preferencesQuery.isPending}
-                label={preferences_title}
-              />
+            )}
+            {!preferences && preferencesQuery.isPending && (
+              <ProfilePreferencesSkeleton />
+            )}
+            {!preferences && !preferencesQuery.isPending && (
+              <ProfileSectionState label={preferences_title} />
             )}
           </div>
-          {entities ? (
+          {entities && (
             <ProfileEntities
               entities={entities}
               activeEntityId={activeEntity?.id}
               userId={profile?.id ?? ''}
             />
-          ) : (
-            <ProfileSectionState
-              isLoading={entitiesQuery.isPending}
-              label={entities_title}
-            />
+          )}
+          {!entities && entitiesQuery.isPending && <ProfileEntitiesSkeleton />}
+          {!entities && !entitiesQuery.isPending && (
+            <ProfileSectionState label={entities_title} />
           )}
         </div>
       </AppBody>

@@ -5,16 +5,18 @@ import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
 import { useSubAccounts } from './hooks/use-sub-accounts';
 import { AccountActionsContainer } from './parts/account-actions.container';
-import { LedgerAccountSummary } from './parts/account-summary';
-import { AccountSummarySkeleton } from './parts/account-summary-skeleton';
-import { BankDetailsSkeleton } from './parts/bank-details-skeleton';
+import {
+  LedgerAccountSummary,
+  LedgerAccountSummarySkeleton,
+} from './parts/account-summary';
+import { BankDetailsSkeleton } from './parts/bank-details';
 import { BankDetailsContainer } from './parts/bank-details.container';
-import { RecentTransactionsSkeleton } from './parts/recent-transactions-skeleton';
+import { RecentTransactionsSkeleton } from './parts/recent-transactions';
 import { RecentTransactionsContainer } from './parts/recent-transactions.container';
 import { SectionError } from './parts/section-error';
-import { SubAccountsSkeleton } from './parts/sub-accounts-skeleton';
+import { SubAccountsSkeleton } from './parts/sub-accounts';
 import { SubAccountsContainer } from './parts/sub-accounts.container';
-import { TransactionsChartSkeleton } from './parts/transactions-chart-skeleton';
+import { TransactionsChartSkeleton } from './parts/transactions-chart';
 import { TransactionsChartContainer } from './parts/transactions-chart.container';
 
 export function AccountDetailsPage() {
@@ -45,7 +47,7 @@ export function AccountDetailsPage() {
         <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col">
           {accountQuery.isPending && (
             <>
-              <AccountSummarySkeleton />
+              <LedgerAccountSummarySkeleton />
               <BankDetailsSkeleton />
               <SubAccountsSkeleton />
               <PageSection>

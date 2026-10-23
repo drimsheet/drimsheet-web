@@ -1,5 +1,8 @@
 import fixtures from '@/accounting/pages/legal-entity-details/__stories__/fixtures.json';
-import { ContextDetails } from '@/accounting/pages/legal-entity-details/parts/context-details';
+import {
+  ContextDetails,
+  ContextDetailsSkeleton,
+} from '@/accounting/pages/legal-entity-details/parts/context-details';
 import type { TFiscalYearContext } from '@/accounting/pages/legal-entity-details/types';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 const context = fixtures.context as TFiscalYearContext;
@@ -25,3 +28,5 @@ export const Empty: TStory = {
     },
   },
 };
+
+export const Skeleton: TStory = { render: () => <ContextDetailsSkeleton /> };

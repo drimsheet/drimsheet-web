@@ -1,5 +1,8 @@
 import type { IAccountingEntity, TEntityId } from '@/shared/lib/api/Api';
-import { ProfileEntities } from '@/user/pages/profile/parts/profile-entities';
+import {
+  ProfileEntities,
+  ProfileEntitiesSkeleton,
+} from '@/user/pages/profile/parts/profile-entities';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const entity: IAccountingEntity = {
@@ -50,3 +53,5 @@ export const LongName: TStory = {
     ],
   },
 };
+
+export const Skeleton: TStory = { render: () => <ProfileEntitiesSkeleton /> };

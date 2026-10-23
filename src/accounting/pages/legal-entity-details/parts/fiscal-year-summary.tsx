@@ -7,6 +7,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/shared/components/dropdown-menu';
+import { Skeleton } from '@/shared/components/skeleton';
 import { ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import helpers from '../helper';
@@ -69,6 +70,30 @@ export function FiscalYearSummary({
         <span className="text-right text-xs text-muted-foreground tabular-nums">
           {range_text}
         </span>
+      </div>
+    </div>
+  );
+}
+
+export function FiscalYearSummarySkeleton() {
+  const { t } = useTranslation('accounting');
+  const loading_label = t('details_loading_label');
+
+  return (
+    <div
+      aria-busy="true"
+      className="flex min-w-0 flex-wrap items-center justify-between gap-4 rounded-md bg-muted p-5"
+    >
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
+      <div className="flex min-w-0 flex-col items-start gap-1">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-10 w-40" />
+      </div>
+      <div className="ml-auto flex flex-col items-end gap-2">
+        <Skeleton className="h-5 w-16" />
+        <Skeleton className="h-4 w-48 max-w-full" />
       </div>
     </div>
   );

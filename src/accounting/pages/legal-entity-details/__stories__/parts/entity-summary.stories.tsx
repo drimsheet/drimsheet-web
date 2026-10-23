@@ -1,6 +1,9 @@
 import fixtures from '@/accounting/pages/legal-entity-details/__stories__/fixtures.json';
 import { EntityActions } from '@/accounting/pages/legal-entity-details/parts/entity-actions';
-import { EntitySummary } from '@/accounting/pages/legal-entity-details/parts/entity-summary';
+import {
+  EntitySummary,
+  EntitySummarySkeleton,
+} from '@/accounting/pages/legal-entity-details/parts/entity-summary';
 import type { IAccountingEntity } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 const entity = fixtures.entity as IAccountingEntity;
@@ -39,3 +42,5 @@ export const LongName: TStory = {
     },
   },
 };
+
+export const Skeleton: TStory = { render: () => <EntitySummarySkeleton /> };

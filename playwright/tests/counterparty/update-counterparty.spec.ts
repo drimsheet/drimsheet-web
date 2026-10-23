@@ -565,7 +565,9 @@ test('retains input on server failure and prevents duplicate submits or dismissa
   });
   await dialog.getByLabel('Name', { exact: true }).fill('Retain me');
   await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog.getByRole('button', { name: 'Saving…' })).toBeDisabled();
+  await expect(
+    dialog.getByRole('button', { name: 'Save changes' })
+  ).toBeDisabled();
   await page.keyboard.press('Escape');
   await expect(dialog).toBeVisible();
   release();

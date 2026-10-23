@@ -12,6 +12,7 @@ import {
   EmptyTitle,
 } from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
+import { Skeleton } from '@/shared/components/skeleton';
 import { currencyService } from '@/shared/lib/services/currency.service';
 import { ChartNoAxesCombined } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -157,6 +158,21 @@ export function BalanceTrend({ points }: Readonly<BalanceTrendProps>) {
           ))}
         </dl>
       </details>
+    </div>
+  );
+}
+
+export function BalanceTrendSkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('dashboard_loading_history');
+
+  return (
+    <div aria-busy="true" className="flex min-w-0 flex-col gap-3">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
+      <Skeleton className="h-56 w-full" />
+      <Skeleton className="h-4 w-40" />
     </div>
   );
 }

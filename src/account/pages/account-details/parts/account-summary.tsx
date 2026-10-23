@@ -1,6 +1,7 @@
 import { Money } from '@/shared/components/money';
 import { PageSection } from '@/shared/components/page-section';
 import { PageTitle } from '@/shared/components/page-title';
+import { Skeleton } from '@/shared/components/skeleton';
 import { StatusBadge } from '@/shared/components/status-badge';
 import { cn } from '@/shared/lib/utils/cn';
 import { useTranslation } from 'react-i18next';
@@ -97,6 +98,36 @@ export function LedgerAccountSummary({
             </dd>
           )}
         </dl>
+      </PageSection>
+    </div>
+  );
+}
+
+export function LedgerAccountSummarySkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('details_loading_account_summary');
+
+  return (
+    <div aria-busy="true" className="flex min-w-0 flex-col">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
+      <div className="flex min-w-0 flex-col gap-4">
+        <Skeleton className="h-5 w-28" />
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-4">
+          <Skeleton className="h-9 min-w-0 flex-1 max-w-80" />
+          <Skeleton className="h-9 w-24" />
+        </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-5 w-40" />
+        </div>
+      </div>
+      <PageSection>
+        <div className="flex min-w-0 flex-col gap-3">
+          <Skeleton className="h-5 w-28" />
+          <Skeleton className="h-10 w-56 max-w-full sm:h-12" />
+        </div>
       </PageSection>
     </div>
   );

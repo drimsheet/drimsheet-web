@@ -276,7 +276,9 @@ test('updates profile names and keeps the saved result on reopening and reload',
     fullPage: true,
   });
   await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog.getByRole('button', { name: 'Saving…' })).toBeDisabled();
+  await expect(
+    dialog.getByRole('button', { name: 'Save changes' })
+  ).toBeDisabled();
   await expect(dialog.getByLabel('First name')).toBeDisabled();
   await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
   await page.keyboard.press('Escape');

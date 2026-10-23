@@ -87,8 +87,12 @@ or risk warrants them. Report any check that could not be run.
   `lib`, according to ownership.
 - Every presentation UI `.tsx` file has a mirrored story in the owner's
   `__stories__/` directory; page/dialog entries and containers are exempt.
-- A single owner-local loading skeleton uses `skeleton.tsx` with a descriptive
-  exported symbol and matching `skeleton.*` support filenames.
+- Pending actions use the shared button's `loading` prop and stable labels;
+  loading content uses component skeletons, never manual loading text.
+- Each skeleton mirrors a specific component and follows the ownership/export
+  contract in `.agents/rules/file-responsibility-rules.md`: `skeleton.tsx` plus
+  a component-barrel export, or an inline export in its `*/parts/*` component
+  file. Private part skeletons remain absent from the owner's public barrel.
 - Behavior and user outcomes have focused tests.
 - Component tests do not mock owned components or hooks.
 - Container tests render the real presentational component and mock only

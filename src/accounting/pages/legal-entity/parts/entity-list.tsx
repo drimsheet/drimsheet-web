@@ -7,6 +7,7 @@ import {
 } from '@/shared/components/empty';
 import { RouteLink } from '@/shared/components/route-link';
 import { Separator } from '@/shared/components/separator';
+import { Skeleton } from '@/shared/components/skeleton';
 import countries from '@/shared/configs/countries.json';
 import { Building2, Check, Store, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -107,6 +108,34 @@ export function LegalEntityList({
             </li>
           );
         })}
+      </ul>
+    </div>
+  );
+}
+
+export function LegalEntityListSkeleton() {
+  const { t } = useTranslation('accounting');
+  const loading_label = t('legal_entities_loading_label');
+
+  return (
+    <div aria-busy="true">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
+      <ul>
+        {[0, 1, 2].map((row) => (
+          <li key={row}>
+            <div className="flex items-center gap-3 py-5 md:gap-4 md:py-[22px]">
+              <Skeleton className="size-10 shrink-0 rounded-md" />
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <Skeleton className="h-6 w-full max-w-40" />
+                <Skeleton className="h-4 w-full max-w-56" />
+              </div>
+              <Skeleton className="size-8 shrink-0" />
+            </div>
+            <Separator />
+          </li>
+        ))}
       </ul>
     </div>
   );

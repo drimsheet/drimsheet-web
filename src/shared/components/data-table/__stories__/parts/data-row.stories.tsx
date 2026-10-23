@@ -1,4 +1,7 @@
-import { DataTableRow } from '@/shared/components/data-table/parts/data-row';
+import {
+  DataTableRow,
+  DataTableRowSkeleton,
+} from '@/shared/components/data-table/parts/data-row';
 import { Table, TableBody } from '@/shared/components/table';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -27,3 +30,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Selected: Story = {};
+
+export const Loading: Story = {
+  render: () => <DataTableRowSkeleton columnsCount={1} showSelection />,
+};

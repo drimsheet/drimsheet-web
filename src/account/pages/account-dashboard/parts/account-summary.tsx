@@ -1,4 +1,5 @@
 import { Money } from '@/shared/components/money';
+import { Skeleton } from '@/shared/components/skeleton';
 import { cn } from '@/shared/lib/utils/cn';
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -73,5 +74,33 @@ export function AccountsSummary({ summary }: Readonly<AccountsSummaryProps>) {
         </div>
       ))}
     </dl>
+  );
+}
+
+export function AccountsSummarySkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('dashboard_loading_summary');
+
+  return (
+    <div
+      aria-busy="true"
+      className="grid min-w-0 grid-cols-2 items-start gap-6 lg:grid-cols-[1.4fr_1fr_1fr]"
+    >
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
+      <div className="col-span-2 flex min-w-0 flex-col gap-2 lg:col-span-1">
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="my-2 h-9 w-full max-w-48" />
+        <Skeleton className="h-3 w-32" />
+      </div>
+      {[0, 1].map((item) => (
+        <div key={item} className="flex min-w-0 flex-col gap-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="my-2 h-7 w-full max-w-40" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+      ))}
+    </div>
   );
 }

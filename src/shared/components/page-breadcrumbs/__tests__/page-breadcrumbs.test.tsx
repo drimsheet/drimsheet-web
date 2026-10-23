@@ -5,7 +5,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 
-const { PettyCashAccount, CurrentPage, Loading } = composeStories(stories);
+const { PettyCashAccount, CurrentPage } = composeStories(stories);
 
 describe('PageBreadcrumbs', () => {
   it('renders a petty cash account breadcrumb from configuration', () => {
@@ -59,10 +59,43 @@ describe('PageBreadcrumbs', () => {
     expect(screen.getByText('Office Float')).toBeInTheDocument();
   });
 
-  it('renders the loading skeleton instead of breadcrumbs', () => {
-    const { container } = render(<Loading />);
+  it('keeps the breadcrumb region while pending and restores navigation when loaded', () => {
+    const breadcrumb = {
+      label: 'Accounts',
+      link: '/accounts',
+      next: { label: 'Office Float' },
+    };
 
-    expect(screen.queryByLabelText('breadcrumb')).not.toBeInTheDocument();
-    expect(container.querySelector('.w-25.h-3')).toBeInTheDocument();
+    const { rerender } = render(
+      <MemoryRouter>
+        <PageBreadcrumbs breadcrumb={breadcrumb} isLoading />
+      </MemoryRouter>
+    );
+
+    expect(
+      screen.getByRole('navigation', { name: 'breadcrumb' })
+    ).toHaveAttribute('aria-busy', 'true');
+    expect(
+      screen.queryByRole('link', { name: 'Accounts' })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Office Float')).not.toBeInTheDocument();
+
+    rerender(
+      <MemoryRouter>
+        <PageBreadcrumbs breadcrumb={breadcrumb} />
+      </MemoryRouter>
+    );
+
+    expect(
+      screen.getByRole('navigation', { name: 'breadcrumb' })
+    ).not.toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('link', { name: 'Accounts' })).toHaveAttribute(
+      'href',
+      '/accounts'
+    );
+    expect(screen.getByText('Office Float')).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
   });
 });

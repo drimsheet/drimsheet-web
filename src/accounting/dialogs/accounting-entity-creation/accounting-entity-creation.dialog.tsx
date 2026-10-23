@@ -15,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/components/dialog';
-import { Spinner } from '@/shared/components/spinner';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useCurrencies } from '@/shared/hooks/use-currencies';
 import { useJurisdictions } from '@/shared/hooks/use-jurisdictions';
@@ -97,7 +96,6 @@ export function AccountingEntityCreationDialog({
   const submit_error = t('legal_entity_create_error');
   const cancel_label = t('legal_entity_cancel_label');
   const submit_label = t('legal_entity_create_label');
-  const submitting_label = t('legal_entity_creating_label');
 
   return (
     <Dialog open onOpenChange={handleOpenChange}>
@@ -146,10 +144,10 @@ export function AccountingEntityCreationDialog({
           <Button
             type="submit"
             form={formId}
-            disabled={!canShowForm || submitting}
+            disabled={!canShowForm}
+            loading={submitting}
           >
-            {submitting && <Spinner data-icon="inline-start" aria-hidden />}
-            {submitting ? submitting_label : submit_label}
+            {submit_label}
           </Button>
         </DialogFooter>
       </DialogContent>

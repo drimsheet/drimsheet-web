@@ -57,10 +57,6 @@ export interface BalanceHistoryContainerProps {
   summaryError: boolean;
 }
 
-export interface DashboardSkeletonProps {
-  section: 'summary' | 'history' | 'breakdown';
-}
-
 export interface DashboardErrorProps {
   title: string;
 }

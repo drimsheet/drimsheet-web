@@ -55,7 +55,9 @@ These rules are **always enforced**. Each links to a file with Incorrect/Correct
 - **Use `asChild` (radix) or `render` (base) for custom triggers.** Check `base` field from `npx shadcn@latest info`. → [base-vs-radix.md](./rules/base-vs-radix.md)
 - **Dialog, Sheet, and Drawer always need a Title.** `DialogTitle`, `SheetTitle`, `DrawerTitle` required for accessibility. Use `className="sr-only"` if visually hidden.
 - **Use full Card composition.** `CardHeader`/`CardTitle`/`CardDescription`/`CardContent`/`CardFooter`. Don't dump everything in `CardContent`.
-- **Button has no `isPending`/`isLoading`.** Compose with `Spinner` + `data-icon` + `disabled`.
+- **Use this repository's `Button loading={pending}`.** Keep the translated
+  action label stable; do not manually compose a spinner or loading text.
+  The local loading API takes precedence over upstream examples.
 - **`TabsTrigger` must be inside `TabsList`.** Never render triggers directly in `Tabs`.
 - **`Avatar` always needs `AvatarFallback`.** For when the image fails to load.
 
@@ -66,7 +68,9 @@ These rules are **always enforced**. Each links to a file with Incorrect/Correct
 - **Empty states use `Empty`.** Don't build custom empty state markup.
 - **Toast via `sonner`.** Use `toast()` from `sonner`.
 - **Use `Separator`** instead of `<hr>` or `<div className="border-t">`.
-- **Use `Skeleton`** for loading placeholders. No custom `animate-pulse` divs.
+- **Use component-owned skeletons** composed from `Skeleton`, following
+  [the repository loading and export rules](../../rules/file-responsibility-rules.md).
+  No manual loading text, custom `animate-pulse` divs, or unowned placeholders.
 - **Use `Badge`** instead of custom styled spans.
 
 ### Icons → [icons.md](./rules/icons.md)

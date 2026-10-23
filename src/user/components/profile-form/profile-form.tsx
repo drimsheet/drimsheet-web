@@ -8,7 +8,6 @@ import {
   FieldSet,
 } from '@/shared/components/field';
 import { Input } from '@/shared/components/input';
-import { Spinner } from '@/shared/components/spinner';
 import { useFieldErrorMessage } from '@/shared/hooks/use-field-error-message';
 import { useFormik } from 'formik';
 import { useId } from 'react';
@@ -50,7 +49,6 @@ export function ProfileForm({
   const last_name_label = t('profile_last_name_label');
   const cancel_label = t('profile_cancel_label');
   const save_label = t('profile_save_label');
-  const saving_label = t('profile_saving_label');
   const error_text = t('profile_save_error_text');
 
   return (
@@ -112,9 +110,8 @@ export function ProfileForm({
             >
               {cancel_label}
             </Button>
-            <Button type="submit" disabled={isBusy || !formik.dirty}>
-              {isBusy && <Spinner data-icon="inline-start" aria-hidden />}
-              {isBusy ? saving_label : save_label}
+            <Button type="submit" loading={isBusy} disabled={!formik.dirty}>
+              {save_label}
             </Button>
           </div>
         </FieldGroup>

@@ -34,7 +34,6 @@ export function CounterpartyShare({
 
   const unassigned_label = t('category_details_unassigned_label');
   const self_label = t('category_details_self_label');
-  const loading_label = t('category_details_share_loading_label');
   const error_text = t('details_load_error_text');
   const previous_label = t('category_details_share_previous_label');
   const next_label = t('category_details_share_next_label');
@@ -47,6 +46,8 @@ export function CounterpartyShare({
   const unavailable_label = t('category_details_share_unavailable_label');
   const signed_description = t('category_details_signed_share_description');
 
+  if (loading) return <CounterpartyShareSkeleton />;
+
   return (
     <PageSection
       title={title}
@@ -57,16 +58,6 @@ export function CounterpartyShare({
       <p className="text-sm text-muted-foreground">{description}</p>
 
       <div className="flex flex-col gap-3">
-        {loading && (
-          <div className="flex min-h-56 flex-col gap-5">
-            <output className="sr-only" aria-label={loading_label}>
-              {loading_label}
-            </output>
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        )}
         {!loading && error && (
           <Alert variant="destructive">
             <AlertDescription>{error_text}</AlertDescription>
@@ -164,6 +155,48 @@ export function CounterpartyShare({
             </Button>
           </div>
         )}
+      </div>
+    </PageSection>
+  );
+}
+
+export function CounterpartyShareSkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('category_details_share_loading_label');
+
+  const category_details_share_title = t('category_details_share_title');
+
+  const category_details_share_description = t(
+    'category_details_share_description'
+  );
+
+  return (
+    <PageSection
+      title={category_details_share_title}
+      className="min-w-0"
+      role="region"
+      aria-label={category_details_share_title}
+      aria-busy="true"
+    >
+      <p className="text-sm text-muted-foreground">
+        {category_details_share_description}
+      </p>
+      <div className="flex min-h-56 flex-col gap-3">
+        <output className="sr-only" aria-label={loading_label}>
+          {loading_label}
+        </output>
+        {[0, 1, 2].map((row) => (
+          <div
+            key={row}
+            className="flex min-h-11 min-w-0 flex-col gap-2 rounded-md p-2"
+          >
+            <div className="flex flex-wrap justify-between gap-x-3 gap-y-1">
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-5 w-24" />
+            </div>
+            <Skeleton className="h-1.5 w-full" />
+          </div>
+        ))}
       </div>
     </PageSection>
   );

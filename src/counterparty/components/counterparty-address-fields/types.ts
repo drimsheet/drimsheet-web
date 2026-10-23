@@ -25,3 +25,8 @@ export interface CounterpartyAddressFieldsProps {
   namePrefix?: string;
   className?: string;
 }
+
+export type CounterpartyAddressFieldsSkeletonProps = Pick<
+  CounterpartyAddressFieldsProps,
+  'showPostalCode'
+>;

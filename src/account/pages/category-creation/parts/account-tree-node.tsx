@@ -7,6 +7,7 @@ import {
 } from '@/shared/components/collapsible';
 import { Label } from '@/shared/components/label';
 import { RadioGroupItem } from '@/shared/components/radio-group';
+import { Skeleton } from '@/shared/components/skeleton';
 import { ChevronRight } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -75,6 +76,26 @@ export function AccountTreeNode({ account }: Readonly<AccountTreeNodeProps>) {
           </CollapsibleContent>
         )}
       </Collapsible>
+    </li>
+  );
+}
+
+export function AccountTreeNodeSkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('category_creation_accounts_loading');
+
+  return (
+    <li
+      aria-label={loading_label}
+      aria-busy="true"
+      className="flex min-w-0 items-center gap-2 rounded-md px-2"
+    >
+      <Skeleton className="size-8 shrink-0" />
+      <Skeleton className="size-4 shrink-0 rounded-full" />
+      <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-3 gap-y-1 py-3">
+        <Skeleton className="h-5 w-full max-w-40" />
+        <Skeleton className="h-4 w-16" />
+      </div>
     </li>
   );
 }

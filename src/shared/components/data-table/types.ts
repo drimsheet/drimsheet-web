@@ -94,3 +94,8 @@ export interface IColumnLayout {
   widths: (number | string)[];
   minWidth: number;
 }
+
+export type DataTableRowSkeletonProps = Pick<
+  DataTableSkeletonProps,
+  'columnsCount' | 'showSelection'
+>;

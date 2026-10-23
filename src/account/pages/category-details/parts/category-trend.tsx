@@ -5,6 +5,7 @@ import {
 } from '@/shared/components/chart';
 import { Empty, EmptyHeader, EmptyTitle } from '@/shared/components/empty';
 import { PageSection } from '@/shared/components/page-section';
+import { Skeleton } from '@/shared/components/skeleton';
 import { parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import {
@@ -124,6 +125,22 @@ export function CategoryTrend({
           </ChartContainer>
         )}
       </div>
+    </PageSection>
+  );
+}
+
+export function CategoryTrendSkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('details_loading_transactions_chart');
+
+  return (
+    <PageSection aria-busy="true" className="min-w-0">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
+      <Skeleton className="h-6 w-40" />
+      <Skeleton className="h-5 w-full max-w-64" />
+      <Skeleton className="h-56 w-full" />
     </PageSection>
   );
 }
