@@ -10,8 +10,6 @@ import {
 import { Skeleton } from '@/shared/components/skeleton';
 import { MoreHorizontal, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-// Private parts import owner contracts relatively, per the component ownership rules.
-// eslint-disable-next-line no-relative-import-paths/no-relative-import-paths
 import type { CounterpartyProfileActionsProps } from '../types';
 
 export function CounterpartyProfileActions({

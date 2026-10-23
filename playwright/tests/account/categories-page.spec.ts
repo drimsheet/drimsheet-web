@@ -230,7 +230,7 @@ test('filters and paginates accounts on the server while the month only changes 
   ).toBeVisible();
   expect(accountQueries.at(-1)?.has('type')).toBe(false);
   expect(summaryQueries.at(-1)?.get('to')).toBe('2026-10-14');
-  await page.getByRole('link', { name: '2', exact: true }).click();
+  await page.getByRole('button', { name: 'Next page', exact: true }).click();
   await expect.poll(() => accountQueries.at(-1)?.get('page')).toBe('2');
   await page.getByRole('tab', { name: 'Expenses', exact: true }).click();
   await expect.poll(() => accountQueries.at(-1)?.get('type')).toBe('expense');

@@ -301,22 +301,24 @@ test.describe('Counterparties Page Flow', () => {
     // 1. Filter by Status -> Active
     const statusHeader = page.getByTestId('column-header-status');
     await statusHeader.getByTestId('table-filter-trigger').click();
-    await page.getByRole('button', { name: 'Active', exact: true }).click();
-    await page.keyboard.press('Escape');
+    await page.getByRole('checkbox', { name: 'Active', exact: true }).check();
+    await page.getByRole('button', { name: 'Apply', exact: true }).click();
     await expect.poll(() => lastFilters.status).toBe('active');
 
     // 2. Filter by Type -> Individual
     const typeHeader = page.getByTestId('column-header-type');
     await typeHeader.getByTestId('table-filter-trigger').click();
-    await page.getByRole('button', { name: 'Individual', exact: true }).click();
-    await page.keyboard.press('Escape');
+    await page
+      .getByRole('checkbox', { name: 'Individual', exact: true })
+      .check();
+    await page.getByRole('button', { name: 'Apply', exact: true }).click();
     await expect.poll(() => lastFilters.type).toBe('individual');
 
     // 3. Filter by Role -> Vendor
     const rolesHeader = page.getByTestId('column-header-roles');
     await rolesHeader.getByTestId('table-filter-trigger').click();
-    await page.getByRole('button', { name: 'Vendor', exact: true }).click();
-    await page.keyboard.press('Escape');
+    await page.getByRole('checkbox', { name: 'Vendor', exact: true }).check();
+    await page.getByRole('button', { name: 'Apply', exact: true }).click();
     await expect.poll(() => lastFilters.roles).toContain('vendor');
   });
 
@@ -355,7 +357,7 @@ test.describe('Counterparties Page Flow', () => {
       );
     });
 
-    await nameHeader.click();
+    await nameHeader.getByRole('button', { name: 'Sort by Name' }).click();
     const request = await requestPromise;
     const url = new URL(request.url());
     expect(url.searchParams.get('orderBy')).toBe('name');
@@ -388,7 +390,11 @@ test.describe('Counterparties Page Flow', () => {
     await page.goto('/counterparties');
 
     // Verify second page link is visible and click it
-    const page2Link = page.getByRole('link', { name: '2', exact: true });
+    const page2Link = page.getByRole('button', {
+      name: 'Next page',
+      exact: true,
+    });
+
     await expect(page2Link).toBeVisible();
 
     const requestPromise = page.waitForRequest((req) => {

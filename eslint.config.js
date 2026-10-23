@@ -60,9 +60,12 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/*/{pages,dialogs}/*/{parts,hooks}/*.{ts,tsx}'],
+    files: [
+      'src/*/{pages,dialogs}/*/{parts,hooks}/*.{ts,tsx}',
+      'src/*/components/*/parts/*.{ts,tsx}',
+    ],
     rules: {
-      // Direct page and dialog parts and hooks may import their owner's private contracts.
+      // Private parts and hooks may import their owner's contracts and helpers.
       'no-relative-import-paths/no-relative-import-paths': [
         'warn',
         { allowSameFolder: true, allowedDepth: 1, rootDir: 'src', prefix: '@' },

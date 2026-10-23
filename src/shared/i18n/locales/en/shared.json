@@ -84,5 +84,16 @@
   "country_select_placeholder": "Select a country",
   "countries_empty_text": "No countries found.",
   "currency_select_placeholder": "Select a currency",
-  "currencies_empty_text": "No currencies found."
+  "currencies_empty_text": "No currencies found.",
+  "table_sort_label": "Sort by {{column}}",
+  "table_column_help_label": "About {{column}}",
+  "table_filter_active_label": "{{label}}, {{count}} active",
+  "table_filter_apply_action": "Apply",
+  "table_filter_search_label": "Search filter options",
+  "table_pagination_range": "{{start}}–{{end}} of {{total}}",
+  "table_pagination_page": "Page {{page}} of {{totalPages}}",
+  "table_pagination_filtered": "filtered from {{total}}",
+  "table_previous_page_label": "Previous page",
+  "table_next_page_label": "Next page",
+  "table_pagination_label": "Table pagination"
 }

@@ -4,6 +4,7 @@ import { ledgerAccountService } from '@/account/lib/services/ledger-account.serv
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
 import {
+  ELedgerAccountStatus,
   type IGetLedgerAccountsQuery,
   type ILedgerAccountDto,
   type ULedgerAccountSortBy,
@@ -40,8 +41,17 @@ export function LedgerAccountsTableContainer({
 
     const baseFilters = ledgerAccountService.getPettyBaseCashFilters();
 
+    const selectedStatus = tableQuery.filters.status?.[0];
+
+    const status =
+      selectedStatus === ELedgerAccountStatus.Active ||
+      selectedStatus === ELedgerAccountStatus.Archived
+        ? selectedStatus
+        : undefined;
+
     return {
       ...baseFilters,
+      status,
       search: debouncedSearchQuery || undefined,
       orderBy,
       sortDirection: tableQuery.sortDirection || undefined,
@@ -53,26 +63,15 @@ export function LedgerAccountsTableContainer({
     tableQuery.sortKey,
     tableQuery.sortDirection,
     tableQuery.page,
+    tableQuery.filters.status,
   ]);
 
   const { data: accountsData, isLoading } = useLedgerAccounts(query);
 
-  const filteredAccounts = useMemo(() => {
-    let list = accountsData?.data ?? [];
-
-    if (tableQuery.filters.status && tableQuery.filters.status.length > 0) {
-      list = list.filter((item) =>
-        tableQuery.filters.status.includes(item.status)
-      );
-    }
-
-    return list;
-  }, [accountsData?.data, tableQuery.filters]);
-
   return (
     <LedgerAccountsTable
       onAddAccount={onAddAccount}
-      data={filteredAccounts}
+      data={accountsData?.data ?? []}
       loading={isLoading}
       selectable
       selectedRowIds={selectedRowIds}

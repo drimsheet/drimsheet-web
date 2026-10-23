@@ -234,7 +234,7 @@ test('supplies counterparty-scoped search and sorting from the detail page', asy
       new URL(request.url()).searchParams.get('sortDirection') === 'asc'
   );
 
-  await page.getByRole('columnheader', { name: 'Date', exact: true }).click();
+  await page.getByRole('button', { name: 'Sort by Date', exact: true }).click();
   expect(
     Object.fromEntries(new URL((await sortRequest).url()).searchParams)
   ).toMatchObject({
@@ -250,7 +250,7 @@ test('supplies counterparty-scoped search and sorting from the detail page', asy
       new URL(request.url()).searchParams.get('sortDirection') === 'desc'
   );
 
-  await page.getByRole('columnheader', { name: 'Date', exact: true }).click();
+  await page.getByRole('button', { name: 'Sort by Date', exact: true }).click();
   expect(
     Object.fromEntries(new URL((await descendingRequest).url()).searchParams)
   ).toMatchObject({

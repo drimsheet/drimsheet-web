@@ -281,46 +281,106 @@ describe('DataTable', () => {
     expect(screen.queryByText('No records found')).not.toBeInTheDocument();
   });
 
-  it('renders active filter chips and handles individual removal or clear all', async () => {
+  it('applies header filters without sorting and resets optional pagination', async () => {
+    const user = userEvent.setup();
+
+    const onFilterChange = vi.fn(),
+      onSortChange = vi.fn(),
+      onPageChange = vi.fn();
+
+    render(
+      <DataTable
+        columns={[{ ...columns[1], sortable: true }]}
+        data={mockData}
+        currentSortKey="category"
+        currentSortDirection="desc"
+        onSortChange={onSortChange}
+        onFilterChange={onFilterChange}
+        pagination={{
+          meta: { page: 2, limit: 1, total: 3, totalPages: 3 },
+          onPageChange,
+        }}
+      />
+    );
+    await user.click(
+      screen.getByRole('button', { name: 'Filter by Category' })
+    );
+    await user.click(screen.getByRole('checkbox', { name: 'Fruit' }));
+    expect(onFilterChange).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Apply' }));
+    expect(onFilterChange).toHaveBeenCalledWith({ category: ['Fruit'] });
+    expect(onPageChange).toHaveBeenCalledWith(1);
+    expect(onSortChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('columnheader')).toHaveAttribute(
+      'aria-sort',
+      'descending'
+    );
+  });
+
+  it('supports keyboard sorting and clears the sort on the third activation', async () => {
+    const user = userEvent.setup();
+    const onSortChange = vi.fn();
+    render(
+      <DataTable
+        columns={[columns[0]]}
+        data={mockData}
+        currentSortKey="name"
+        currentSortDirection="desc"
+        onSortChange={onSortChange}
+      />
+    );
+    await user.tab();
+    await user.keyboard('{Enter}');
+    expect(onSortChange).toHaveBeenCalledWith('name', null);
+  });
+
+  it('clears a column filter without removing unrelated filters', async () => {
     const user = userEvent.setup();
     const onFilterChange = vi.fn();
+    render(
+      <DataTable
+        columns={columns}
+        data={mockData}
+        filters={{ category: ['Fruit'], name: ['Apple'] }}
+        onFilterChange={onFilterChange}
+      />
+    );
+    await user.click(
+      screen.getByRole('button', { name: 'Filter by Category, 1 active' })
+    );
+    await user.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(onFilterChange).toHaveBeenCalledWith({ name: ['Apple'] });
+    expect(screen.queryByText('Active filters:')).not.toBeInTheDocument();
+  });
+
+  it('preserves selection on other pages when selecting or deselecting the visible page', async () => {
+    const user = userEvent.setup();
+    const onRowSelectionChange = vi.fn();
 
     const { rerender } = render(
       <DataTable
         columns={columns}
         data={mockData}
-        filters={{ category: ['Fruit'] }}
-        onFilterChange={onFilterChange}
+        selectable
+        selectedRowIds={[99]}
+        onRowSelectionChange={onRowSelectionChange}
       />
     );
 
-    // Verify filter chip is rendered
-    expect(screen.getByText('Active filters:')).toBeInTheDocument();
-    expect(screen.getByText('Category:')).toBeInTheDocument();
-    expect(screen.getAllByText('Fruit').length).toBeGreaterThan(0);
-
-    // Click remove button of the chip
-    const removeBtn = screen.getByLabelText(/remove filter category is fruit/i);
-    await user.click(removeBtn);
-
-    expect(onFilterChange).toHaveBeenCalledWith({});
-
-    // Test with multiple filters to verify Clear All button
+    await user.click(screen.getByRole('checkbox', { name: 'Select all rows' }));
+    expect(onRowSelectionChange).toHaveBeenLastCalledWith([99, 1, 2, 3]);
     rerender(
       <DataTable
         columns={columns}
         data={mockData}
-        filters={{ category: ['Fruit', 'Vegetable'] }}
-        onFilterChange={onFilterChange}
+        selectable
+        selectedRowIds={[99, 1, 2, 3]}
+        onRowSelectionChange={onRowSelectionChange}
       />
     );
-
-    expect(screen.getAllByText('Fruit').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Vegetable').length).toBeGreaterThan(0);
-
-    const clearAllBtn = screen.getByRole('button', { name: /clear all/i });
-    await user.click(clearAllBtn);
-
-    expect(onFilterChange).toHaveBeenLastCalledWith({});
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Deselect all rows' })
+    );
+    expect(onRowSelectionChange).toHaveBeenLastCalledWith([99]);
   });
 });

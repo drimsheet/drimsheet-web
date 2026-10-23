@@ -267,7 +267,9 @@ for (const state of [
       exact: true,
     });
 
-    await expect(chart.getByText(/₦1,200,000/)).toBeVisible();
+    await expect(
+      chart.getByRole('definition').filter({ hasText: '₦1,200,000' })
+    ).toBeVisible();
     await expect(chart.locator('.recharts-bar')).toHaveCount(2);
     const chartTop = (await chart.boundingBox())!.y;
     if (state.bank)
@@ -322,7 +324,7 @@ test('changes the cash-flow period, paginates transactions, and opens a sub-acco
   await expect(page.getByRole('combobox', { name: 'Period' })).toHaveText(
     selectedMonth!
   );
-  await page.getByRole('link', { name: '2', exact: true }).click();
+  await page.getByRole('button', { name: 'Next page', exact: true }).click();
   await expect(page.getByText('Earlier sales')).toBeVisible();
   await expect(page.getByText('Sales', { exact: true })).toHaveCount(0);
   await page.route(`**/api/v1/ledger/${childId}`, (route) =>
@@ -448,7 +450,7 @@ test('searches and sorts account transactions and opens the shared details drawe
     .getByRole('button', { name: 'Close transaction details' })
     .click();
 
-  await recent.getByRole('link', { name: '2', exact: true }).click();
+  await recent.getByRole('button', { name: 'Next page', exact: true }).click();
   await expect(recent.getByText('Earlier sales')).toBeVisible();
 
   const sortRequest = page.waitForRequest((request) => {
@@ -460,7 +462,7 @@ test('searches and sorts account transactions and opens the shared details drawe
     );
   });
 
-  await recent.getByRole('columnheader', { name: 'Date' }).click();
+  await recent.getByRole('button', { name: 'Sort by Date' }).click();
   const sortQuery = new URL((await sortRequest).url()).searchParams;
   expect(sortQuery.get('accountId')).toBe(accountId);
   expect(sortQuery.get('page')).toBe('1');

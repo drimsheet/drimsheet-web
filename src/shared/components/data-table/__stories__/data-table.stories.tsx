@@ -2,346 +2,201 @@ import {
   DataTable,
   type IDataWithId,
   type ITableColumn,
+  type TableProps,
+  type TTableFilters,
+  type USortDirection,
 } from '@/shared/components/data-table';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import * as React from 'react';
+import { useMemo, useState } from 'react';
 
-interface IMockRow {
-  id: string | number;
+interface IExampleRow {
+  id: number;
   name: string;
-  currency: string;
-  status: 'ACTIVE' | 'PENDING' | 'INACTIVE';
-  balance: number;
-  createdOn: string;
+  account: string;
+  amount: number;
 }
 
-const mockData: IMockRow[] = [
-  {
-    id: 1,
-    name: 'Some name',
-    currency: 'NGN',
-    status: 'ACTIVE',
-    balance: 3000,
-    createdOn: 'Yesterday',
-  },
-  {
-    id: 2,
-    name: 'Another name',
-    currency: 'NGN',
-    status: 'ACTIVE',
-    balance: 4500,
-    createdOn: '12 Jan, 2026',
-  },
-  {
-    id: 3,
-    name: 'Standard USD Ledger',
-    currency: 'USD',
-    status: 'ACTIVE',
-    balance: 2450,
-    createdOn: '12 Jan, 2026',
-  },
-  {
-    id: 4,
-    name: 'Secondary USD Savings',
-    currency: 'USD',
-    status: 'PENDING',
-    balance: 100,
-    createdOn: '15 Jan, 2026',
-  },
-  {
-    id: 5,
-    name: 'GBP Settlement Account',
-    currency: 'GBP',
-    status: 'INACTIVE',
-    balance: 0,
-    createdOn: '01 Feb, 2026',
-  },
+const rows: IExampleRow[] = [
+  { id: 1, name: 'Acme Studio', account: 'Operating', amount: 425000 },
+  { id: 2, name: 'Figma', account: 'Operating', amount: 24500 },
+  { id: 3, name: 'Studio equipment', account: 'Savings', amount: 210000 },
+  { id: 4, name: 'Northstar Ltd.', account: 'Operating', amount: 280000 },
+  { id: 5, name: 'Monthly reserve', account: 'Savings', amount: 150000 },
 ];
 
-const columns: ITableColumn<IMockRow>[] = [
+const columns: ITableColumn<IExampleRow>[] = [
   {
     dataIndex: 'name',
-    title: 'Name',
+    title: 'Summary',
+    proportion: 2.5,
+    minWidth: 200,
     sortable: true,
-    tooltip: 'The user-assigned description or name of the account ledger',
   },
   {
-    dataIndex: 'currency',
-    title: 'Currency',
+    dataIndex: 'account',
+    title: 'Account',
+    proportion: 1.5,
+    minWidth: 180,
     sortable: true,
     filterable: true,
     filterOptions: [
-      { label: 'NGN - Nigerian Naira', value: 'NGN' },
-      { label: 'USD - US Dollar', value: 'USD' },
-      { label: 'GBP - British Pound', value: 'GBP' },
+      { label: 'Operating', value: 'Operating' },
+      { label: 'Savings', value: 'Savings' },
     ],
   },
   {
-    dataIndex: 'status',
-    title: 'Status',
+    dataIndex: 'amount',
+    title: 'Amount · NGN',
+    align: 'right',
+    proportion: 1.5,
+    minWidth: 160,
     sortable: true,
-    filterable: true,
-    filterOptions: [
-      { label: 'Active', value: 'ACTIVE' },
-      { label: 'Pending', value: 'PENDING' },
-      { label: 'Inactive', value: 'INACTIVE' },
-    ],
-    render: (value) => {
-      const status = value as IMockRow['status'];
-
-      const colors = {
-        ACTIVE:
-          'bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20 border-emerald-500/20',
-        PENDING:
-          'bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 border-amber-500/20',
-        INACTIVE:
-          'bg-gray-500/10 text-gray-500 dark:bg-gray-500/20 border-gray-500/20',
-      };
-
-      return (
-        <span
-          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${colors[status]}`}
-        >
-          {status}
-        </span>
-      );
-    },
-  },
-  {
-    dataIndex: 'balance',
-    title: 'Balance',
-    sortable: true,
-    render: (value, row) => {
-      const num = value as number;
-
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: row.currency,
-      }).format(num);
-
-      return (
-        <span className="font-mono font-bold text-foreground">{formatted}</span>
-      );
-    },
-  },
-  {
-    dataIndex: 'createdOn',
-    title: 'Created On',
-    sortable: true,
+    render: (value) =>
+      Number(value).toLocaleString('en-NG', { minimumFractionDigits: 2 }),
   },
 ];
 
-// Controlled wrapper for interactive client-side sorting/filtering/selection
-export interface IControlledDataTableWrapperProps<T extends IDataWithId> {
-  columns: ITableColumn<T>[];
-  data: T[];
-  filters?: Record<string, (string | number)[]>;
-  currentSortKey?: string;
-  currentSortDirection?: 'asc' | 'desc' | null;
-  selectedRowIds?: (string | number)[];
+interface ControlledDataTableWrapperProps<
+  T extends IDataWithId,
+> extends TableProps<T> {
+  paginate?: boolean;
 }
-
-export const ControlledDataTableWrapper = <T extends IDataWithId>({
+export function ControlledDataTableWrapper<T extends IDataWithId>({
+  data,
   columns,
-  data: initialData,
-  filters: initialFilters = {},
-  currentSortKey: initialSortKey,
-  currentSortDirection: initialSortDirection = null,
-  selectedRowIds: initialSelectedRowIds = [],
+  filters: controlledFilters,
+  currentSortKey: controlledKey,
+  currentSortDirection: controlledDirection,
+  selectedRowIds: controlledSelection,
+  paginate = false,
   ...props
-}: IControlledDataTableWrapperProps<T>) => {
-  const [currentSortKey, setCurrentSortKey] = React.useState<
-    string | undefined
-  >(initialSortKey);
+}: ControlledDataTableWrapperProps<T>) {
+  const [localFilters, setFilters] = useState<TTableFilters>({});
+  const [localKey, setKey] = useState<string>();
+  const [localDirection, setDirection] = useState<USortDirection>(null);
+  const [localSelection, setSelection] = useState<(string | number)[]>([]);
+  const [page, setPage] = useState(1);
+  const filters = controlledFilters ?? localFilters;
+  const key = controlledKey ?? localKey;
 
-  const [currentSortDirection, setCurrentSortDirection] = React.useState<
-    'asc' | 'desc' | null
-  >(initialSortDirection);
+  const direction =
+    controlledDirection === undefined ? localDirection : controlledDirection;
 
-  const [filters, setFilters] =
-    React.useState<Record<string, (string | number)[]>>(initialFilters);
-
-  const [selectedRowIds, setSelectedRowIds] = React.useState<
-    (string | number)[]
-  >(initialSelectedRowIds);
-
-  React.useEffect(() => {
-    setCurrentSortKey((prev) =>
-      prev === initialSortKey ? prev : initialSortKey
+  const filtered = useMemo(() => {
+    const result = data.filter((row) =>
+      Object.entries(filters).every(
+        ([key, values]) =>
+          !values.length ||
+          values.includes(row[key as keyof T] as string | number)
+      )
     );
-  }, [initialSortKey]);
 
-  React.useEffect(() => {
-    setCurrentSortDirection((prev) =>
-      prev === initialSortDirection ? prev : initialSortDirection
-    );
-  }, [initialSortDirection]);
-
-  React.useEffect(() => {
-    setFilters((prev) => {
-      if (JSON.stringify(prev) === JSON.stringify(initialFilters)) {
-        return prev;
-      }
-
-      return initialFilters;
-    });
-  }, [initialFilters]);
-
-  React.useEffect(() => {
-    setSelectedRowIds((prev) => {
-      if (JSON.stringify(prev) === JSON.stringify(initialSelectedRowIds)) {
-        return prev;
-      }
-
-      return initialSelectedRowIds;
-    });
-  }, [initialSelectedRowIds]);
-
-  // Parent filters and sorts the data client-side
-  const processedData = React.useMemo(() => {
-    let result = [...initialData];
-
-    // 1. Filter
-    Object.entries(filters).forEach(([key, values]) => {
-      if (values.length > 0) {
-        result = result.filter((row) => {
-          const val = row[key as keyof T];
-
-          return values.includes(val as string | number);
-        });
-      }
-    });
-
-    // 2. Sort
-    if (currentSortKey && currentSortDirection) {
+    if (key && direction)
       result.sort((a, b) => {
-        const valA = a[currentSortKey as keyof T];
-        const valB = b[currentSortKey as keyof T];
-        let comparison = 0;
-        if (typeof valA === 'number' && typeof valB === 'number') {
-          comparison = valA - valB;
-        } else {
-          comparison = String(valA).localeCompare(String(valB));
-        }
+        const left = a[key as keyof T],
+          right = b[key as keyof T];
 
-        return currentSortDirection === 'asc' ? comparison : -comparison;
+        const compared =
+          typeof left === 'number' && typeof right === 'number'
+            ? left - right
+            : String(left).localeCompare(String(right));
+
+        return direction === 'asc' ? compared : -compared;
       });
-    }
 
     return result;
-  }, [initialData, filters, currentSortKey, currentSortDirection]);
+  }, [data, filters, key, direction]);
+
+  const handleSort = (key: keyof T, direction: USortDirection) => {
+    setKey(String(key));
+    setDirection(direction);
+    setPage(1);
+  };
+
+  const handleFilter = (filters: TTableFilters) => {
+    setFilters(filters);
+    setPage(1);
+  };
 
   return (
     <DataTable
-      columns={columns}
-      data={processedData}
-      currentSortKey={currentSortKey}
-      currentSortDirection={currentSortDirection}
-      onSortChange={(key, dir) => {
-        setCurrentSortKey(String(key));
-        setCurrentSortDirection(dir);
-      }}
-      filters={filters}
-      onFilterChange={setFilters}
-      selectedRowIds={selectedRowIds}
-      onRowSelectionChange={setSelectedRowIds}
       {...props}
+      columns={columns}
+      data={paginate ? filtered.slice((page - 1) * 2, page * 2) : filtered}
+      filters={filters}
+      onFilterChange={handleFilter}
+      currentSortKey={key}
+      currentSortDirection={direction}
+      onSortChange={handleSort}
+      selectedRowIds={controlledSelection ?? localSelection}
+      onRowSelectionChange={setSelection}
+      pagination={
+        paginate
+          ? {
+              meta: {
+                page,
+                limit: 2,
+                total: filtered.length,
+                totalPages: Math.ceil(filtered.length / 2),
+              },
+              onPageChange: setPage,
+              unfilteredTotal: data.length,
+            }
+          : undefined
+      }
     />
   );
-};
+}
 
 const meta = {
   title: 'Shared UI/DataTable',
-  component: DataTable,
+  component: DataTable<IExampleRow>,
   tags: ['autodocs'],
-  decorators: [
-    (Story) => (
-      <div className="w-full max-w-4xl p-6 bg-background rounded-2xl border border-border/80">
-        <Story />
-      </div>
-    ),
-  ],
-} satisfies Meta<typeof DataTable>;
+  args: { columns, data: rows },
+  parameters: { layout: 'padded' },
+} satisfies Meta<typeof DataTable<IExampleRow>>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
 export const Default: Story = {
-  args: {
-    columns: columns as unknown as ITableColumn<IDataWithId>[],
-    data: mockData as IDataWithId[],
-    selectable: true,
-    stickyHeader: true,
-  },
+  render: (args) => <ControlledDataTableWrapper {...args} />,
 };
-
-export const WithoutSelection: Story = {
-  args: {
-    columns: columns as unknown as ITableColumn<IDataWithId>[],
-    data: mockData as IDataWithId[],
-    selectable: false,
-  },
-};
-
-export const InteractiveSelection: Story = {
-  args: {
-    columns: [],
-    data: [],
-  },
-  render: () => {
-    const [selectedIds, setSelectedIds] = React.useState<(string | number)[]>([
-      2, 4,
-    ]);
-
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between text-sm bg-muted/30 border border-border px-4 py-2 rounded-lg">
-          <span className="font-semibold text-foreground">
-            Selected Item IDs:
-          </span>
-          <span className="font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-            [{selectedIds.join(', ')}]
-          </span>
-        </div>
-        <DataTable
-          columns={columns as unknown as ITableColumn<IDataWithId>[]}
-          data={mockData as IDataWithId[]}
-          selectable={true}
-          selectedRowIds={selectedIds}
-          onRowSelectionChange={setSelectedIds}
-        />
-      </div>
-    );
-  },
-};
-
-export const LoadingState: Story = {
-  args: {
-    columns: columns as unknown as ITableColumn<IDataWithId>[],
-    data: [],
-    loading: true,
-  },
-};
-
-export const EmptyState: Story = {
-  args: {
-    columns: columns as unknown as ITableColumn<IDataWithId>[],
-    data: [],
-    loading: false,
-  },
-};
-
 export const InteractiveSortingAndFiltering: Story = {
+  render: (args) => <ControlledDataTableWrapper {...args} paginate />,
+};
+export const Selection: Story = {
+  render: (args) => (
+    <ControlledDataTableWrapper {...args} selectable paginate />
+  ),
+};
+export const LoadingState: Story = { args: { data: [], loading: true } };
+export const EmptyState: Story = { args: { data: [] } };
+export const CustomHeadersAndSizing: Story = {
   args: {
-    columns: [],
-    data: [],
+    rowHeight: 48,
+    headerFontSize: 12,
+    bodyFontSize: 13,
+    columns: [
+      {
+        ...columns[0],
+        proportion: 3,
+        headerRender: () => <span>Transaction summary</span>,
+        tooltip: 'The transaction description',
+      },
+      { ...columns[1], width: 200 },
+      columns[2],
+    ],
   },
-  render: () => {
-    return (
-      <ControlledDataTableWrapper
-        columns={columns as unknown as ITableColumn<IDataWithId>[]}
-        data={mockData as IDataWithId[]}
-      />
-    );
+};
+export const LongContent: Story = {
+  args: {
+    data: [
+      {
+        id: 1,
+        name: 'An unusually long transaction description that remains readable at narrow widths',
+        account: 'Operating',
+        amount: 1234567890.12,
+      },
+    ],
   },
 };

@@ -236,7 +236,7 @@ test('lists transactions at the index route and preserves creation routes', asyn
   expect(journalQueries[0].get('sortDirection')).toBe('desc');
 
   await page.getByPlaceholder('Search transactions...').fill('gift');
-  await page.getByRole('columnheader', { name: 'Date' }).click();
+  await page.getByRole('button', { name: 'Sort by Date' }).click();
   await expect(page).toHaveURL(/q=gift/);
   await expect(page).toHaveURL(/order=asc/);
   await expect

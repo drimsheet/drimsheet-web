@@ -177,7 +177,7 @@ describe('TransactionsTable', () => {
       screen.getByRole('columnheader', { name: 'Direction' })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('columnheader', { name: 'Date' })
+      screen.getByRole('button', { name: 'Sort by Date' })
     ).toBeInTheDocument();
     expect(
       screen.getByRole('columnheader', { name: 'Account' })
@@ -273,8 +273,8 @@ describe('TransactionsTable', () => {
       screen.getByPlaceholderText('Search transactions...'),
       'gift'
     );
-    await user.click(screen.getByRole('columnheader', { name: 'Date' }));
-    await user.click(screen.getByRole('link', { name: '2' }));
+    await user.click(screen.getByRole('button', { name: 'Sort by Date' }));
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
 
     expect(onSearchChange).toHaveBeenCalled();
     expect(onSortChange).toHaveBeenCalledWith('effectiveDate', 'asc');

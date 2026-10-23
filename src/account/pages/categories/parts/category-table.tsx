@@ -52,6 +52,8 @@ export function CategoryTable({
     return [
       {
         dataIndex: 'accountName',
+        proportion: 2,
+        minWidth: 240,
         title: name_label,
         render: (_, account) => (
           <button
@@ -76,6 +78,7 @@ export function CategoryTable({
       },
       {
         dataIndex: 'amount',
+        align: 'right',
         title: balance_label,
         render: (_, account) => (
           <Money
@@ -86,6 +89,7 @@ export function CategoryTable({
       },
       {
         dataIndex: 'sharePercentage',
+        align: 'right',
         title: share_label,
         render: (_, account) => (
           <span className="tabular-nums">
@@ -98,6 +102,7 @@ export function CategoryTable({
       },
       {
         dataIndex: 'transactionCount',
+        align: 'right',
         title: transactions_label,
         render: (_, account) => (
           <span className="tabular-nums">
@@ -117,6 +122,7 @@ export function CategoryTable({
       },
       {
         dataIndex: 'id',
+        width: 72,
         headerRender: () => <span className="sr-only">{actions_label}</span>,
         render: (_, account) => (
           <CategoryRowActions

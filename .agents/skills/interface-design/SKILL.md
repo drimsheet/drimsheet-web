@@ -92,8 +92,6 @@ and Ramp charcoal anchors in subsequent interface work.
 - **Content:** title and purpose first, then the task. Keep secondary upload/help
   panels quieter than the working form. Present related metrics as an aligned
   group rather than an obligatory grid of separate cards.
-- **Tables:** restrained row separators, aligned amounts, and understated hover
-  feedback. Keep essential actions available without hover.
 - **Responsive layout:** reflow controls and panels before shrinking text. Collapse
   the sidebar through the existing accessible navigation pattern. Keep a visible,
   accessible menu trigger available within the page composition when the sidebar
@@ -126,6 +124,32 @@ Inspect existing primitives before building controls. Prefer native semantics an
 installed accessible components; compose the repository's controls instead of
 hand-rolling dropdown, dialog, date-picker, or keyboard behavior. Follow the
 repository's UI component and shadcn workflows when implementation is requested.
+
+## Tables
+
+- **Scope:** reusable tables contain only header, body, and optional pagination.
+  Compose titles, search, and page actions outside the table.
+- **Appearance:** use the page surface, muted header, quiet horizontal separators,
+  subtle hover, and a 6px outer radius; no shadows or vertical gridlines. Keep
+  amounts neutral, right-aligned, and tabular; align their headers accordingly.
+- **Typography:** uppercase headers at 11–12px, medium weight, and approximately
+  0.07em tracking; body text at 13–14px, regular weight with selective emphasis.
+  Configure header and body sizes separately.
+- **Sizing:** default to a 42px header, 60px rows, and 16px horizontal cell padding.
+  Column width/proportion and minimum width are independent of row height.
+  Preserve readable minimums and contain horizontal scrolling on narrow screens.
+- **Columns:** independently configure label/custom header, cell rendering,
+  alignment, width/proportion, minimum width, optional help, sorting, and filtering.
+  Use one configurable table, not separate layouts for density presets.
+- **Controls:** sortable labels show direction; adjacent filter buttons have
+  separate targets and an active count with a subtle Butter treatment. Plain
+  columns show labels only. Filter popovers use Apply and Clear; opening or
+  applying filters preserves sorting. Apply/Clear resets pagination and updates
+  filtered counts; zero matches shows an empty state.
+- **Accessibility:** keep controls visible without hover; provide named keyboard
+  controls, visible focus, `aria-sort`, and filter expanded state. Popovers dismiss
+  with Escape/outside click and return focus appropriately; reuse existing
+  accessible primitives and prevent clipping within the table scroll area.
 
 ## Hybrid financial charts
 

@@ -12,7 +12,6 @@ import { DataTable, type ITableColumn } from '@/shared/components/data-table';
 import { FormattedDate } from '@/shared/components/date';
 import { SearchField } from '@/shared/components/search-field';
 import { StatusBadge } from '@/shared/components/status-badge';
-import { TablePagination } from '@/shared/components/table-pagination';
 import {
   ECounterpartyRole,
   ECounterpartyStatus,
@@ -73,6 +72,8 @@ export function CounterpartiesTable({
     return [
       {
         dataIndex: 'name',
+        proportion: 2.5,
+        minWidth: 220,
         title: counterparty_name_label,
         sortable: true,
         render: (value, row) =>
@@ -90,8 +91,9 @@ export function CounterpartiesTable({
       {
         dataIndex: 'status',
         title: status_text,
-        sortable: true,
+        sortable: false,
         filterable: true,
+        filterMultiple: false,
         filterOptions: [
           { label: active_label, value: ECounterpartyStatus.Active },
           { label: archived_label, value: ECounterpartyStatus.Archived },
@@ -109,8 +111,9 @@ export function CounterpartiesTable({
       {
         dataIndex: 'type',
         title: type_label,
-        sortable: true,
+        sortable: false,
         filterable: true,
+        filterMultiple: false,
         filterOptions: [
           { label: individual_label, value: ECounterpartyType.Individual },
           { label: organization_label, value: ECounterpartyType.Organization },
@@ -165,6 +168,7 @@ export function CounterpartiesTable({
       },
       {
         dataIndex: 'id',
+        width: 72,
         title: '',
         sortable: false,
         render: (_, row) => (
@@ -214,6 +218,11 @@ export function CounterpartiesTable({
 
       <DataTable
         columns={columns}
+        pagination={
+          pagination && onPageChange
+            ? { meta: pagination, onPageChange }
+            : undefined
+        }
         data={data}
         loading={loading}
         selectable={selectable}
@@ -228,13 +237,6 @@ export function CounterpartiesTable({
         data-testid={dataTestId}
         filters={filters}
       />
-      {pagination && onPageChange && (
-        <TablePagination
-          meta={pagination}
-          onPageChange={onPageChange}
-          className="mx-0 w-auto justify-end"
-        />
-      )}
     </div>
   );
 }

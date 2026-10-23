@@ -29,7 +29,7 @@ describe('CategoryTransactions', () => {
     expect(
       screen.queryByText('Subscription 0', { exact: true })
     ).not.toBeInTheDocument();
-    await user.click(screen.getByRole('link', { name: /^2$/ }));
+    await user.click(screen.getByRole('button', { name: 'Next page' }));
     expect(
       screen.getByText('Subscription 0', { exact: true })
     ).toBeInTheDocument();
