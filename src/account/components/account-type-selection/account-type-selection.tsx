@@ -101,7 +101,7 @@ export function AccountTypeSelection({
               htmlFor={optionId}
               className={cn(
                 'flex cursor-pointer items-center gap-4 rounded-lg border border-border p-3 outline-none transition-all',
-                'focus-within:ring-2 focus-within:ring-ring',
+                'has-[[data-slot=radio-group-item]:focus-visible]:ring-1 has-[[data-slot=radio-group-item]:focus-visible]:ring-ring',
                 isSelected
                   ? 'bg-selection text-selection-foreground hover:bg-selection-hover border-primary shadow-sm'
                   : 'bg-card text-card-foreground hover:bg-accent',

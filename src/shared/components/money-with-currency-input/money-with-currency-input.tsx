@@ -153,7 +153,7 @@ const MoneyWithCurrencyInput = forwardRef<
         <div
           ref={controlRef}
           className={cn(
-            'flex h-9 w-full min-w-0 items-center overflow-hidden rounded-md border border-input bg-input-surface shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring has-aria-invalid:border-destructive-border has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:border-destructive-border dark:has-aria-invalid:ring-destructive/40',
+            'flex h-9 w-full min-w-0 items-center overflow-hidden rounded-md border border-input bg-input-surface shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-2 focus-within:ring-ring has-aria-invalid:border-destructive-border has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:border-destructive-border dark:has-aria-invalid:ring-destructive/40',
             className
           )}
           data-slot="money-with-currency-input"
