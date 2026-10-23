@@ -1,5 +1,6 @@
 import type { IAccountingEntityFormValues } from '@/accounting/components/accounting-entity-form';
 import type { IFinancialYearFormValues } from '@/accounting/components/financial-year-form';
+import type { IReportsFormValues } from '@/accounting/components/reports-form';
 import logoImg from '@/shared/assets/logo.svg';
 import { AppHeader } from '@/shared/components/app';
 import { SidebarProvider } from '@/shared/components/sidebar';
@@ -10,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccountingEntityStep } from './parts/accounting-entity-step';
 import { FinancialYearStep } from './parts/financial-year-step';
+import { IncomeCategoriesStep } from './parts/income-categories-step';
 import { ReportsStep } from './parts/reports-step';
 import { AccountingEntityOnboardingSidebar } from './parts/sidebar';
 
@@ -22,6 +24,8 @@ export function AccountingEntityOnboardingPage() {
 
   const [financialYearValues, setFinancialYearValues] =
     useState<IFinancialYearFormValues>();
+
+  const [reportsValues, setReportsValues] = useState<IReportsFormValues>();
 
   const [currentDate] = useState(() => dateUtils.formatDateForApi(new Date()));
   const mainRef = useRef<HTMLElement>(null);
@@ -49,6 +53,11 @@ export function AccountingEntityOnboardingPage() {
   const handleFinancialYearSubmit = (values: IFinancialYearFormValues) => {
     setFinancialYearValues(values);
     setCurrentStep(3);
+  };
+
+  const handleReportsSubmit = (values: IReportsFormValues) => {
+    setReportsValues(values);
+    setCurrentStep(4);
   };
 
   useEffect(() => {
@@ -112,7 +121,13 @@ export function AccountingEntityOnboardingPage() {
                 currentDate={currentDate}
                 maxFiscalMonths={jurisdiction?.maxFiscalMonths}
                 onBack={() => setCurrentStep(2)}
+                onSubmit={handleReportsSubmit}
               />
+            </div>
+          )}
+          {reportsValues && (
+            <div className={currentStep === 4 ? 'flex flex-1' : 'hidden'}>
+              <IncomeCategoriesStep onBack={() => setCurrentStep(3)} />
             </div>
           )}
         </main>

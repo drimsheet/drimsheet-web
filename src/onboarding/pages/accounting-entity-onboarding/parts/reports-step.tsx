@@ -17,10 +17,12 @@ export function ReportsStep({
   onBack,
   financialYear,
   currencies,
+  onSubmit,
 }: Readonly<ReportsStepProps>) {
   const { t } = useTranslation('onboarding');
 
   const titleId = useId();
+  const formId = useId();
 
   const title = t('reports_step_title');
   const description = t('reports_step_description');
@@ -37,7 +39,7 @@ export function ReportsStep({
           <Button type="button" variant="outline" onClick={onBack}>
             {back_label}
           </Button>
-          <Button type="button">
+          <Button type="submit" form={formId}>
             {continue_label}
             <ArrowRight data-icon="inline-end" />
           </Button>
@@ -75,6 +77,8 @@ export function ReportsStep({
           </CollapsibleContent>
         </Collapsible>
         <ReportsForm
+          id={formId}
+          onSubmit={onSubmit}
           financialYear={financialYear}
           currencies={currencies}
           currentDate={currentDate}

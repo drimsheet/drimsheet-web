@@ -258,7 +258,7 @@ for (const viewport of [
   { name: 'desktop', width: 1280, height: 900 },
   { name: 'mobile', width: 375, height: 812 },
 ]) {
-  test(`builds financial year and reports with bounded period scrolling on ${viewport.name}`, async ({
+  test(`builds financial year, reports, and income categories on ${viewport.name}`, async ({
     page,
   }, testInfo) => {
     const expectPinnedActions = async (
@@ -468,7 +468,7 @@ for (const viewport of [
       .getByRole('combobox', { name: 'Currency for your reports' })
       .click();
     await page.getByRole('option', { name: /Nigerian Naira/ }).click();
-    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect(page.getByRole('listbox')).not.toBeVisible();
     await reportPeriods
       .getByRole('textbox', { name: 'Quarter 1', exact: true })
       .fill('Board review');
@@ -480,8 +480,63 @@ for (const viewport of [
       .getByRole('button', { name: 'Continue to income categories' })
       .click();
     await expect(
-      page.getByRole('heading', { name: 'Set up your reports' })
+      page.getByRole('heading', { name: 'Choose your income categories' })
     ).toBeVisible();
+    await expect(page.getByRole('main')).toContainText('Step 4 of 5');
+    await expectPinnedActions(
+      'Choose your income categories',
+      'Continue to expense categories'
+    );
+    if (viewport.name === 'desktop') {
+      await expect(
+        page
+          .getByRole('navigation', { name: 'Onboarding steps' })
+          .getByRole('listitem')
+          .nth(3)
+      ).toHaveAttribute('aria-current', 'step');
+    }
+
+    await expect(page.getByRole('status')).toHaveText('4 selected');
+    await page.screenshot({
+      path: testInfo.outputPath('income-categories.png'),
+      animations: 'disabled',
+    });
+    await page.getByRole('checkbox', { name: 'Gifts (Default)' }).uncheck();
+    await page.getByRole('button', { name: 'Add income category' }).click();
+    await page.getByRole('combobox', { name: /Parent account/ }).click();
+    await page.getByRole('option', { name: 'Services', exact: true }).click();
+    await page
+      .getByRole('textbox', { name: /Category name/ })
+      .fill('Consulting');
+    await page.getByRole('button', { name: 'Add to setup' }).click();
+    await expect(
+      page.getByRole('checkbox', { name: 'Consulting' })
+    ).toBeChecked();
+    await expect(page.getByRole('status')).toHaveText('4 selected');
+    await page
+      .getByRole('button', { name: 'Continue to expense categories' })
+      .click();
+    await expect(
+      page.getByRole('heading', { name: 'Choose your income categories' })
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'About income categories' }).click();
+    await expect(
+      page.getByRole('button', { name: 'About income categories' })
+    ).toHaveAttribute('aria-expanded', 'false');
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(
+      page.getByRole('textbox', { name: 'Reporting setup name' })
+    ).toHaveValue('Board pack');
+    await page
+      .getByRole('button', { name: 'Continue to income categories' })
+      .click();
+    await expect(
+      page.getByRole('checkbox', { name: 'Consulting' })
+    ).toBeChecked();
+    await expect(
+      page.getByRole('checkbox', { name: 'Gifts (Default)' })
+    ).not.toBeChecked();
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
     await expect(page.getByRole('alert')).toHaveCount(0);
     await page
       .getByRole('button', { name: 'How reporting periods work' })

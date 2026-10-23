@@ -23,5 +23,10 @@
   "reports_step_description": "Name your reporting setup, then choose its currency and periods.",
   "reports_about_title": "How reporting periods work",
   "reports_about_description": "Each period is the date range a report covers. You choose its name; dates and the current period are calculated automatically.",
-  "reports_continue_label": "Continue to income categories"
+  "reports_continue_label": "Continue to income categories",
+  "income_categories_step_title": "Choose your income categories",
+  "income_categories_step_description": "Select the categories you want to create.",
+  "income_categories_about_title": "About income categories",
+  "income_categories_about_description": "Income categories group similar earnings. Every category needs a parent; Drimsheet sets up the required parent groups automatically.",
+  "income_categories_continue_label": "Continue to expense categories"
 }

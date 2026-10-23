@@ -33,7 +33,15 @@ export interface AccountingEntityOnboardingSidebarProps {
 
 export interface ReportsStepProps extends Pick<
   ReportsFormProps,
-  'financialYear' | 'currencies' | 'currentDate' | 'maxFiscalMonths'
+  | 'financialYear'
+  | 'currencies'
+  | 'currentDate'
+  | 'maxFiscalMonths'
+  | 'onSubmit'
 > {
+  onBack: () => void;
+}
+
+export interface IncomeCategoriesStepProps {
   onBack: () => void;
 }
