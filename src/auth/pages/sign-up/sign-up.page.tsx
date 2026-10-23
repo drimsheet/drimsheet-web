@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from '@/shared/components/card';
 import { FieldDescription, FieldSeparator } from '@/shared/components/field';
+import { PageTitle } from '@/shared/components/page-title';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -52,9 +53,7 @@ export function SignUpPage() {
           <CardHeader className="flex flex-col items-center gap-4">
             <img src={emailSentImg} alt={email_sent_text} />
             <CardTitle>
-              <h1 className="font-heading text-2xl/4  font-medium">
-                {account_created_success_title}
-              </h1>
+              <PageTitle>{account_created_success_title}</PageTitle>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
@@ -75,9 +74,7 @@ export function SignUpPage() {
             <BrandLogo alt="" className="mb-2 w-48" />
             <span className="sr-only">{drimsheet_limited}.</span>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {create_account_text}
-          </h1>
+          <PageTitle>{create_account_text}</PageTitle>
         </div>
 
         <div className="grid gap-4">

@@ -2,8 +2,10 @@ import { AccountingEntityCreationDialog } from '@/accounting/dialogs/accounting-
 import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entities';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
 import { Alert, AlertDescription } from '@/shared/components/alert';
-import { AppBody, AppHeaderTitle } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
 import { Plus } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -36,10 +38,10 @@ export function LegalEntityPage() {
 
   return (
     <AppBody>
-      <div className="flex min-w-0 flex-col gap-8 md:gap-12">
+      <div className="flex min-w-0 flex-col">
         <header className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex min-w-0 flex-col gap-2.5">
-            <AppHeaderTitle className="m-0">{title}</AppHeaderTitle>
+            <PageTitle className="m-0">{title}</PageTitle>
             <p className="m-0 text-sm text-muted-foreground">{description}</p>
           </div>
           <Button
@@ -52,13 +54,10 @@ export function LegalEntityPage() {
             {add_label}
           </Button>
         </header>
-        <section
+        <PageSection
           aria-label={section_title}
-          className="flex min-w-0 flex-col gap-4"
+          title={entities.data ? section_count : section_title}
         >
-          <h2 className="m-0 text-xs font-medium uppercase tracking-[0.07em] text-muted-foreground">
-            {entities.data ? section_count : section_title}
-          </h2>
           {entities.isError && (
             <Alert variant="destructive">
               <AlertDescription>
@@ -86,7 +85,7 @@ export function LegalEntityPage() {
               }
             />
           )}
-        </section>
+        </PageSection>
       </div>
       {showCreation && (
         <AccountingEntityCreationDialog

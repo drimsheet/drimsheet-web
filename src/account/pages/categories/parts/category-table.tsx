@@ -7,6 +7,7 @@ import {
   EmptyTitle,
 } from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
+import { PageSection } from '@/shared/components/page-section';
 import { SearchField } from '@/shared/components/search-field';
 import { StatusBadge } from '@/shared/components/status-badge';
 import { TablePagination } from '@/shared/components/table-pagination';
@@ -154,16 +155,15 @@ export function CategoryTable({
   ];
 
   return (
-    <section aria-label={title} className="flex min-w-0 flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <h2 className="m-0 text-xs font-medium uppercase tracking-[0.07em] text-muted-foreground">
-          {title}
-        </h2>
+    <PageSection
+      title={title}
+      titleAdornment={
         <CategoryHelp label={table_help_label}>
           <p>{description}</p>
           <p>{details_text}</p>
         </CategoryHelp>
-      </div>
+      }
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Tabs
           ariaLabel={filter_label}
@@ -207,6 +207,6 @@ export function CategoryTable({
       {accounts && !loading && (
         <TablePagination meta={accounts.meta} onPageChange={onPageChange} />
       )}
-    </section>
+    </PageSection>
   );
 }

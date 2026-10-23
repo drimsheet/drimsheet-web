@@ -1,3 +1,4 @@
+import { PageSection } from '@/shared/components/page-section';
 import { Skeleton } from '@/shared/components/skeleton';
 import { useTranslation } from 'react-i18next';
 
@@ -6,8 +7,13 @@ export function SubAccountsSkeleton() {
   const loading_label = t('details_loading_sub_accounts');
 
   return (
-    <div role="status" aria-label={loading_label} aria-busy="true">
-      <div className="flex flex-col gap-6 bg-muted p-6">
+    <PageSection
+      role="status"
+      aria-label={loading_label}
+      aria-busy="true"
+      className="bg-muted px-6"
+    >
+      <div className="flex flex-col gap-6">
         <Skeleton className="h-5 w-40" />
         {[0, 1].map((row) => (
           <div key={row} className="flex justify-between gap-4">
@@ -16,6 +22,6 @@ export function SubAccountsSkeleton() {
           </div>
         ))}
       </div>
-    </div>
+    </PageSection>
   );
 }

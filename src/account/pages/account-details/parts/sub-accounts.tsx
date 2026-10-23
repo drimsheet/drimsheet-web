@@ -1,11 +1,6 @@
 import { Button } from '@/shared/components/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/card';
 import { Money } from '@/shared/components/money';
+import { PageSection } from '@/shared/components/page-section';
 import { useTranslation } from 'react-i18next';
 import type { SubAccountsProps } from '../types';
 
@@ -24,18 +19,15 @@ export function SubAccounts({
   const balances_label = t('ledger-accounts:details_current_balances_label');
 
   return (
-    <Card
+    <PageSection
+      title={title}
       role="region"
       aria-label={title}
-      className="min-w-0 rounded-none bg-muted shadow-none ring-0"
+      className="min-w-0 rounded-none bg-muted px-6 shadow-none ring-0"
     >
-      <CardHeader className="flex flex-wrap items-center justify-between gap-2">
-        <CardTitle role="heading" aria-level={2}>
-          {title}
-        </CardTitle>
-        <span className="text-sm text-muted-foreground">{balances_label}</span>
-      </CardHeader>
-      <CardContent>
+      <span className="text-sm text-muted-foreground">{balances_label}</span>
+
+      <div>
         <ul className="flex flex-col gap-4">
           {accounts.map((account) => (
             <li
@@ -58,7 +50,7 @@ export function SubAccounts({
             </li>
           ))}
         </ul>
-      </CardContent>
-    </Card>
+      </div>
+    </PageSection>
   );
 }

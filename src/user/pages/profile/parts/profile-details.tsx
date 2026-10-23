@@ -1,12 +1,6 @@
 import { Avatar, AvatarFallback } from '@/shared/components/avatar';
 import { Badge } from '@/shared/components/badge';
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/card';
+import { PageSection } from '@/shared/components/page-section';
 import { Separator } from '@/shared/components/separator';
 import { BadgeCheck, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -58,18 +52,14 @@ export function ProfileDetails({
   ];
 
   return (
-    <Card
+    <PageSection
+      title={details_title}
+      actions={editAction}
       className="h-full min-w-0"
       role="region"
-      aria-labelledby="profile-details-title"
+      titleId="profile-details-title"
     >
-      <CardHeader>
-        <CardTitle role="heading" aria-level={2} id="profile-details-title">
-          {details_title}
-        </CardTitle>
-        {editAction && <CardAction>{editAction}</CardAction>}
-      </CardHeader>
-      <CardContent className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <Avatar className="size-14">
             <AvatarFallback>{initials.toUpperCase()}</AvatarFallback>
@@ -103,7 +93,7 @@ export function ProfileDetails({
             </div>
           ))}
         </dl>
-      </CardContent>
-    </Card>
+      </div>
+    </PageSection>
   );
 }

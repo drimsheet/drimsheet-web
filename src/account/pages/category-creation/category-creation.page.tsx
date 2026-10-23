@@ -1,5 +1,7 @@
 import { categoryService } from '@/account/lib/services/category.service';
 import { AppBody } from '@/shared/components/app';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFormik, type FormikProps } from 'formik';
 import { useState } from 'react';
@@ -114,27 +116,27 @@ export function CategoryCreationPage() {
   return (
     <>
       <AppBody>
-        <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-8 pb-10">
+        <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col">
           <div className="flex flex-col gap-2">
-            <h1 className="my-0 text-2xl font-semibold tracking-tight">
-              {title}
-            </h1>
+            <PageTitle>{title}</PageTitle>
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
-          <CategoryCreationForm
-            form={form}
-            parent={parent}
-            accounts={accounts.data ?? []}
-            loadingAccounts={accounts.isFetching}
-            accountsError={accounts.isError}
-            pending={mutation.isPending || form.isSubmitting}
-            error={mutation.isError}
-            onTypeChange={handleTypeChange}
-            onParentChange={handleParentChange}
-            onPickerOpenChange={setPickerOpen}
-            onRetryAccounts={() => void accounts.refetch()}
-            onCancel={() => navigate('/categories')}
-          />
+          <PageSection>
+            <CategoryCreationForm
+              form={form}
+              parent={parent}
+              accounts={accounts.data ?? []}
+              loadingAccounts={accounts.isFetching}
+              accountsError={accounts.isError}
+              pending={mutation.isPending || form.isSubmitting}
+              error={mutation.isError}
+              onTypeChange={handleTypeChange}
+              onParentChange={handleParentChange}
+              onPickerOpenChange={setPickerOpen}
+              onRetryAccounts={() => void accounts.refetch()}
+              onCancel={() => navigate('/categories')}
+            />
+          </PageSection>
         </div>
       </AppBody>
     </>

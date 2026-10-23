@@ -4,6 +4,7 @@ import type {
   TEntityId,
 } from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
+import { registerAccountDashboardRoutes } from '@integration/mocks/account-dashboard';
 import {
   authenticatedUser,
   registerAuthenticatedAppRoutes,
@@ -741,7 +742,21 @@ test('confirms deletion, blocks duplicate submissions and returns to the refresh
   page,
 }, testInfo) => {
   await setup(page, { children: false });
-  let deleted = false;
+  const dashboard = await registerAccountDashboardRoutes(page);
+
+  dashboard.rows = [
+    {
+      accountId: account.id,
+      accountName: account.name,
+      code: account.code,
+      type: 'asset',
+      subType: account.subType,
+      status: account.status,
+      amount: account.functionalBalance,
+      sharePercentage: 100,
+    },
+  ];
+
   const requests: { method: string; body: string | null }[] = [];
   let finishDelete: () => void = () => undefined;
 
@@ -755,19 +770,6 @@ test('confirms deletion, blocks duplicate submissions and returns to the refresh
   await page.route(`${endpoint}/deletion-eligibility`, (route) =>
     route.fulfill({ json: { canDelete: true } })
   );
-  await page.route('**/api/v1/ledger?*', (route) =>
-    route.fulfill({
-      json: {
-        data: deleted ? [] : [account],
-        meta: {
-          page: 1,
-          limit: 10,
-          total: deleted ? 0 : 1,
-          totalPages: deleted ? 0 : 1,
-        },
-      },
-    })
-  );
   await page.route(endpoint, async (route) => {
     if (route.request().method() !== 'DELETE') {
       await route.fulfill({ json: account });
@@ -780,12 +782,15 @@ test('confirms deletion, blocks duplicate submissions and returns to the refresh
       body: route.request().postData(),
     });
     await response;
-    deleted = true;
+    dashboard.rows = [];
     await route.fulfill({ status: 204 });
   });
   // Seed the list cache to verify that returning after deletion refreshes it.
   await page.goto('/accounts');
-  await page.getByRole('cell', { name: account.name, exact: true }).click();
+  await page
+    .getByRole('table')
+    .getByRole('button', { name: account.name, exact: true })
+    .click();
   await expect(page).toHaveURL(`/accounts/${accountId}`);
   const actions = page.getByRole('button', { name: 'Open account actions' });
   await actions.click();
@@ -816,13 +821,17 @@ test('confirms deletion, blocks duplicate submissions and returns to the refresh
   await page.keyboard.press('Escape');
   await expect(dialog).toBeVisible();
   await expect.poll(() => requests).toEqual([{ method: 'DELETE', body: null }]);
+  dashboard.queries.length = 0;
   finishDelete();
   await expect(page).toHaveURL('/accounts');
   await expect(dialog).not.toBeVisible();
   await expect(page.getByText('Account deleted successfully')).toBeVisible();
   await expect(
-    page.getByText('No records found', { exact: true })
+    page.getByText('No accounts yet', { exact: true })
   ).toBeVisible();
+  await expect
+    .poll(() => dashboard.queries.some((query) => query.get('limit') === '10'))
+    .toBe(true);
   await expect(
     page.getByRole('cell', { name: account.name, exact: true })
   ).toHaveCount(0);

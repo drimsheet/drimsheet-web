@@ -2,6 +2,8 @@ import { CategoryEditorDialog } from '@/account/dialogs/category-editor';
 import { categoryService } from '@/account/lib/services/category.service';
 import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
 import type { IRevenueExpenseAccountDto } from '@/shared/lib/api/Api';
@@ -98,35 +100,29 @@ export function CategoriesPage() {
   return (
     <>
       <AppBody>
-        <div className="flex min-w-0 flex-col gap-8 pb-8 md:gap-12">
+        <div className="flex min-w-0 flex-col">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <h1 className="my-0 text-2xl font-semibold tracking-tight">
-              {title}
-            </h1>
+            <PageTitle>{title}</PageTitle>
             <Button onClick={() => navigate('/categories/new')}>
               <Plus data-icon="inline-start" />
               {add_label}
             </Button>
           </div>
-          <section
-            aria-label={overview_title}
-            className="flex min-w-0 flex-col gap-4"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="m-0 text-xs font-medium uppercase tracking-[0.07em] text-muted-foreground">
-                {overview_title}
-              </h2>
+          <PageSection
+            title={overview_title}
+            actions={
               <CategoryPeriod
                 period={period}
                 periods={periods}
                 onPeriodChange={setPeriod}
               />
-            </div>
+            }
+          >
             <CategoryOverviewContainer
               query={categoriesHelpers.periodQuery(period, now)}
               onViewAccount={handleViewAccount}
             />
-          </section>
+          </PageSection>
           {accounts.isError && (
             <CategorySectionError
               title={table_title}

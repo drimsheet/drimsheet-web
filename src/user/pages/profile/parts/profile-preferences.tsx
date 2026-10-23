@@ -1,13 +1,5 @@
 import { Alert, AlertDescription } from '@/shared/components/alert';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/card';
-import {
   Field,
   FieldContent,
   FieldDescription,
@@ -17,6 +9,7 @@ import {
   FieldSet,
   FieldTitle,
 } from '@/shared/components/field';
+import { PageSection } from '@/shared/components/page-section';
 import { RadioGroup, RadioGroupItem } from '@/shared/components/radio-group';
 import { Separator } from '@/shared/components/separator';
 import { Check, Monitor, Moon, Sun } from 'lucide-react';
@@ -74,19 +67,16 @@ export function ProfilePreferences({
   else if (isSaved) save_status = t('profile_preferences_saved_text');
 
   return (
-    <Card
+    <PageSection
+      title={preferences_title}
       className="h-full min-w-0"
       role="region"
-      aria-labelledby="profile-preferences-title"
+      titleId="profile-preferences-title"
       aria-busy={isSaving}
     >
-      <CardHeader>
-        <CardTitle role="heading" aria-level={2} id="profile-preferences-title">
-          {preferences_title}
-        </CardTitle>
-        <CardDescription>{preferences_description}</CardDescription>
-      </CardHeader>
-      <CardContent>
+      <p className="text-sm text-muted-foreground">{preferences_description}</p>
+
+      <div>
         <FieldGroup>
           <FieldSet disabled={isSaving}>
             <FieldLegend variant="label" id={`${id}-theme`}>
@@ -153,13 +143,13 @@ export function ProfilePreferences({
             </Alert>
           )}
         </FieldGroup>
-      </CardContent>
-      <CardFooter className="mt-auto gap-2">
+      </div>
+      <div className="mt-auto flex items-center gap-2">
         {isSaved && <Check className="size-3.5 text-success" aria-hidden />}
         <p role="status" className="text-xs text-muted-foreground">
           {save_status}
         </p>
-      </CardFooter>
-    </Card>
+      </div>
+    </PageSection>
   );
 }

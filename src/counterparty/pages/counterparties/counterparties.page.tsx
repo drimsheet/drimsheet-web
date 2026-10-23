@@ -3,9 +3,13 @@ import type { UCounterpartyRoleSelectValue } from '@/counterparty/components/cou
 import { CounterpartyCreationDialog } from '@/counterparty/dialogs/counterparty-creation';
 import { CounterpartyRoleSelectionDialog } from '@/counterparty/dialogs/counterparty-role-selection';
 import { AppBody } from '@/shared/components/app';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export function CounterpartiesPage() {
+  const { t } = useTranslation('shared');
   const [showRoleSelection, setShowRoleSelection] = useState(false);
 
   const [selectedRole, setSelectedRole] =
@@ -16,13 +20,17 @@ export function CounterpartiesPage() {
     setSelectedRole(role);
   };
 
+  const page_title = t('counterparties');
+
   return (
     <>
       <AppBody>
-        <CounterpartiesTableContainer
-          onAddCounterparty={() => setShowRoleSelection(true)}
-        />
-
+        <PageTitle>{page_title}</PageTitle>
+        <PageSection>
+          <CounterpartiesTableContainer
+            onAddCounterparty={() => setShowRoleSelection(true)}
+          />
+        </PageSection>
         <CounterpartyRoleSelectionDialog
           open={showRoleSelection}
           onClose={() => setShowRoleSelection(false)}

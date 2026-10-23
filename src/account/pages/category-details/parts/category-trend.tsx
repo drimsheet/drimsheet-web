@@ -1,16 +1,10 @@
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/card';
-import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from '@/shared/components/chart';
 import { Empty, EmptyHeader, EmptyTitle } from '@/shared/components/empty';
+import { PageSection } from '@/shared/components/page-section';
 import { parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import {
@@ -64,14 +58,15 @@ export function CategoryTrend({
   const hasActivity = months.some(({ amount }) => amount !== 0);
 
   return (
-    <Card className="min-w-0" role="region" aria-label={title}>
-      <CardHeader>
-        <CardTitle role="heading" aria-level={2}>
-          {title}
-        </CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <PageSection
+      title={title}
+      className="min-w-0"
+      role="region"
+      aria-label={title}
+    >
+      <p className="text-sm text-muted-foreground">{description}</p>
+
+      <div>
         {!hasActivity && (
           <Empty className="min-h-56">
             <EmptyHeader>
@@ -128,7 +123,7 @@ export function CategoryTrend({
             </BarChart>
           </ChartContainer>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PageSection>
   );
 }

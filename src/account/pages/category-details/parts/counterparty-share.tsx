@@ -1,14 +1,8 @@
 import { Alert, AlertDescription } from '@/shared/components/alert';
 import { Button } from '@/shared/components/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/card';
 import { Empty, EmptyHeader, EmptyTitle } from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
+import { PageSection } from '@/shared/components/page-section';
 import { Skeleton } from '@/shared/components/skeleton';
 import { cn } from '@/shared/lib/utils/cn';
 import { useTranslation } from 'react-i18next';
@@ -56,14 +50,15 @@ export function CounterpartyShare({
   const signed_description = t('category_details_signed_share_description');
 
   return (
-    <Card className="min-w-0" role="region" aria-label={title}>
-      <CardHeader>
-        <CardTitle role="heading" aria-level={2}>
-          {title}
-        </CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+    <PageSection
+      title={title}
+      className="min-w-0"
+      role="region"
+      aria-label={title}
+    >
+      <p className="text-sm text-muted-foreground">{description}</p>
+
+      <div className="flex flex-col gap-3">
         {loading && (
           <div
             role="status"
@@ -177,7 +172,7 @@ export function CounterpartyShare({
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PageSection>
   );
 }

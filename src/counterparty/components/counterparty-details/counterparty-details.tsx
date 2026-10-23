@@ -1,6 +1,7 @@
 import { Badge } from '@/shared/components/badge';
 import { FormattedDate } from '@/shared/components/date';
-import { Separator } from '@/shared/components/separator';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
 import { ECounterpartyType } from '@/shared/lib/api/Api';
 import { Building2, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -32,16 +33,14 @@ export function CounterpartyDetails({
   const updated_label = t('updated_label');
 
   return (
-    <div className="flex min-w-0 flex-col gap-8">
+    <div className="flex min-w-0 flex-col">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 flex-1 items-start gap-4">
           <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
             <TypeIcon className="size-6" aria-hidden="true" />
           </div>
           <div className="flex min-w-0 flex-col gap-2">
-            <h1 className="m-0 break-words text-2xl font-semibold tracking-tight sm:text-3xl">
-              {counterparty.name}
-            </h1>
+            <PageTitle className="break-words">{counterparty.name}</PageTitle>
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <span>{type_text}</span>
               <span aria-hidden="true">·</span>
@@ -51,17 +50,7 @@ export function CounterpartyDetails({
         </div>
         <CounterpartyProfileActions {...actionProps} />
       </header>
-      <Separator />
-      <section
-        className="flex flex-col gap-5"
-        aria-labelledby="counterparty-profile-details-title"
-      >
-        <h2
-          id="counterparty-profile-details-title"
-          className="m-0 text-base font-semibold"
-        >
-          {details_title}
-        </h2>
+      <PageSection title={details_title}>
         <dl className="grid gap-x-12 gap-y-6 text-sm sm:grid-cols-2">
           <div className="flex min-w-0 flex-col gap-2">
             <dt className="text-muted-foreground">{relationships_label}</dt>
@@ -114,7 +103,7 @@ export function CounterpartyDetails({
             </dd>
           </div>
         </dl>
-      </section>
+      </PageSection>
       {children}
     </div>
   );

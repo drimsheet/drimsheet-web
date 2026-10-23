@@ -1,3 +1,4 @@
+import { PageSection } from '@/shared/components/page-section';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import accountDetailsHelpers from '../helper';
@@ -29,17 +30,21 @@ export function TransactionsChartContainer({
   const title = t('details_cash_flow_title');
 
   return (
-    <section aria-label={title} className="flex min-w-0 flex-col gap-3">
-      <CashFlowPeriod
-        period={period}
-        periods={periods}
-        onPeriodChange={setPeriod}
-      />
+    <PageSection
+      title={title}
+      actions={
+        <CashFlowPeriod
+          period={period}
+          periods={periods}
+          onPeriodChange={setPeriod}
+        />
+      }
+    >
       {flow.isPending && <TransactionsChartSkeleton />}
       {flow.isError && (
         <SectionError title={title} onRetry={() => void flow.refetch()} />
       )}
       {flow.isSuccess && <TransactionsChart cashFlow={flow.data} />}
-    </section>
+    </PageSection>
   );
 }

@@ -3,6 +3,8 @@ import { BankAccountCreationDialog } from '@/account/dialogs/bank-account-creati
 import { PettyCashAccountCreationDialog } from '@/account/dialogs/petty-cash-account-creation';
 import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
 import { Separator } from '@/shared/components/separator';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
@@ -108,9 +110,9 @@ export function AccountsDashboardPage() {
 
   return (
     <AppBody>
-      <div className="flex min-w-0 flex-col gap-8 pb-8 md:gap-12">
+      <div className="flex min-w-0 flex-col">
         <header className="flex flex-wrap items-center justify-between gap-4">
-          <h1 className="m-0">{title}</h1>
+          <PageTitle>{title}</PageTitle>
           {!noAccounts && (
             <Button size="lg" onClick={handleAddAccount}>
               <Plus data-icon="inline-start" />
@@ -119,20 +121,21 @@ export function AccountsDashboardPage() {
           )}
         </header>
         {pageError && (
-          <DashboardError title={page_error_title} onRetry={handleRetryPage} />
+          <PageSection>
+            <DashboardError
+              title={page_error_title}
+              onRetry={handleRetryPage}
+            />
+          </PageSection>
         )}
         {!pageError && noAccounts && (
-          <AccountPageEmptyState onAddAccount={handleAddAccount} />
+          <PageSection>
+            <AccountPageEmptyState onAddAccount={handleAddAccount} />
+          </PageSection>
         )}
         {!pageError && !noAccounts && (
           <>
-            <section
-              aria-label={overview_title}
-              className="flex min-w-0 flex-col gap-6"
-            >
-              <h2 className="m-0 text-xs font-medium uppercase tracking-[0.07em] text-muted-foreground">
-                {overview_title}
-              </h2>
+            <PageSection title={overview_title}>
               {summary.isPending && <DashboardSkeleton section="summary" />}
               {summary.isError && (
                 <DashboardError
@@ -177,7 +180,7 @@ export function AccountsDashboardPage() {
                   />
                 ))}
               </div>
-            </section>
+            </PageSection>
             <AccountsTable
               accounts={accounts.data}
               loading={accounts.isPending || search !== table.searchQuery}

@@ -2,6 +2,7 @@ import { RequestPasswordResetForm } from '@/auth/components/request-password-res
 import { RequestPasswordResetSuccessContainer } from '@/auth/components/reset-password-request-success';
 import { useRequestPasswordReset } from '@/auth/hooks/use-request-password-reset';
 import { BrandLogo } from '@/shared/components/brand-logo';
+import { PageTitle } from '@/shared/components/page-title';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -70,9 +71,9 @@ export function RequestPasswordResetPage() {
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-center tracking-tight">
+          <PageTitle className="text-center">
             {isSuccess ? email_sent_text : reset_password_title}
-          </h1>
+          </PageTitle>
           {isSuccess ? (
             <div role="status" aria-live="polite" className="mt-2">
               <p className="text-sm text-muted-foreground">

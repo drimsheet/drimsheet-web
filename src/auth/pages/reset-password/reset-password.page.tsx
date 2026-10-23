@@ -4,6 +4,7 @@ import {
 } from '@/auth/components/reset-password-form';
 import { useResetPassword } from '@/auth/hooks/use-reset-password';
 import { BrandLogo } from '@/shared/components/brand-logo';
+import { PageTitle } from '@/shared/components/page-title';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import type { IApiValidationError } from '@/shared/lib/api/Api';
 import { useState } from 'react';
@@ -70,9 +71,7 @@ export function ResetPasswordPage() {
             <span className="sr-only">{drimsheet_limited}</span>
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-center tracking-tight">
-          {reset_password_title}
-        </h1>
+        <PageTitle className="text-center">{reset_password_title}</PageTitle>
         {isTokenMissing ? (
           <div role="alert" className="flex flex-col gap-4 text-center">
             <p className="text-sm font-medium text-destructive">

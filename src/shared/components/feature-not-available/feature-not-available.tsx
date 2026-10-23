@@ -1,3 +1,4 @@
+import { PageTitle } from '@/shared/components/page-title';
 import { LockKeyholeIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -24,9 +25,7 @@ export function FeatureNotAvailable() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {feature_not_available_title}
-          </h1>
+          <PageTitle>{feature_not_available_title}</PageTitle>
           <p className="text-muted-foreground text-sm leading-6">
             {feature_not_available_description}
           </p>

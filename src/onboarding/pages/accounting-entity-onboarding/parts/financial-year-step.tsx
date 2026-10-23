@@ -5,6 +5,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/shared/components/collapsible';
+import { PageTitle } from '@/shared/components/page-title';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -47,12 +48,7 @@ export function FinancialYearStep({
     >
       <div className="flex w-full flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <h1
-            id={titleId}
-            className="m-0 text-2xl font-semibold tracking-tight"
-          >
-            {title}
-          </h1>
+          <PageTitle id={titleId}>{title}</PageTitle>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
         <Collapsible defaultOpen className="mb-6 flex flex-col gap-1">

@@ -2,6 +2,7 @@ import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entitie
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
 import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
+import { PageTitle } from '@/shared/components/page-title';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import type { IUserPreferencesUpdateDto } from '@/shared/lib/api/Api';
 import { storageService } from '@/shared/lib/services/storage.service';
@@ -62,16 +63,14 @@ export function ProfilePage() {
   return (
     <>
       <AppBody>
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-1 pb-6 sm:px-4">
+        <div className="mx-auto flex w-full max-w-6xl flex-col px-1 sm:px-4">
           <div className="flex flex-col gap-2">
-            <h1 className="m-0 text-3xl font-semibold tracking-tight">
-              {profile_title}
-            </h1>
+            <PageTitle>{profile_title}</PageTitle>
             <p className="text-sm text-muted-foreground">
               {profile_description}
             </p>
           </div>
-          <div className="grid items-stretch gap-6 lg:grid-cols-2">
+          <div className="grid items-stretch gap-x-6 lg:grid-cols-2">
             {profile ? (
               <ProfileDetails
                 profile={profile}

@@ -7,6 +7,7 @@ import {
   EmptyHeader,
   EmptyMedia,
 } from '@/shared/components/empty';
+import { PageTitle } from '@/shared/components/page-title';
 import { FileQuestionIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -29,7 +30,7 @@ export function JournalEntryNotFound({
         <p className="text-sm font-medium text-muted-foreground">
           {status_text}
         </p>
-        <h1 className="text-lg font-medium tracking-tight">{title}</h1>
+        <PageTitle>{title}</PageTitle>
         <EmptyDescription>{description}</EmptyDescription>
       </EmptyHeader>
       <EmptyContent>

@@ -3,6 +3,7 @@ import { Button } from '@/shared/components/button';
 import { DataTable, type ITableColumn } from '@/shared/components/data-table';
 import { FormattedDate } from '@/shared/components/date';
 import { Money } from '@/shared/components/money';
+import { PageSection } from '@/shared/components/page-section';
 import { SearchField } from '@/shared/components/search-field';
 import { TablePagination } from '@/shared/components/table-pagination';
 import { useMemo, useState } from 'react';
@@ -107,15 +108,16 @@ export function CategoryTransactions({
   });
 
   return (
-    <section className="flex min-w-0 flex-col gap-4" aria-label={title}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-base font-medium">{title}</h2>
-        {transactionsHref && (
+    <PageSection
+      title={title}
+      actions={
+        transactionsHref && (
           <Button variant="link" asChild>
             <a href={transactionsHref}>{view_label}</a>
           </Button>
-        )}
-      </div>
+        )
+      }
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="w-full sm:max-w-xs">
           <SearchField
@@ -152,6 +154,6 @@ export function CategoryTransactions({
           onPageChange={setPage}
         />
       </div>
-    </section>
+    </PageSection>
   );
 }

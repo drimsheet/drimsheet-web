@@ -8,6 +8,7 @@ import {
   EmptyTitle,
 } from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
+import { PageSection } from '@/shared/components/page-section';
 import { SearchField } from '@/shared/components/search-field';
 import { StatusBadge } from '@/shared/components/status-badge';
 import { Tabs } from '@/shared/components/tabs';
@@ -116,14 +117,7 @@ export function AccountsTable({
   ];
 
   return (
-    <section
-      aria-label={title}
-      className="flex min-w-0 flex-col gap-4"
-      aria-busy={loading}
-    >
-      <h2 className="m-0 text-xs font-medium uppercase tracking-[0.07em] text-muted-foreground">
-        {title}
-      </h2>
+    <PageSection title={title}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Tabs
           ariaLabel={filter_label}
@@ -182,6 +176,6 @@ export function AccountsTable({
           }
         />
       )}
-    </section>
+    </PageSection>
   );
 }

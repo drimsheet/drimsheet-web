@@ -154,9 +154,9 @@ test('shows loading then a recoverable page error without invented balances', as
     page.getByRole('region', { name: 'Overview' })
   ).not.toContainText('₦12,480,000');
   release();
-  await expect(page.getByRole('alert')).toContainText(
-    'Couldn’t load your accounts'
-  );
+  await expect(
+    page.getByRole('alert').filter({ hasText: 'Couldn’t load your accounts' })
+  ).toBeVisible();
   state.summaryError = false;
   state.tableError = false;
   state.breakdownError = false;

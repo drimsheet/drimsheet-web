@@ -5,6 +5,7 @@ import type { ILoginFormValues } from '@/auth/components/login-form/types';
 import { useLoginWithEmail } from '@/auth/hooks/use-login-with-email';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { FieldDescription, FieldSeparator } from '@/shared/components/field';
+import { PageTitle } from '@/shared/components/page-title';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -52,7 +53,7 @@ export function SignInPage() {
             <BrandLogo alt="" className="mb-2 w-48" />
             <span className="sr-only">{drimsheet_limited}</span>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight">{sign_in_text}</h1>
+          <PageTitle>{sign_in_text}</PageTitle>
         </div>
 
         <div className="grid gap-4">

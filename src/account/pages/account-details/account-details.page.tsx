@@ -1,5 +1,6 @@
 import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
 import { AppBody } from '@/shared/components/app';
+import { PageSection } from '@/shared/components/page-section';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
 import { useSubAccounts } from './hooks/use-sub-accounts';
@@ -41,13 +42,15 @@ export function AccountDetailsPage() {
   return (
     <>
       <AppBody>
-        <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col gap-10 pb-10">
+        <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col">
           {accountQuery.isPending && (
             <>
               <AccountSummarySkeleton />
               <BankDetailsSkeleton />
               <SubAccountsSkeleton />
-              <TransactionsChartSkeleton />
+              <PageSection>
+                <TransactionsChartSkeleton />
+              </PageSection>
               <RecentTransactionsSkeleton />
             </>
           )}

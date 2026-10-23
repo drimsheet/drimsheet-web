@@ -1,5 +1,6 @@
 import { TransactionsTable } from '@/journal-entries/components/transactions-table';
 import { Empty, EmptyHeader, EmptyTitle } from '@/shared/components/empty';
+import { PageSection } from '@/shared/components/page-section';
 import { useTranslation } from 'react-i18next';
 import type { RecentTransactionsProps } from '../types';
 
@@ -18,8 +19,7 @@ export function RecentTransactions({
   const empty_text = t('details_transactions_empty_text');
 
   return (
-    <section aria-label={title} className="flex min-w-0 flex-col gap-5">
-      <h2 className="text-base font-medium">{title}</h2>
+    <PageSection title={title}>
       {empty && (
         <Empty>
           <EmptyHeader>
@@ -39,6 +39,6 @@ export function RecentTransactions({
           className="border-0 shadow-none [&_thead]:border-0 [&_tr]:border-0"
         />
       )}
-    </section>
+    </PageSection>
   );
 }

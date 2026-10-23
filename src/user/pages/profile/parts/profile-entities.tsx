@@ -1,19 +1,12 @@
 import { Badge } from '@/shared/components/badge';
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/card';
-import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from '@/shared/components/empty';
+import { PageSection } from '@/shared/components/page-section';
 import { Separator } from '@/shared/components/separator';
 import { AccountingEntityAvatar } from '@/user/components/accounting-entity-avatar';
 import { Building2 } from 'lucide-react';
@@ -52,17 +45,15 @@ export function ProfileEntities({
   });
 
   return (
-    <Card role="region" aria-labelledby="profile-entities-title">
-      <CardHeader>
-        <CardTitle role="heading" aria-level={2} id="profile-entities-title">
-          {entities_title}
-        </CardTitle>
-        <CardDescription>{entities_description}</CardDescription>
-        <CardAction>
-          <Badge variant="secondary">{count_label}</Badge>
-        </CardAction>
-      </CardHeader>
-      <CardContent>
+    <PageSection
+      title={entities_title}
+      actions={<Badge variant="secondary">{count_label}</Badge>}
+      role="region"
+      titleId="profile-entities-title"
+    >
+      <p className="text-sm text-muted-foreground">{entities_description}</p>
+
+      <div>
         {entities.length === 0 ? (
           <Empty>
             <EmptyHeader>
@@ -121,7 +112,7 @@ export function ProfileEntities({
             ))}
           </ul>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PageSection>
   );
 }

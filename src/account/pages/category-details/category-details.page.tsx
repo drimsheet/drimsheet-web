@@ -98,7 +98,7 @@ export function CategoryDetailsPage() {
   return (
     <>
       <AppBody>
-        <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col gap-8 pb-10">
+        <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col">
           {accountQuery.isPending && (
             <>
               <Skeleton className="h-48 w-full" aria-label={loading_label} />
@@ -120,7 +120,7 @@ export function CategoryDetailsPage() {
                   />
                 }
               />
-              <div className="grid min-w-0 items-start gap-5 lg:grid-cols-2">
+              <div className="grid min-w-0 items-start gap-x-5 lg:grid-cols-2">
                 {history.isPending && (
                   <Skeleton
                     className="h-80 w-full"
