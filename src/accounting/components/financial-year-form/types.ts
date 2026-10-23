@@ -13,6 +13,7 @@ export interface IFinancialYearFormValues {
 export interface FinancialYearFormProps {
   id?: string;
   currentDate: string;
+  jurisdictionCode?: string;
   maxFiscalMonths?: number;
   initialValues?: Partial<IFinancialYearFormValues>;
   disabled?: boolean;

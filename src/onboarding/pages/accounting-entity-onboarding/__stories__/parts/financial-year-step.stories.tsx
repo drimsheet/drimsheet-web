@@ -5,7 +5,7 @@ const meta = {
   title: 'Onboarding/Accounting Entity/Financial Year Step',
   component: FinancialYearStep,
   tags: ['autodocs'],
-  args: { currentDate: '2026-10-22', maxFiscalMonths: 18, onBack: () => {} },
+  args: { currentDate: '2026-10-22', maxFiscalMonths: 23, onBack: () => {} },
   decorators: [
     (Story) => (
       <div className="flex h-dvh flex-col overflow-y-auto pt-6">

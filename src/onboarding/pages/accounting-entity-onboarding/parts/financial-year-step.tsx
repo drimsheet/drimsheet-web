@@ -13,6 +13,7 @@ import { StepLayout } from './step-layout';
 
 export function FinancialYearStep({
   currentDate,
+  jurisdictionCode,
   maxFiscalMonths,
   onBack,
   onSubmit,
@@ -78,6 +79,7 @@ export function FinancialYearStep({
           id={formId}
           onSubmit={onSubmit}
           currentDate={currentDate}
+          jurisdictionCode={jurisdictionCode}
           maxFiscalMonths={maxFiscalMonths}
         />
       </div>

@@ -58,6 +58,8 @@
   "entity_country_required_error": "Select a country of residence.",
   "entity_currency_required_error": "Select an official currency.",
   "financial_year_name_label": "Financial year name",
+  "financial_year_name_default": "{{year}} Financial Year",
+  "financial_year_dates_warning_text": "Your selected dates differ from this jurisdiction’s official financial year: {{start}} to {{end}}. You can still continue.",
   "financial_year_name_placeholder": "e.g. FY {{year}}",
   "financial_year_start_label": "Year starts",
   "financial_year_end_label": "Year ends",

@@ -205,7 +205,9 @@ export function AccountingEntityForm({
           {hasCurrencyMismatch && (
             <Alert variant="destructive">
               <TriangleAlert aria-hidden />
-              <AlertDescription>{currency_mismatch_text}</AlertDescription>
+              <AlertDescription className="text-xs leading-5">
+                {currency_mismatch_text}
+              </AlertDescription>
             </Alert>
           )}
         </FieldGroup>

@@ -21,7 +21,7 @@ export interface AccountingEntityStepProps extends Pick<
 
 export interface FinancialYearStepProps extends Pick<
   FinancialYearFormProps,
-  'onSubmit'
+  'onSubmit' | 'jurisdictionCode'
 > {
   currentDate: string;
   maxFiscalMonths?: number;

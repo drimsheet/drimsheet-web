@@ -778,3 +778,146 @@ test('waits for profile data before allowing the individual selection', async ({
     page.getByRole('textbox', { name: 'Name', exact: true })
   ).toHaveValue('Ada Okafor');
 });
+
+test('continues from a 23-month financial year to reports without saving onboarding data', async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date('2026-10-23T12:00:00Z'));
+  await page.route(entityListEndpoint, (route) => route.fulfill({ json: [] }));
+  const saveRequests: string[] = [];
+  await page.route('**/api/v1/accounting/**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      saveRequests.push(route.request().url());
+      await route.fulfill({ status: 400, json: {} });
+
+      return;
+    }
+
+    await route.fallback();
+  });
+  await page.goto(verificationUrl);
+  await page.getByRole('combobox', { name: 'Who is this for?' }).click();
+  await page.getByRole('option', { name: 'Individual', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Country of residence' }).click();
+  await page.getByRole('option', { name: /Nigeria/ }).click();
+  await page
+    .getByRole('button', { name: 'Continue to financial year' })
+    .click();
+  await expect(
+    page.getByRole('textbox', { name: 'Financial year name' })
+  ).toHaveValue('2026 Financial Year');
+  await page.getByRole('button', { name: 'Year ends', exact: true }).click();
+  for (let month = 0; month < 12; month += 1) {
+    await page.getByRole('button', { name: 'Go to the Next Month' }).click();
+  }
+
+  await page.getByRole('button', { name: /December 1st, 2027/ }).click();
+  await page
+    .getByRole('button', { name: 'Continue to reports', exact: true })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'Set up your reports', exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByText('2026 Financial Year', { exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('textbox', { name: 'Quarter 8', exact: true })
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'Year ends', exact: true })
+  ).toHaveText(/1 Dec 2027/);
+  expect(saveRequests).toEqual([]);
+});
+
+for (const theme of ['light', 'dark'] as const) {
+  test(`uses the jurisdiction financial year and allows its warning in ${theme} theme`, async ({
+    page,
+  }, testInfo) => {
+    await page.clock.setFixedTime(new Date('2026-10-23T12:00:00Z'));
+    await page.setViewportSize(
+      theme === 'dark'
+        ? { width: 375, height: 812 }
+        : { width: 1280, height: 900 }
+    );
+    await page.addInitScript(
+      (selectedTheme) => localStorage.setItem('theme', selectedTheme),
+      theme
+    );
+    await page.route(entityListEndpoint, (route) =>
+      route.fulfill({ json: [] })
+    );
+    await page.route('**/api/v1/accounting/jurisdictions', (route) =>
+      route.fulfill({
+        json: [
+          ...jurisdictions,
+          {
+            ...jurisdictions[0],
+            code: 'AU',
+            name: 'Australia',
+            currencyCode: 'AUD',
+          },
+        ],
+      })
+    );
+    await page.route('**/api/v1/currencies', (route) =>
+      route.fulfill({
+        json: [
+          ...currencies,
+          { code: 'AUD', name: 'Australian Dollar', symbol: '$', minorUnit: 2 },
+        ],
+      })
+    );
+    await page.goto(verificationUrl);
+    await page.getByRole('combobox', { name: 'Who is this for?' }).click();
+    await page.getByRole('option', { name: 'Individual', exact: true }).click();
+    await page.getByRole('combobox', { name: 'Country of residence' }).click();
+    await page.getByRole('option', { name: /Australia/ }).click();
+    await page
+      .getByRole('button', { name: 'Continue to financial year' })
+      .click();
+    await expect(
+      page.getByRole('button', { name: 'Year starts', exact: true })
+    ).toHaveText(/1 Jul 2026/);
+    await expect(
+      page.getByRole('button', { name: 'Year ends', exact: true })
+    ).toHaveText(/30 Jun 2027/);
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Year ends', exact: true }).click();
+    await page.getByRole('button', { name: /June 29th, 2027/ }).click();
+    await expect(page.getByRole('alert')).toContainText(
+      'Your selected dates differ from this jurisdiction’s official financial year'
+    );
+    await page.getByRole('alert').scrollIntoViewIfNeeded();
+    await page.screenshot({
+      path: testInfo.outputPath('financial-year-warning.png'),
+      animations: 'disabled',
+    });
+    await page
+      .getByRole('button', { name: 'Continue to reports', exact: true })
+      .click();
+    await expect(
+      page.getByRole('heading', { name: 'Set up your reports', exact: true })
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: 'Year ends', exact: true })
+    ).toHaveText(/29 Jun 2027/);
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await page
+      .getByRole('combobox', { name: 'Country of residence' })
+      .fill('Nigeria');
+    await page.getByRole('option', { name: /Nigeria/ }).click();
+    await page
+      .getByRole('button', { name: 'Continue to financial year' })
+      .click();
+    await expect(
+      page.getByRole('button', { name: 'Year starts', exact: true })
+    ).toHaveText(/1 Jan 2026/);
+    await expect(
+      page.getByRole('button', { name: 'Year ends', exact: true })
+    ).toHaveText(/31 Dec 2026/);
+    await expect(page.getByRole('alert')).toHaveCount(0);
+  });
+}

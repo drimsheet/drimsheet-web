@@ -22,7 +22,7 @@ function isValidRange(
     isValidDate(startDate) &&
     isValidDate(endDate) &&
     endDate >= startDate &&
-    dayjs(endDate).isBefore(
+    !dayjs(endDate).isAfter(
       dayjs(startDate).add(maxFiscalMonths, 'month'),
       'day'
     )

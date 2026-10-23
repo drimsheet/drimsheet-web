@@ -1,5 +1,6 @@
 import { PeriodNameFields } from '@/accounting/components/period-name-fields';
 import { accountingPeriodUtils } from '@/accounting/lib/utils/accounting-periods';
+import { Alert, AlertDescription } from '@/shared/components/alert';
 import { DateInput } from '@/shared/components/date-input';
 import {
   Field,
@@ -20,6 +21,7 @@ import {
 import { useFieldErrorMessage } from '@/shared/hooks/use-field-error-message';
 import { EPeriodUnit, type UPeriodUnit } from '@/shared/lib/api/Api';
 import { useFormik } from 'formik';
+import { TriangleAlert } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import financialYearFormHelpers from './helper';
@@ -29,14 +31,16 @@ import { useFinancialYearFormValidation } from './validation';
 export function FinancialYearForm({
   id,
   currentDate,
-  maxFiscalMonths = 18,
+  jurisdictionCode,
+  maxFiscalMonths = 23,
   initialValues,
   disabled = false,
   onSubmit,
 }: Readonly<FinancialYearFormProps>) {
-  const { t } = useTranslation('accounting');
+  const { t, i18n } = useTranslation('accounting');
   const fieldId = useId();
-  const validationSchema = useFinancialYearFormValidation(maxFiscalMonths);
+  const fiscalMonthLimit = Math.min(maxFiscalMonths, 23);
+  const validationSchema = useFinancialYearFormValidation(fiscalMonthLimit);
 
   const createPeriodName = (unit: UPeriodUnit, index: number) =>
     t(`financial_period_${unit}_default`, { index });
@@ -45,8 +49,10 @@ export function FinancialYearForm({
     initialValues: financialYearFormHelpers.createInitialValues(
       currentDate,
       createPeriodName,
-      maxFiscalMonths,
-      initialValues
+      fiscalMonthLimit,
+      t('financial_year_name_default', { year: currentDate.slice(0, 4) }),
+      initialValues,
+      jurisdictionCode
     ),
     validationSchema,
     onSubmit: async (values) => {
@@ -65,6 +71,24 @@ export function FinancialYearForm({
   const unitErrors = getError('unit');
   const isDisabled = disabled || formik.isSubmitting;
 
+  const dateRestrictions = financialYearFormHelpers.getDateRestrictions(
+    formik.values.startDate,
+    formik.values.endDate
+  );
+
+  const officialDates = financialYearFormHelpers.getOfficialDates(
+    currentDate,
+    jurisdictionCode
+  );
+
+  const hasDateMismatch = Boolean(
+    officialDates &&
+    accountingPeriodUtils.isValidDate(formik.values.startDate) &&
+    accountingPeriodUtils.isValidDate(formik.values.endDate) &&
+    (formik.values.startDate !== officialDates.startDate ||
+      formik.values.endDate !== officialDates.endDate)
+  );
+
   const handlePeriodSettingsChange = (
     patch: Partial<
       Pick<IFinancialYearFormValues, 'startDate' | 'endDate' | 'unit'>
@@ -78,7 +102,7 @@ export function FinancialYearForm({
     const periods = accountingPeriodUtils.createPeriods(
       next,
       createPeriodName,
-      maxFiscalMonths,
+      fiscalMonthLimit,
       previous
     );
 
@@ -107,6 +131,19 @@ export function FinancialYearForm({
   const date_placeholder = t('financial_year_date_placeholder');
   const unit_label = t('financial_year_unit_label');
   const unit_placeholder = t('financial_year_unit_placeholder');
+
+  const dates_warning_text = officialDates
+    ? t('financial_year_dates_warning_text', {
+        start: accountingPeriodUtils.formatDate(
+          officialDates.startDate,
+          i18n.language
+        ),
+        end: accountingPeriodUtils.formatDate(
+          officialDates.endDate,
+          i18n.language
+        ),
+      })
+    : '';
 
   return (
     <form id={id} onSubmit={formik.handleSubmit} noValidate>
@@ -139,6 +176,7 @@ export function FinancialYearForm({
                 onBlur={() => formik.setFieldTouched('startDate', true)}
                 placeholder={date_placeholder}
                 disabled={isDisabled}
+                disabledDates={dateRestrictions.start}
                 aria-invalid={startErrors.length > 0}
                 aria-describedby={
                   startErrors.length ? `${fieldId}-start-error` : undefined
@@ -156,6 +194,7 @@ export function FinancialYearForm({
                 onBlur={() => formik.setFieldTouched('endDate', true)}
                 placeholder={date_placeholder}
                 disabled={isDisabled}
+                disabledDates={dateRestrictions.end}
                 aria-invalid={endErrors.length > 0}
                 aria-describedby={
                   endErrors.length ? `${fieldId}-end-error` : undefined
@@ -164,6 +203,14 @@ export function FinancialYearForm({
               <FieldError id={`${fieldId}-end-error`} errors={endErrors} />
             </Field>
           </div>
+          {hasDateMismatch && (
+            <Alert variant="warning">
+              <TriangleAlert aria-hidden />
+              <AlertDescription className="text-xs leading-5">
+                {dates_warning_text}
+              </AlertDescription>
+            </Alert>
+          )}
           <Field data-invalid={unitErrors.length > 0}>
             <Label htmlFor={`${fieldId}-unit`}>{unit_label}</Label>
             <Select

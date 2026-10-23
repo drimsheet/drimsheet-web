@@ -65,7 +65,7 @@ describe('accounting periods', () => {
     ['2026-02-30', '2026-12-31'],
     ['invalid', '2026-12-31'],
     ['2026-01-01', '2025-12-31'],
-    ['2026-01-01', '2027-07-01'],
+    ['2026-01-01', '2027-07-02'],
   ])(
     'rejects invalid or out-of-range dates %s to %s before generating rows',
     (startDate, endDate) => {
@@ -86,4 +86,22 @@ describe('accounting periods', () => {
       '1 Jan 2026'
     );
   });
+});
+
+it('accepts the exact calendar-month boundary and rejects the next day', () => {
+  expect(
+    accountingPeriodUtils.isValidRange('2026-01-01', '2027-12-01', 23)
+  ).toBe(true);
+  expect(
+    accountingPeriodUtils.isValidRange('2026-01-01', '2027-12-02', 23)
+  ).toBe(false);
+  expect(
+    accountingPeriodUtils
+      .createPeriods(
+        { startDate: '2026-01-01', endDate: '2027-12-01', unit: 'year' },
+        createName,
+        23
+      )
+      .at(-1)?.endDate
+  ).toBe('2027-12-01');
 });

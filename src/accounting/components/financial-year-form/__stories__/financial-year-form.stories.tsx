@@ -5,7 +5,7 @@ const meta = {
   title: 'Accounting/Financial Year Form',
   component: FinancialYearForm,
   tags: ['autodocs'],
-  args: { currentDate: '2026-10-22' },
+  args: { currentDate: '2026-10-22', jurisdictionCode: 'NG' },
   decorators: [
     (Story) => (
       <div className="w-full max-w-[620px] p-6">
@@ -25,4 +25,14 @@ export const Daily: TStory = { args: { initialValues: { unit: 'day' } } };
 export const Disabled: TStory = { args: { disabled: true } };
 export const InvalidDates: TStory = {
   args: { initialValues: { startDate: '2026-06-01', endDate: '2026-01-01' } },
+};
+
+export const AustralianFinancialYear: TStory = {
+  args: { jurisdictionCode: 'AU' },
+};
+export const JurisdictionDateWarning: TStory = {
+  args: {
+    jurisdictionCode: 'AU',
+    initialValues: { startDate: '2026-07-02', endDate: '2027-06-30' },
+  },
 };

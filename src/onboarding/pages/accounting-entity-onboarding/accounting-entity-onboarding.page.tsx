@@ -50,10 +50,6 @@ export function AccountingEntityOnboardingPage() {
       !currenciesQuery.data?.length ||
       !jurisdictionsQuery.data?.length);
 
-  const jurisdiction = jurisdictionsQuery.data?.find(
-    (item) => item.code === entityValues?.jurisdictionCode
-  );
-
   const handleEntitySubmit = (values: IAccountingEntityFormValues) => {
     setEntityValues(values);
     setCurrentStep(2);
@@ -121,8 +117,10 @@ export function AccountingEntityOnboardingPage() {
           {entityValues && (
             <div className={currentStep === 2 ? 'flex flex-1' : 'hidden'}>
               <FinancialYearStep
+                key={entityValues.jurisdictionCode}
+                jurisdictionCode={entityValues.jurisdictionCode}
                 currentDate={currentDate}
-                maxFiscalMonths={jurisdiction?.maxFiscalMonths}
+                maxFiscalMonths={23}
                 onBack={() => setCurrentStep(1)}
                 onSubmit={handleFinancialYearSubmit}
               />
@@ -134,7 +132,7 @@ export function AccountingEntityOnboardingPage() {
                 financialYear={financialYearValues}
                 currencies={currenciesQuery.data ?? []}
                 currentDate={currentDate}
-                maxFiscalMonths={jurisdiction?.maxFiscalMonths}
+                maxFiscalMonths={23}
                 onBack={() => setCurrentStep(2)}
                 onSubmit={handleReportsSubmit}
               />
