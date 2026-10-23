@@ -20,6 +20,7 @@
   "financial_year_continue_label": "Continue to reports",
   "financial_year_back_label": "Back",
   "reports_step_title": "Set up your reports",
+  "reports_name_default": "{{name}} Reports",
   "reports_step_description": "Name your reporting setup, then choose its currency and periods.",
   "reports_about_title": "How reporting periods work",
   "reports_about_description": "Each period is the date range a report covers. You choose its name; dates and the current period are calculated automatically.",

@@ -921,3 +921,78 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(page.getByRole('alert')).toHaveCount(0);
   });
 }
+
+test('defaults reports from the legal entity and fiscal year and advances without saving', async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date('2026-10-23T12:00:00Z'));
+  await page.route(entityListEndpoint, (route) => route.fulfill({ json: [] }));
+  await page.route('**/api/v1/currencies', (route) =>
+    route.fulfill({
+      json: [
+        ...currencies,
+        { code: 'USD', name: 'US Dollar', symbol: '$', minorUnit: 2 },
+      ],
+    })
+  );
+  const saveRequests: string[] = [];
+  await page.route('**/api/v1/accounting/**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      saveRequests.push(route.request().url());
+      await route.fulfill({ status: 400, json: {} });
+
+      return;
+    }
+
+    await route.fallback();
+  });
+  await page.goto(verificationUrl);
+  await page.getByRole('combobox', { name: 'Who is this for?' }).click();
+  await page.getByRole('option', { name: 'Individual', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Country of residence' }).click();
+  await page.getByRole('option', { name: /Nigeria/ }).click();
+  await page
+    .getByRole('combobox', { name: 'Official currency' })
+    .fill('US Dollar');
+  await page.getByRole('option', { name: /US Dollar/ }).click();
+  await page
+    .getByRole('button', { name: 'Continue to financial year' })
+    .click();
+  await page
+    .getByRole('textbox', { name: 'Financial year name' })
+    .fill('Trading 2026');
+  await page
+    .getByRole('button', { name: 'Continue to reports', exact: true })
+    .click();
+  const name = page.getByRole('textbox', { name: 'Reporting setup name' });
+
+  const currency = page.getByRole('combobox', {
+    name: 'Currency for your reports',
+  });
+
+  await expect(name).toHaveValue('Trading 2026 Reports');
+  await expect(currency).toHaveValue('US Dollar');
+  await page
+    .getByRole('button', { name: 'Continue to income categories' })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'Choose your income categories' })
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await name.fill('Board pack');
+  await currency.fill('Nigerian Naira');
+  await page.getByRole('option', { name: /Nigerian Naira/ }).click();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Continue to reports', exact: true })
+    .click();
+  await expect(name).toHaveValue('Board pack');
+  await expect(currency).toHaveValue('Nigerian Naira');
+  await page
+    .getByRole('button', { name: 'Continue to income categories' })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'Choose your income categories' })
+  ).toBeVisible();
+  expect(saveRequests).toEqual([]);
+});

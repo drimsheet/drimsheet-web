@@ -17,6 +17,7 @@ export function ReportsStep({
   onBack,
   financialYear,
   currencies,
+  officialCurrencyCode,
   onSubmit,
 }: Readonly<ReportsStepProps>) {
   const { t } = useTranslation('onboarding');
@@ -30,6 +31,7 @@ export function ReportsStep({
   const about_description = t('reports_about_description');
   const continue_label = t('reports_continue_label');
   const back_label = t('financial_year_back_label');
+  const default_name = t('reports_name_default', { name: financialYear.name });
 
   return (
     <StepLayout
@@ -80,6 +82,10 @@ export function ReportsStep({
           id={formId}
           onSubmit={onSubmit}
           financialYear={financialYear}
+          initialValues={{
+            name: default_name,
+            currencyCode: officialCurrencyCode,
+          }}
           currencies={currencies}
           currentDate={currentDate}
           maxFiscalMonths={maxFiscalMonths}

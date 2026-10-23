@@ -40,6 +40,7 @@ export interface ReportsStepProps extends Pick<
   | 'maxFiscalMonths'
   | 'onSubmit'
 > {
+  officialCurrencyCode: string;
   onBack: () => void;
 }
 

@@ -7,6 +7,7 @@ const meta = {
   tags: ['autodocs'],
   args: {
     currentDate: '2026-10-22',
+    officialCurrencyCode: 'NGN',
     financialYear: {
       name: 'FY 2026',
       startDate: '2026-01-01',

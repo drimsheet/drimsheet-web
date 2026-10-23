@@ -126,10 +126,11 @@ export function AccountingEntityOnboardingPage() {
               />
             </div>
           )}
-          {financialYearValues && (
+          {financialYearValues && entityValues && (
             <div className={currentStep === 3 ? 'flex flex-1' : 'hidden'}>
               <ReportsStep
                 financialYear={financialYearValues}
+                officialCurrencyCode={entityValues.functionalCurrencyCode}
                 currencies={currenciesQuery.data ?? []}
                 currentDate={currentDate}
                 maxFiscalMonths={23}
