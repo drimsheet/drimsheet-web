@@ -58,6 +58,11 @@ and Ramp charcoal anchors in subsequent interface work.
   and light neutral with charcoal text in dark mode.
 - The brand accent is Butter (primary). The CSS accent token is a neutral
   interaction surface; do not confuse these two uses of the word accent.
+- Link text uses darker Butter in light mode and primary Butter in dark mode,
+  through the shared `link` role (`text-link`). Follow the palette reference's
+  theme mapping; do not substitute blue or use `text-primary` for light-mode
+  links. Standalone entity-name links may omit the resting underline, but must
+  show it on hover and keyboard focus and retain a visible focus indicator.
 - Keep panel surfaces separate from secondary action fills, and essential
   control borders separate from quiet decorative dividers.
 - Financial expense and destructive feedback retain independently named roles,

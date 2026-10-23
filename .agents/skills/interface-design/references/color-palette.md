@@ -84,7 +84,7 @@ shared palette.
 | Accent foreground                | neutral-900               | neutral-100               |
 | Sidebar active fill              | butter-400                | butter-950                |
 | Sidebar active foreground        | neutral-900               | butter-400                |
-| Link text                        | neutral-900               | butter-400                |
+| Link text                        | butter-800                | butter-400                |
 | Financial income marks           | green-600                 | green-300                 |
 | Financial expense marks          | terracotta-600            | terracotta-300            |
 | Neutral comparison marks         | neutral-500               | neutral-400               |
@@ -95,6 +95,12 @@ uses a neighboring neutral shade. Secondary foreground belongs on secondary
 fills, not muted surfaces. Apply this pairing rule to every foreground/background
 role. A secondary button or profile avatar consumes the same role pair without
 requiring an avatar-specific color.
+
+Link text uses the shared `link` alias (`text-link`), including shared link
+variants. The darker light-mode shade keeps Butter readable on page, card, and
+subtle hover surfaces; primary Butter remains the dark-mode link color. Keep
+link colors opaque in new work and use underline/focus styling for interaction
+feedback. Do not override the alias with blue or the light-mode primary fill.
 
 ## Feedback roles
 
@@ -133,6 +139,10 @@ Calculated sRGB contrast examples (rounded):
 | neutral-600 on neutral-100             | 5.60:1  |
 | neutral-400 on neutral-900             | 5.35:1  |
 | neutral-500 border against neutral-900 | 3.39:1  |
+| butter-800 on neutral-0                | 7.71:1  |
+| butter-800 on neutral-100              | 6.70:1  |
+| butter-400 on neutral-950              | 12.72:1 |
+| butter-400 on neutral-800              | 9.81:1  |
 
 These checks cover specified pairs, not every combination or application-wide
 accessibility. At implementation time, inspect all consumers of changed aliases,
