@@ -33,79 +33,57 @@ async function setup(page: Page) {
   return state;
 }
 
-test('shows real balances, 300px scrollable breakdowns, and the approved layout in both themes and mobile', async ({
-  page,
-}, testInfo) => {
-  await setup(page);
-  await page.getByRole('link', { name: 'Accounts', exact: true }).click();
-  const overview = page.getByRole('region', { name: 'Overview', exact: true });
-  await expect(overview).toContainText('₦12,480,000');
-  await expect(overview).toContainText('₦15,680,000');
-  await expect(overview).toContainText('₦3,200,000');
-  await expect(page.getByText('(20%)', { exact: true })).toBeVisible();
-  const assets = page.getByRole('region', { name: 'Assets', exact: true });
-  await expect(assets.getByRole('button', { name: /Operating/ })).toBeVisible();
-  expect(
-    await assets.evaluate((el) => ({
-      height: el.getBoundingClientRect().height,
-      overflow: getComputedStyle(el).overflowY,
-      scrolls: el.scrollHeight > el.clientHeight,
-    }))
-  ).toEqual({ height: 300, overflow: 'auto', scrolls: true });
-  await assets.getByRole('button', { name: 'Load more accounts' }).click();
-  await expect(
-    assets.getByRole('button', { name: /Account 22/ })
-  ).toBeAttached();
-  await expect(
-    page.getByRole('columnheader', { name: 'Name', exact: true })
-  ).toBeVisible();
-  await expect(
-    page.getByRole('tablist', { name: 'Account type' }).getByRole('tab')
-  ).toHaveText(['All', 'Asset', 'Liabilities']);
-  await page.getByText('View chart data', { exact: true }).click();
-  await expect(
-    page.getByRole('definition').filter({ hasText: '₦11,420,000' })
-  ).toHaveCount(5);
-  await page.getByText('View chart data', { exact: true }).click();
-  for (const theme of ['light', 'dark']) {
-    await assets.evaluate((element) => {
-      element.scrollTop = 0;
-    });
-    await page
-      .getByRole('button', { name: 'Add account', exact: true })
-      .focus();
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.evaluate(
-      (theme) =>
-        document.documentElement.classList.toggle('dark', theme === 'dark'),
-      theme
-    );
-    await page.screenshot({
-      path: testInfo.outputPath(`accounts-${theme}.png`),
-      fullPage: true,
-      animations: 'disabled',
-    });
-  }
-
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await expect
-    .poll(() =>
-      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)
-    )
-    .toBe(true);
-  await page.screenshot({
-    path: testInfo.outputPath('accounts-mobile.png'),
-    fullPage: true,
-    animations: 'disabled',
-  });
-});
-
 test('combines tabs and search, resets pagination, and keeps overview queries independent', async ({
   page,
 }) => {
   const state = await setup(page);
   await page.goto('/accounts');
+  await test.step('Overview, breakdown pagination and mobile layout', async () => {
+    const overview = page.getByRole('region', {
+      name: 'Overview',
+      exact: true,
+    });
+
+    await expect(overview).toContainText('₦12,480,000');
+    await expect(overview).toContainText('₦15,680,000');
+    await expect(overview).toContainText('₦3,200,000');
+    await expect(page.getByText('(20%)', { exact: true })).toBeVisible();
+    const assets = page.getByRole('region', { name: 'Assets', exact: true });
+    await expect(
+      assets.getByRole('button', { name: /Operating/ })
+    ).toBeVisible();
+    expect(
+      await assets.evaluate((el) => ({
+        height: el.getBoundingClientRect().height,
+        overflow: getComputedStyle(el).overflowY,
+        scrolls: el.scrollHeight > el.clientHeight,
+      }))
+    ).toEqual({ height: 300, overflow: 'auto', scrolls: true });
+    await assets.getByRole('button', { name: 'Load more accounts' }).click();
+    await expect(
+      assets.getByRole('button', { name: /Account 22/ })
+    ).toBeAttached();
+    await expect(
+      page.getByRole('columnheader', { name: 'Name', exact: true })
+    ).toBeVisible();
+    await expect(
+      page.getByRole('tablist', { name: 'Account type' }).getByRole('tab')
+    ).toHaveText(['All', 'Asset', 'Liabilities']);
+    await page.getByText('View chart data', { exact: true }).click();
+    await expect(
+      page.getByRole('definition').filter({ hasText: '₦11,420,000' })
+    ).toHaveCount(5);
+    await page.getByText('View chart data', { exact: true }).click();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)
+      )
+      .toBe(true);
+  });
+  await page.setViewportSize({ width: 1280, height: 900 });
   const table = page.getByRole('region', { name: 'All accounts', exact: true });
   await expect(table).toContainText('1–10 of 25');
   await table.getByRole('button', { name: 'Next page' }).click();
@@ -201,6 +179,34 @@ test('preserves available balances on section errors and recovers after browser 
   ).toHaveCount(0);
   await page.reload();
   await expect(page.getByRole('table')).toContainText('Account 23');
+  await test.step('Overview failures leave the account table usable', async () => {
+    state.summaryError = true;
+    state.breakdownError = true;
+    await page.reload();
+    await expect(page.getByRole('table')).toContainText('Account 23');
+    await expect(
+      page.getByRole('alert').filter({ hasText: 'Couldn’t load balances' })
+    ).toBeVisible();
+    await expect(
+      page.getByRole('region', { name: 'Assets', exact: true })
+    ).toContainText('Couldn’t load account shares');
+    state.summaryError = false;
+    await expect(
+      page.getByRole('button', { name: /^(Retry|Try again)$/i })
+    ).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByRole('region', { name: 'Overview' })).toContainText(
+      '₦12,480,000'
+    );
+    state.breakdownError = false;
+    await expect(
+      page.getByRole('button', { name: /^(Retry|Try again)$/i })
+    ).toHaveCount(0);
+    await page.reload();
+    await expect(
+      page.getByRole('region', { name: 'Assets', exact: true })
+    ).toContainText('Operating');
+  });
 });
 
 test('distinguishes no accounts, zero balances, absent types and search with no matches', async ({
@@ -246,36 +252,4 @@ test('distinguishes no accounts, zero balances, absent types and search with no 
   await expect(page.getByRole('table')).toContainText('No accounts found');
   await page.getByRole('button', { name: 'Clear search' }).click();
   await expect(page.getByRole('table')).toContainText('Zero account');
-});
-
-test('keeps the table usable when balances or one breakdown fail', async ({
-  page,
-}) => {
-  const state = await setup(page);
-  state.summaryError = true;
-  state.breakdownError = true;
-  await page.goto('/accounts');
-  await expect(page.getByRole('table')).toContainText('Operating');
-  await expect(
-    page.getByRole('alert').filter({ hasText: 'Couldn’t load balances' })
-  ).toBeVisible();
-  await expect(
-    page.getByRole('region', { name: 'Assets', exact: true })
-  ).toContainText('Couldn’t load account shares');
-  state.summaryError = false;
-  await expect(
-    page.getByRole('button', { name: /^(Retry|Try again)$/i })
-  ).toHaveCount(0);
-  await page.reload();
-  await expect(page.getByRole('region', { name: 'Overview' })).toContainText(
-    '₦12,480,000'
-  );
-  state.breakdownError = false;
-  await expect(
-    page.getByRole('button', { name: /^(Retry|Try again)$/i })
-  ).toHaveCount(0);
-  await page.reload();
-  await expect(
-    page.getByRole('region', { name: 'Assets', exact: true })
-  ).toContainText('Operating');
 });

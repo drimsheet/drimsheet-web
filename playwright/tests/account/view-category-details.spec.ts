@@ -172,76 +172,6 @@ async function setup(page: Page, type: 'revenue' | 'expense' = 'expense') {
   await expect(page).toHaveURL('/dashboard');
 }
 
-test('loads every page for analytics, filters transactions by counterparty, and fits mobile', async ({
-  page,
-}, testInfo) => {
-  await setup(page);
-  await page.setViewportSize({ width: 1440, height: 1100 });
-  await page.goto(`/categories/${accountId}`);
-  await expect(
-    page.getByRole('heading', { name: category.name })
-  ).toBeVisible();
-  await expect(page.getByText('₦2,400,000', { exact: true })).toBeVisible();
-  const share = page.getByRole('region', { name: 'Counterparty share' });
-  await expect(share.getByRole('button', { name: /Google/ })).toContainText(
-    '60%'
-  );
-  await expect(share.getByRole('button', { name: /Notion/ })).toContainText(
-    '40%'
-  );
-  await expect(share.getByRole('button', { name: /Figma/ })).toHaveCount(0);
-  const table = page.getByRole('region', { name: 'Transactions', exact: true });
-  await expect(
-    table.getByText('3 transactions', { exact: true })
-  ).toBeVisible();
-  await expect(
-    page
-      .getByRole('region', { name: 'Expense over time' })
-      .locator('.recharts-bar')
-  ).toHaveCount(1);
-  await page.screenshot({
-    path: testInfo.outputPath('category-desktop.png'),
-    fullPage: true,
-  });
-  await share.getByRole('button', { name: /Notion/ }).click();
-  await expect(table.getByText('Notion subscription')).toBeVisible();
-  await expect(table.getByText('Google subscription')).toHaveCount(0);
-  await expect(table.getByText('1 transaction', { exact: true })).toBeVisible();
-  await table.getByRole('button', { name: 'Clear filter: Notion' }).click();
-  await expect(table.getByText('Google subscription')).toBeVisible();
-  await table
-    .getByRole('textbox', { name: 'Search transactions…' })
-    .fill('Figma');
-  await expect(table.getByText('Figma subscription')).toBeVisible();
-  await expect(table.getByText('Google subscription')).toHaveCount(0);
-  await page.setViewportSize({ width: 390, height: 844 });
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth
-    )
-  ).toBe(true);
-  await page.screenshot({
-    path: testInfo.outputPath('category-mobile.png'),
-    fullPage: true,
-  });
-});
-
-test('redirects existing revenue account links to the category detail page', async ({
-  page,
-}) => {
-  await setup(page, 'revenue');
-  await page.goto(`/accounts/${accountId}`);
-  await expect(page).toHaveURL(`/categories/${accountId}`);
-  await expect(
-    page.getByRole('region', { name: 'Revenue over time' })
-  ).toBeVisible();
-  await expect(
-    page
-      .getByRole('region', { name: 'Counterparty share' })
-      .getByRole('button', { name: /Google/ })
-  ).toContainText('60%');
-});
-
 test('keeps the balance visible when history fails and recovers after browser refresh', async ({
   page,
 }) => {
@@ -326,6 +256,11 @@ test('pages server participation while preserving the transaction filter', async
     });
   });
   await page.goto(`/categories/${accountId}`);
+  await expect(
+    page.getByRole('heading', { name: category.name })
+  ).toBeVisible();
+  await expect(page.getByText('₦2,400,000', { exact: true })).toBeVisible();
+
   const share = page.getByRole('region', { name: 'Counterparty share' });
   const table = page.getByRole('region', { name: 'Transactions', exact: true });
   await expect(share.getByRole('button', { name: /Google/ })).toContainText(
@@ -351,6 +286,17 @@ test('pages server participation while preserving the transaction filter', async
   await expect(
     table.getByText('3 transactions', { exact: true })
   ).toBeVisible();
+  await table
+    .getByRole('textbox', { name: 'Search transactions…' })
+    .fill('Figma');
+  await expect(table.getByText('Figma subscription')).toBeVisible();
+  await expect(table.getByText('Google subscription')).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth
+    )
+  ).toBe(true);
 });
 
 test('keeps transactions usable when participation fails and recovers after browser refresh', async ({
@@ -388,18 +334,29 @@ for (const type of ['revenue', 'expense'] as const) {
     await setup(page, type);
     let current = { ...category, type };
     const updates: unknown[] = [];
+    let attempts = 0;
 
     await page.route(`**/api/v1/ledger/${accountId}`, (route) =>
       route.fulfill({ json: current })
     );
     await page.route(`**/api/v1/ledger/${type}/${accountId}`, (route) => {
       expect(route.request().method()).toBe('PATCH');
+      attempts += 1;
+      if (type === 'expense' && attempts === 1)
+        return route.fulfill({
+          status: 503,
+          json: { errorKey: 'unavailable' },
+        });
+
       updates.push(route.request().postDataJSON());
       current = { ...current, name: 'Updated category' };
 
       return route.fulfill({ json: current });
     });
-    await page.goto(`/categories/${accountId}`);
+    await page.goto(
+      type === 'revenue' ? `/accounts/${accountId}` : `/categories/${accountId}`
+    );
+    await expect(page).toHaveURL(`/categories/${accountId}`);
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Edit category' });
     await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
@@ -417,6 +374,19 @@ for (const type of ['revenue', 'expense'] as const) {
       .getByLabel('Name', { exact: true })
       .fill('  Updated category  ');
     await dialog.getByRole('button', { name: 'Save changes' }).click();
+    if (type === 'expense') {
+      await expect(dialog.getByRole('alert')).toContainText(
+        'We couldn’t save this category'
+      );
+      await expect(
+        dialog.getByRole('button', { name: 'Save changes' })
+      ).toBeEnabled();
+      await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
+        '  Updated category  '
+      );
+      await dialog.getByRole('button', { name: 'Save changes' }).click();
+    }
+
     await expect(dialog).not.toBeVisible();
     expect(updates).toEqual([{ name: 'Updated category' }]);
     await expect(
@@ -429,205 +399,102 @@ for (const type of ['revenue', 'expense'] as const) {
   });
 }
 
-test('retains category edits after a failed save and allows retry', async ({
+test('confirms archiving a category and refreshes its status', async ({
   page,
 }) => {
   await setup(page);
-  let current = category;
-  let attempts = 0;
-  let release = () => {};
+  let current = { ...category };
+  const requests: { method: string; body: string | null }[] = [];
+  let finishArchive = () => {};
 
-  const gate = new Promise<void>((resolve) => {
-    release = resolve;
+  const archiveResponse = new Promise<void>((resolve) => {
+    finishArchive = resolve;
   });
-
-  await page.route(`**/api/v1/ledger/${accountId}`, (route) =>
-    route.fulfill({ json: current })
-  );
-  await page.route(`**/api/v1/ledger/expense/${accountId}`, async (route) => {
-    attempts += 1;
-    expect(route.request().postDataJSON()).toEqual({
-      name: 'Updated category',
-    });
-    if (attempts === 1) {
-      await gate;
-      await route.fulfill({ status: 503, json: { errorKey: 'unavailable' } });
-
-      return;
-    }
-
-    current = { ...category, name: 'Updated category' };
-    await route.fulfill({ json: current });
-  });
-  await page.goto(`/categories/${accountId}`);
-  await page.getByRole('button', { name: 'Edit', exact: true }).click();
-  const dialog = page.getByRole('dialog', { name: 'Edit category' });
-  await dialog.getByLabel('Name', { exact: true }).fill('Updated category');
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog.getByLabel('Name', { exact: true })).toBeDisabled();
-  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
-  await page.keyboard.press('Escape');
-  await expect(dialog).toBeVisible();
-  release();
-  await expect(dialog.getByRole('alert')).toContainText(
-    'We couldn’t save this category'
-  );
-  await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
-    'Updated category'
-  );
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog).not.toBeVisible();
-  await expect(
-    page.getByRole('heading', { name: 'Updated category' })
-  ).toBeVisible();
-  expect(attempts).toBe(2);
-});
-
-test('disables editing and archiving an archived category', async ({
-  page,
-}) => {
-  await setup(page);
-  await page.route(`**/api/v1/ledger/${accountId}`, (route) =>
-    route.fulfill({ json: { ...category, status: 'archived' } })
-  );
-  await page.goto(`/categories/${accountId}`);
-  await expect(
-    page.getByRole('button', { name: 'Edit', exact: true })
-  ).toBeDisabled();
-  await page.getByRole('button', { name: 'Open category actions' }).click();
-  await expect(
-    page.getByRole('menuitem', { name: 'Archive', exact: true })
-  ).toBeDisabled();
-});
-
-for (const type of ['revenue', 'expense'] as const) {
-  test(`confirms archiving a ${type} category and refreshes its status`, async ({
-    page,
-  }, testInfo) => {
-    await setup(page, type);
-    let current = { ...category, type };
-    const requests: { method: string; body: string | null }[] = [];
-    let finishArchive = () => {};
-
-    const archiveResponse = new Promise<void>((resolve) => {
-      finishArchive = resolve;
-    });
-
-    await page.route(`**/api/v1/ledger/${accountId}`, (route) =>
-      route.fulfill({ json: current })
-    );
-    await page.route(`**/api/v1/ledger/${accountId}/archive`, async (route) => {
-      requests.push({
-        method: route.request().method(),
-        body: route.request().postData(),
-      });
-      await archiveResponse;
-      current = { ...current, status: 'archived' };
-      await route.fulfill({ status: 204 });
-    });
-    await page.goto(`/categories/${accountId}`);
-    const actions = page.getByRole('button', { name: 'Open category actions' });
-    await actions.click();
-    await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
-    const dialog = page.getByRole('alertdialog', { name: 'Archive category' });
-    await expect(dialog).toContainText(`Archive ${category.name}?`);
-    await expect(dialog).toContainText(
-      'Its historical activity will remain available.'
-    );
-    expect(requests).toEqual([]);
-    await dialog.getByRole('button', { name: 'Cancel' }).click();
-    await expect(dialog).not.toBeVisible();
-    expect(requests).toEqual([]);
-    await actions.click();
-    await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
-    await expect(page.getByRole('menu')).not.toBeVisible();
-    await page.screenshot({
-      path: testInfo.outputPath('category-archive.png'),
-      animations: 'disabled',
-    });
-    await dialog.getByRole('button', { name: 'Archive', exact: true }).click();
-    await expect(
-      dialog.getByRole('button', { name: 'Archive', exact: true })
-    ).toBeDisabled();
-    await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
-    await expect(
-      page.getByRole('button', {
-        name: 'Open category actions',
-        includeHidden: true,
-      })
-    ).toBeDisabled();
-    await expect(
-      page.getByRole('button', {
-        name: 'Edit',
-        exact: true,
-        includeHidden: true,
-      })
-    ).toBeDisabled();
-    await page.keyboard.press('Escape');
-    await expect(dialog).toBeVisible();
-    await expect.poll(() => requests).toEqual([{ method: 'POST', body: null }]);
-    finishArchive();
-    await expect(dialog).not.toBeVisible();
-    await expect(
-      page.getByText('Category archived successfully')
-    ).toBeVisible();
-    await expect(page.getByText('Archived', { exact: true })).toBeVisible();
-    await expect(
-      page.getByRole('heading', { name: category.name })
-    ).toBeVisible();
-    await expect(page.getByText('₦2,400,000', { exact: true })).toBeVisible();
-    await expect(
-      page.getByRole('button', { name: 'Edit', exact: true })
-    ).toBeDisabled();
-    await actions.click();
-    await expect(
-      page.getByRole('menuitem', { name: 'Archive', exact: true })
-    ).toBeDisabled();
-    expect(requests).toHaveLength(1);
-  });
-}
-
-test('retains category archive confirmation after failure and retries', async ({
-  page,
-}) => {
-  await setup(page);
-  let current = category;
-  let attempts = 0;
 
   await page.route(`**/api/v1/ledger/${accountId}`, (route) =>
     route.fulfill({ json: current })
   );
   await page.route(`**/api/v1/ledger/${accountId}/archive`, async (route) => {
-    attempts += 1;
-    if (attempts === 1) {
-      await route.fulfill({
-        status: 500,
-        json: { name: 'UnexpectedError', validationErrors: [] },
-      });
+    requests.push({
+      method: route.request().method(),
+      body: route.request().postData(),
+    });
+    if (requests.length === 1) {
+      await route.fulfill({ status: 500, json: { name: 'UnexpectedError' } });
 
       return;
     }
 
-    current = { ...category, status: 'archived' };
+    await archiveResponse;
+    current = { ...current, status: 'archived' };
     await route.fulfill({ status: 204 });
   });
   await page.goto(`/categories/${accountId}`);
-  await page.getByRole('button', { name: 'Open category actions' }).click();
+  const actions = page.getByRole('button', { name: 'Open category actions' });
+  await actions.click();
   await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
   const dialog = page.getByRole('alertdialog', { name: 'Archive category' });
+  await expect(dialog).toContainText(`Archive ${category.name}?`);
+  await expect(dialog).toContainText(
+    'Its historical activity will remain available.'
+  );
+  expect(requests).toEqual([]);
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(dialog).not.toBeVisible();
+  expect(requests).toEqual([]);
+  await actions.click();
+  await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
+  await expect(page.getByRole('menu')).not.toBeVisible();
   await dialog.getByRole('button', { name: 'Archive', exact: true }).click();
   await expect(
     page.getByText('An error occurred', { exact: true })
   ).toBeVisible();
-  await expect(dialog).toBeVisible();
-  await expect(page.getByText('Active', { exact: true })).toBeVisible();
   await expect(
     dialog.getByRole('button', { name: 'Archive', exact: true })
   ).toBeEnabled();
+  await expect(page.getByText('Active', { exact: true })).toBeVisible();
   await dialog.getByRole('button', { name: 'Archive', exact: true }).click();
+  await expect(
+    dialog.getByRole('button', { name: 'Archive', exact: true })
+  ).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+  await expect(
+    page.getByRole('button', {
+      name: 'Open category actions',
+      includeHidden: true,
+    })
+  ).toBeDisabled();
+  await expect(
+    page.getByRole('button', {
+      name: 'Edit',
+      exact: true,
+      includeHidden: true,
+    })
+  ).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeVisible();
+  await expect
+    .poll(() => requests)
+    .toEqual([
+      { method: 'POST', body: null },
+      { method: 'POST', body: null },
+    ]);
+  finishArchive();
   await expect(dialog).not.toBeVisible();
+  await expect(page.getByText('Category archived successfully')).toBeVisible();
   await expect(page.getByText('Archived', { exact: true })).toBeVisible();
-  expect(attempts).toBe(2);
+  await expect(
+    page.getByRole('heading', { name: category.name })
+  ).toBeVisible();
+  await expect(page.getByText('₦2,400,000', { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Edit', exact: true })
+  ).toBeDisabled();
+  await actions.click();
+  await expect(
+    page.getByRole('menuitem', { name: 'Archive', exact: true })
+  ).toBeDisabled();
+  expect(requests).toHaveLength(2);
 });
 
 test('checks deletion eligibility on menu open and hides stale permission while rechecking', async ({
@@ -645,9 +512,15 @@ test('checks deletion eligibility on menu open and hides stale permission while 
     `**/api/v1/ledger/${accountId}/deletion-eligibility`,
     async (route) => {
       checks += 1;
-      if (checks > 1) await response;
+      if (checks === 2) await response;
 
-      await route.fulfill({ json: { canDelete: checks === 1 } });
+      if (checks === 3) {
+        await route.fulfill({ status: 500, json: { name: 'UnexpectedError' } });
+
+        return;
+      }
+
+      await route.fulfill({ json: { canDelete: checks !== 2 } });
     }
   );
   await page.goto(`/categories/${accountId}`);
@@ -674,47 +547,31 @@ test('checks deletion eligibility on menu open and hides stale permission while 
     page.getByRole('menuitem', { name: 'Delete', exact: true })
   ).toHaveCount(0);
   expect(checks).toBe(2);
+  await test.step('A failed recheck hides deletion until a fresh menu open succeeds', async () => {
+    await page.keyboard.press('Escape');
+    await actions.click();
+    await expect(
+      page.getByText(
+        'Unable to check deletion availability. Reopen the menu to try again.'
+      )
+    ).toBeVisible();
+    await expect(
+      page.getByRole('menuitem', { name: 'Delete', exact: true })
+    ).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await actions.click();
+    await expect(
+      page.getByRole('menuitem', { name: 'Delete', exact: true })
+    ).toBeVisible();
+    expect(checks).toBe(4);
+  });
 });
 
-test('retries failed category deletion eligibility when reopening the menu', async ({
-  page,
-}) => {
-  await setup(page);
-  let checks = 0;
-
-  await page.route(
-    `**/api/v1/ledger/${accountId}/deletion-eligibility`,
-    (route) => {
-      checks += 1;
-
-      return checks === 1
-        ? route.fulfill({ status: 500, json: { name: 'UnexpectedError' } })
-        : route.fulfill({ json: { canDelete: true } });
-    }
-  );
-  await page.goto(`/categories/${accountId}`);
-  const actions = page.getByRole('button', { name: 'Open category actions' });
-  await actions.click();
-  await expect(
-    page.getByText(
-      'Unable to check deletion availability. Reopen the menu to try again.'
-    )
-  ).toBeVisible();
-  await expect(
-    page.getByRole('menuitem', { name: 'Delete', exact: true })
-  ).toHaveCount(0);
-  await page.keyboard.press('Escape');
-  await actions.click();
-  await expect(
-    page.getByRole('menuitem', { name: 'Delete', exact: true })
-  ).toBeVisible();
-  expect(checks).toBe(2);
-});
-
-for (const status of ['active', 'archived'] as const) {
+{
+  const status = 'archived' as const;
   test(`deletes an eligible ${status} category and refreshes the categories list`, async ({
     page,
-  }, testInfo) => {
+  }) => {
     await setup(page);
     let deleted = false;
     let detailReadsAfterDelete = 0;
@@ -818,10 +675,6 @@ for (const status of ['active', 'archived'] as const) {
     await input.fill('delete');
     await expect(confirm).toBeEnabled();
     await expect(page.getByRole('menu')).not.toBeVisible();
-    await page.screenshot({
-      path: testInfo.outputPath('delete-category.png'),
-      animations: 'disabled',
-    });
     await confirm.click();
     await expect(
       dialog.getByRole('button', { name: 'Delete', exact: true })

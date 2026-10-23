@@ -249,46 +249,25 @@ async function fillForeignCurrencyReceipt(page: Page) {
 }
 
 test.describe('Inflow receipt creation', () => {
-  test('renders the form skeleton until required query data is ready', async ({
-    page,
-  }) => {
-    let releasePostingAccounts: () => void = () => undefined;
-
-    const postingAccountsGate = new Promise<void>((resolve) => {
-      releasePostingAccounts = resolve;
-    });
-
-    await registerInflowPageRoutes(
-      page,
-      { counterpartyLimits: [], postingAccounts: [] },
-      { postingAccountsGate }
-    );
-    await signInAndNavigateToInflow(page);
-
-    const loadingStatus = page.getByRole('status');
-    await expect(loadingStatus).toHaveText('Loading transaction form');
-    await expect(
-      page.getByRole('combobox', { name: 'Account' })
-    ).not.toBeVisible();
-
-    releasePostingAccounts();
-
-    await expect(loadingStatus).not.toBeVisible();
-    await expect(page.getByRole('combobox', { name: 'Account' })).toBeVisible();
-  });
-
-  test('refreshes the official rate when the inflow currency or date changes', async ({
+  test('creates a foreign-currency receipt after quote changes and a failed submission', async ({
     page,
   }) => {
     const exchangeRates: IExchangeRateQuery[] = [];
 
     const queryLog: IInflowQueryLog = {
-      counterpartyLimits: [],
       exchangeRates,
+      counterpartyLimits: [],
       postingAccounts: [],
     };
 
+    let releasePostingAccounts!: () => void;
+
+    const postingAccountsGate = new Promise<void>((resolve) => {
+      releasePostingAccounts = resolve;
+    });
+
     await registerInflowPageRoutes(page, queryLog, {
+      postingAccountsGate,
       exchangeRateResponse: (query) => {
         if (!query.currencyPair || !query.asOf) return [];
 
@@ -309,71 +288,6 @@ test.describe('Inflow receipt creation', () => {
         ];
       },
     });
-    await signInAndNavigateToInflow(page);
-
-    expect(exchangeRates).toHaveLength(0);
-    const account = page.getByRole('combobox', { name: 'Account' });
-    await account.click();
-    await page.getByRole('option', { name: 'USD operating account' }).click();
-
-    await expect.poll(() => exchangeRates.length).toBe(1);
-    const firstQuery = exchangeRates[0];
-    expect(firstQuery).toEqual({
-      asOf: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-      currencyPair: 'USD/NGN',
-      limit: '1',
-      type: 'official',
-    });
-    await expect(page.getByText('Official rate: 1401')).toBeVisible();
-
-    const previousDate = new Date(`${firstQuery.asOf}T00:00:00.000Z`);
-    previousDate.setUTCDate(previousDate.getUTCDate() - 1);
-    const previousApiDate = previousDate.toISOString().slice(0, 10);
-
-    const previousWeekday = previousDate.toLocaleDateString('en-US', {
-      timeZone: 'UTC',
-      weekday: 'long',
-    });
-
-    const previousMonth = previousDate.toLocaleDateString('en-US', {
-      month: 'long',
-      timeZone: 'UTC',
-    });
-
-    await page.getByLabel('Date').click();
-    await page
-      .getByRole('button', {
-        name: new RegExp(
-          `^${previousWeekday}, ${previousMonth} ${previousDate.getUTCDate()}(?:st|nd|rd|th), ${previousDate.getUTCFullYear()}$`
-        ),
-      })
-      .click();
-
-    await expect.poll(() => exchangeRates.length).toBe(2);
-    expect(exchangeRates[1]).toEqual({
-      asOf: previousApiDate,
-      currencyPair: 'USD/NGN',
-      limit: '1',
-      type: 'official',
-    });
-    await expect(page.getByText('Official rate: 1402')).toBeVisible();
-
-    await account.fill('NGN');
-    await page.getByRole('option', { name: 'NGN operating account' }).click();
-
-    await expect(page.getByLabel('Exchange rate')).not.toBeVisible();
-    expect(exchangeRates).toHaveLength(2);
-  });
-
-  test('loads permitted options and creates a foreign-currency receipt DTO once', async ({
-    page,
-  }) => {
-    const queryLog: IInflowQueryLog = {
-      counterpartyLimits: [],
-      postingAccounts: [],
-    };
-
-    await registerInflowPageRoutes(page, queryLog);
 
     const uploadLog: IUploadLog = {
       directUploads: 0,
@@ -393,11 +307,25 @@ test.describe('Inflow receipt creation', () => {
     await page.route(createReceiptEndpoint, async (route) => {
       requestCount += 1;
       capturedRequestBody = JSON.parse(route.request().postData() ?? '{}');
+      if (requestCount === 1) {
+        await route.fulfill({ status: 500, json: { name: 'UnexpectedError' } });
+
+        return;
+      }
+
       await receiptResponseGate;
       await route.fulfill({ status: 201, json: { id: 'receipt-entry-1' } });
     });
 
     await signInAndNavigateToInflow(page);
+    const loadingStatus = page.getByRole('status');
+    await expect(loadingStatus).toHaveText('Loading transaction form');
+    await expect(
+      page.getByRole('combobox', { name: 'Account' })
+    ).not.toBeVisible();
+    releasePostingAccounts();
+    await expect(loadingStatus).not.toBeVisible();
+    await expect(page.getByRole('combobox', { name: 'Account' })).toBeVisible();
 
     await expect.poll(() => queryLog.postingAccounts.length).toBe(2);
     expect(queryLog.postingAccounts).toEqual(
@@ -408,6 +336,62 @@ test.describe('Inflow receipt creation', () => {
     );
     await expect.poll(() => queryLog.counterpartyLimits).toEqual(['100']);
 
+    await test.step('Currency and date changes refresh the official quote', async () => {
+      expect(exchangeRates).toHaveLength(0);
+      const account = page.getByRole('combobox', { name: 'Account' });
+      await account.click();
+      await page.getByRole('option', { name: 'USD operating account' }).click();
+
+      await expect.poll(() => exchangeRates.length).toBe(1);
+      const firstQuery = exchangeRates[0];
+      expect(firstQuery).toEqual({
+        asOf: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+        currencyPair: 'USD/NGN',
+        limit: '1',
+        type: 'official',
+      });
+      await expect(page.getByText('Official rate: 1401')).toBeVisible();
+
+      const previousDate = new Date(`${firstQuery.asOf}T00:00:00.000Z`);
+      previousDate.setUTCDate(previousDate.getUTCDate() - 1);
+      const previousApiDate = previousDate.toISOString().slice(0, 10);
+
+      const previousWeekday = previousDate.toLocaleDateString('en-US', {
+        timeZone: 'UTC',
+        weekday: 'long',
+      });
+
+      const previousMonth = previousDate.toLocaleDateString('en-US', {
+        month: 'long',
+        timeZone: 'UTC',
+      });
+
+      await page.getByLabel('Date').click();
+      await page
+        .getByRole('button', {
+          name: new RegExp(
+            `^${previousWeekday}, ${previousMonth} ${previousDate.getUTCDate()}(?:st|nd|rd|th), ${previousDate.getUTCFullYear()}$`
+          ),
+        })
+        .click();
+
+      await expect.poll(() => exchangeRates.length).toBe(2);
+      expect(exchangeRates[1]).toEqual({
+        asOf: previousApiDate,
+        currencyPair: 'USD/NGN',
+        limit: '1',
+        type: 'official',
+      });
+      await expect(page.getByText('Official rate: 1402')).toBeVisible();
+
+      await account.fill('NGN');
+      await page.getByRole('option', { name: 'NGN operating account' }).click();
+
+      await expect(page.getByLabel('Exchange rate')).not.toBeVisible();
+      expect(exchangeRates).toHaveLength(2);
+      await account.fill('');
+      await page.keyboard.press('Escape');
+    });
     await fillForeignCurrencyReceipt(page);
 
     const fileInput = page.getByLabel('Attach file');
@@ -420,10 +404,26 @@ test.describe('Inflow receipt creation', () => {
 
     const createButton = page.getByRole('button', { name: 'Create' });
     await createButton.click();
+    await test.step('A settled failure retains the transaction and attachment', async () => {
+      await expect(page.getByText('An error occurred')).toBeVisible();
+      await expect(page.getByText('receipt.pdf')).toBeVisible();
+      await expect(page.getByLabel('Amount', { exact: true })).toHaveValue(
+        '1,250.50'
+      );
+      await expect(page.getByLabel('Exchange rate')).toHaveValue('1,500');
+      await expect(page.getByRole('combobox', { name: 'Payer' })).toHaveValue(
+        'Acme Consulting'
+      );
+      await expect(page.getByLabel('Description')).toHaveValue(
+        'August consulting retainer'
+      );
+      await expect(createButton).toBeEnabled();
+      await createButton.click();
+    });
 
     await expect(createButton).toBeDisabled();
     await expect(page.locator('form')).toHaveAttribute('aria-busy', 'true');
-    await expect.poll(() => requestCount).toBe(1);
+    await expect.poll(() => requestCount).toBe(2);
 
     releaseReceiptResponse();
 
@@ -431,7 +431,7 @@ test.describe('Inflow receipt creation', () => {
       page.getByText('Transaction was created successfully.')
     ).toBeVisible();
     await expect(page).toHaveURL('/transactions');
-    expect(requestCount).toBe(1);
+    expect(requestCount).toBe(2);
     expect(capturedRequestBody).not.toBeNull();
 
     const body = capturedRequestBody as unknown as IReceiptEntryReq;
@@ -458,7 +458,7 @@ test.describe('Inflow receipt creation', () => {
         purpose: 'journal_entry_attachment',
       },
     ]);
-    expect(uploadLog.directUploads).toBe(1);
+    expect(uploadLog.directUploads).toBe(2);
     expect(body).toEqual({
       attachmentReferences: ['attachment-reference-1'],
       sourceLines: [
@@ -576,49 +576,5 @@ test.describe('Inflow receipt creation', () => {
         sequenceOrder: 2,
       }),
     ]);
-  });
-
-  test('shows translated API feedback and retains form and upload state on failure', async ({
-    page,
-  }) => {
-    await registerInflowPageRoutes(page, {
-      counterpartyLimits: [],
-      postingAccounts: [],
-    });
-    await registerAttachmentUploadRoutes(page, {
-      directUploads: 0,
-      preparationBody: null,
-    });
-    await page.route(createReceiptEndpoint, async (route) => {
-      await route.fulfill({
-        status: 500,
-        json: { message: 'Receipt creation failed' },
-      });
-    });
-
-    await signInAndNavigateToInflow(page);
-    await fillForeignCurrencyReceipt(page);
-
-    const fileInput = page.getByLabel('Attach file');
-    await fileInput.setInputFiles({
-      name: 'retained-receipt.pdf',
-      mimeType: 'application/pdf',
-      buffer: Buffer.from('retained receipt content'),
-    });
-
-    await page.getByRole('button', { name: 'Create' }).click();
-
-    await expect(page.getByText('An error occurred')).toBeVisible();
-    await expect(page.getByText('retained-receipt.pdf')).toBeVisible();
-    await expect(page.getByLabel('Amount', { exact: true })).toHaveValue(
-      '1,250.50'
-    );
-    await expect(page.getByLabel('Exchange rate')).toHaveValue('1,500');
-    await expect(page.getByRole('combobox', { name: 'Payer' })).toHaveValue(
-      'Acme Consulting'
-    );
-    await expect(page.getByLabel('Description')).toHaveValue(
-      'August consulting retainer'
-    );
   });
 });

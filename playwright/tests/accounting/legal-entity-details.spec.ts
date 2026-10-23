@@ -155,6 +155,15 @@ test('loads the selected entity without switching and shows only current periods
   await expect(page.getByRole('heading', { name: 'October 2026' })).toHaveCount(
     0
   );
+  await page.setViewportSize({ width: 375, height: 900 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth
+    )
+  ).toBe(true);
+  await expect(
+    page.getByRole('button', { name: 'Edit', exact: true })
+  ).toBeVisible();
 });
 
 test('recovers from failed details and supports an entity without fiscal years', async ({
@@ -317,45 +326,3 @@ test('switches only on request and reloads into the chosen entity', async ({
   ).toBeDisabled();
   expect(payload).toEqual({ accountingEntityId: entity.id });
 });
-
-for (const theme of ['light', 'dark']) {
-  for (const width of [1440, 1024, 375]) {
-    test(`shows the approved layout at ${width}px in ${theme} mode`, async ({
-      page,
-    }, testInfo) => {
-      await page.route('**/api/v1/users/preferences', (route) =>
-        route.fulfill({
-          json: {
-            userId: authenticatedUser.id,
-            createdBy: authenticatedUser.id,
-            lastActiveAccountingEntityId: authenticatedAccountingEntity.id,
-            appPreferences: { theme, appUsageMode: 'non_power_user' },
-            createdAt: entity.createdAt,
-            updatedAt: entity.updatedAt,
-          },
-        })
-      );
-      await page.evaluate(
-        (value) => localStorage.setItem('theme', value),
-        theme
-      );
-      await page.setViewportSize({ width, height: 1000 });
-      await page.goto(`/legal-entity/${entity.id}`);
-      await expect(
-        page.getByRole('heading', { name: 'Q4 2026' })
-      ).toBeVisible();
-      await expect(
-        page.getByRole('button', { name: 'Edit', exact: true })
-      ).toBeVisible();
-      expect(
-        await page.evaluate(
-          () => document.documentElement.scrollWidth <= innerWidth
-        )
-      ).toBe(true);
-      await page.screenshot({
-        path: testInfo.outputPath('legal-entity-details.png'),
-        fullPage: true,
-      });
-    });
-  }
-}

@@ -1,9 +1,6 @@
 import { featureFlagKeys } from '@/shared/hooks/use-feature-flags';
 import { expect, test } from '@integration/fixtures/test';
-import {
-  authenticatedUser,
-  registerAuthenticatedAppRoutes,
-} from '@integration/mocks/authenticated-app';
+import { authenticatedUser } from '@integration/mocks/authenticated-app';
 import type { Page } from '@playwright/test';
 
 const loginEndpoint = '**/api/v1/auth/login-with-email';
@@ -80,20 +77,6 @@ test.describe('when Alpha 1 access is denied', () => {
     expect(accountingRequestCount).toBe(0);
   });
 
-  test('keeps auth routes outside the feature flag wrapper', async ({
-    page,
-  }) => {
-    await page.goto('/auth/signin');
-    await expect(
-      page.getByRole('heading', { level: 1, name: 'Sign In' })
-    ).toBeVisible();
-
-    await page.goto('/auth/signup');
-    await expect(
-      page.getByRole('heading', { level: 1, name: 'Create account' })
-    ).toBeVisible();
-  });
-
   test('redirects a logged-out protected route to sign in before evaluating flags', async ({
     page,
   }) => {
@@ -107,22 +90,11 @@ test.describe('when Alpha 1 access is denied', () => {
     await expect(
       page.getByRole('heading', { level: 1, name: 'Sign In' })
     ).toBeVisible();
+    await page.goto('/auth/signup');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Create account' })
+    ).toBeVisible();
   });
-});
-
-test('allows an authenticated user into the application when Alpha 1 is enabled', async ({
-  page,
-}) => {
-  await registerAuthenticatedAppRoutes(page);
-  await registerLoginRoute(page);
-
-  await signIn(page);
-
-  await expect(
-    page.getByRole('button', {
-      name: 'Open account management for Integration Entity',
-    })
-  ).toBeVisible();
 });
 
 test('uses the unavailable state for a Core feature-flag error', async ({

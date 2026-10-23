@@ -177,6 +177,17 @@ test('opens the linked profile, supplies scoped data to the existing table, and 
   page,
 }) => {
   await setup(page);
+  let release!: () => void;
+
+  const ready = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  await page.route(detailEndpoint, async (route) => {
+    await ready;
+    await route.fulfill({ json: counterparty });
+  });
+
   await page.goto('/counterparties');
 
   const requestPromise = page.waitForRequest((request) =>
@@ -187,6 +198,8 @@ test('opens the linked profile, supplies scoped data to the existing table, and 
     .getByRole('link', { name: counterparty.name, exact: true })
     .click();
   await expect(page).toHaveURL(detailUrl);
+  await expect(page.getByText('Loading counterparty details')).toBeAttached();
+  release();
   const params = new URL((await requestPromise).url()).searchParams;
   expect(Object.fromEntries(params)).toMatchObject({
     counterpartyId: counterparty.id,
@@ -204,6 +217,17 @@ test('opens the linked profile, supplies scoped data to the existing table, and 
   ).toBeEnabled();
   await expect(page.getByRole('table').getByRole('row')).toHaveCount(6);
   await expect(page.getByText('Showing 5 of 18')).toBeVisible();
+  await test.step('Details remain usable at mobile width', async () => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(
+      page.getByRole('link', { name: 'View all transactions' })
+    ).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)
+      )
+      .toBe(true);
+  });
   await page.reload();
   await expectProfile(page);
   await page.getByRole('link', { name: 'All counterparties' }).click();
@@ -214,6 +238,32 @@ test('supplies counterparty-scoped search and sorting from the detail page', asy
   page,
 }) => {
   await setup(page);
+  await page.route(transactionsEndpoint, (route) => {
+    const q = new URL(route.request().url()).searchParams;
+    const term = q.get('search');
+
+    const data =
+      term === 'unmatched'
+        ? []
+        : entries.map((entry, index) => ({
+            ...entry,
+            effectiveDate: index === 0 ? '2026-09-01T10:00:00Z' : timestamp,
+          }));
+
+    if (q.get('sortDirection') === 'desc') data.reverse();
+
+    return route.fulfill({
+      json: {
+        data,
+        meta: {
+          page: 1,
+          limit: 5,
+          total: data.length ? 18 : 0,
+          totalPages: data.length ? 4 : 0,
+        },
+      },
+    });
+  });
   await page.goto(detailUrl);
   await expectProfile(page);
 
@@ -244,6 +294,10 @@ test('supplies counterparty-scoped search and sorting from the detail page', asy
     sortDirection: 'asc',
   });
 
+  await expect(page.getByRole('table').getByRole('row').nth(1)).toContainText(
+    '1 Sept 2026'
+  );
+
   const descendingRequest = page.waitForRequest(
     (request) =>
       request.url().includes('/api/v1/journal-entries?') &&
@@ -262,15 +316,37 @@ test('supplies counterparty-scoped search and sorting from the detail page', asy
   await expect(
     page.getByRole('link', { name: 'View all transactions' })
   ).toHaveAttribute('href', `/transactions?counterpartyId=${counterparty.id}`);
+  await expect(page.getByRole('table').getByRole('row').nth(1)).toContainText(
+    '18 Sept 2026'
+  );
+  await test.step('An unmatched search retains controls and keyboard focus', async () => {
+    const search = page.getByPlaceholder(/Search transactions/i);
+    await search.fill('unmatched');
+    await expect(page.getByText('No records found')).toBeVisible();
+    await expect(search).toHaveValue('unmatched');
+    await expect(search).toBeFocused();
+    await expect(
+      page.getByRole('link', { name: 'View all transactions' })
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'No transactions yet' })
+    ).not.toBeVisible();
+    await search.fill('');
+    await expect(page.getByRole('table').getByRole('row')).toHaveCount(6);
+    await expect(search).toBeFocused();
+  });
 });
 
-test('uses the error boundary for a missing profile without querying transactions', async ({
+test('blocks transaction reads after profile failure and recovers on refresh', async ({
   page,
 }) => {
   await setup(page);
   let transactionsRequested = false;
+  let fail = true;
   await page.route(detailEndpoint, (route) =>
-    route.fulfill({ status: 404, json: {} })
+    fail
+      ? route.fulfill({ status: 404, json: {} })
+      : route.fulfill({ json: counterparty })
   );
   page.on('request', (request) => {
     if (request.url().includes('/api/v1/journal-entries'))
@@ -282,12 +358,28 @@ test('uses the error boundary for a missing profile without querying transaction
   ).toBeVisible();
   expect(transactionsRequested).toBe(false);
   await expect(page.getByRole('button', { name: 'Try Again' })).toHaveCount(0);
+  fail = false;
+  await page.reload();
+  await expectProfile(page);
+  await expect(page.getByText('Showing 5 of 18')).toBeVisible();
 });
 
 test('uses the error boundary when transactions fail and recovers after browser refresh', async ({
   page,
 }) => {
   await setup(page);
+  await page.route(detailEndpoint, (route) =>
+    route.fulfill({
+      json: {
+        ...counterparty,
+        name: 'Odion Oboite',
+        type: 'individual',
+        roles: [],
+        meta: {},
+      },
+    })
+  );
+
   let fail = true;
   await page.route(transactionsEndpoint, (route) =>
     fail
@@ -308,56 +400,33 @@ test('uses the error boundary when transactions fail and recovers after browser 
     page.getByRole('button', { name: /^(Retry|Try again)$/i })
   ).toHaveCount(0);
   await page.reload();
-  await expectProfile(page);
+  await expect(
+    page.getByRole('heading', { name: 'Odion Oboite' })
+  ).toBeVisible();
   await expect(
     page.getByRole('heading', { name: 'No transactions yet' })
   ).toBeVisible();
-});
-
-test('recovers from a failed profile request through the error boundary', async ({
-  page,
-}) => {
-  await setup(page);
-  let fail = true;
-  await page.route(detailEndpoint, (route) =>
-    fail
-      ? route.fulfill({ status: 500, json: {} })
-      : route.fulfill({ json: counterparty })
-  );
-  await page.goto(detailUrl);
   await expect(
-    page.getByRole('heading', { name: 'Something went wrong' })
+    page.getByText('Transactions involving Odion Oboite will appear here.')
   ).toBeVisible();
-  fail = false;
-  await expect(
-    page.getByRole('button', { name: /^(Retry|Try again)$/i })
-  ).toHaveCount(0);
-  await page.reload();
-  await expectProfile(page);
-});
-
-test('shows loading before data arrives and remains usable at mobile width', async ({
-  page,
-}) => {
-  await setup(page);
-  let release!: () => void;
-
-  const ready = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-
-  await page.route(detailEndpoint, async (route) => {
-    await ready;
-    await route.fulfill({ json: counterparty });
-  });
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(detailUrl);
-  await expect(page.getByText('Loading counterparty details')).toBeAttached();
-  release();
-  await expectProfile(page);
+  await expect(page.getByPlaceholder(/Search transactions/i)).not.toBeVisible();
+  await expect(page.getByRole('table')).not.toBeVisible();
   await expect(
     page.getByRole('link', { name: 'View all transactions' })
+  ).not.toBeVisible();
+  await expect(page.getByText('Showing 0 of 0')).not.toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(
+    page.getByRole('heading', { name: 'Odion Oboite' })
   ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Edit', exact: true })
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth
+    )
+  ).toBe(true);
 });
 
 test('checks deletion eligibility and deletes from the counterparty details page', async ({
@@ -373,7 +442,13 @@ test('checks deletion eligibility and deletes from the counterparty details page
 
   await page.route(deletionEligibilityEndpoint, async (route) => {
     eligibilityRequests += 1;
-    await eligibilityReady;
+    if (eligibilityRequests === 2) {
+      await eligibilityReady;
+      await route.fulfill({ status: 500, json: {} });
+
+      return;
+    }
+
     await route.fulfill({ json: { canDelete: true } });
   });
 
@@ -382,13 +457,30 @@ test('checks deletion eligibility and deletes from the counterparty details page
   expect(eligibilityRequests).toBe(0);
   await page.getByRole('button', { name: 'Open counterparty actions' }).click();
   await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await expect(
     page.getByRole('status', {
       name: 'Checking whether this counterparty can be deleted',
     })
   ).toBeVisible();
 
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).not.toBeVisible();
   releaseEligibility();
-  await page.getByRole('menuitem', { name: 'Delete' }).click();
+  await expect(page.getByText('No available actions')).toBeVisible();
+  await expect(
+    page.getByRole('menuitem', { name: 'Delete', exact: true })
+  ).not.toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(
+    page.getByRole('button', { name: 'Edit', exact: true })
+  ).toBeEnabled();
+  await page.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
 
   const confirmation = page.getByRole('alertdialog', {
     name: 'Delete counterparty?',
@@ -408,130 +500,5 @@ test('checks deletion eligibility and deletes from the counterparty details page
     page.getByRole('link', { name: counterparty.name, exact: true })
   ).not.toBeVisible();
   expect(state.deleteRequestBodies).toEqual([null]);
-});
-
-test('shows a compact empty profile on desktop and mobile without transaction controls', async ({
-  page,
-}, testInfo) => {
-  await setup(page);
-  await page.route(detailEndpoint, (route) =>
-    route.fulfill({
-      json: {
-        ...counterparty,
-        name: 'Odion Oboite',
-        type: 'individual',
-        roles: [],
-        meta: {},
-      },
-    })
-  );
-  await page.route(transactionsEndpoint, (route) =>
-    route.fulfill({
-      json: { data: [], meta: { page: 1, limit: 5, total: 0, totalPages: 0 } },
-    })
-  );
-  await page.setViewportSize({ width: 1280, height: 1000 });
-  await page.goto(detailUrl);
-  await expect(
-    page.getByRole('heading', { name: 'No transactions yet' })
-  ).toBeVisible();
-  await expect(
-    page.getByText('Transactions involving Odion Oboite will appear here.')
-  ).toBeVisible();
-  await expect(page.getByPlaceholder(/Search transactions/i)).not.toBeVisible();
-  await expect(page.getByRole('table')).not.toBeVisible();
-  await expect(
-    page.getByRole('link', { name: 'View all transactions' })
-  ).not.toBeVisible();
-  await expect(page.getByText('Showing 0 of 0')).not.toBeVisible();
-  await page.screenshot({
-    path: testInfo.outputPath('empty-desktop.png'),
-    fullPage: true,
-  });
-  await page.setViewportSize({ width: 390, height: 844 });
-  await expect(
-    page.getByRole('heading', { name: 'Odion Oboite' })
-  ).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: 'Edit', exact: true })
-  ).toBeVisible();
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth
-    )
-  ).toBe(true);
-  await page.screenshot({
-    path: testInfo.outputPath('empty-mobile.png'),
-    fullPage: true,
-  });
-});
-
-test('keeps search controls and focus when a search has no matches', async ({
-  page,
-}, testInfo) => {
-  await setup(page);
-  await page.route(transactionsEndpoint, (route) => {
-    const filtered = new URL(route.request().url()).searchParams.has('search');
-
-    return route.fulfill({
-      json: {
-        data: filtered ? [] : entries,
-        meta: {
-          page: 1,
-          limit: 5,
-          total: filtered ? 0 : 18,
-          totalPages: filtered ? 0 : 4,
-        },
-      },
-    });
-  });
-  await page.goto(detailUrl);
-  await expect(page.getByText('Showing 5 of 18')).toBeVisible();
-  await page.screenshot({
-    path: testInfo.outputPath('populated-desktop.png'),
-    fullPage: true,
-  });
-  const search = page.getByPlaceholder(/Search transactions/i);
-  await search.fill('unmatched');
-  await expect(page.getByText('No records found')).toBeVisible();
-  await expect(search).toHaveValue('unmatched');
-  await expect(search).toBeFocused();
-  await expect(
-    page.getByRole('link', { name: 'View all transactions' })
-  ).toBeVisible();
-  await expect(
-    page.getByRole('heading', { name: 'No transactions yet' })
-  ).not.toBeVisible();
-  await search.fill('');
-  await expect(page.getByRole('table').getByRole('row')).toHaveCount(6);
-  await expect(search).toBeFocused();
-});
-
-test('rechecks eligibility on reopening and hides delete after a failed check', async ({
-  page,
-}) => {
-  await setup(page);
-  let requests = 0;
-  await page.route(deletionEligibilityEndpoint, (route) => {
-    requests += 1;
-    if (requests === 1) return route.fulfill({ json: { canDelete: true } });
-
-    return route.fulfill({ status: 500, json: {} });
-  });
-  await page.goto(detailUrl);
-  await expectProfile(page);
-  expect(requests).toBe(0);
-  await page.getByRole('button', { name: 'Open counterparty actions' }).click();
-  await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Open counterparty actions' }).click();
-  await expect(page.getByText('No available actions')).toBeVisible();
-  await expect(
-    page.getByRole('menuitem', { name: 'Delete' })
-  ).not.toBeVisible();
-  expect(requests).toBe(2);
-  await page.keyboard.press('Escape');
-  await expect(
-    page.getByRole('button', { name: 'Edit', exact: true })
-  ).toBeEnabled();
+  expect(eligibilityRequests).toBe(3);
 });

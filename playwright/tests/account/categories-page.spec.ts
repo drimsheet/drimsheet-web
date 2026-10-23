@@ -87,7 +87,7 @@ async function setup(page: Page) {
 
 test('opens from navigation, shows API totals, and keeps both chart sections within 400px', async ({
   page,
-}, testInfo) => {
+}) => {
   await setup(page);
 
   const accounts = Array.from({ length: 18 }, (_, index) => ({
@@ -169,11 +169,6 @@ test('opens from navigation, shows API totals, and keeps both chart sections wit
 
   await page.getByRole('button', { name: 'Add category' }).focus();
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({
-    path: testInfo.outputPath('categories-desktop.png'),
-    fullPage: true,
-    animations: 'disabled',
-  });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
     page.getByRole('heading', { name: 'Categories', exact: true })
@@ -184,11 +179,6 @@ test('opens from navigation, shows API totals, and keeps both chart sections wit
     )
   ).toBe(true);
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({
-    path: testInfo.outputPath('categories-mobile.png'),
-    fullPage: true,
-    animations: 'disabled',
-  });
 });
 
 test('filters and paginates accounts on the server while the month only changes the overview', async ({
@@ -277,20 +267,83 @@ test('keeps loading, independent errors, refresh recovery and empty states usefu
   await expect(page.getByRole('alert')).toContainText(
     'We couldn’t load this section.'
   );
-  await page.route(summaryEndpoint, (route) =>
-    route.fulfill({
-      json: {
-        ...summary,
-        revenue: { ...summary.revenue, accounts: [] },
-        expenses: { ...summary.expenses, accounts: [] },
-      },
-    })
-  );
-  await expect(
-    page.getByRole('button', { name: /^(Retry|Try again)$/i })
-  ).toHaveCount(0);
-  await page.reload();
-  await expect(page.getByText('No activity in this period')).toHaveCount(2);
+  await test.step('Refresh recovers into a usable no-activity layout', async () => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+
+    const zeroAmount = { ...money, amount: 0 };
+
+    const emptySection = {
+      total: zeroAmount,
+      previousTotal: zeroAmount,
+      percentageChange: null,
+      accounts: [],
+    };
+
+    await page.route(summaryEndpoint, (route) =>
+      route.fulfill({
+        json: {
+          ...summary,
+          revenue: emptySection,
+          expenses: emptySection,
+          suspense: { amount: zeroAmount, transactionCount: 0 },
+        },
+      })
+    );
+    await page.route(accountsEndpoint, (route) =>
+      route.fulfill({
+        json: {
+          data: [
+            'Services (Default)',
+            'Employment Income (Default)',
+            'Gain on Sale of Assets (Default)',
+            'Unrealized Gains (Default)',
+            'Grants (Default)',
+            'Gifts (Default)',
+            'Direct Costs (Default)',
+            'Rent and Utilities (Default)',
+          ].map((name, index) => ({
+            ...account,
+            accountId: `category-${index}`,
+            accountName: name,
+            type: index < 6 ? 'revenue' : 'expense',
+            amount: zeroAmount,
+            sharePercentage: null,
+            transactionCount: 0,
+          })),
+          meta: { page: 1, totalPages: 1, limit: 10, total: 8 },
+        },
+      })
+    );
+    await page.reload();
+    await expect(page.getByText('No activity in this period')).toHaveCount(2);
+    await expect(
+      page.getByRole('region', { name: 'Uncategorized', exact: true })
+    ).toContainText('0 transactions');
+    await expect(
+      page.getByRole('cell', { name: 'Services (Default)', exact: true })
+    ).toBeInViewport();
+    await expect(page.getByRole('searchbox')).toBeInViewport();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(
+      page.getByRole('button', { name: 'Add category' })
+    ).toBeInViewport();
+    await page
+      .getByRole('button', { name: 'About the reporting period' })
+      .click();
+    await expect(
+      page.getByRole('dialog', { name: 'About the reporting period' })
+    ).toBeInViewport();
+    await page
+      .getByRole('button', { name: 'About the reporting period' })
+      .click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth
+      )
+    ).toBe(true);
+  });
   await page.route(accountsEndpoint, (route) =>
     route.fulfill({ status: 500, json: { message: 'failure' } })
   );
@@ -403,101 +456,4 @@ test('renames and archives categories, then opens category details', async ({
   await expect(page).toHaveURL(`/categories/${account.accountId}`);
   await expect(page.getByRole('heading', { name: 'Advisory' })).toBeVisible();
   await expect(page.getByText('No counterparty activity yet.')).toBeVisible();
-});
-
-test('keeps category management in view when the reporting period has no activity', async ({
-  page,
-}, testInfo) => {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await setup(page);
-  const zeroAmount = { ...money, amount: 0 };
-
-  const emptySection = {
-    total: zeroAmount,
-    previousTotal: zeroAmount,
-    percentageChange: null,
-    accounts: [],
-  };
-
-  await page.route(summaryEndpoint, (route) =>
-    route.fulfill({
-      json: {
-        ...summary,
-        revenue: emptySection,
-        expenses: emptySection,
-        suspense: { amount: zeroAmount, transactionCount: 0 },
-      },
-    })
-  );
-  await page.route(accountsEndpoint, (route) =>
-    route.fulfill({
-      json: {
-        data: [
-          'Services (Default)',
-          'Employment Income (Default)',
-          'Gain on Sale of Assets (Default)',
-          'Unrealized Gains (Default)',
-          'Grants (Default)',
-          'Gifts (Default)',
-          'Direct Costs (Default)',
-          'Rent and Utilities (Default)',
-        ].map((name, index) => ({
-          ...account,
-          accountId: `category-${index}`,
-          accountName: name,
-          type: index < 6 ? 'revenue' : 'expense',
-          amount: zeroAmount,
-          sharePercentage: null,
-          transactionCount: 0,
-        })),
-        meta: { page: 1, totalPages: 1, limit: 10, total: 8 },
-      },
-    })
-  );
-  await page.goto('/categories');
-  await expect(page.getByText('No activity in this period')).toHaveCount(2);
-  await expect(
-    page.getByRole('region', { name: 'Uncategorized', exact: true })
-  ).toContainText('0 transactions');
-  await expect(
-    page.getByRole('cell', { name: 'Services (Default)', exact: true })
-  ).toBeInViewport();
-  await expect(page.getByRole('searchbox')).toBeInViewport();
-
-  for (const theme of ['dark', 'light']) {
-    await page.evaluate((value) => {
-      localStorage.setItem('theme', value);
-      document.documentElement.classList.toggle('dark', value === 'dark');
-    }, theme);
-    await page.screenshot({
-      path: testInfo.outputPath(`categories-empty-${theme}.png`),
-      fullPage: true,
-      animations: 'disabled',
-    });
-  }
-
-  await page.setViewportSize({ width: 390, height: 844 });
-  await expect(
-    page.getByRole('button', { name: 'Add category' })
-  ).toBeInViewport();
-  await page
-    .getByRole('button', { name: 'About the reporting period' })
-    .click();
-  await expect(
-    page.getByRole('dialog', { name: 'About the reporting period' })
-  ).toBeInViewport();
-  await page
-    .getByRole('button', { name: 'About the reporting period' })
-    .click();
-  await expect(page.getByRole('dialog')).not.toBeVisible();
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth
-    )
-  ).toBe(true);
-  await page.screenshot({
-    path: testInfo.outputPath('categories-empty-mobile.png'),
-    fullPage: true,
-    animations: 'disabled',
-  });
 });

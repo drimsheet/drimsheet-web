@@ -105,341 +105,211 @@ async function signIn(page: Page) {
   await expect(page).toHaveURL('/dashboard');
 }
 
-test.describe('Counterparties Page Flow', () => {
-  test('lists counterparties and renders table structure correctly', async ({
-    page,
-  }) => {
-    await registerCounterpartiesPageRoutes(page);
+test('combines server search, filters, sorting and pagination without losing query state', async ({
+  page,
+}) => {
+  await registerCounterpartiesPageRoutes(page);
 
-    // Mock initial GET request
-    let wasListRequested = false;
-    await page.route(counterpartiesEndpoint, async (route) => {
-      if (route.request().method() === 'GET') {
-        wasListRequested = true;
-        await route.fulfill({
-          status: 200,
-          json: {
-            data: mockCounterparties,
-            meta: {
-              page: 1,
-              limit: 10,
-              total: mockCounterparties.length,
-              totalPages: 1,
-            },
-          },
-        });
-      }
-    });
+  const rows: ICounterpartyDto[] = [
+    ...mockCounterparties,
+    ...Array.from({ length: 8 }, (_, index) => ({
+      ...mockCounterparties[0],
+      id: 'extra-' + index,
+      name: 'Extra Vendor ' + index,
+    })),
+  ];
 
-    page.on('request', (req) => console.log('REQ:', req.method(), req.url()));
-    page.on('console', (msg) => console.log('CONSOLE:', msg.text()));
+  let lastQuery: Record<string, unknown> = {};
+  await page.route(counterpartiesEndpoint, async (route) => {
+    const q = new URL(route.request().url()).searchParams;
 
-    await signIn(page);
-    await page.goto('/counterparties');
-    await expect(page).toHaveURL('/counterparties');
+    const roles = [...q.entries()]
+      .filter(([key]) => key.startsWith('roles'))
+      .map(([, value]) => value);
 
-    // Verify breadcrumbs and headers
-    await expect(
-      page.getByText('Counterparties', { exact: true }).first()
-    ).toBeVisible();
+    const search = q.get('search') ?? '';
+    const status = q.get('status');
+    const type = q.get('type');
+    const direction = q.get('sortDirection');
+    const requestedPage = Number(q.get('page') ?? 1);
+    const limit = Number(q.get('limit') ?? 10);
+    lastQuery = {
+      page: requestedPage,
+      limit,
+      search,
+      status,
+      type,
+      roles,
+      orderBy: q.get('orderBy'),
+      sortDirection: direction,
+    };
 
-    // Verify counterparties rendered in table (this waits for the request to complete)
-    await expect(
-      page.getByRole('cell', { name: 'Alice Vendor' })
-    ).toBeVisible();
-    await expect(
-      page.getByRole('cell', { name: 'Bob Contractor' })
-    ).toBeVisible();
-    await expect(
-      page.getByRole('cell', { name: 'Charlie Employer' })
-    ).toBeVisible();
-    await expect(
-      page.getByRole('cell', { name: 'Dave Archived' })
-    ).toBeVisible();
+    const result = rows.filter(
+      (row) =>
+        (!search || row.name.toLowerCase().includes(search.toLowerCase())) &&
+        (!status || row.status === status) &&
+        (!type || row.type === type) &&
+        (!roles.length ||
+          roles.some((role) =>
+            row.roles.includes(role as 'vendor' | 'contractor' | 'employer')
+          ))
+    );
 
-    // Verify API was called
-    expect(wasListRequested).toBe(true);
-
-    // Verify status badges
-    const activeBadges = page
-      .getByRole('cell')
-      .getByText('Active', { exact: true });
-
-    const archivedBadges = page
-      .getByRole('cell')
-      .getByText('Archived', { exact: true });
-
-    await expect(activeBadges).toHaveCount(3);
-    await expect(archivedBadges).toHaveCount(1);
-
-    // Verify type labels
-    await expect(
-      page.getByRole('cell').getByText('Organization', { exact: true })
-    ).toHaveCount(2);
-    await expect(
-      page.getByRole('cell').getByText('Individual', { exact: true })
-    ).toHaveCount(2);
-
-    // Verify roles badges
-    await expect(
-      page.getByRole('cell').getByText('Vendor', { exact: true })
-    ).toHaveCount(2);
-    await expect(
-      page.getByRole('cell').getByText('Contractor', { exact: true })
-    ).toHaveCount(1);
-    await expect(
-      page.getByRole('cell').getByText('Employer', { exact: true })
-    ).toHaveCount(1);
-  });
-
-  test('supports searching counterparties with debounce', async ({ page }) => {
-    await registerCounterpartiesPageRoutes(page);
-
-    await page.route(counterpartiesEndpoint, async (route) => {
-      if (route.request().method() === 'GET') {
-        const url = new URL(route.request().url());
-        const searchVal = url.searchParams.get('search');
-
-        if (searchVal === 'Bob') {
-          await route.fulfill({
-            json: {
-              data: [mockCounterparties[1]],
-              meta: { page: 1, limit: 10, total: 1, totalPages: 1 },
-            },
-          });
-        } else {
-          await route.fulfill({
-            json: {
-              data: mockCounterparties,
-              meta: {
-                page: 1,
-                limit: 10,
-                total: mockCounterparties.length,
-                totalPages: 1,
-              },
-            },
-          });
-        }
-      }
-    });
-
-    await signIn(page);
-    await page.goto('/counterparties');
-
-    // Verify initial data rendered
-    await expect(
-      page.getByRole('cell', { name: 'Alice Vendor' })
-    ).toBeVisible();
-
-    // Perform search
-    const searchInput = page.getByPlaceholder(/Search counterparties/i);
-    await expect(searchInput).toBeVisible();
-
-    const requestPromise = page.waitForRequest((req) => {
-      const url = new URL(req.url());
-
-      return (
-        req.method() === 'GET' &&
-        url.pathname.includes('/api/v1/counterparties') &&
-        url.searchParams.get('search') === 'Bob'
+    if (q.get('orderBy') === 'name')
+      result.sort(
+        (a, b) => a.name.localeCompare(b.name) * (direction === 'desc' ? -1 : 1)
       );
+
+    await route.fulfill({
+      json: {
+        data: result.slice((requestedPage - 1) * limit, requestedPage * limit),
+        meta: {
+          page: requestedPage,
+          limit,
+          total: result.length,
+          totalPages: Math.ceil(result.length / limit),
+        },
+      },
     });
+  });
+  await signIn(page);
+  await page.goto('/counterparties?sort=name&order=asc');
+  const names = page.getByRole('table').getByRole('link');
 
-    await searchInput.fill('Bob');
-
-    // Wait for the debounced search request
-    const request = await requestPromise;
-    const url = new URL(request.url());
-    expect(url.searchParams.get('search')).toBe('Bob');
-
-    // Verify UI is updated
-    await expect(
-      page.getByRole('cell', { name: 'Bob Contractor' })
-    ).toBeVisible();
-    await expect(
-      page.getByRole('cell', { name: 'Alice Vendor' })
-    ).not.toBeVisible();
+  const header = page.getByRole('columnheader').filter({
+    has: page.getByRole('button', { name: 'Sort by Name', exact: true }),
   });
 
-  test('supports filtering counterparties by status, type, and roles', async ({
-    page,
-  }) => {
-    await registerCounterpartiesPageRoutes(page);
-
-    let lastFilters: Record<string, string | string[] | null> = {};
-    await page.route(counterpartiesEndpoint, async (route) => {
-      if (route.request().method() === 'GET') {
-        const url = new URL(route.request().url());
-
-        const rolesParams = Array.from(url.searchParams.entries())
-          .filter(([k]) => k.startsWith('roles'))
-          .map(([, v]) => v);
-
-        lastFilters = {
-          status: url.searchParams.get('status'),
-          type: url.searchParams.get('type'),
-          roles: rolesParams,
-        };
-
-        await route.fulfill({
-          json: {
-            data: mockCounterparties,
-            meta: {
-              page: 1,
-              limit: 10,
-              total: mockCounterparties.length,
-              totalPages: 1,
-            },
-          },
-        });
-      }
+  await test.step('Pagination displays another page and sorting resets it', async () => {
+    await expect(
+      page.getByRole('cell', { name: 'Alice Vendor', exact: true })
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Next page', exact: true }).click();
+    await expect(
+      page.getByRole('cell', { name: 'Extra Vendor 7', exact: true })
+    ).toBeVisible();
+    await expect(
+      page.getByRole('cell', { name: 'Alice Vendor', exact: true })
+    ).not.toBeVisible();
+    await expect
+      .poll(() => lastQuery)
+      .toEqual({
+        page: 2,
+        limit: 10,
+        search: '',
+        status: null,
+        type: null,
+        roles: [],
+        orderBy: 'name',
+        sortDirection: 'asc',
+      });
+    await page
+      .getByRole('button', { name: 'Sort by Name', exact: true })
+      .click();
+    await expect(header).toHaveAttribute('aria-sort', 'descending');
+    await expect(names.first()).toHaveText('Extra Vendor 7');
+    await expect.poll(() => lastQuery.page).toBe(1);
+    await page.getByRole('button', { name: 'Next page', exact: true }).click();
+    await expect(
+      page.getByRole('cell', { name: 'Alice Vendor', exact: true })
+    ).toBeVisible();
+  });
+  await test.step('Filters preserve sorting, reset pagination, and cancel unapplied changes', async () => {
+    const trigger = page.getByRole('button', {
+      name: 'Filter by Status',
+      exact: true,
     });
 
-    await signIn(page);
-    await page.goto('/counterparties');
-
-    // 1. Filter by Status -> Active
-    const statusHeader = page.getByTestId('column-header-status');
-    await statusHeader.getByTestId('table-filter-trigger').click();
+    await trigger.click();
     await page.getByRole('checkbox', { name: 'Active', exact: true }).check();
+    expect(new URL(page.url()).searchParams.get('status')).toBeNull();
     await page.getByRole('button', { name: 'Apply', exact: true }).click();
-    await expect.poll(() => lastFilters.status).toBe('active');
+    await expect(names.first()).toHaveText('Extra Vendor 7');
+    await expect
+      .poll(() => lastQuery)
+      .toEqual({
+        page: 1,
+        limit: 10,
+        search: '',
+        status: 'active',
+        type: null,
+        roles: [],
+        orderBy: 'name',
+        sortDirection: 'desc',
+      });
 
-    // 2. Filter by Type -> Individual
-    const typeHeader = page.getByTestId('column-header-type');
-    await typeHeader.getByTestId('table-filter-trigger').click();
+    const activeTrigger = page.getByRole('button', {
+      name: 'Filter by Status, 1 active',
+      exact: true,
+    });
+
+    await expect(activeTrigger).toBeFocused();
+    await activeTrigger.click();
+    await page.getByRole('checkbox', { name: 'Archived', exact: true }).check();
+    await page.keyboard.press('Escape');
+    await expect(activeTrigger).toBeFocused();
+    await activeTrigger.click();
+    await expect(
+      page.getByRole('checkbox', { name: 'Archived', exact: true })
+    ).not.toBeChecked();
+    await page.keyboard.press('Escape');
+    await page
+      .getByTestId('column-header-type')
+      .getByTestId('table-filter-trigger')
+      .click();
     await page
       .getByRole('checkbox', { name: 'Individual', exact: true })
       .check();
     await page.getByRole('button', { name: 'Apply', exact: true }).click();
-    await expect.poll(() => lastFilters.type).toBe('individual');
-
-    // 3. Filter by Role -> Vendor
-    const rolesHeader = page.getByTestId('column-header-roles');
-    await rolesHeader.getByTestId('table-filter-trigger').click();
-    await page.getByRole('checkbox', { name: 'Vendor', exact: true }).check();
+    await expect(names).toHaveText(['Charlie Employer', 'Bob Contractor']);
+    await page
+      .getByTestId('column-header-roles')
+      .getByTestId('table-filter-trigger')
+      .click();
+    await page
+      .getByRole('checkbox', { name: 'Contractor', exact: true })
+      .check();
     await page.getByRole('button', { name: 'Apply', exact: true }).click();
-    await expect.poll(() => lastFilters.roles).toContain('vendor');
+    await expect(names).toHaveText(['Bob Contractor']);
   });
-
-  test('supports sorting counterparties by Name', async ({ page }) => {
-    await registerCounterpartiesPageRoutes(page);
-
-    await page.route(counterpartiesEndpoint, async (route) => {
-      if (route.request().method() === 'GET') {
-        await route.fulfill({
-          json: {
-            data: mockCounterparties,
-            meta: {
-              page: 1,
-              limit: 10,
-              total: mockCounterparties.length,
-              totalPages: 1,
-            },
-          },
-        });
-      }
-    });
-
-    await signIn(page);
-    await page.goto('/counterparties');
-
-    // Sort by Name (click, wait for request, check query params)
-    const nameHeader = page.getByTestId('column-header-name');
-
-    const requestPromise = page.waitForRequest((req) => {
-      const url = new URL(req.url());
-
-      return (
-        req.method() === 'GET' &&
-        url.pathname.includes('/api/v1/counterparties') &&
-        url.searchParams.get('orderBy') === 'name'
-      );
-    });
-
-    await nameHeader.getByRole('button', { name: 'Sort by Name' }).click();
-    const request = await requestPromise;
-    const url = new URL(request.url());
-    expect(url.searchParams.get('orderBy')).toBe('name');
-    expect(url.searchParams.get('sortDirection')).toBeTruthy();
-  });
-
-  test('supports pagination of counterparties', async ({ page }) => {
-    await registerCounterpartiesPageRoutes(page);
-
-    await page.route(counterpartiesEndpoint, async (route) => {
-      if (route.request().method() === 'GET') {
-        const url = new URL(route.request().url());
-        const pageParam = url.searchParams.get('page') || '1';
-
-        await route.fulfill({
-          json: {
-            data: mockCounterparties.slice(0, 2),
-            meta: {
-              page: Number(pageParam),
-              limit: 2,
-              total: 4,
-              totalPages: 2,
-            },
-          },
-        });
-      }
-    });
-
-    await signIn(page);
-    await page.goto('/counterparties');
-
-    // Verify second page link is visible and click it
-    const page2Link = page.getByRole('button', {
-      name: 'Next page',
-      exact: true,
-    });
-
-    await expect(page2Link).toBeVisible();
-
-    const requestPromise = page.waitForRequest((req) => {
-      const url = new URL(req.url());
-
-      return (
-        req.method() === 'GET' &&
-        url.pathname.includes('/api/v1/counterparties') &&
-        url.searchParams.get('page') === '2'
-      );
-    });
-
-    await page2Link.click();
-    const request = await requestPromise;
-    const url = new URL(request.url());
-    expect(url.searchParams.get('page')).toBe('2');
-  });
-
-  test('opens creation select dialog on add counterparty click', async ({
-    page,
-  }) => {
-    await registerCounterpartiesPageRoutes(page);
-
-    await page.route(counterpartiesEndpoint, async (route) => {
-      if (route.request().method() === 'GET') {
-        await route.fulfill({
-          json: {
-            data: [],
-            meta: { page: 1, limit: 10, total: 0, totalPages: 1 },
-          },
-        });
-      }
-    });
-
-    await signIn(page);
-    await page.goto('/counterparties');
-
-    const addButton = page.getByRole('button', { name: /Add Counterparty/i });
-    await expect(addButton).toBeVisible();
-    await addButton.click();
-
-    const selectionDialog = page.getByRole('dialog').filter({
-      has: page.getByRole('heading', { name: /select counterparty role/i }),
-    });
-
-    await expect(selectionDialog).toBeVisible();
+  await test.step('Search combines with existing filters and clearing restores results', async () => {
+    const search = page.getByPlaceholder(/Search counterparties/i);
+    await search.fill('Nobody');
+    await expect(
+      page.getByRole('cell', { name: 'Bob Contractor', exact: true })
+    ).not.toBeVisible();
+    await expect
+      .poll(() => lastQuery)
+      .toEqual({
+        page: 1,
+        limit: 10,
+        search: 'Nobody',
+        status: 'active',
+        type: 'individual',
+        roles: ['contractor'],
+        orderBy: 'name',
+        sortDirection: 'desc',
+      });
+    await search.fill('Bob');
+    await expect(names).toHaveText(['Bob Contractor']);
+    await expect.poll(() => lastQuery.search).toBe('Bob');
+    await page
+      .getByRole('button', { name: 'Filter by Status, 1 active', exact: true })
+      .click();
+    await page.getByRole('button', { name: 'Clear', exact: true }).click();
+    await expect
+      .poll(() => lastQuery)
+      .toEqual({
+        page: 1,
+        limit: 10,
+        search: 'Bob',
+        status: null,
+        type: 'individual',
+        roles: ['contractor'],
+        orderBy: 'name',
+        sortDirection: 'desc',
+      });
+    await expect(names).toHaveText(['Bob Contractor']);
+    await expect(header).toHaveAttribute('aria-sort', 'descending');
   });
 });

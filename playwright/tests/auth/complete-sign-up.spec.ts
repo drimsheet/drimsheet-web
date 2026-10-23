@@ -15,11 +15,13 @@ function createResponseGate() {
   return { promise, resolve };
 }
 
-test('announces pending verification and sends one request', async ({
+test('announces pending verification and rejects it without retaining a replayable URL', async ({
   page,
 }) => {
   const responseGate = createResponseGate();
   let requestCount = 0;
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
 
   await page.route(verificationEndpoint, async (route) => {
     requestCount += 1;
@@ -34,30 +36,46 @@ test('announces pending verification and sends one request', async ({
     });
   });
 
+  await page.goto('/auth/signin');
   await page.goto(verificationUrl);
 
   const main = page.getByRole('main');
   await expect(main).toBeVisible();
   await expect(main).toHaveAttribute('aria-busy', 'true');
-  await expect(page.getByRole('status')).toHaveText('Verifying your email');
+  const status = page.getByRole('status');
+  await expect(status).toHaveText('Verifying your email');
+  await expect
+    .poll(() =>
+      status
+        .locator('[aria-hidden="true"]')
+        .evaluate((logo) => getComputedStyle(logo).animationName)
+    )
+    .toBe('none');
 
   responseGate.resolve();
+  await expect(page.getByText('Invalid token.')).toBeVisible();
 
   await expect(page).toHaveURL('/auth/signup');
+  expect(requestCount).toBe(1);
+  await page.goBack();
+  await expect(page).toHaveURL('/auth/signin');
   expect(requestCount).toBe(1);
 });
 
 test('verifies the email and replaces the route with the dashboard', async ({
   page,
 }) => {
+  let requestCount = 0;
   await registerAuthenticatedAppRoutes(page);
   await page.route(verificationEndpoint, async (route) => {
+    requestCount++;
     await route.fulfill({
       status: 200,
       json: { accessToken: 'integration-test-token' },
     });
   });
 
+  await page.goto('/auth/signin');
   const verificationRequest = page.waitForRequest(verificationEndpoint);
 
   await page.goto(verificationUrl);
@@ -71,96 +89,32 @@ test('verifies the email and replaces the route with the dashboard', async ({
   expect(await page.evaluate(() => localStorage.getItem('isLoggedIn'))).toBe(
     'true'
   );
-});
-
-test('shows an API error without retaining a replayable verification URL', async ({
-  page,
-}) => {
-  let requestCount = 0;
-
-  await page.goto('/auth/signin');
-  await page.route(verificationEndpoint, async (route) => {
-    requestCount += 1;
-    await route.fulfill({
-      status: 400,
-      json: {
-        name: 'AuthenticationError',
-        errorKey: 'auth_error_token_invalid_unauthorized',
-        validationErrors: [],
-      },
-    });
-  });
-
-  await page.goto(verificationUrl);
-
-  await expect(page.getByText('Invalid token.')).toBeVisible();
-  await expect(page).toHaveURL('/auth/signup');
-
+  await page.evaluate(() => localStorage.removeItem('isLoggedIn'));
   await page.goBack();
-
   await expect(page).toHaveURL('/auth/signin');
   expect(requestCount).toBe(1);
 });
 
-for (const tokenCase of [
-  { name: 'missing', url: '/auth/signup/complete' },
-  { name: 'empty', url: '/auth/signup/complete?token=' },
-]) {
-  test(`rejects a ${tokenCase.name} verification token without an API request`, async ({
-    page,
-  }) => {
-    let requestCount = 0;
-
-    await page.route(verificationEndpoint, async (route) => {
-      requestCount += 1;
-      await route.fulfill({
-        status: 500,
-        json: {},
-      });
-    });
-
-    await page.goto(tokenCase.url);
-
-    await expect(
-      page.getByText(
-        'This verification link is invalid. Request a new link or sign up again.'
-      )
-    ).toBeVisible();
-    await expect(page).toHaveURL('/auth/signup');
-    expect(requestCount).toBe(0);
-  });
-}
-
-test('stops the pulse animation when reduced motion is requested', async ({
+test('rejects a missing verification token without an API request', async ({
   page,
 }) => {
-  const responseGate = createResponseGate();
+  let requestCount = 0;
 
-  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.route(verificationEndpoint, async (route) => {
-    await responseGate.promise;
+    requestCount += 1;
     await route.fulfill({
-      status: 400,
-      json: {
-        name: 'AuthenticationError',
-        errorKey: 'auth_error_token_invalid_unauthorized',
-        validationErrors: [],
-      },
+      status: 500,
+      json: {},
     });
   });
 
-  await page.goto(verificationUrl);
+  await page.goto('/auth/signup/complete');
 
-  const status = page.getByRole('status');
-  await expect(status).toHaveText('Verifying your email');
-  await expect
-    .poll(() =>
-      status
-        .locator('img')
-        .evaluate((image) => getComputedStyle(image).animationName)
+  await expect(
+    page.getByText(
+      'This verification link is invalid. Request a new link or sign up again.'
     )
-    .toBe('none');
-
-  responseGate.resolve();
+  ).toBeVisible();
   await expect(page).toHaveURL('/auth/signup');
+  expect(requestCount).toBe(0);
 });

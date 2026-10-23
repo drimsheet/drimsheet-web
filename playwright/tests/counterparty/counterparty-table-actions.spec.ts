@@ -196,10 +196,29 @@ test('asks for confirmation and archives the selected counterparty', async ({
   ).toContainText('Archived');
 });
 
-test('checks eligibility after opening the row menu and deletes the selected counterparty', async ({
+test('rechecks row deletion eligibility after a conflict and refreshes the list on success', async ({
   page,
 }) => {
   const state = await setup(page);
+  let attempts = 0;
+  await page.route(detailEndpoint, async (route) => {
+    if (route.request().method() !== 'DELETE' || ++attempts > 1) {
+      await route.fallback();
+
+      return;
+    }
+
+    await route.fulfill({
+      status: 409,
+      json: {
+        name: 'ConflictError',
+        errorKey:
+          'counterparty_error_deletion_with_transaction_references_conflict',
+        validationErrors: [],
+      },
+    });
+  });
+
   await page.goto('/counterparties');
 
   const row = page.getByRole('row').filter({ hasText: counterparty.name });
@@ -226,6 +245,23 @@ test('checks eligibility after opening the row menu and deletes the selected cou
   await confirmation.getByLabel('Type "delete" to confirm').fill('Delete');
   await expect(deleteButton).toBeDisabled();
   await confirmation.getByLabel('Type "delete" to confirm').fill('delete');
+  await test.step('A raced deletion conflict leaves the row intact', async () => {
+    await deleteButton.click();
+    await expect(confirmation).not.toBeVisible();
+    await expect(
+      page.getByText(
+        'This counterparty cannot be deleted because it is referenced by one or more transactions.'
+      )
+    ).toBeVisible();
+    await expect(row).toBeVisible();
+    await row
+      .getByRole('button', { name: 'Open counterparty actions' })
+      .click();
+    await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
+    expect(state.deletionEligibilityRequests).toHaveLength(2);
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    await confirmation.getByLabel('Type "delete" to confirm').fill('delete');
+  });
   await deleteButton.click();
 
   await expect(confirmation).not.toBeVisible();
@@ -234,117 +270,4 @@ test('checks eligibility after opening the row menu and deletes the selected cou
     page.getByText('Counterparty deleted successfully')
   ).toBeVisible();
   expect(state.deleteRequestBodies).toEqual([null]);
-});
-
-test('closes the confirmation and reports a deletion conflict', async ({
-  page,
-}) => {
-  await setup(page);
-  await page.route(detailEndpoint, async (route) => {
-    if (route.request().method() !== 'DELETE') {
-      await route.fallback();
-
-      return;
-    }
-
-    await route.fulfill({
-      status: 409,
-      json: {
-        name: 'ConflictError',
-        errorKey:
-          'counterparty_error_deletion_with_transaction_references_conflict',
-        validationErrors: [],
-      },
-    });
-  });
-
-  await page.goto('/counterparties');
-  const row = page.getByRole('row').filter({ hasText: counterparty.name });
-  await row.getByRole('button', { name: 'Open counterparty actions' }).click();
-  await page.getByRole('menuitem', { name: 'Delete' }).click();
-
-  const confirmation = page.getByRole('alertdialog', {
-    name: 'Delete counterparty?',
-  });
-
-  await confirmation.getByLabel('Type "delete" to confirm').fill('delete');
-  await confirmation
-    .getByRole('button', { name: 'Delete', exact: true })
-    .click();
-
-  await expect(confirmation).not.toBeVisible();
-  await expect(
-    page.getByText(
-      'This counterparty cannot be deleted because it is referenced by one or more transactions.'
-    )
-  ).toBeVisible();
-  await expect(row).toBeVisible();
-});
-
-test('applies column filters independently of sorting and resets pagination', async ({
-  page,
-}) => {
-  await setup(page);
-  await page.route('**/api/v1/counterparties?*', (route) => {
-    const params = new URL(route.request().url()).searchParams;
-    const filtered = params.get('status') === 'archived';
-    const requestedPage = Number(params.get('page') ?? 1);
-
-    return route.fulfill({
-      json: {
-        data: [{ ...counterparty, status: filtered ? 'archived' : 'active' }],
-        meta: {
-          page: requestedPage,
-          limit: 10,
-          total: filtered ? 1 : 11,
-          totalPages: filtered ? 1 : 2,
-        },
-      },
-    });
-  });
-  await page.goto('/counterparties?page=2&sort=name&order=asc');
-  await expect(page.getByText('11–11 of 11')).toBeVisible();
-
-  const trigger = page.getByRole('button', {
-    name: 'Filter by Status',
-    exact: true,
-  });
-
-  const header = page.getByRole('columnheader').filter({
-    has: page.getByRole('button', { name: 'Sort by Name', exact: true }),
-  });
-
-  await expect(header).toHaveAttribute('aria-sort', 'ascending');
-  await trigger.click();
-  await page.getByRole('checkbox', { name: 'Archived', exact: true }).check();
-  await expect
-    .poll(() => new URL(page.url()).searchParams.get('status'))
-    .toBeNull();
-  await page.getByRole('button', { name: 'Apply', exact: true }).click();
-  await expect(page.getByText('1–1 of 1')).toBeVisible();
-  await expect
-    .poll(() => new URL(page.url()).searchParams.get('status'))
-    .toBe('archived');
-  await expect
-    .poll(() => new URL(page.url()).searchParams.get('page'))
-    .not.toBe('2');
-  await expect(header).toHaveAttribute('aria-sort', 'ascending');
-
-  const activeTrigger = page.getByRole('button', {
-    name: 'Filter by Status, 1 active',
-    exact: true,
-  });
-
-  await expect(activeTrigger).toBeFocused();
-  await activeTrigger.click();
-  await page.getByRole('checkbox', { name: 'Active', exact: true }).check();
-  await page.keyboard.press('Escape');
-  await expect(activeTrigger).toBeFocused();
-  await activeTrigger.click();
-  await expect(
-    page.getByRole('checkbox', { name: 'Active', exact: true })
-  ).not.toBeChecked();
-  await page.getByRole('button', { name: 'Clear', exact: true }).click();
-  await expect(page.getByText('1–10 of 11')).toBeVisible();
-  await expect(header).toHaveAttribute('aria-sort', 'ascending');
 });

@@ -12,57 +12,29 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/auth/signin');
 });
 
-test('exposes page landmark, level-one heading, and exact brand accessible name', async ({
-  page,
-}) => {
-  await expect(page.getByRole('main')).toBeVisible();
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'Sign In' })
-  ).toBeVisible();
-  await expect(
-    page.getByRole('link', { name: 'Drimsheet', exact: true })
-  ).toBeVisible();
-});
-
 test('navigates to forgot password and sign-up pages', async ({ page }) => {
-  await page.getByRole('link', { name: 'Forgot password?' }).click();
-  await expect(page).toHaveURL('/auth/forgot-password');
-
-  await page.goto('/auth/signin');
-  await page.getByRole('link', { name: 'Sign up' }).click();
-  await expect(page).toHaveURL('/auth/signup');
+  await test.step('Password reset navigation', async () => {
+    await page.getByRole('link', { name: 'Forgot password?' }).click();
+    await expect(page).toHaveURL('/auth/forgot-password');
+    await page.getByRole('link', { name: 'Back to sign in' }).click();
+    await expect(page).toHaveURL('/auth/signin');
+    await page.goto('/auth/reset-password?token=navigation-token');
+    await page.getByRole('link', { name: 'Back to sign in' }).click();
+    await expect(page).toHaveURL('/auth/signin');
+  });
+  await test.step('Signup navigation', async () => {
+    await page.getByRole('link', { name: 'Sign up' }).click();
+    await expect(page).toHaveURL('/auth/signup');
+    await page.getByRole('link', { name: 'Sign in' }).click();
+    await expect(page).toHaveURL('/auth/signin');
+  });
 });
 
-test('associates validation errors with inputs via aria attributes', async ({
+test('rejects invalid credentials, then signs in once from a narrow viewport', async ({
   page,
 }) => {
-  await page.getByRole('button', { name: 'Sign In' }).click();
-
-  const emailInput = page.getByLabel('Email');
-  const passwordInput = page.getByLabel('Password', { exact: true });
-
-  await expect(emailInput).toHaveAttribute('aria-invalid', 'true');
-  await expect(emailInput).toHaveAttribute(
-    'aria-describedby',
-    'login-email-error'
-  );
-  await expect(page.locator('#login-email-error')).toHaveText(
-    'Email is required'
-  );
-
-  await expect(passwordInput).toHaveAttribute('aria-invalid', 'true');
-  await expect(passwordInput).toHaveAttribute(
-    'aria-describedby',
-    'login-password-error'
-  );
-  await expect(page.locator('#login-password-error')).toHaveText(
-    'Password is required'
-  );
-});
-
-test('handles single-flight submission and disables controls while pending', async ({
-  page,
-}) => {
+  await page.setViewportSize({ width: 320, height: 600 });
+  await registerAuthenticatedAppRoutes(page);
   let requestCount = 0;
   let fulfillRoute: () => void = () => {};
 
@@ -72,6 +44,21 @@ test('handles single-flight submission and disables controls while pending', asy
 
   await page.route(loginEndpoint, async (route) => {
     requestCount++;
+    expect(route.request().method()).toBe('POST');
+    if (requestCount === 1) {
+      await route.fulfill({
+        status: 401,
+        json: {
+          name: 'AuthenticationError',
+          errorKey: 'auth_error_credentials_invalid_unauthorized',
+          validationErrors: [],
+        },
+      });
+
+      return;
+    }
+
+    expect(route.request().postDataJSON()).toEqual({ email, password });
     await routePromise;
     await route.fulfill({
       status: 200,
@@ -80,10 +67,47 @@ test('handles single-flight submission and disables controls while pending', asy
     });
   });
 
+  await expect(page.getByRole('main')).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Sign In' })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Drimsheet', exact: true })
+  ).toBeVisible();
+  await test.step('Auth controls fit the narrow viewport', async () => {
+    for (const control of [
+      page.getByLabel('Email'),
+      page.getByLabel('Password', { exact: true }),
+      page.getByRole('button', { name: 'Sign In' }),
+      page.getByRole('button', { name: 'Continue with Google' }),
+    ]) {
+      await control.scrollIntoViewIfNeeded();
+      await expect(control).toBeVisible();
+      const box = await control.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box?.x).toBeGreaterThanOrEqual(0);
+      expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(320);
+    }
+
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth
+      )
+    ).toBe(true);
+  });
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password', { exact: true }).fill(password);
 
   const submitBtn = page.getByRole('button', { name: 'Sign In' });
+  await test.step('Settled rejection preserves the form', async () => {
+    await page.getByLabel('Password', { exact: true }).fill('WrongPassword1!');
+    await submitBtn.click();
+    await expect(page.getByText('Invalid email or password.')).toBeVisible();
+    await expect(submitBtn).toBeEnabled();
+    await expect(page.getByLabel('Email')).toHaveValue(email);
+    await expect(page).toHaveURL('/auth/signin');
+    await page.getByLabel('Password', { exact: true }).fill(password);
+  });
   await submitBtn.click();
 
   await expect(page.getByLabel('Email')).toHaveAttribute('readonly', '');
@@ -101,61 +125,19 @@ test('handles single-flight submission and disables controls while pending', asy
   await page.keyboard.press('Enter');
   await submitBtn.click({ force: true }).catch(() => {});
 
-  fulfillRoute?.();
-
-  await expect(page).toHaveURL('/dashboard');
-  expect(requestCount).toBe(1);
-});
-
-test('signs in with email and password', async ({ page }) => {
-  await registerAuthenticatedAppRoutes(page);
-  await page.route(loginEndpoint, async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ accessToken: 'integration-test-token' }),
-    });
+  await test.step('Successful authentication loads the protected app', async () => {
+    fulfillRoute();
+    await expect(page).toHaveURL('/dashboard');
+    await page
+      .getByRole('button', { name: 'Toggle Sidebar', exact: true })
+      .click();
+    await expect(
+      page.getByRole('button', {
+        name: 'Open account management for Integration Entity',
+      })
+    ).toBeVisible();
+    expect(requestCount).toBe(2);
   });
-
-  const loginRequest = page.waitForRequest(loginEndpoint);
-
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password', { exact: true }).fill(password);
-  await page.getByRole('button', { name: 'Sign In' }).click();
-
-  const request = await loginRequest;
-
-  expect(request.postDataJSON()).toEqual({ email, password });
-  await expect(page).toHaveURL('/dashboard');
-  await expect(
-    page.getByRole('button', {
-      name: 'Open account management for Integration Entity',
-    })
-  ).toBeVisible();
-});
-
-test('shows invalid credentials returned by the API and preserves entered email', async ({
-  page,
-}) => {
-  await page.route(loginEndpoint, async (route) => {
-    await route.fulfill({
-      status: 401,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        name: 'AuthenticationError',
-        errorKey: 'auth_error_credentials_invalid_unauthorized',
-        validationErrors: [],
-      }),
-    });
-  });
-
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password', { exact: true }).fill('WrongPassword1!');
-  await page.getByRole('button', { name: 'Sign In' }).click();
-
-  await expect(page.getByText('Invalid email or password.')).toBeVisible();
-  await expect(page).toHaveURL('/auth/signin');
-  await expect(page.getByLabel('Email')).toHaveValue(email);
 });
 
 test('redirects to Google authentication endpoint when Google button is clicked', async ({
@@ -182,31 +164,4 @@ test('redirects to Google authentication endpoint when Google button is clicked'
 
   await expect.poll(() => googleCalled).toBe(true);
   expect(loginCalled).toBe(false);
-});
-
-test('reflows without horizontal overflow at narrow 320px viewport', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 320, height: 600 });
-  await page.goto('/auth/signin');
-
-  const emailInput = page.getByLabel('Email');
-  const passwordInput = page.getByLabel('Password', { exact: true });
-  const submitBtn = page.getByRole('button', { name: 'Sign In' });
-  const googleBtn = page.getByRole('button', { name: 'Continue with Google' });
-
-  for (const control of [emailInput, passwordInput, submitBtn, googleBtn]) {
-    await control.scrollIntoViewIfNeeded();
-    await expect(control).toBeVisible();
-    const box = await control.boundingBox();
-    expect(box).not.toBeNull();
-    expect(box?.x).toBeGreaterThanOrEqual(0);
-    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(320);
-  }
-
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth
-    )
-  ).toBe(true);
 });

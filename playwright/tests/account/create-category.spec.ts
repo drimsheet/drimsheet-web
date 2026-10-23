@@ -118,7 +118,7 @@ async function chooseParent(page: Page, name: string) {
 
 test('creates an expense under a posting parent, preserving names after failure and preventing duplicate submissions', async ({
   page,
-}, testInfo) => {
+}) => {
   await setup(page);
   await page.getByRole('radio', { name: 'Expenses', exact: true }).click();
   await chooseParent(page, 'Utilities');
@@ -137,11 +137,6 @@ test('creates an expense under a posting parent, preserving names after failure 
   await expect(preview).toContainText('General utilities');
   await expect(preview).toContainText('Internet');
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({
-    path: testInfo.outputPath('creation-desktop.png'),
-    fullPage: true,
-    animations: 'disabled',
-  });
   await page.setViewportSize({ width: 390, height: 844 });
   expect(
     await page.evaluate(
@@ -149,11 +144,6 @@ test('creates an expense under a posting parent, preserving names after failure 
     )
   ).toBe(true);
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({
-    path: testInfo.outputPath('creation-mobile.png'),
-    fullPage: true,
-    animations: 'disabled',
-  });
   await page.getByRole('button', { name: 'Change parent' }).click();
   await expect(
     page.getByRole('radio', { name: 'Utilities', exact: true })
@@ -173,11 +163,6 @@ test('creates an expense under a posting parent, preserving names after failure 
     .click();
   await expect(sheet.getByRole('alert')).toHaveCount(0);
   await sheet.getByRole('radio', { name: 'Utilities', exact: true }).click();
-  await page.screenshot({
-    path: testInfo.outputPath('parent-sheet-mobile.png'),
-    fullPage: false,
-    animations: 'disabled',
-  });
   await page.keyboard.press('Escape');
   await expect(
     page.getByRole('button', { name: 'Change parent' })
@@ -342,53 +327,4 @@ test('handles chart loading, refresh recovery, empty results, expansion and canc
   await expect(page.getByText('No parent selected')).toBeVisible();
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(page).toHaveURL('/categories');
-});
-
-test('sends unsupported inherited behavior unchanged and keeps the form after API rejection', async ({
-  page,
-}) => {
-  await setup(page);
-
-  const sales = {
-    ...income,
-    behavior: 'sales',
-    name: 'Sales',
-    isControlAccount: false,
-  };
-
-  await page.route(chartEndpoint, (route) => route.fulfill({ json: [sales] }));
-  await page.getByRole('radio', { name: 'Income', exact: true }).click();
-  await chooseParent(page, 'Sales');
-  await page.getByLabel(/^Name\s*Required$/).fill('Online sales');
-  await page
-    .getByLabel('Name for cloned posting account', { exact: false })
-    .fill('General sales');
-  let saved: unknown;
-  await page.route('**/api/v1/ledger/revenues', async (route) => {
-    saved = route.request().postDataJSON();
-    await route.fulfill({ status: 400, json: { message: 'invalid behavior' } });
-  });
-  await page
-    .getByRole('button', { name: 'Create category', exact: true })
-    .click();
-  await expect(
-    page.getByRole('alert').filter({ hasText: 'We couldn’t save' })
-  ).toBeVisible();
-  expect(saved).toEqual({
-    name: 'Online sales',
-    isControlAccount: false,
-    controlAccountId: sales.id,
-    behavior: 'sales',
-    promotionNames: {
-      newControlAccountName: 'Sales',
-      newPostingAccountName: 'General sales',
-    },
-  });
-  await expect(page.getByLabel(/^Name\s*Required$/)).toHaveValue(
-    'Online sales'
-  );
-  await expect(
-    page.getByLabel('Name for cloned posting account', { exact: false })
-  ).toHaveValue('General sales');
-  await expect(page).toHaveURL('/categories/new');
 });

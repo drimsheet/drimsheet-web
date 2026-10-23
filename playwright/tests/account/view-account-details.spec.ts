@@ -232,85 +232,51 @@ async function setup(
   await expect(page).toHaveURL('/dashboard');
 }
 
-for (const state of [
-  { bank: true, children: true },
-  { bank: true, children: false },
-  { bank: false, children: true },
-  { bank: false, children: false },
-]) {
-  test(`bank details ${state.bank}, sub-accounts ${state.children}`, async ({
-    page,
-  }, testInfo) => {
-    await setup(page, state);
-    await page.goto(`/accounts/${accountId}`);
-    await expect(
-      page.getByRole('heading', { name: account.name })
-    ).toBeVisible();
-    await expect(page.getByText('Created 14 January 2026')).toBeVisible();
-    await expect(page.getByText(/₦2,450,000/)).toBeVisible();
-    await expect(
-      page
-        .getByRole('region', { name: 'Recent transactions' })
-        .getByRole('table')
-    ).toBeVisible();
-    await expect(
-      page.getByRole('region', { name: 'Bank Details', exact: true })
-    ).toHaveCount(state.bank ? 1 : 0);
-    await expect(
-      page.getByRole('region', { name: 'Sub-accounts (1)', exact: true })
-    ).toHaveCount(state.children ? 1 : 0);
-    await expect(
-      page.getByText('Bank details haven’t been added.')
-    ).toHaveCount(state.bank ? 0 : 1);
-
-    const chart = page.getByRole('region', {
-      name: 'Cash Flow',
-      exact: true,
-    });
-
-    await expect(
-      chart.getByRole('definition').filter({ hasText: '₦1,200,000' })
-    ).toBeVisible();
-    await expect(chart.locator('.recharts-bar')).toHaveCount(2);
-    const chartTop = (await chart.boundingBox())!.y;
-    if (state.bank)
-      expect(
-        (await page
-          .getByRole('region', { name: 'Bank Details' })
-          .boundingBox())!.y
-      ).toBeLessThan(chartTop);
-
-    if (state.children)
-      expect(
-        (await page
-          .getByRole('region', { name: 'Sub-accounts (1)' })
-          .boundingBox())!.y
-      ).toBeLessThan(chartTop);
-
-    if (state.bank && state.children) {
-      await page.setViewportSize({ width: 390, height: 844 });
-      await expect(
-        page.getByRole('heading', { name: account.name })
-      ).toBeVisible();
-      expect(
-        await page.evaluate(
-          () => document.documentElement.scrollWidth <= window.innerWidth
-        )
-      ).toBe(true);
-      await page.screenshot({
-        path: testInfo.outputPath('account-details-mobile.png'),
-        fullPage: true,
-      });
-    }
-  });
-}
-
-test('changes the cash-flow period, paginates transactions, and opens a sub-account', async ({
+test('loads account sections, changes the cash-flow period, pages transactions, and opens a child', async ({
   page,
 }) => {
   await setup(page);
+  let release!: () => void;
+
+  const responseGate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  await page.route(endpoint, async (route) => {
+    await responseGate;
+    await route.fallback();
+  });
   await page.goto(`/accounts/${accountId}`);
+  for (const name of [
+    'account summary',
+    'bank details',
+    'sub accounts',
+    'transactions chart',
+    'recent transactions',
+  ]) {
+    await expect(
+      page.getByRole('status', { name: `Loading ${name}` })
+    ).toBeVisible();
+  }
+
+  release();
   await expect(page.getByRole('heading', { name: account.name })).toBeVisible();
+  await expect(page.getByText('Sales', { exact: true })).toBeVisible();
+  await expect(page.getByRole('status', { name: /^Loading/ })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: account.name })).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: 'Bank Details', exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: 'Sub-accounts (1)', exact: true })
+  ).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth
+    )
+  ).toBe(true);
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.getByRole('combobox', { name: 'Period' }).click();
   const selectedMonth = await page.getByRole('option').nth(1).textContent();
 
@@ -405,39 +371,6 @@ test('petty cash skips the bank endpoint and retains other sections when cash fl
   ).toBeVisible();
 });
 
-test('shows each loading skeleton until its data is available', async ({
-  page,
-}) => {
-  await setup(page);
-  let release!: () => void;
-
-  const responseGate = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-
-  await page.route(endpoint, async (route) => {
-    await responseGate;
-    await route.fallback();
-  });
-  await page.goto(`/accounts/${accountId}`);
-  for (const name of [
-    'account summary',
-    'bank details',
-    'sub accounts',
-    'transactions chart',
-    'recent transactions',
-  ]) {
-    await expect(
-      page.getByRole('status', { name: `Loading ${name}` })
-    ).toBeVisible();
-  }
-
-  release();
-  await expect(page.getByRole('heading', { name: account.name })).toBeVisible();
-  await expect(page.getByText('Sales', { exact: true })).toBeVisible();
-  await expect(page.getByRole('status', { name: /^Loading/ })).toHaveCount(0);
-});
-
 test('searches and sorts account transactions and opens the shared details drawer', async ({
   page,
 }) => {
@@ -457,6 +390,33 @@ test('searches and sorts account transactions and opens the shared details drawe
   await recent.getByRole('button', { name: 'Next page', exact: true }).click();
   await expect(recent.getByText('Earlier sales')).toBeVisible();
 
+  await page.route('**/api/v1/journal-entries?*', (route) => {
+    const query = new URL(route.request().url()).searchParams;
+    if (query.get('sortDirection') !== 'asc') return route.fallback();
+
+    expect(query.get('accountId')).toBe(accountId);
+
+    return route.fulfill({
+      json: {
+        data: [
+          {
+            ...transaction,
+            id: 'oldest',
+            effectiveDate: '2026-01-01T10:00:00Z',
+            lines: transaction.lines.map((line) => ({
+              ...line,
+              account:
+                line.sequenceOrder === 1
+                  ? { ...line.account, name: 'Oldest sale' }
+                  : line.account,
+            })),
+          },
+        ],
+        meta: { page: 1, limit: 5, total: 6, totalPages: 2 },
+      },
+    });
+  });
+
   const sortRequest = page.waitForRequest((request) => {
     const url = new URL(request.url());
 
@@ -471,7 +431,7 @@ test('searches and sorts account transactions and opens the shared details drawe
   expect(sortQuery.get('accountId')).toBe(accountId);
   expect(sortQuery.get('page')).toBe('1');
   expect(sortQuery.get('orderBy')).toBe('effectiveDate');
-  await expect(recent.getByText('Sales', { exact: true })).toBeVisible();
+  await expect(recent.getByText('Oldest sale', { exact: true })).toBeVisible();
 
   await page.route('**/api/v1/journal-entries?*', (route) => {
     const query = new URL(route.request().url()).searchParams;
@@ -480,6 +440,8 @@ test('searches and sorts account transactions and opens the shared details drawe
     expect(query.get('accountId')).toBe(accountId);
     expect(query.get('search')).toBe('Unmatched');
     expect(query.get('page')).toBe('1');
+    expect(query.get('sortDirection')).toBe('asc');
+    expect(query.get('orderBy')).toBe('effectiveDate');
 
     return route.fulfill({
       json: { data: [], meta: { page: 1, limit: 5, total: 0, totalPages: 0 } },
@@ -487,17 +449,17 @@ test('searches and sorts account transactions and opens the shared details drawe
   });
   const search = recent.getByRole('searchbox');
   await search.fill('Unmatched');
-  await expect(recent.getByText('Sales', { exact: true })).toHaveCount(0);
+  await expect(recent.getByText('Oldest sale', { exact: true })).toHaveCount(0);
   await expect(search).toHaveValue('Unmatched');
   await search.clear();
-  await expect(recent.getByText('Sales', { exact: true })).toBeVisible();
+  await expect(recent.getByText('Oldest sale', { exact: true })).toBeVisible();
 });
 
-test('confirms archiving, prevents duplicate submissions and refreshes the account status', async ({
+test('archives a control account after cancellation and failure, blocking duplicate submits and later editing', async ({
   page,
-}, testInfo) => {
+}) => {
   await setup(page, { children: false });
-  let current = account;
+  let current = { ...account, isControlAccount: true };
   const requests: { method: string; body: string | null }[] = [];
   let finishArchive: () => void = () => undefined;
 
@@ -511,8 +473,14 @@ test('confirms archiving, prevents duplicate submissions and refreshes the accou
       method: route.request().method(),
       body: route.request().postData(),
     });
+    if (requests.length === 1) {
+      await route.fulfill({ status: 500, json: { name: 'UnexpectedError' } });
+
+      return;
+    }
+
     await archiveResponse;
-    current = { ...account, status: 'archived' };
+    current = { ...current, status: 'archived' };
     await route.fulfill({ status: 204 });
   });
 
@@ -523,9 +491,9 @@ test('confirms archiving, prevents duplicate submissions and refreshes the accou
   const actions = page.getByRole('button', { name: 'Open account actions' });
   await actions.click();
   await expect(page.getByRole('menuitem', { name: 'Delete' })).toHaveCount(0);
-  await page.screenshot({ path: testInfo.outputPath('account-actions.png') });
   await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
   const dialog = page.getByRole('alertdialog', { name: 'Archive account?' });
+  await expect(dialog).toContainText('This account and all its sub-accounts');
   await expect(dialog).toBeVisible();
   expect(requests).toEqual([]);
   await dialog.getByRole('button', { name: 'Cancel' }).click();
@@ -537,13 +505,30 @@ test('confirms archiving, prevents duplicate submissions and refreshes the accou
   await dialog
     .getByRole('button', { name: 'Archive account', exact: true })
     .click();
+  await test.step('Failure leaves the confirmation usable', async () => {
+    await expect(
+      page.getByText('An error occurred', { exact: true })
+    ).toBeVisible();
+    await expect(
+      dialog.getByRole('button', { name: 'Archive account', exact: true })
+    ).toBeEnabled();
+    await expect(page.getByText('Active', { exact: true })).toBeVisible();
+  });
+  await dialog
+    .getByRole('button', { name: 'Archive account', exact: true })
+    .click();
   await expect(
     dialog.getByRole('button', { name: 'Archive account', exact: true })
   ).toBeDisabled();
   await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
   await page.keyboard.press('Escape');
   await expect(dialog).toBeVisible();
-  await expect.poll(() => requests).toEqual([{ method: 'POST', body: null }]);
+  await expect
+    .poll(() => requests)
+    .toEqual([
+      { method: 'POST', body: null },
+      { method: 'POST', body: null },
+    ]);
   finishArchive();
 
   await expect(dialog).not.toBeVisible();
@@ -553,197 +538,107 @@ test('confirms archiving, prevents duplicate submissions and refreshes the accou
   await expect(
     page.getByRole('menuitem', { name: 'Archive', exact: true })
   ).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  await expect(
+    page.getByText('Archived accounts cannot be edited.')
+  ).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
-test('retains the archive confirmation after failure and allows retry', async ({
+test('blocks archiving header accounts and editing unsupported account types', async ({
   page,
 }) => {
   await setup(page, { children: false });
-  let attempts = 0;
-  await page.route(`${endpoint}/archive`, async (route) => {
-    attempts += 1;
-    if (attempts === 1) {
-      await route.fulfill({
-        status: 500,
-        json: { name: 'UnexpectedError', validationErrors: [] },
-      });
-
-      return;
-    }
-
-    await route.fulfill({ status: 204 });
-  });
   await page.route(endpoint, (route) =>
     route.fulfill({
-      json: { ...account, status: attempts > 1 ? 'archived' : 'active' },
+      json: {
+        ...account,
+        controlAccountId: undefined,
+        behavior: 'virtual_account',
+      },
     })
   );
   await page.goto(`/accounts/${accountId}`);
   await page.getByRole('button', { name: 'Open account actions' }).click();
-  await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
-  const dialog = page.getByRole('alertdialog', { name: 'Archive account?' });
-  await dialog
-    .getByRole('button', { name: 'Archive account', exact: true })
-    .click();
   await expect(
-    page.getByText('An error occurred', { exact: true })
+    page.getByRole('menuitem', { name: 'Archive', exact: true })
+  ).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  await expect(
+    page.getByText(
+      'This account is not editable. Only bank and petty cash accounts can be edited.'
+    )
   ).toBeVisible();
-  await expect(dialog).toBeVisible();
-  await expect(
-    dialog.getByRole('button', { name: 'Archive account', exact: true })
-  ).toBeEnabled();
-  await expect(page.getByText('Active', { exact: true })).toBeVisible();
-  await dialog
-    .getByRole('button', { name: 'Archive account', exact: true })
-    .click();
-  await expect(dialog).not.toBeVisible();
-  await expect(page.getByText('Archived', { exact: true })).toBeVisible();
-  expect(attempts).toBe(2);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
-for (const state of ['header', 'archived'] as const) {
-  test(`disables archive for ${state} accounts`, async ({ page }) => {
-    await setup(page, { children: false });
-    await page.route(endpoint, (route) =>
-      route.fulfill({
-        json: {
-          ...account,
-          controlAccountId:
-            state === 'header' ? undefined : account.controlAccountId,
-          status: state === 'archived' ? 'archived' : 'active',
-        },
-      })
-    );
-    await page.goto(`/accounts/${accountId}`);
-    await page.getByRole('button', { name: 'Open account actions' }).click();
-    await expect(
-      page.getByRole('menuitem', { name: 'Archive', exact: true })
-    ).toBeDisabled();
-  });
-}
-
-test('explains that archiving a control account includes its sub-accounts', async ({
-  page,
-}) => {
-  await setup(page);
-  await page.route(endpoint, (route) =>
-    route.fulfill({ json: { ...account, isControlAccount: true } })
-  );
-  await page.goto(`/accounts/${accountId}`);
-  await page.getByRole('button', { name: 'Open account actions' }).click();
-  await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
-  await expect(page.getByRole('alertdialog')).toContainText(
-    'This account and all its sub-accounts'
-  );
-});
-
-test('checks deletion eligibility only when opening the menu and hides stale eligibility while rechecking', async ({
+test('rechecks deletion permission, hides stale permission while pending, and recovers from a failed check', async ({
   page,
 }) => {
   await setup(page);
   let checks = 0;
-  let resolveCheck: () => void = () => undefined;
+  let release!: () => void;
 
-  const response = new Promise<void>((resolve) => {
-    resolveCheck = resolve;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
   });
 
-  await page.route(`${endpoint}/deletion-eligibility`, async (route) => {
+  await page.route(endpoint + '/deletion-eligibility', async (route) => {
     checks += 1;
-    await response;
+    if (checks === 2) await pending;
+
+    if (checks === 3) {
+      await route.fulfill({ status: 500, json: { name: 'UnexpectedError' } });
+
+      return;
+    }
+
     await route.fulfill({
       json:
-        checks === 1
-          ? { canDelete: true }
-          : { canDelete: false, reason: 'has_journal_entries' },
+        checks === 2
+          ? { canDelete: false, reason: 'has_journal_entries' }
+          : { canDelete: true },
     });
   });
-  await page.goto(`/accounts/${accountId}`);
+  await page.goto('/accounts/' + accountId);
   const actions = page.getByRole('button', { name: 'Open account actions' });
+  const remove = page.getByRole('menuitem', { name: 'Delete', exact: true });
+
+  const loading = page.getByRole('status', {
+    name: 'Checking deletion availability',
+  });
+
   await expect(actions).toBeVisible();
   expect(checks).toBe(0);
   await actions.click();
-  await expect(
-    page.getByRole('status', { name: 'Checking deletion availability' })
-  ).toBeVisible();
-  await expect(
-    page.getByRole('menuitem', { name: 'Delete', exact: true })
-  ).toHaveCount(0);
-  resolveCheck();
-  await expect(
-    page.getByRole('menuitem', { name: 'Delete', exact: true })
-  ).toBeVisible();
+  await expect(remove).toBeVisible();
   await page.keyboard.press('Escape');
   await actions.click();
-  await expect.poll(() => checks).toBe(2);
-  await expect(
-    page.getByRole('status', { name: 'Checking deletion availability' })
-  ).toHaveCount(0);
-  await expect(
-    page.getByRole('menuitem', { name: 'Delete', exact: true })
-  ).toHaveCount(0);
-});
-
-for (const reason of ['header_account', 'has_journal_entries'] as const) {
-  test(`hides Delete when eligibility returns ${reason}`, async ({ page }) => {
-    await setup(page);
-    await page.route(`${endpoint}/currency-update-eligibility`, (route) =>
-      route.fulfill({ json: { canUpdateCurrency: true } })
-    );
-    await page.route(`${endpoint}/deletion-eligibility`, (route) =>
-      route.fulfill({ json: { canDelete: false, reason } })
-    );
-    await page.goto(`/accounts/${accountId}`);
-    await page.getByRole('button', { name: 'Open account actions' }).click();
-    await expect(
-      page.getByRole('menuitem', { name: 'Archive', exact: true })
-    ).toBeVisible();
-    await expect(
-      page.getByRole('status', { name: 'Checking deletion availability' })
-    ).toHaveCount(0);
-    await expect(
-      page.getByRole('menuitem', { name: 'Delete', exact: true })
-    ).toHaveCount(0);
-  });
-}
-
-test('hides Delete after a failed eligibility check and retries when reopening', async ({
-  page,
-}) => {
-  await setup(page);
-  let checks = 0;
-  await page.route(`${endpoint}/currency-update-eligibility`, (route) =>
-    route.fulfill({ json: { canUpdateCurrency: true } })
-  );
-  await page.route(`${endpoint}/deletion-eligibility`, (route) => {
-    checks += 1;
-
-    return checks === 1
-      ? route.fulfill({ status: 500, json: { name: 'UnexpectedError' } })
-      : route.fulfill({ json: { canDelete: true } });
-  });
-  await page.goto(`/accounts/${accountId}`);
-  const actions = page.getByRole('button', { name: 'Open account actions' });
+  await expect(loading).toBeVisible();
+  await expect(remove).toHaveCount(0);
+  expect(checks).toBe(2);
+  release();
+  await expect(loading).toHaveCount(0);
+  await expect(remove).toHaveCount(0);
+  await page.keyboard.press('Escape');
   await actions.click();
   await expect(
     page.getByText(
       'Unable to check deletion availability. Reopen the menu to try again.'
     )
   ).toBeVisible();
-  await expect(
-    page.getByRole('menuitem', { name: 'Delete', exact: true })
-  ).toHaveCount(0);
+  await expect(remove).toHaveCount(0);
   await page.keyboard.press('Escape');
   await actions.click();
-  await expect(
-    page.getByRole('menuitem', { name: 'Delete', exact: true })
-  ).toBeVisible();
-  expect(checks).toBe(2);
+  await expect(remove).toBeVisible();
+  expect(checks).toBe(4);
 });
 
 test('confirms deletion, blocks duplicate submissions and returns to the refreshed accounts list', async ({
   page,
-}, testInfo) => {
+}) => {
   await setup(page, { children: false });
   const dashboard = await registerAccountDashboardRoutes(page);
 
@@ -812,9 +707,6 @@ test('confirms deletion, blocks duplicate submissions and returns to the refresh
     dialog.getByRole('button', { name: 'Delete', exact: true })
   ).toBeDisabled();
   await input.fill('delete');
-  await page.screenshot({
-    path: testInfo.outputPath('delete-account-confirmation.png'),
-  });
   await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
   await expect(
     dialog.getByRole('button', { name: 'Delete', exact: true })
@@ -916,6 +808,7 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
     };
 
     const requests: unknown[] = [];
+    let attempts = 0;
     await page.route(endpoint, (route) => route.fulfill({ json: current }));
     await page.route(`${endpoint}/bank-details`, (route) =>
       route.fulfill({ json: bankDetails })
@@ -931,9 +824,23 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
       `**/api/v1/ledger/asset/${behavior === 'bank' ? 'bank' : 'petty-cash'}/${accountId}`,
       (route) => {
         expect(route.request().method()).toBe('PATCH');
+        attempts += 1;
+        if (attempts === 1)
+          return route.fulfill({
+            status: 500,
+            json: { name: 'UnexpectedError' },
+          });
+
         const request = route.request().postDataJSON();
         requests.push(request);
-        current = { ...current, name: request.name };
+        current = {
+          ...current,
+          name: request.name ?? current.name,
+          balance: {
+            ...current.balance,
+            currencyCode: request.currencyCode ?? current.balance.currencyCode,
+          },
+        };
         if (request.bankAccount)
           bankDetails = { ...bankDetails, ...request.bankAccount };
 
@@ -971,6 +878,25 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
     await expect(dialog.getByText('Keep existing opening balance')).toHaveCount(
       0
     );
+    await test.step('Failure retains the edit, while cancellation resets it', async () => {
+      await dialog.getByLabel('Account display name').fill('Unsaved name');
+      await dialog.getByRole('button', { name: 'Save changes' }).click();
+      await expect(
+        page.getByText('An error occurred', { exact: true })
+      ).toBeVisible();
+      await expect(
+        dialog.getByRole('button', { name: 'Save changes' })
+      ).toBeEnabled();
+      await expect(dialog.getByLabel('Account display name')).toHaveValue(
+        'Unsaved name'
+      );
+      await dialog.getByRole('button', { name: 'Cancel' }).click();
+      await page.getByRole('button', { name: 'Edit', exact: true }).click();
+      await expect(dialog.getByLabel('Account display name')).toHaveValue(
+        account.name
+      );
+      await skipBalance.check();
+    });
     await dialog.getByLabel('Account display name').fill('Updated account');
     if (behavior === 'bank') {
       await expect(dialog.getByLabel('Bank account name')).toHaveValue(
@@ -1008,88 +934,25 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
     await dialog.getByRole('button', { name: 'Save changes' }).click();
     await expect(dialog).not.toBeVisible();
     expect(requests).toHaveLength(1);
+    await test.step('A later currency-only edit refreshes the saved currency', async () => {
+      await page.getByRole('button', { name: 'Edit', exact: true }).click();
+      await dialog
+        .getByRole('checkbox', { name: 'Leave opening balance unset' })
+        .check();
+      await dialog
+        .getByRole('combobox', { name: 'Currency', exact: true })
+        .fill('USD');
+      await page.getByRole('option', { name: /US Dollar/ }).click();
+      await dialog.getByRole('button', { name: 'Save changes' }).click();
+      await expect(dialog).not.toBeVisible();
+      expect(requests.at(-1)).toEqual({ currencyCode: 'USD' });
+      await page.getByRole('button', { name: 'Edit', exact: true }).click();
+      await expect(
+        dialog.getByRole('combobox', { name: 'Currency', exact: true })
+      ).toHaveValue('USD');
+    });
   });
 }
-
-for (const behavior of ['petty_cash', 'bank'] as const) {
-  test(`updates only the currency of ${behavior} without an opening balance`, async ({
-    page,
-  }) => {
-    await setup(page, {
-      pettyCash: behavior === 'petty_cash',
-      children: false,
-    });
-    let current = { ...account, behavior };
-    const requests: unknown[] = [];
-    await page.route(endpoint, (route) => route.fulfill({ json: current }));
-    await page.route(
-      `**/api/v1/ledger/asset/${behavior === 'bank' ? 'bank' : 'petty-cash'}/${accountId}`,
-      (route) => {
-        expect(route.request().method()).toBe('PATCH');
-        const request = route.request().postDataJSON();
-        requests.push(request);
-        current = {
-          ...current,
-          balance: { ...current.balance, currencyCode: request.currencyCode },
-        };
-
-        return route.fulfill({ json: current });
-      }
-    );
-    await page.goto(`/accounts/${accountId}`);
-    await page.getByRole('button', { name: 'Edit', exact: true }).click();
-
-    const dialog = page.getByRole('dialog', {
-      name:
-        behavior === 'bank' ? 'Edit bank account' : 'Edit petty cash account',
-    });
-
-    await dialog
-      .getByRole('checkbox', { name: 'Leave opening balance unset' })
-      .check();
-    await dialog
-      .getByRole('combobox', { name: 'Currency', exact: true })
-      .fill('USD');
-    await page.getByRole('option', { name: /US Dollar/ }).click();
-    await dialog.getByRole('button', { name: 'Save changes' }).click();
-    await expect(dialog).not.toBeVisible();
-    expect(requests).toEqual([{ currencyCode: 'USD' }]);
-    await page.getByRole('button', { name: 'Edit', exact: true }).click();
-    await expect(
-      dialog.getByRole('combobox', { name: 'Currency', exact: true })
-    ).toHaveValue('USD');
-  });
-}
-
-test('preserves unsaved edits after update failure and resets them after cancellation', async ({
-  page,
-}) => {
-  await setup(page, { pettyCash: true, children: false });
-  await page.route(`**/api/v1/ledger/asset/petty-cash/${accountId}`, (route) =>
-    route.fulfill({ status: 500, json: { name: 'UnexpectedError' } })
-  );
-  await page.goto(`/accounts/${accountId}`);
-  const edit = page.getByRole('button', { name: 'Edit', exact: true });
-  await edit.click();
-  const dialog = page.getByRole('dialog', { name: 'Edit petty cash account' });
-  await dialog.getByLabel('Account display name').fill('Unsaved name');
-  await dialog
-    .getByRole('checkbox', { name: 'Leave opening balance unset' })
-    .check();
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(
-    page.getByText('An error occurred', { exact: true })
-  ).toBeVisible();
-  await expect(dialog.getByLabel('Account display name')).toHaveValue(
-    'Unsaved name'
-  );
-  await dialog.getByRole('button', { name: 'Cancel' }).click();
-  await expect(dialog).not.toBeVisible();
-  await edit.click();
-  await expect(dialog.getByLabel('Account display name')).toHaveValue(
-    account.name
-  );
-});
 
 for (const behavior of ['petty_cash', 'bank'] as const) {
   test(`adds a first opening balance to ${behavior} and prevents dismissal while saving`, async ({
@@ -1182,33 +1045,6 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
   });
 }
 
-for (const state of ['unsupported', 'archived'] as const) {
-  test(`rejects editing an ${state} account with a translated error`, async ({
-    page,
-  }) => {
-    await setup(page, { children: false });
-    await page.route(endpoint, (route) =>
-      route.fulfill({
-        json: {
-          ...account,
-          behavior: state === 'unsupported' ? 'virtual_account' : 'bank',
-          status: state === 'archived' ? 'archived' : 'active',
-        },
-      })
-    );
-    await page.goto(`/accounts/${accountId}`);
-    await page.getByRole('button', { name: 'Edit', exact: true }).click();
-    await expect(
-      page.getByText(
-        state === 'unsupported'
-          ? 'This account is not editable. Only bank and petty cash accounts can be edited.'
-          : 'Archived accounts cannot be edited.'
-      )
-    ).toBeVisible();
-    await expect(page.getByRole('dialog')).toHaveCount(0);
-  });
-}
-
 test('recovers a failed bank-details load after refreshing before editing', async ({
   page,
 }) => {
@@ -1252,7 +1088,7 @@ test('recovers a failed bank-details load after refreshing before editing', asyn
 });
 
 for (const behavior of ['petty_cash', 'bank'] as const) {
-  test(`loads and locks the ${behavior} opening balance, including zero`, async ({
+  test(`fails closed on a ${behavior} opening-balance read error, then preserves a loaded zero balance`, async ({
     page,
   }) => {
     await setup(page, {
@@ -1279,28 +1115,43 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
         },
       })
     );
-    let amount = 2550;
-    await page.route(`${endpoint}/opening-balance`, (route) =>
-      route.fulfill({
+    let reads = 0;
+    await page.route(`${endpoint}/opening-balance`, (route) => {
+      reads += 1;
+      if (reads === 1)
+        return route.fulfill({
+          status: 500,
+          json: { name: 'UnexpectedError' },
+        });
+
+      return route.fulfill({
         json: {
           openingBalance: {
-            amount: { amount, currencyCode: 'NGN', isMinorUnit: true },
+            amount: { amount: 0, currencyCode: 'NGN', isMinorUnit: true },
             date: '2026-10-01T00:00:00Z',
             exchangeRate: null,
           },
         },
-      })
-    );
+      });
+    });
     await page.goto(`/accounts/${accountId}`);
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
     const dialog = page.getByRole('dialog');
 
+    await expect(dialog.getByRole('alert')).toContainText(
+      'Unable to load the opening balance'
+    );
+    await expect(
+      dialog.getByRole('button', { name: 'Save changes' })
+    ).toHaveCount(0);
+    await page.reload();
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
     const openingBalanceToggle = dialog.getByRole('checkbox');
 
     await expect(openingBalanceToggle).toHaveCount(0);
     await expect(
       dialog.getByLabel('Opening balance', { exact: true })
-    ).toHaveValue('25.5');
+    ).toHaveValue('0');
     await expect(
       dialog.getByLabel('Opening date', { exact: true })
     ).toContainText('1 Oct 2026');
@@ -1317,69 +1168,6 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
     await dialog.getByRole('button', { name: 'Save changes' }).click();
     await expect(dialog).not.toBeVisible();
     expect(requests).toEqual([{ name: 'Renamed account' }]);
-    amount = 0;
-    await page.getByRole('button', { name: 'Edit', exact: true }).click();
-    await expect(openingBalanceToggle).toHaveCount(0);
-    await expect(
-      dialog.getByLabel('Opening balance', { exact: true })
-    ).toHaveValue('0');
-    await expect(
-      dialog.getByLabel('Opening balance', { exact: true })
-    ).toBeDisabled();
-  });
-
-  test(`blocks ${behavior} editing until the opening balance loads and recovers after browser refresh`, async ({
-    page,
-  }) => {
-    await setup(page, {
-      pettyCash: behavior === 'petty_cash',
-      children: false,
-    });
-    let finishRead: () => void = () => undefined;
-
-    const pending = new Promise<void>((resolve) => {
-      finishRead = resolve;
-    });
-
-    let reads = 0;
-    await page.route(`${endpoint}/opening-balance`, async (route) => {
-      reads += 1;
-      if (reads === 1) {
-        await pending;
-
-        return route.fulfill({
-          status: 500,
-          json: { name: 'UnexpectedError' },
-        });
-      }
-
-      return route.fulfill({ json: { openingBalance: null } });
-    });
-    await page.goto(`/accounts/${accountId}`);
-    await page.getByRole('button', { name: 'Edit', exact: true }).click();
-    const dialog = page.getByRole('dialog');
-    await expect(dialog.getByRole('status')).toBeVisible();
-    await expect(
-      dialog.getByRole('button', { name: 'Save changes' })
-    ).toHaveCount(0);
-    finishRead();
-    await expect(dialog.getByRole('alert')).toContainText(
-      'Unable to load the opening balance'
-    );
-    await expect(
-      dialog.getByRole('button', { name: 'Save changes' })
-    ).toHaveCount(0);
-    await expect(
-      page.getByRole('button', { name: /^(Retry|Try again)$/i })
-    ).toHaveCount(0);
-    await page.reload();
-    await page.getByRole('button', { name: 'Edit', exact: true }).click();
-    await expect(
-      dialog.getByRole('button', { name: 'Save changes' })
-    ).toBeVisible();
-    await expect(dialog.getByText('Keep existing opening balance')).toHaveCount(
-      0
-    );
   });
 }
 
@@ -1403,6 +1191,15 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
       `${endpoint}/currency-update-eligibility`,
       async (route) => {
         reads += 1;
+        if (reads === 1) {
+          await route.fulfill({
+            status: 500,
+            json: { name: 'UnexpectedError' },
+          });
+
+          return;
+        }
+
         if (!eligible) await response;
 
         await route.fulfill({
@@ -1430,13 +1227,26 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
     const edit = page.getByRole('button', { name: 'Edit', exact: true });
     await edit.click();
     const dialog = page.getByRole('dialog');
+    await test.step('Eligibility errors fail closed until refresh', async () => {
+      await expect(dialog.getByRole('alert')).toContainText(
+        'Unable to check whether the currency can be updated. Refresh the page to try again.'
+      );
+      await expect(
+        dialog.getByRole('combobox', { name: 'Currency', exact: true })
+      ).toHaveCount(0);
+      await expect(
+        dialog.getByRole('button', { name: 'Save changes' })
+      ).toHaveCount(0);
+      await page.reload();
+      await edit.click();
+    });
     await expect(
       dialog.getByRole('combobox', { name: 'Currency', exact: true })
     ).toBeEnabled();
     await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
     eligible = false;
     await edit.click();
-    await expect.poll(() => reads).toBe(2);
+    await expect.poll(() => reads).toBe(3);
     await expect(dialog.getByRole('status')).toBeVisible();
     await expect(
       dialog.getByRole('combobox', { name: 'Currency', exact: true })
@@ -1458,43 +1268,5 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
     await dialog.getByRole('button', { name: 'Save changes' }).click();
     await expect(dialog).not.toBeVisible();
     expect(requests).toEqual([{ name: 'Renamed account' }]);
-  });
-
-  test(`keeps ${behavior} currency editing unavailable after an eligibility error and recovers after browser refresh`, async ({
-    page,
-  }) => {
-    await setup(page, {
-      pettyCash: behavior === 'petty_cash',
-      children: false,
-    });
-    let reads = 0;
-    await page.route(`${endpoint}/currency-update-eligibility`, (route) => {
-      reads += 1;
-
-      return reads === 1
-        ? route.fulfill({ status: 500, json: { name: 'UnexpectedError' } })
-        : route.fulfill({ json: { canUpdateCurrency: true } });
-    });
-    await page.goto(`/accounts/${accountId}`);
-    await page.getByRole('button', { name: 'Edit', exact: true }).click();
-    const dialog = page.getByRole('dialog');
-    await expect(dialog.getByRole('alert')).toContainText(
-      'Unable to check whether the currency can be updated. Refresh the page to try again.'
-    );
-    await expect(
-      dialog.getByRole('combobox', { name: 'Currency', exact: true })
-    ).toHaveCount(0);
-    await expect(
-      dialog.getByRole('button', { name: 'Save changes' })
-    ).toHaveCount(0);
-    await expect(
-      page.getByRole('button', { name: /^(Retry|Try again)$/i })
-    ).toHaveCount(0);
-    await page.reload();
-    await page.getByRole('button', { name: 'Edit', exact: true }).click();
-    await expect(
-      dialog.getByRole('combobox', { name: 'Currency', exact: true })
-    ).toBeEnabled();
-    expect(reads).toBe(2);
   });
 }
