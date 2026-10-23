@@ -35,7 +35,9 @@ export function AccountingEntityOnboardingSidebar({
                   'flex items-start gap-3 rounded-md border border-transparent px-3 py-3 text-sm',
                   index + 1 === currentStep
                     ? 'border-border bg-accent font-semibold text-accent-foreground'
-                    : 'text-muted-foreground'
+                    : 'text-muted-foreground',
+                  index + 1 < currentStep &&
+                    'font-medium text-sidebar-foreground dark:text-white'
                 )}
               >
                 <span
@@ -44,7 +46,9 @@ export function AccountingEntityOnboardingSidebar({
                     'mt-1.5 size-2 shrink-0 rounded-full',
                     index + 1 === currentStep
                       ? 'animate-pulse-scale bg-primary motion-reduce:animate-none'
-                      : 'bg-muted-foreground/40'
+                      : 'bg-muted-foreground/40',
+                    index + 1 < currentStep &&
+                      'bg-sidebar-foreground dark:bg-white'
                   )}
                 />
                 <span>{label}</span>

@@ -996,3 +996,60 @@ test('defaults reports from the legal entity and fiscal year and advances withou
   ).toBeVisible();
   expect(saveRequests).toEqual([]);
 });
+
+test('advances income categories to expense categories without saving onboarding data', async ({
+  page,
+}) => {
+  await page.route(entityListEndpoint, (route) => route.fulfill({ json: [] }));
+  await page.goto(verificationUrl);
+  await page.getByRole('combobox', { name: 'Who is this for?' }).click();
+  await page.getByRole('option', { name: 'Individual', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Country of residence' }).click();
+  await page.getByRole('option', { name: /Nigeria/ }).click();
+  await page
+    .getByRole('button', { name: 'Continue to financial year' })
+    .click();
+  await page
+    .getByRole('button', { name: 'Continue to reports', exact: true })
+    .click();
+  await page
+    .getByRole('button', { name: 'Continue to income categories' })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'Choose your income categories' })
+  ).toBeVisible();
+
+  const saveRequests: string[] = [];
+  await page.route('**/api/v1/**', async (route) => {
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(route.request().method())) {
+      saveRequests.push(route.request().url());
+      await route.fulfill({ status: 400, json: {} });
+
+      return;
+    }
+
+    await route.fallback();
+  });
+
+  await page.getByRole('checkbox', { name: 'Gifts (Default)' }).uncheck();
+  await page.getByRole('button', { name: 'Add income category' }).click();
+  await page.getByRole('combobox', { name: /Parent account/ }).click();
+  await page.getByRole('option', { name: 'Services', exact: true }).click();
+  await page.getByRole('textbox', { name: /Category name/ }).fill('Consulting');
+  await page.getByRole('button', { name: 'Add to setup' }).click();
+  await page
+    .getByRole('button', { name: 'Continue to expense categories' })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: 'Choose your expense categories' })
+  ).toBeVisible();
+  await expect(page.getByRole('main')).toContainText('Step 5 of 5');
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await expect(
+    page.getByRole('checkbox', { name: 'Gifts (Default)' })
+  ).not.toBeChecked();
+  await expect(
+    page.getByRole('checkbox', { name: 'Consulting' })
+  ).toBeChecked();
+  expect(saveRequests).toEqual([]);
+});

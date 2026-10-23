@@ -20,3 +20,11 @@ export default meta;
 type TStory = StoryObj<typeof meta>;
 
 export const Default: TStory = {};
+
+export const WithCompletedSteps: TStory = {
+  args: { currentStep: 3 },
+};
+
+export const FinalStep: TStory = {
+  args: { currentStep: 5 },
+};
