@@ -1,15 +1,15 @@
 import { useAccountCurrencyUpdateEligibility } from '@/account/hooks/use-account-currency-update-eligibility';
 import { useAccountOpeningBalance } from '@/account/hooks/use-account-opening-balance';
 import { useAccountUpdateExchangeRate } from '@/account/hooks/use-account-update-exchange-rate';
-import { useUpdatePettyCashAccount } from '@/account/hooks/use-update-asset-account';
+import { useUpdatePettyCashAccount } from '@/account/hooks/use-update-petty-cash-account';
 import { assetAccountUpdateMapper } from '@/account/lib/mappers/asset-account-update.mapper';
-import { Button } from '@/shared/components/button';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useCurrencies } from '@/shared/hooks/use-currencies';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PettyCashAccountForm } from './petty-cash-account-form';
+import { PettyCashAccountFormSkeleton } from './skeleton';
 import type {
   IPettyCashAccountFormValues,
   PettyCashAccountFormUpdateContainerProps,
@@ -84,8 +84,6 @@ export function PettyCashAccountFormUpdateContainer({
     return () => onBusyChange(false);
   }, [update.isPending, onBusyChange]);
 
-  const retry_label = t('details_retry_label');
-  const loading_text = t('update_loading_text');
   const currencies_error_text = t('update_currencies_error_text');
 
   const currency_eligibility_error_text = t(
@@ -98,36 +96,31 @@ export function PettyCashAccountFormUpdateContainer({
     return (
       <div role="alert">
         <p>{opening_balance_error_text}</p>
-        <Button onClick={() => void opening.refetch()}>{retry_label}</Button>
       </div>
     );
 
   if (opening.openingBalance === undefined)
-    return <p role="status">{loading_text}</p>;
+    return <PettyCashAccountFormSkeleton />;
 
   if (currencyEligibility.isError)
     return (
       <div role="alert">
         <p>{currency_eligibility_error_text}</p>
-        <Button onClick={() => void currencyEligibility.refetch()}>
-          {retry_label}
-        </Button>
       </div>
     );
 
   if (currencyEligibility.isPending || !currencyEligibility.isFetchedAfterMount)
-    return <p role="status">{loading_text}</p>;
+    return <PettyCashAccountFormSkeleton />;
 
   if (canUpdateCurrency && currencies.isError)
     return (
       <div role="alert">
         <p>{currencies_error_text}</p>
-        <Button onClick={() => void currencies.refetch()}>{retry_label}</Button>
       </div>
     );
 
   if (canUpdateCurrency && currencies.isPending)
-    return <p role="status">{loading_text}</p>;
+    return <PettyCashAccountFormSkeleton />;
 
   return (
     <PettyCashAccountForm

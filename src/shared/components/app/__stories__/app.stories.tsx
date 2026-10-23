@@ -1,5 +1,7 @@
 import { AppSidebar } from '@/_app/components/app-sidebar';
-import { AppBody, AppHeader, AppHeaderTitle } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
 import { SidebarProvider } from '@/shared/components/sidebar';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MemoryRouter } from 'react-router-dom';
@@ -15,12 +17,6 @@ const meta = {
           <div className="flex min-h-screen w-full bg-background font-sans text-foreground">
             <AppSidebar currentPath="/dashboard" />
             <div className="flex-1 flex flex-col min-w-0">
-              <AppHeader
-                breadcrumbs={[
-                  { label: 'Dashboard', to: '#' },
-                  { label: 'Analytics' },
-                ]}
-              />
               <main className="flex-1 p-6">
                 <Story />
               </main>
@@ -38,15 +34,14 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <AppBody>
-      <div className="flex flex-col gap-6">
-        <AppHeaderTitle>Application Shell</AppHeaderTitle>
-        <div className="rounded-xl border border-border p-6 bg-card">
+      <div className="flex flex-col">
+        <PageTitle>Application Shell</PageTitle>
+        <PageSection>
           <p className="text-sm text-muted-foreground leading-relaxed">
             Welcome to the main application interface! This story showcases the
-            full app layout, including the Sidebar, Header, Breadcrumbs, and
-            Page Body.
+            full app layout, including the Sidebar and Page Body.
           </p>
-        </div>
+        </PageSection>
       </div>
     </AppBody>
   ),

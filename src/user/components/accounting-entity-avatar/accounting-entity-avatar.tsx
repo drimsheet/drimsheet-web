@@ -1,13 +1,5 @@
 import { Avatar, AvatarFallback } from '@/shared/components/avatar';
-import type { ComponentProps } from 'react';
-
-interface AccountingEntityAvatarProps extends Omit<
-  ComponentProps<typeof Avatar>,
-  'children'
-> {
-  fallbackClassName?: string;
-  name: string;
-}
+import type { AccountingEntityAvatarProps } from './types';
 
 export function AccountingEntityAvatar({
   fallbackClassName,

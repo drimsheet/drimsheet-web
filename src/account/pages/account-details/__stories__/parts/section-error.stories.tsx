@@ -5,7 +5,7 @@ const meta = {
   title: 'Ledger Accounts/AccountDetails/SectionError',
   component: SectionError,
   tags: ['autodocs'],
-  args: { title: 'Money in & out', onRetry: () => {} },
+  args: { title: 'Money in & out' },
 } satisfies Meta<typeof SectionError>;
 
 export default meta;

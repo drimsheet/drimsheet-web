@@ -2,7 +2,7 @@ import type { IFeatureFlagGuardProps } from '@/_app/containers/feature-flag-guar
 import { useLaunchDarklyContextSynchronization } from '@/_app/containers/launchdarkly';
 import { FeatureNotAvailable } from '@/shared/components/feature-not-available';
 import { FullPageLoader } from '@/shared/components/full-page-loader';
-import { useFeatureFlags } from '@/shared/hooks/use-feature-flag';
+import { useFeatureFlags } from '@/shared/hooks/use-feature-flags';
 import { useTranslation } from 'react-i18next';
 
 export function FeatureFlagGuard({

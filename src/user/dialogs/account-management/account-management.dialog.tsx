@@ -7,6 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/shared/components/popover';
+import { useIsMobile } from '@/shared/components/sidebar';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import type { UAppThemePreference } from '@/shared/lib/api/Api';
 import { AccountManagement } from '@/user/components/account-management';
@@ -23,6 +24,7 @@ export function AccountManagementDialog({
   onLogoutClick,
 }: Readonly<AccountManagementDialogProps>) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const logoutRequestedRef = useRef(false);
   const titleId = useId();
@@ -75,10 +77,12 @@ export function AccountManagementDialog({
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent
         align="end"
+        side={isMobile ? 'top' : 'right'}
+        collisionPadding={16}
         sideOffset={8}
         aria-labelledby={titleId}
         onCloseAutoFocus={handleCloseAutoFocus}
-        className="max-h-[calc(100vh-5rem)] w-80 gap-0 overflow-y-auto rounded-xl p-0"
+        className="max-h-[var(--radix-popover-content-available-height)] w-80 max-w-[calc(100vw-2rem)] gap-0 overflow-y-auto rounded-xl p-0"
       >
         <AccountManagement
           accountingEntities={accountingEntities}

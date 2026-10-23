@@ -25,6 +25,7 @@ export interface CategorySummaryProps {
 }
 
 export interface CategoryChartProps {
+  type: 'revenue' | 'expense';
   title: string;
   description: string;
   section: IRevenueExpenseSectionDto;
@@ -46,7 +47,6 @@ export interface CategoryTableProps {
 
 export interface CategorySectionErrorProps {
   title: string;
-  onRetry: () => void;
 }
 
 export interface ICategoryTableRow extends IRevenueExpenseAccountDto {

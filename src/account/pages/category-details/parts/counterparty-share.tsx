@@ -1,14 +1,8 @@
 import { Alert, AlertDescription } from '@/shared/components/alert';
 import { Button } from '@/shared/components/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/card';
 import { Empty, EmptyHeader, EmptyTitle } from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
+import { PageSection } from '@/shared/components/page-section';
 import { Skeleton } from '@/shared/components/skeleton';
 import { cn } from '@/shared/lib/utils/cn';
 import { useTranslation } from 'react-i18next';
@@ -17,11 +11,11 @@ import type { CounterpartyShareProps } from '../types';
 
 export function CounterpartyShare({
   counterparties,
+  type,
   pagination,
   loading,
   error,
   onPageChange,
-  onRetry,
   selectedId,
   onSelect,
 }: Readonly<CounterpartyShareProps>) {
@@ -40,9 +34,7 @@ export function CounterpartyShare({
 
   const unassigned_label = t('category_details_unassigned_label');
   const self_label = t('category_details_self_label');
-  const loading_label = t('category_details_share_loading_label');
   const error_text = t('details_load_error_text');
-  const retry_label = t('details_retry_label');
   const previous_label = t('category_details_share_previous_label');
   const next_label = t('category_details_share_next_label');
 
@@ -54,34 +46,21 @@ export function CounterpartyShare({
   const unavailable_label = t('category_details_share_unavailable_label');
   const signed_description = t('category_details_signed_share_description');
 
+  if (loading) return <CounterpartyShareSkeleton />;
+
   return (
-    <Card className="min-w-0" role="region" aria-label={title}>
-      <CardHeader>
-        <CardTitle role="heading" aria-level={2}>
-          {title}
-        </CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {loading && (
-          <div
-            role="status"
-            aria-label={loading_label}
-            className="flex min-h-56 flex-col gap-5"
-          >
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        )}
+    <PageSection
+      title={title}
+      className="min-w-0"
+      role="region"
+      aria-label={title}
+    >
+      <p className="text-sm text-muted-foreground">{description}</p>
+
+      <div className="flex flex-col gap-3">
         {!loading && error && (
           <Alert variant="destructive">
-            <AlertDescription>
-              {error_text}
-              <Button variant="ghost" onClick={onRetry}>
-                {retry_label}
-              </Button>
-            </AlertDescription>
+            <AlertDescription>{error_text}</AlertDescription>
           </Alert>
         )}
         {ready && counterparties.length === 0 && (
@@ -126,11 +105,16 @@ export function CounterpartyShare({
                 </span>
                 {showBar && (
                   <span
-                    className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+                    className="h-1.5 w-full overflow-hidden rounded-full bg-chart-track"
                     aria-hidden="true"
                   >
                     <span
-                      className="block h-full rounded-full bg-chart-1"
+                      className={cn(
+                        'block h-full rounded-full',
+                        type === 'revenue'
+                          ? 'bg-financial-income'
+                          : 'bg-financial-expense'
+                      )}
                       style={{ width: `${share}%` }}
                     />
                   </span>
@@ -171,7 +155,49 @@ export function CounterpartyShare({
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PageSection>
+  );
+}
+
+export function CounterpartyShareSkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('category_details_share_loading_label');
+
+  const category_details_share_title = t('category_details_share_title');
+
+  const category_details_share_description = t(
+    'category_details_share_description'
+  );
+
+  return (
+    <PageSection
+      title={category_details_share_title}
+      className="min-w-0"
+      role="region"
+      aria-label={category_details_share_title}
+      aria-busy="true"
+    >
+      <p className="text-sm text-muted-foreground">
+        {category_details_share_description}
+      </p>
+      <div className="flex min-h-56 flex-col gap-3">
+        <output className="sr-only" aria-label={loading_label}>
+          {loading_label}
+        </output>
+        {[0, 1, 2].map((row) => (
+          <div
+            key={row}
+            className="flex min-h-11 min-w-0 flex-col gap-2 rounded-md p-2"
+          >
+            <div className="flex flex-wrap justify-between gap-x-3 gap-y-1">
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-5 w-24" />
+            </div>
+            <Skeleton className="h-1.5 w-full" />
+          </div>
+        ))}
+      </div>
+    </PageSection>
   );
 }

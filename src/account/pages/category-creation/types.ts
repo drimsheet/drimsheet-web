@@ -31,7 +31,6 @@ export interface CategoryCreationFormProps {
   onTypeChange: (value: string) => void;
   onParentChange: (id: string) => void;
   onPickerOpenChange: (open: boolean) => void;
-  onRetryAccounts: () => void;
   onCancel: () => void;
 }
 
@@ -45,7 +44,6 @@ export interface CategoryParentPickerProps {
   validationError?: string;
   onSelect: (id: string) => void;
   onOpenChange: (open: boolean) => void;
-  onRetry: () => void;
 }
 
 export interface AccountTreeNodeProps {

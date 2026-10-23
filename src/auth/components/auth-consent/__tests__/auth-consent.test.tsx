@@ -16,10 +16,10 @@ describe('AuthConsent', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: /Terms of Service/i })
-    ).toBeInTheDocument();
+    ).toHaveAttribute('href', '/terms-of-service');
     expect(
       screen.getByRole('link', { name: /Privacy Policy/i })
-    ).toBeInTheDocument();
+    ).toHaveAttribute('href', '/privacy-policy');
   });
 
   it('renders correctly with custom action text', () => {

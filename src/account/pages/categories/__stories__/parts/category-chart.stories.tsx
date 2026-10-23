@@ -1,4 +1,7 @@
-import { CategoryChart } from '@/account/pages/categories/parts/category-chart';
+import {
+  CategoryChart,
+  CategoryChartSkeleton,
+} from '@/account/pages/categories/parts/category-chart';
 import type {
   IRevenueExpenseAccountDto,
   IRevenueExpenseSummaryDto,
@@ -68,6 +71,7 @@ const meta = {
   component: CategoryChart,
   tags: ['autodocs'],
   args: {
+    type: 'revenue',
     title: 'Revenue by category',
     description: 'Net revenue and share of total revenue for this period',
     section: categorySummary.revenue,
@@ -108,4 +112,8 @@ export const SignedAmounts: Story = {
       ],
     },
   },
+};
+
+export const Skeleton: Story = {
+  render: ({ title }) => <CategoryChartSkeleton title={title} />,
 };

@@ -342,8 +342,12 @@ export default exampleHelpers;
 });
 
 describe('checkStructure component skeletons', () => {
-  it('accepts owner-local skeleton names and semantic variants', () => {
-    const root = createFixture({ helperTest: false });
+  it('accepts owner-local skeleton and support filenames', () => {
+    const root = createFixture({
+      helperTest: false,
+      indexSource:
+        "export { Example } from './example'; export { ExampleSkeleton } from './skeleton';",
+    });
     const componentPath = path.join(
       root,
       'src',
@@ -353,10 +357,13 @@ describe('checkStructure component skeletons', () => {
     );
     fs.mkdirSync(path.join(componentPath, '__tests__'), { recursive: true });
     fs.mkdirSync(path.join(componentPath, '__stories__'), { recursive: true });
-    fs.writeFileSync(path.join(componentPath, 'skeleton.tsx'), 'export {};\n');
     fs.writeFileSync(
-      path.join(componentPath, 'table-skeleton.tsx'),
-      'export {};\n'
+      path.join(componentPath, 'example.tsx'),
+      'export function Example() { return <section />; }'
+    );
+    fs.writeFileSync(
+      path.join(componentPath, 'skeleton.tsx'),
+      'export function ExampleSkeleton() { return <section />; }'
     );
     fs.writeFileSync(
       path.join(componentPath, '__tests__', 'skeleton.test.tsx'),

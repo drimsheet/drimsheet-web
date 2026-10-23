@@ -1,3 +1,4 @@
+import { SubAccountsSkeleton } from '@/account/pages/account-details/parts/sub-accounts';
 import type { ILedgerAccountDto, TEntityId } from '@/shared/lib/api/Api';
 
 const account: ILedgerAccountDto = {
@@ -51,3 +52,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const Empty: Story = { args: { accounts: [] } };
+
+export const Skeleton: Story = { render: () => <SubAccountsSkeleton /> };

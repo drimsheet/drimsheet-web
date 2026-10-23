@@ -33,7 +33,7 @@ export function TransactionDetails({
   if (details.kind === 'transfer') {
     summary = {
       icon: (
-        <ItemMedia className="size-10 rounded-full bg-info/10">
+        <ItemMedia className="size-10 rounded-full bg-info-surface">
           <ArrowLeftRight className="size-4 text-info" />
         </ItemMedia>
       ),

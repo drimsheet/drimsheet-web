@@ -118,11 +118,11 @@ async function chooseParent(page: Page, name: string) {
 
 test('creates an expense under a posting parent, preserving names after failure and preventing duplicate submissions', async ({
   page,
-}, testInfo) => {
+}) => {
   await setup(page);
   await page.getByRole('radio', { name: 'Expenses', exact: true }).click();
   await chooseParent(page, 'Utilities');
-  await page.getByLabel('Category name', { exact: false }).fill('Internet');
+  await page.getByLabel(/^Name\s*Required$/).fill('Internet');
   await page
     .getByRole('button', { name: 'Create category', exact: true })
     .click();
@@ -137,11 +137,6 @@ test('creates an expense under a posting parent, preserving names after failure 
   await expect(preview).toContainText('General utilities');
   await expect(preview).toContainText('Internet');
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({
-    path: testInfo.outputPath('creation-desktop.png'),
-    fullPage: true,
-    animations: 'disabled',
-  });
   await page.setViewportSize({ width: 390, height: 844 });
   expect(
     await page.evaluate(
@@ -149,11 +144,6 @@ test('creates an expense under a posting parent, preserving names after failure 
     )
   ).toBe(true);
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({
-    path: testInfo.outputPath('creation-mobile.png'),
-    fullPage: true,
-    animations: 'disabled',
-  });
   await page.getByRole('button', { name: 'Change parent' }).click();
   await expect(
     page.getByRole('radio', { name: 'Utilities', exact: true })
@@ -173,11 +163,6 @@ test('creates an expense under a posting parent, preserving names after failure 
     .click();
   await expect(sheet.getByRole('alert')).toHaveCount(0);
   await sheet.getByRole('radio', { name: 'Utilities', exact: true }).click();
-  await page.screenshot({
-    path: testInfo.outputPath('parent-sheet-mobile.png'),
-    fullPage: false,
-    animations: 'disabled',
-  });
   await page.keyboard.press('Escape');
   await expect(
     page.getByRole('button', { name: 'Change parent' })
@@ -193,9 +178,7 @@ test('creates an expense under a posting parent, preserving names after failure 
   await expect(
     page.getByRole('alert').filter({ hasText: 'We couldn’t save' })
   ).toBeVisible();
-  await expect(page.getByLabel('Category name', { exact: false })).toHaveValue(
-    'Internet'
-  );
+  await expect(page.getByLabel(/^Name\s*Required$/)).toHaveValue('Internet');
   await expect(
     page.getByLabel('Name for cloned posting account', { exact: false })
   ).toHaveValue('General utilities');
@@ -249,7 +232,7 @@ test('switches class, clears the old parent, and creates income under a control 
   await page
     .getByLabel('Name for cloned posting account', { exact: false })
     .fill('General utilities');
-  await page.getByLabel('Category name', { exact: false }).fill('Consulting');
+  await page.getByLabel(/^Name\s*Required$/).fill('Consulting');
   await page.getByRole('radio', { name: 'Income', exact: true }).click();
   await expect(page.getByText('No parent selected')).toBeVisible();
   await expect(
@@ -288,7 +271,7 @@ test('switches class, clears the old parent, and creates income under a control 
   });
 });
 
-test('handles chart loading, retry, empty results, expansion and cancelled selection', async ({
+test('handles chart loading, refresh recovery, empty results, expansion and cancelled selection', async ({
   page,
 }) => {
   await setup(page);
@@ -316,7 +299,12 @@ test('handles chart loading, retry, empty results, expansion and cancelled selec
     'We couldn’t load the chart of accounts.'
   );
   await page.route(chartEndpoint, (route) => route.fulfill({ json: [] }));
-  await sheet.getByRole('button', { name: 'Try again' }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
+  await page.getByRole('radio', { name: 'Expenses', exact: true }).click();
+  await page.getByRole('button', { name: 'Select Parent' }).click();
   await expect(sheet.getByText('No parent accounts available')).toBeVisible();
   await sheet.getByRole('button', { name: 'Cancel', exact: true }).click();
   await page.route(chartEndpoint, (route) =>
@@ -339,53 +327,4 @@ test('handles chart loading, retry, empty results, expansion and cancelled selec
   await expect(page.getByText('No parent selected')).toBeVisible();
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(page).toHaveURL('/categories');
-});
-
-test('sends unsupported inherited behavior unchanged and keeps the form after API rejection', async ({
-  page,
-}) => {
-  await setup(page);
-
-  const sales = {
-    ...income,
-    behavior: 'sales',
-    name: 'Sales',
-    isControlAccount: false,
-  };
-
-  await page.route(chartEndpoint, (route) => route.fulfill({ json: [sales] }));
-  await page.getByRole('radio', { name: 'Income', exact: true }).click();
-  await chooseParent(page, 'Sales');
-  await page.getByLabel('Category name', { exact: false }).fill('Online sales');
-  await page
-    .getByLabel('Name for cloned posting account', { exact: false })
-    .fill('General sales');
-  let saved: unknown;
-  await page.route('**/api/v1/ledger/revenues', async (route) => {
-    saved = route.request().postDataJSON();
-    await route.fulfill({ status: 400, json: { message: 'invalid behavior' } });
-  });
-  await page
-    .getByRole('button', { name: 'Create category', exact: true })
-    .click();
-  await expect(
-    page.getByRole('alert').filter({ hasText: 'We couldn’t save' })
-  ).toBeVisible();
-  expect(saved).toEqual({
-    name: 'Online sales',
-    isControlAccount: false,
-    controlAccountId: sales.id,
-    behavior: 'sales',
-    promotionNames: {
-      newControlAccountName: 'Sales',
-      newPostingAccountName: 'General sales',
-    },
-  });
-  await expect(page.getByLabel('Category name', { exact: false })).toHaveValue(
-    'Online sales'
-  );
-  await expect(
-    page.getByLabel('Name for cloned posting account', { exact: false })
-  ).toHaveValue('General sales');
-  await expect(page).toHaveURL('/categories/new');
 });

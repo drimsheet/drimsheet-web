@@ -1,7 +1,8 @@
 import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entities';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
+import { PageTitle } from '@/shared/components/page-title';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import type { IUserPreferencesUpdateDto } from '@/shared/lib/api/Api';
 import { storageService } from '@/shared/lib/services/storage.service';
@@ -11,9 +12,18 @@ import { useProfile } from '@/user/hooks/use-profile';
 import { useUpdatePreferences } from '@/user/hooks/use-update-preferences';
 import { Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { ProfileDetails } from './parts/profile-details';
-import { ProfileEntities } from './parts/profile-entities';
-import { ProfilePreferences } from './parts/profile-preferences';
+import {
+  ProfileDetails,
+  ProfileDetailsSkeleton,
+} from './parts/profile-details';
+import {
+  ProfileEntities,
+  ProfileEntitiesSkeleton,
+} from './parts/profile-entities';
+import {
+  ProfilePreferences,
+  ProfilePreferencesSkeleton,
+} from './parts/profile-preferences';
 import { ProfileSectionState } from './parts/profile-section-state';
 
 export function ProfilePage() {
@@ -61,19 +71,16 @@ export function ProfilePage() {
 
   return (
     <>
-      <AppHeader breadcrumbs={[{ label: profile_title }]} />
       <AppBody>
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-1 pb-6 sm:px-4">
+        <div className="mx-auto flex w-full max-w-6xl flex-col px-1 sm:px-4">
           <div className="flex flex-col gap-2">
-            <h1 className="m-0 text-3xl font-semibold tracking-tight">
-              {profile_title}
-            </h1>
+            <PageTitle>{profile_title}</PageTitle>
             <p className="text-sm text-muted-foreground">
               {profile_description}
             </p>
           </div>
-          <div className="grid items-stretch gap-6 lg:grid-cols-2">
-            {profile ? (
+          <div className="grid items-stretch gap-x-6 lg:grid-cols-2">
+            {profile && (
               <ProfileDetails
                 profile={profile}
                 editAction={
@@ -92,14 +99,12 @@ export function ProfilePage() {
                   />
                 }
               />
-            ) : (
-              <ProfileSectionState
-                isLoading={profileQuery.isPending}
-                label={details_title}
-                onRetry={() => void profileQuery.refetch()}
-              />
             )}
-            {preferences ? (
+            {!profile && profileQuery.isPending && <ProfileDetailsSkeleton />}
+            {!profile && !profileQuery.isPending && (
+              <ProfileSectionState label={details_title} />
+            )}
+            {preferences && (
               <ProfilePreferences
                 preferences={preferences.appPreferences}
                 onChange={handlePreferenceChange}
@@ -107,26 +112,24 @@ export function ProfilePage() {
                 isSaved={updatePreferences.isSuccess}
                 hasError={updatePreferences.isError}
               />
-            ) : (
-              <ProfileSectionState
-                isLoading={preferencesQuery.isPending}
-                label={preferences_title}
-                onRetry={() => void preferencesQuery.refetch()}
-              />
+            )}
+            {!preferences && preferencesQuery.isPending && (
+              <ProfilePreferencesSkeleton />
+            )}
+            {!preferences && !preferencesQuery.isPending && (
+              <ProfileSectionState label={preferences_title} />
             )}
           </div>
-          {entities ? (
+          {entities && (
             <ProfileEntities
               entities={entities}
               activeEntityId={activeEntity?.id}
               userId={profile?.id ?? ''}
             />
-          ) : (
-            <ProfileSectionState
-              isLoading={entitiesQuery.isPending}
-              label={entities_title}
-              onRetry={() => void entitiesQuery.refetch()}
-            />
+          )}
+          {!entities && entitiesQuery.isPending && <ProfileEntitiesSkeleton />}
+          {!entities && !entitiesQuery.isPending && (
+            <ProfileSectionState label={entities_title} />
           )}
         </div>
       </AppBody>

@@ -1,5 +1,8 @@
 import { CategoryActions } from '@/account/pages/category-details/parts/category-actions';
-import { CategorySummary } from '@/account/pages/category-details/parts/category-summary';
+import {
+  CategorySummary,
+  CategorySummarySkeleton,
+} from '@/account/pages/category-details/parts/category-summary';
 import type { ILedgerAccountDto, TEntityId } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -70,3 +73,5 @@ export const Archived: TStory = {
     ),
   },
 };
+
+export const Skeleton: TStory = { render: () => <CategorySummarySkeleton /> };

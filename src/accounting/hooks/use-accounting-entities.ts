@@ -7,7 +7,7 @@ export function useAccountingEntities(options: IReactQueryOptions = {}) {
     queryKey: ['accountingService', 'getAccountingEntities'],
     queryFn: () => accountingService.getAccountingEntities(),
     enabled: !options.disabled,
-    // Initial failures belong to the app boundary; refresh failures remain retryable.
+    // Initial failures belong to the app boundary; refresh failures remain visible locally.
     throwOnError:
       options.throwOnError ??
       ((_error, query) => query.state.data === undefined),

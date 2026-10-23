@@ -1,7 +1,8 @@
 import { RequestPasswordResetForm } from '@/auth/components/request-password-reset-form';
-import { RequestPasswordResetSuccessContainer } from '@/auth/components/reset-password-request-success';
+import { RequestPasswordResetSuccess } from '@/auth/components/reset-password-request-success';
 import { useRequestPasswordReset } from '@/auth/hooks/use-request-password-reset';
-import logoImg from '@/shared/assets/logo.svg';
+import { BrandLogo } from '@/shared/components/brand-logo';
+import { PageTitle } from '@/shared/components/page-title';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -41,22 +42,6 @@ export function RequestPasswordResetPage() {
     }
   };
 
-  const handleResend = async () => {
-    if (!submittedEmail || inFlight) return;
-
-    setInFlight(true);
-    try {
-      await requestPasswordReset(submittedEmail);
-      toast.success(password_reset_link_sent_text);
-    } catch (error) {
-      handleApiError(error, {
-        showToast: true,
-      });
-    } finally {
-      setInFlight(false);
-    }
-  };
-
   const isSuccess = Boolean(submittedEmail);
 
   return (
@@ -64,23 +49,22 @@ export function RequestPasswordResetPage() {
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div className="flex flex-col items-center gap-2 text-center">
           <Link to="/" className="flex flex-col items-center gap-2 font-medium">
-            <div className="mb-1 flex size-8 items-center justify-center rounded-md">
-              <img src={logoImg} alt="" className="mb-6 min-w-12 rounded-sm" />
-            </div>
+            <BrandLogo alt="" className="mb-2 w-48" />
             <span className="sr-only">{drimsheet_limited}</span>
           </Link>
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-center tracking-tight">
+          <PageTitle className="text-center">
             {isSuccess ? email_sent_text : reset_password_title}
-          </h1>
+          </PageTitle>
           {isSuccess ? (
-            <div role="status" aria-live="polite" className="mt-2">
-              <p className="text-sm text-muted-foreground">
-                {password_reset_link_sent_text}
-              </p>
-            </div>
+            <output
+              aria-live="polite"
+              className="mt-2 block text-sm text-muted-foreground"
+            >
+              {password_reset_link_sent_text}
+            </output>
           ) : (
             <p className="mt-2 text-sm text-muted-foreground">
               {reset_password_description}
@@ -90,10 +74,7 @@ export function RequestPasswordResetPage() {
 
         <div>
           {isSuccess ? (
-            <RequestPasswordResetSuccessContainer
-              onRetry={handleResend}
-              loading={inFlight}
-            />
+            <RequestPasswordResetSuccess />
           ) : (
             <RequestPasswordResetForm
               onSubmit={(values) => handleRequestReset(values.email)}

@@ -1,4 +1,5 @@
 {
+  "edit_transaction_title": "Edit transaction",
   "tabs_aria_label": "Transaction type",
   "inflow_tab": "Inflow",
   "outflow_tab": "Outflow",

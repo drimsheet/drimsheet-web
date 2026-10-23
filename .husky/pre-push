@@ -1,3 +1,4 @@
+yarn lint
 yarn test --run
 yarn check-stories
 yarn sync:errors

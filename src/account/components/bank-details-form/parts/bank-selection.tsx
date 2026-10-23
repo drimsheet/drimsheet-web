@@ -10,6 +10,7 @@ import {
 import { CountryComboBox } from '@/shared/components/country-combobox/country-combobox';
 import { Field, FieldError } from '@/shared/components/field';
 import { Label } from '@/shared/components/label';
+import { Skeleton } from '@/shared/components/skeleton';
 import type { IBankDirectoryDto } from '@/shared/lib/api/Api';
 import { Building2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -78,11 +79,12 @@ export function BankSelection({
       getBankCode(b) === bankName
   );
 
+  if (isBanksLoading && bankLocation) return <BankSelectionSkeleton />;
+
   const bank_location_label = t('bank_location_label');
   const bank_name_label = t('bank_name_label');
   const select_bank_name_placeholder = t('select_bank_name_placeholder');
   const no_banks_found = t('no_banks_found');
-  const loading_banks = t('loading_banks');
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-[2fr_3fr]">
@@ -102,7 +104,7 @@ export function BankSelection({
         <Combobox
           items={filteredBanks}
           autoHighlight
-          disabled={disabled || !bankLocation || isBanksLoading}
+          disabled={disabled || !bankLocation}
           value={
             selectedBank ??
             (bankName
@@ -126,9 +128,7 @@ export function BankSelection({
           <ComboboxInput
             id="bankName"
             aria-label={bank_name_label}
-            placeholder={
-              isBanksLoading ? loading_banks : select_bank_name_placeholder
-            }
+            placeholder={select_bank_name_placeholder}
           />
           <ComboboxContent className="w-full">
             <ComboboxEmpty>{no_banks_found}</ComboboxEmpty>
@@ -147,6 +147,28 @@ export function BankSelection({
         </Combobox>
         <FieldError errors={bankNameError} />
       </Field>
+    </div>
+  );
+}
+
+export function BankSelectionSkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('loading_banks');
+
+  return (
+    <div
+      aria-busy="true"
+      className="grid grid-cols-1 gap-5 sm:grid-cols-[2fr_3fr]"
+    >
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
+      {[0, 1].map((field) => (
+        <Field key={field} aria-hidden="true">
+          <Skeleton className="h-4 w-full max-w-24" />
+          <Skeleton className="h-9 w-full" />
+        </Field>
+      ))}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { CounterpartyShare } from './counterparty-share';
 
 export function CounterpartyShareContainer({
   accountId,
+  type,
   selectedId,
   onSelect,
 }: Readonly<CounterpartyShareContainerProps>) {
@@ -29,12 +30,12 @@ export function CounterpartyShareContainer({
 
   return (
     <CounterpartyShare
+      type={type}
       counterparties={participation.data?.data ?? []}
       pagination={participation.data?.meta}
       loading={participation.isPending}
       error={participation.isError}
       onPageChange={setPage}
-      onRetry={() => void participation.refetch()}
       selectedId={selectedId}
       onSelect={onSelect}
     />

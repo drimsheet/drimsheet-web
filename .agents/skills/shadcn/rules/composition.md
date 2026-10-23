@@ -9,7 +9,7 @@
 - Choosing between overlay components
 - Dialog, Sheet, and Drawer always need a Title
 - Card structure
-- Button has no isPending or isLoading prop
+- Use the repository Button loading prop
 - TabsTrigger must be inside TabsList
 - Avatar always needs AvatarFallback
 - Use Separator instead of raw hr or border divs
@@ -152,14 +152,16 @@ Use full composition — don't dump everything into `CardContent`:
 
 ---
 
-## Button has no isPending or isLoading prop
+## Use the repository Button loading prop
 
-Compose with `Spinner` + `data-icon` + `disabled`:
+The repository's shared `Button` supports `loading`. Use that prop with a
+stable translated action label; it supplies the spinner and disables the
+button. Do not manually compose `Spinner`, swap to loading text, or rely only
+on `disabled`. This local API takes precedence over upstream button examples.
 
 ```tsx
-<Button disabled>
-  <Spinner data-icon="inline-start" />
-  Saving...
+<Button loading={isSaving} disabled={!canSave}>
+  {save_label}
 </Button>
 ```
 
@@ -195,6 +197,11 @@ Always include `AvatarFallback` for when the image fails to load:
 ---
 
 ## Use existing components instead of custom markup
+
+Use the `Skeleton` primitive below only inside a skeleton that represents a
+specific component. Follow the
+[repository ownership and export rules](../../../rules/file-responsibility-rules.md)
+for component barrels and inline `parts/` skeletons.
 
 | Instead of                                         | Use                                  |
 | -------------------------------------------------- | ------------------------------------ |

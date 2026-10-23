@@ -194,11 +194,47 @@ async function open(page: Page) {
   return dialog;
 }
 
-test('updates an unused counterparty, changes its type, and refreshes detail/list caches', async ({
+test('preserves a failed draft edit, blocks duplicate saves, and refreshes detail/list caches', async ({
   page,
 }) => {
-  const state = await setup(page);
+  const state = await setup(page, { party: { ...original, status: 'draft' } });
   const dialog = await open(page);
+  let release!: () => void;
+
+  const waiting = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  let attempts = 0;
+  await page.route(endpoint, async (route) => {
+    if (route.request().method() !== 'PATCH') {
+      await route.fallback();
+
+      return;
+    }
+
+    attempts++;
+    if (attempts > 2) {
+      await route.fallback();
+
+      return;
+    }
+
+    await waiting;
+    await route.fulfill({
+      status: attempts === 1 ? 500 : 400,
+      json:
+        attempts === 1
+          ? { errorKey: 'untranslated_unknown_failure' }
+          : {
+              errorKey: 'counterparty_error_update_invalid',
+              validationErrors: [
+                { field: 'name', message: 'raw internal error' },
+              ],
+            },
+    });
+  });
+
   await page.setViewportSize({ width: 375, height: 812 });
   await expect(dialog).toBeInViewport();
   expect(
@@ -217,6 +253,38 @@ test('updates an unused counterparty, changes its type, and refreshes detail/lis
     .fill('Updated counterparty');
   await dialog.getByRole('combobox', { name: 'Type' }).click();
   await page.getByRole('option', { name: 'Individual', exact: true }).click();
+  await test.step('Failed saves settle, preserve edits, and suppress raw server text', async () => {
+    await dialog.getByRole('button', { name: 'Save changes' }).click();
+    await expect(
+      dialog.getByRole('button', { name: 'Save changes' })
+    ).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Enter');
+    expect(attempts).toBe(1);
+    release();
+    await expect(
+      page.getByText(
+        'Unable to update this counterparty. Reload the page and try again.',
+        { exact: true }
+      )
+    ).toBeVisible();
+    await expect(
+      dialog.getByRole('button', { name: 'Save changes' })
+    ).toBeEnabled();
+    await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
+      'Updated counterparty'
+    );
+    await dialog.getByRole('button', { name: 'Save changes' }).click();
+    await expect(
+      page.getByText('Invalid counterparty update.', { exact: true })
+    ).toBeVisible();
+    await expect(
+      dialog.getByRole('button', { name: 'Save changes' })
+    ).toBeEnabled();
+    await expect(dialog.getByRole('alert')).toHaveCount(0);
+    await expect(page.getByText('raw internal error')).toHaveCount(0);
+  });
   await dialog.getByRole('button', { name: 'Save changes' }).click();
   await expect(dialog).not.toBeVisible();
   expect(state.patches).toEqual([
@@ -227,54 +295,85 @@ test('updates an unused counterparty, changes its type, and refreshes detail/lis
     page.getByRole('heading', { name: 'Updated counterparty', exact: true })
   ).toBeVisible();
   await expect(page).toHaveURL(`${url}?keep=preserved`);
+  await test.step('Editing preserves Draft status and archived records remain read-only', async () => {
+    expect(attempts).toBe(3);
+    expect(state.patches[0]).not.toHaveProperty('status');
+    await expect(page.getByText('Draft', { exact: true })).toBeVisible();
+    state.setParty({ ...state.getParty(), status: 'archived' });
+    await page.reload();
+    await expect(
+      page.getByRole('button', { name: 'Edit', exact: true })
+    ).toBeDisabled();
+  });
   await page.getByRole('link', { name: 'All counterparties' }).click();
   await expect(
     page.getByRole('link', { name: 'Updated counterparty', exact: true })
   ).toBeVisible();
 });
 
-for (const status of ['posted', 'archived'] as const)
-  test(`locks type for ${status}-only usage even with no visible recent transactions`, async ({
-    page,
-  }) => {
-    const state = await setup(page, { [status]: 1 });
-    await expect(
-      page.getByRole('heading', { name: 'No transactions yet' })
-    ).toBeVisible();
-    await expect(
-      page.getByPlaceholder('Search transactions...')
-    ).not.toBeVisible();
-    const dialog = await open(page);
-    await expect(dialog.getByRole('combobox', { name: 'Type' })).toBeDisabled();
-    await expect(dialog.getByText(restriction)).toBeVisible();
-    await dialog
-      .getByRole('textbox', { name: 'Name', exact: true })
-      .fill('New name');
-    await dialog.getByRole('button', { name: 'Save changes' }).click();
-    await expect(dialog).not.toBeVisible();
-    expect(state.patches).toEqual([{ name: 'New name' }]);
-    expect(state.usageRequests.map((query) => query.get('status'))).toEqual(
-      expect.arrayContaining(['posted', 'archived'])
-    );
-    for (const query of state.usageRequests) {
-      expect(query.get('counterpartyId')).toBe(id);
-      expect(query.has('search')).toBe(false);
-      expect(query.get('limit')).toBe('1');
-    }
-  });
+test('locks type for archived-only usage even with no visible recent transactions', async ({
+  page,
+}) => {
+  const state = await setup(page, { archived: 1 });
+  await expect(
+    page.getByRole('heading', { name: 'No transactions yet' })
+  ).toBeVisible();
+  await expect(
+    page.getByPlaceholder('Search transactions...')
+  ).not.toBeVisible();
+  const dialog = await open(page);
+  await expect(dialog.getByRole('combobox', { name: 'Type' })).toBeDisabled();
+  await expect(dialog.getByText(restriction)).toBeVisible();
+  await dialog
+    .getByRole('textbox', { name: 'Name', exact: true })
+    .fill('New name');
+  await dialog.getByRole('button', { name: 'Save changes' }).click();
+  await expect(dialog).not.toBeVisible();
+  expect(state.patches).toEqual([{ name: 'New name' }]);
+  expect(state.usageRequests.map((query) => query.get('status'))).toEqual(
+    expect.arrayContaining(['posted', 'archived'])
+  );
+  for (const query of state.usageRequests) {
+    expect(query.get('counterpartyId')).toBe(id);
+    expect(query.has('search')).toBe(false);
+    expect(query.get('limit')).toBe('1');
+  }
+});
 
 for (const role of ['vendor', 'contractor', 'employer'] as const)
   test(`loads and updates the ${role} form from server metadata`, async ({
     page,
   }) => {
     const meta =
-      role === 'employer'
-        ? { employer: { displayName: 'Employer display', address } }
-        : { [role]: { address } };
+      role === 'vendor'
+        ? {
+            vendor: { address },
+            contractor: { address },
+            employer: { address, displayName: 'Employer' },
+          }
+        : {
+            [role]: {
+              address,
+              ...(role === 'employer' && { displayName: 'Employer display' }),
+            },
+          };
 
     const state = await setup(page, {
-      party: { ...original, roles: [role], meta },
+      party: {
+        ...original,
+        roles:
+          role === 'vendor' ? ['vendor', 'contractor', 'employer'] : [role],
+        meta,
+      },
     });
+
+    let countryFailure = role === 'vendor';
+    if (role === 'vendor')
+      await page.route('**/api/v1/accounting/jurisdictions', (route) =>
+        countryFailure
+          ? route.fulfill({ status: 500, json: {} })
+          : route.fallback()
+      );
 
     let release!: () => void;
 
@@ -294,6 +393,15 @@ for (const role of ['vendor', 'contractor', 'employer'] as const)
     ).toBeVisible();
     await expect(dialog.getByRole('textbox')).toHaveCount(0);
     release();
+    if (role === 'vendor')
+      await test.step('Vendor prerequisites recover only after refresh', async () => {
+        await expect(
+          page.getByRole('heading', { name: 'Something went wrong' })
+        ).toBeVisible();
+        countryFailure = false;
+        await page.reload();
+      });
+
     await expect(dialog.getByLabel('Address', { exact: true })).toHaveValue(
       address.line1
     );
@@ -314,134 +422,11 @@ for (const role of ['vendor', 'contractor', 'employer'] as const)
       city: 'Abuja',
     });
     expect(state.patches[0]).not.toHaveProperty('status');
-  });
-
-test('uses the recorded role container and preserves the other roles and postal codes', async ({
-  page,
-}) => {
-  const party: ICounterpartyDto = {
-    ...original,
-    roles: ['vendor', 'contractor', 'employer'],
-    meta: {
-      vendor: { address },
-      contractor: { address },
-      employer: { address, displayName: 'Employer' },
-    },
-  };
-
-  const state = await setup(page, { party });
-  let release!: () => void;
-
-  const waiting = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-
-  await page.route(endpoint, async (route) => {
-    if (route.request().method() === 'GET') await waiting;
-
-    await route.fallback();
-  });
-  await page.getByRole('button', { name: 'Edit', exact: true }).click();
-  const dialog = page.getByRole('dialog', { name: 'Edit counterparty' });
-  await expect(
-    dialog.getByRole('status', { name: 'Loading vendor form' })
-  ).toBeVisible();
-  release();
-  await dialog.getByLabel('City', { exact: true }).fill('Abuja');
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog).not.toBeVisible();
-  expect(state.patches[0]).toEqual({
-    meta: {
-      vendor: { address: { ...address, city: 'Abuja' } },
-      employer: party.meta.employer,
-      contractor: party.meta.contractor,
-    },
-  });
-});
-
-test('uses the dialog-selected vendor skeleton and allows a page reload after country loading fails', async ({
-  page,
-}) => {
-  await setup(page, {
-    party: { ...original, roles: ['vendor'], meta: { vendor: { address } } },
-  });
-  let release!: () => void;
-  let requested!: () => void;
-
-  const waiting = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-
-  const requestStarted = new Promise<void>((resolve) => {
-    requested = resolve;
-  });
-
-  let fail = true;
-  await page.route('**/api/v1/accounting/jurisdictions', async (route) => {
-    requested();
-    await waiting;
-    if (fail) {
-      await route.fulfill({ status: 500, json: {} });
-
-      return;
+    if (role === 'vendor') {
+      expect(state.patches[0].meta?.contractor).toEqual(meta.contractor);
+      expect(state.patches[0].meta?.employer).toEqual(meta.employer);
     }
-
-    await route.fallback();
   });
-  await page.getByRole('button', { name: 'Edit', exact: true }).click();
-  const dialog = page.getByRole('dialog', { name: 'Edit counterparty' });
-  await requestStarted;
-  await expect(
-    dialog.getByRole('status', { name: 'Loading vendor form' })
-  ).toBeVisible();
-  release();
-  await expect(
-    page.getByRole('heading', { name: 'Something went wrong' })
-  ).toBeVisible();
-  fail = false;
-  await page.reload();
-  await expect(dialog.getByLabel('Country', { exact: true })).toHaveValue(
-    'Nigeria'
-  );
-  await expect(
-    dialog.getByRole('button', { name: 'Save changes' })
-  ).toBeEnabled();
-});
-
-test('clears an optional vendor address and retains an initially null address on name-only edits', async ({
-  page,
-}) => {
-  const state = await setup(page, {
-    party: { ...original, roles: ['vendor'], meta: { vendor: { address } } },
-  });
-
-  const dialog = await open(page);
-  for (const label of [
-    'Address',
-    'Address line 2',
-    'City',
-    'State',
-    'Postal code',
-  ])
-    await dialog.getByLabel(label, { exact: true }).fill('');
-  await dialog.getByRole('button', { name: 'Clear selection' }).click();
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog).not.toBeVisible();
-  expect(state.patches[0]).toEqual({
-    meta: { vendor: { address: null } },
-  });
-  const reopened = await open(page);
-  await expect(reopened.getByLabel('Address', { exact: true })).toHaveValue('');
-  await reopened
-    .getByLabel('Legal name', { exact: true })
-    .fill('Vendor without address');
-  await reopened.getByRole('button', { name: 'Save changes' }).click();
-  await expect(reopened).not.toBeVisible();
-  expect(state.patches[1]).toEqual({
-    name: 'Vendor without address',
-  });
-  expect(state.transactionWrites).toEqual([]);
-});
 
 test('reports a raced type-use conflict without rewriting or retrying the failed update', async ({
   page,
@@ -537,109 +522,25 @@ test('shows the loading skeleton, preserves unrelated parameters, and supports r
   expect(state.patches).toEqual([]);
 });
 
-test('retains input on server failure and prevents duplicate submits or dismissal while saving', async ({
+// Surely this is bullshit
+test('normalizes stale hints and lets failed reads recover through a page reload', async ({
   page,
 }) => {
-  await setup(page);
-  const dialog = await open(page);
-  let release!: () => void;
-
-  const waiting = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-
-  let attempts = 0;
-  await page.route(endpoint, async (route) => {
-    if (route.request().method() !== 'PATCH') {
-      await route.fallback();
-
-      return;
-    }
-
-    attempts++;
-    await waiting;
-    await route.fulfill({
-      status: 500,
-      json: { errorKey: 'untranslated_unknown_failure' },
-    });
-  });
-  await dialog.getByLabel('Name', { exact: true }).fill('Retain me');
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog.getByRole('button', { name: 'Saving…' })).toBeDisabled();
-  await page.keyboard.press('Escape');
-  await expect(dialog).toBeVisible();
-  release();
-  await expect(
-    page.getByText(
-      'Unable to update this counterparty. Reload the page and try again.',
-      { exact: true }
-    )
-  ).toBeVisible();
-  await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
-    'Retain me'
-  );
-  expect(attempts).toBe(1);
-});
-
-test('reports failed validation without custom field recovery or exposing raw backend text', async ({
-  page,
-}) => {
-  await setup(page);
-  const dialog = await open(page);
-  await page.route(endpoint, async (route) => {
-    if (route.request().method() !== 'PATCH') {
-      await route.fallback();
-
-      return;
-    }
-
-    await route.fulfill({
-      status: 400,
-      json: {
-        errorKey: 'counterparty_error_update_invalid',
-        validationErrors: [{ field: 'name', message: 'raw internal error' }],
-      },
-    });
-  });
-  await dialog.getByLabel('Name', { exact: true }).fill('Changed');
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(
-    page.getByText('Invalid counterparty update.', { exact: true })
-  ).toBeVisible();
-  await expect(dialog.getByRole('alert')).toHaveCount(0);
-  await expect(page.getByText('raw internal error')).toHaveCount(0);
-});
-
-for (const query of [
-  'id=bad',
-  `id=${id}&type=vendor`,
-  'id=00000000-0000-4000-8000-000000000099',
-  'type=individual',
-])
-  test(`keeps query-only identity hints from opening a prop-driven dialog: ${query}`, async ({
-    page,
-  }) => {
-    const state = await setup(page);
-    await page.goto(`${url}?${query}`);
+  const state = await setup(page);
+  await test.step('Identity hints alone do not open editing', async () => {
+    await page.goto(`${url}?id=invalid&type=vendor`);
     await expect(
       page.getByRole('heading', { name: original.name, exact: true })
     ).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     expect(state.patches).toEqual([]);
   });
-
-test('normalizes stale hints and lets failed reads recover through a page reload', async ({
-  page,
-}) => {
-  await setup(page);
   let fail = true;
   await page.route(endpoint, (route) => {
     if (new URL(page.url()).searchParams.get('edit') !== 'true')
       return route.fallback();
 
-    return fail
-      ? route.fulfill({ status: 404, json: {} })
-      : route.fulfill({ json: original });
+    return fail ? route.fulfill({ status: 404, json: {} }) : route.fallback();
   });
   await page.getByRole('button', { name: 'Edit', exact: true }).click();
   const dialog = page.getByRole('dialog');
@@ -659,25 +560,13 @@ test('normalizes stale hints and lets failed reads recover through a page reload
     page.getByRole('dialog').getByLabel('Name', { exact: true })
   ).toHaveValue(original.name);
   await expect(page).toHaveURL(`${url}?edit=true&keep=preserved`);
-});
-
-test('opens a direct edit link using the route ID and fetched type even when the supplied type becomes stale', async ({
-  page,
-}) => {
-  const state = await setup(page);
-  await page.goto(`${url}?edit=true`);
-  const dialog = page.getByRole('dialog', { name: 'Edit counterparty' });
-  await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
-    original.name
-  );
   await dialog.getByRole('button', { name: 'Cancel' }).click();
-  await expect(page).toHaveURL(url);
   state.setParty({ ...original, type: 'individual' });
   const reopened = await open(page);
   await expect(reopened.getByRole('combobox', { name: 'Type' })).toHaveText(
     'Individual'
   );
-  await expect(page).toHaveURL(`${url}?edit=true`);
+  await expect(page).toHaveURL(`${url}?keep=preserved&edit=true`);
   await reopened
     .getByLabel('Name', { exact: true })
     .fill('Updated latest record');
@@ -685,21 +574,4 @@ test('opens a direct edit link using the route ID and fetched type even when the
   await expect(reopened).not.toBeVisible();
   expect(state.patches).toEqual([{ name: 'Updated latest record' }]);
   expect(state.transactionWrites).toEqual([]);
-});
-
-test('edits Draft details without activation and keeps archived counterparties read-only', async ({
-  page,
-}) => {
-  const state = await setup(page, { party: { ...original, status: 'draft' } });
-  const dialog = await open(page);
-  await dialog.getByLabel('Name', { exact: true }).fill('Draft edit');
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog).not.toBeVisible();
-  expect(state.patches[0]).not.toHaveProperty('status');
-  await expect(page.getByText('Draft', { exact: true })).toBeVisible();
-  state.setParty({ ...state.getParty(), status: 'archived' });
-  await page.reload();
-  await expect(
-    page.getByRole('button', { name: 'Edit', exact: true })
-  ).toBeDisabled();
 });

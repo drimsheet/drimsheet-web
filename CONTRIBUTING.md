@@ -4,15 +4,20 @@ This document provides guidelines for contributing to the web frontend project t
 
 ## Table of Contents
 
-- [Design Pattern](#design-pattern)
-  - [Domain-Driven Features Structure](#domain-driven-features-structure)
-- [Working with Money](#working-with-money)
-- [Git Workflow](#git-workflow)
-  - [Branching Strategy](#branching-strategy)
-  - [Feature Branches](#feature-branches)
-  - [Commit Messages & Pull Requests](#commit-messages--pull-requests)
-- [Testing](#testing)
-- [Reporting Bugs](#reporting-bugs)
+- [Contributing to Drimsheet Web](#contributing-to-drimsheet-web)
+  - [Table of Contents](#table-of-contents)
+  - [Design Pattern](#design-pattern)
+    - [Domain-Driven Features Structure](#domain-driven-features-structure)
+  - [Design Principles](#design-principles)
+  - [Working with Money](#working-with-money)
+  - [Git Workflow](#git-workflow)
+    - [Branching Strategy](#branching-strategy)
+    - [Feature Branches](#feature-branches)
+    - [Commit Messages \& Pull Requests](#commit-messages--pull-requests)
+  - [Testing](#testing)
+  - [Shadcn UI \& Component Normalization](#shadcn-ui--component-normalization)
+  - [Storybook Documentation](#storybook-documentation)
+  - [Reporting Bugs](#reporting-bugs)
 
 ## Design Pattern
 
@@ -101,7 +106,7 @@ We enforce a specific commit message format to generate clean changelogs and tra
 
 - **Format**:
   ```text
-  <type>(<domain>): <short description> <optional-id>
+  <type>(<domain | ticket-id> ): <short lower case description>
   ```
 - **Rules**:
   - Pull request titles should also have the commit message structure.

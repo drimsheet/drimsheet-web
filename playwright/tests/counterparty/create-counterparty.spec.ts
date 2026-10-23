@@ -90,43 +90,9 @@ async function signInAndNavigateToCounterparties(page: Page) {
 }
 
 test.describe('Counterparty Selection and Creation Flow', () => {
-  test('opens selection dialog, dismisses it, and can select and navigate to creation forms', async ({
+  test('resets cancelled creation, retains a failed submission, and creates a default counterparty', async ({
     page,
   }) => {
-    await signInAndNavigateToCounterparties(page);
-
-    const triggerButton = page.getByRole('button', {
-      name: /add counterparty/i,
-    });
-
-    await expect(triggerButton).toBeVisible();
-    await triggerButton.click();
-
-    const selectionDialog = page.getByRole('dialog').filter({
-      has: page.getByRole('heading', { name: /select counterparty role/i }),
-    });
-
-    await expect(selectionDialog).toBeVisible();
-
-    // Dismiss via Escape
-    await page.keyboard.press('Escape');
-    await expect(selectionDialog).not.toBeVisible();
-
-    // Reopen and check routing to default creation form
-    await triggerButton.click();
-    await expect(selectionDialog).toBeVisible();
-    await selectionDialog.getByRole('radio', { name: /default/i }).click();
-    await selectionDialog.getByRole('button', { name: /continue/i }).click();
-    await expect(selectionDialog).not.toBeVisible();
-
-    const creationDialog = page.getByRole('dialog').filter({
-      has: page.getByRole('heading', { name: /^create counterparty$/i }),
-    });
-
-    await expect(creationDialog).toBeVisible();
-  });
-
-  test('successfully creates a default counterparty', async ({ page }) => {
     await signInAndNavigateToCounterparties(page);
 
     await page.getByRole('button', { name: /add counterparty/i }).click();
@@ -135,6 +101,11 @@ test.describe('Counterparty Selection and Creation Flow', () => {
       has: page.getByRole('heading', { name: /select counterparty role/i }),
     });
 
+    await test.step('Dismiss and reopen the role selector', async () => {
+      await page.keyboard.press('Escape');
+      await expect(selectionDialog).not.toBeVisible();
+      await page.getByRole('button', { name: /add counterparty/i }).click();
+    });
     await selectionDialog.getByRole('radio', { name: /default/i }).click();
     await selectionDialog.getByRole('button', { name: /continue/i }).click();
 
@@ -144,6 +115,25 @@ test.describe('Counterparty Selection and Creation Flow', () => {
 
     await expect(creationDialog).toBeVisible();
 
+    await test.step('Cancelled drafts reset on reopening', async () => {
+      await creationDialog
+        .getByRole('textbox', { name: /name/i })
+        .fill('Draft Name');
+
+      // Dismiss via Escape
+      await page.keyboard.press('Escape');
+      await expect(creationDialog).not.toBeVisible();
+
+      // Reopen and verify it's clean
+      await page.getByRole('button', { name: /add counterparty/i }).click();
+      await selectionDialog.getByRole('radio', { name: /default/i }).click();
+      await selectionDialog.getByRole('button', { name: /continue/i }).click();
+
+      await expect(creationDialog).toBeVisible();
+      await expect(
+        creationDialog.getByRole('textbox', { name: /name/i })
+      ).toHaveValue('');
+    });
     // Fill standard counterparty form
     await creationDialog
       .getByRole('textbox', { name: /name/i })
@@ -152,6 +142,7 @@ test.describe('Counterparty Selection and Creation Flow', () => {
     await page.getByRole('option', { name: /individual/i }).click();
 
     // Intercept POST
+    let attempts = 0;
     let capturedBody: ICounterpartyCreateReq | null = null;
     await page.route(createCounterpartyEndpoint, async (route) => {
       if (route.request().method() !== 'POST') {
@@ -161,12 +152,30 @@ test.describe('Counterparty Selection and Creation Flow', () => {
       }
 
       capturedBody = JSON.parse(route.request().postData() ?? '{}');
+      if (++attempts === 1) {
+        await route.fulfill({ status: 500, json: {} });
+
+        return;
+      }
+
       await route.fulfill({
         status: 201,
         json: { id: 'new-counterparty-id' },
       });
     });
 
+    await test.step('A settled failure preserves the entered data', async () => {
+      await creationDialog.getByRole('button', { name: /create/i }).click();
+      await expect(
+        page.getByText('An error occurred', { exact: true })
+      ).toBeVisible();
+      await expect(
+        creationDialog.getByRole('button', { name: /create/i })
+      ).toBeEnabled();
+      await expect(
+        creationDialog.getByRole('textbox', { name: /name/i })
+      ).toHaveValue('John Default');
+    });
     await creationDialog.getByRole('button', { name: /create/i }).click();
 
     await expect(
@@ -178,6 +187,7 @@ test.describe('Counterparty Selection and Creation Flow', () => {
       type: 'individual',
       status: 'active',
     });
+    expect(attempts).toBe(2);
   });
 
   test('successfully creates a vendor counterparty with address and display name', async ({
@@ -403,81 +413,5 @@ test.describe('Counterparty Selection and Creation Flow', () => {
         },
       },
     });
-  });
-
-  test('retains input values on API creation failure', async ({ page }) => {
-    await signInAndNavigateToCounterparties(page);
-
-    await page.route(createCounterpartyEndpoint, async (route) => {
-      if (route.request().method() !== 'POST') {
-        await route.fallback();
-
-        return;
-      }
-
-      await route.fulfill({
-        status: 500,
-        json: { message: 'Failed to create counterparty' },
-      });
-    });
-
-    await page.getByRole('button', { name: /add counterparty/i }).click();
-
-    const selectionDialog = page.getByRole('dialog').filter({
-      has: page.getByRole('heading', { name: /select counterparty role/i }),
-    });
-
-    await selectionDialog.getByRole('radio', { name: /default/i }).click();
-    await selectionDialog.getByRole('button', { name: /continue/i }).click();
-
-    const creationDialog = page.getByRole('dialog').filter({
-      has: page.getByRole('heading', { name: /^create counterparty$/i }),
-    });
-
-    await creationDialog
-      .getByRole('textbox', { name: /name/i })
-      .fill('Failed Counterparty Name');
-    await creationDialog.getByRole('button', { name: /create/i }).click();
-
-    // Dialog remains open and value is retained
-    await expect(creationDialog).toBeVisible();
-    await expect(
-      creationDialog.getByRole('textbox', { name: /name/i })
-    ).toHaveValue('Failed Counterparty Name');
-  });
-
-  test('resets form state after dismissal and reopening', async ({ page }) => {
-    await signInAndNavigateToCounterparties(page);
-
-    await page.getByRole('button', { name: /add counterparty/i }).click();
-
-    const selectionDialog = page.getByRole('dialog').filter({
-      has: page.getByRole('heading', { name: /select counterparty role/i }),
-    });
-
-    await selectionDialog.getByRole('radio', { name: /default/i }).click();
-    await selectionDialog.getByRole('button', { name: /continue/i }).click();
-
-    const creationDialog = page.getByRole('dialog').filter({
-      has: page.getByRole('heading', { name: /^create counterparty$/i }),
-    });
-
-    await creationDialog
-      .getByRole('textbox', { name: /name/i })
-      .fill('Draft Name');
-
-    // Dismiss via Escape
-    await page.keyboard.press('Escape');
-    await expect(creationDialog).not.toBeVisible();
-
-    // Reopen and verify it's clean
-    await page.getByRole('button', { name: /add counterparty/i }).click();
-    await selectionDialog.getByRole('radio', { name: /default/i }).click();
-    await selectionDialog.getByRole('button', { name: /continue/i }).click();
-
-    await expect(creationDialog).toBeVisible();
-    await expect(
-      creationDialog.getByRole('textbox', { name: /name/i })
-    ).toHaveValue('');
   });
 });

@@ -1,4 +1,4 @@
-import { EPeriodUnit } from '@/shared/lib/api/Api';
+import { EReportingIntervalUnit } from '@/shared/lib/api/Api';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as yup from 'yup';
@@ -26,7 +26,10 @@ export function useReportsFormValidation({
         unit: yup
           .string()
           .required(t('reports_unit_required_error'))
-          .oneOf(Object.values(EPeriodUnit), t('reports_unit_required_error')),
+          .oneOf(
+            Object.values(EReportingIntervalUnit),
+            t('reports_unit_required_error')
+          ),
         periodNames: yup.object().test('period-names', function () {
           const values = this.parent as IReportsFormFields;
 

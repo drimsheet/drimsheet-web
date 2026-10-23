@@ -1,13 +1,21 @@
-import type { UPeriodUnit } from '@/shared/lib/api/Api';
+import type {
+  UAccountingIntervalUnit,
+  UReportingIntervalUnit,
+} from '@/shared/lib/api/Api';
+
+export type UIntervalUnit = UAccountingIntervalUnit | UReportingIntervalUnit;
 
 export interface INamedPeriod {
   name: string;
   startDate: string;
   endDate: string;
 }
-export interface IPeriodSettings {
+export interface IPeriodSettings<TUnit extends UIntervalUnit> {
   startDate: string;
   endDate: string;
-  unit: UPeriodUnit;
+  unit: TUnit;
 }
-export type TPeriodNameFactory = (unit: UPeriodUnit, index: number) => string;
+export type TPeriodNameFactory<TUnit extends UIntervalUnit> = (
+  unit: TUnit,
+  index: number
+) => string;

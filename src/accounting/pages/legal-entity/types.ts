@@ -1,25 +1,12 @@
-import type {
-  IAccountingContextDto,
-  IAccountingEntity,
-  IReportingContextDto,
-} from '@/shared/lib/api/Api';
-import type { ReactNode } from 'react';
+import type { IAccountingEntity } from '@/shared/lib/api/Api';
 
-export interface EntityDetailsProps {
-  entity: IAccountingEntity;
+export interface LegalEntityListProps {
+  entities: IAccountingEntity[];
+  currentEntityId?: string;
+  getEntityHref: (entity: IAccountingEntity) => string;
 }
-export interface AccountingContextDetailsProps {
-  context: IAccountingContextDto;
-}
-export interface ReportingContextDetailsProps {
-  context: IReportingContextDto;
-}
-export interface RecordFieldsProps {
-  fields: { label: string; value: ReactNode }[];
-  className?: string;
-}
-export interface SectionStateProps {
-  label: string;
-  state: 'loading' | 'error' | 'empty';
-  onRetry?: () => void;
+
+export interface LegalEntityActionsProps {
+  entityName: string;
+  isCurrent: boolean;
 }

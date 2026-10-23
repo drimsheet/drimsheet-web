@@ -50,7 +50,6 @@ export function CategoryDeleteConfirmation({
   };
 
   const delete_label = t('details_delete_label');
-  const deleting_label = t('deleting_label');
   const confirmation_title = t('category_delete_confirmation_title');
 
   const confirmation_description = t('delete_confirmation_description', {
@@ -72,7 +71,7 @@ export function CategoryDeleteConfirmation({
         size="sm"
         variant="destructive"
       >
-        {submitting ? deleting_label : delete_label}
+        {delete_label}
       </AlertDialogAction>
     </>
   );

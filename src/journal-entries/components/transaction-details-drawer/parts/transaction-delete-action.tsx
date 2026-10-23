@@ -65,20 +65,18 @@ export function TransactionDeleteAction({
       setOpen(false);
       setConfirmationText('');
     } catch {
-      // The caller presents the API error; keep the confirmation open for retry.
+      // The caller presents the API error; keep the confirmation open.
     } finally {
       setPendingAction(null);
     }
   };
 
   const delete_label = t('delete_entry_label');
-  const deleting_text = t('delete_entry_loading_text');
   const confirmation_title = t('delete_entry_confirmation_title');
   const confirmation_description = t('delete_entry_confirmation_description');
   const confirmation_input_label = t('delete_entry_confirmation_input_label');
   const cancel_text = t('archive_entry_cancel_text');
   const archive_instead_text = t('delete_entry_archive_instead_text');
-  const archiving_text = t('archive_entry_loading_text');
 
   const footer = (
     <>
@@ -93,7 +91,7 @@ export function TransactionDeleteAction({
           size="sm"
           variant="outline"
         >
-          {pendingAction === 'archive' ? archiving_text : archive_instead_text}
+          {archive_instead_text}
         </AlertDialogAction>
         <AlertDialogAction
           disabled={busy || !isDeleteConfirmed}
@@ -102,7 +100,7 @@ export function TransactionDeleteAction({
           size="sm"
           variant="destructive"
         >
-          {pendingAction === 'delete' ? deleting_text : delete_label}
+          {delete_label}
         </AlertDialogAction>
       </div>
     </>

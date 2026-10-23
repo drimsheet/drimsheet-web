@@ -60,13 +60,12 @@ export function CounterpartyArchiveConfirmation({
   const confirmation_title = t('archive_confirmation_title');
   const confirmation_description = t('archive_confirmation_description');
   const confirmation_action = t('archive_confirmation_action');
-  const archiving_label = t('archiving_label');
   const cancel_label = t('cancel_label');
 
   return (
     <ConfirmationDialog
       cancelText={cancel_label}
-      confirmationText={busy ? archiving_label : confirmation_action}
+      confirmationText={confirmation_action}
       loading={busy}
       media={<Archive aria-hidden="true" />}
       onConfirm={handleArchive}

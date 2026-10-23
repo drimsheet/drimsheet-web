@@ -8,10 +8,15 @@ import { JournalEntryNotFound } from '@/journal-entries/components/journal-entry
 import { OutflowFormContainer } from '@/journal-entries/components/outflow-form';
 import { useJournalEntry } from '@/journal-entries/hooks/use-journal-entry';
 import { journalEntryRouteMapper } from '@/journal-entries/lib/mappers/journal-entry-route.mapper';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
+import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 export function EditTransactionPage() {
+  const { t } = useTranslation('journal-entries');
+  const page_title = t('edit_transaction_title');
   const navigate = useNavigate();
   const { type, id } = useParams<{ type: string; id: string }>();
   const routeSourceType = journalEntryRouteMapper.toSourceType(type);
@@ -31,13 +36,15 @@ export function EditTransactionPage() {
   if (isPending) {
     return (
       <>
-        <AppHeader />
         <AppBody>
-          {type === 'transfer' ? (
-            <CashTransferFormSkeleton />
-          ) : (
-            <CashTransactionFormSkeleton />
-          )}
+          <PageTitle>{page_title}</PageTitle>
+          <PageSection>
+            {type === 'transfer' ? (
+              <CashTransferFormSkeleton />
+            ) : (
+              <CashTransactionFormSkeleton />
+            )}
+          </PageSection>
         </AppBody>
       </>
     );
@@ -46,9 +53,10 @@ export function EditTransactionPage() {
   if (isError) {
     return (
       <>
-        <AppHeader />
         <AppBody>
-          <JournalEntryNotFound onBack={handleBack} />
+          <PageSection>
+            <JournalEntryNotFound onBack={handleBack} />
+          </PageSection>
         </AppBody>
       </>
     );
@@ -73,17 +81,19 @@ export function EditTransactionPage() {
 
   return (
     <>
-      <AppHeader />
       <AppBody>
-        {canonicalType === 'inflow' && (
-          <InflowFormContainer journalEntry={journalEntry} />
-        )}
-        {canonicalType === 'outflow' && (
-          <OutflowFormContainer journalEntry={journalEntry} />
-        )}
-        {canonicalType === 'transfer' && (
-          <CashTransferFormContainer journalEntry={journalEntry} />
-        )}
+        <PageTitle>{page_title}</PageTitle>
+        <PageSection>
+          {canonicalType === 'inflow' && (
+            <InflowFormContainer journalEntry={journalEntry} />
+          )}
+          {canonicalType === 'outflow' && (
+            <OutflowFormContainer journalEntry={journalEntry} />
+          )}
+          {canonicalType === 'transfer' && (
+            <CashTransferFormContainer journalEntry={journalEntry} />
+          )}
+        </PageSection>
       </AppBody>
     </>
   );

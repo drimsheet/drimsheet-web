@@ -32,7 +32,6 @@ export function TransactionArchiveAction({
   };
 
   const archive_label = t('archive_entry_label');
-  const archiving_text = t('archive_entry_loading_text');
   const confirmation_title = t('archive_entry_confirmation_title');
   const confirmation_description = t('archive_entry_confirmation_description');
   const cancel_text = t('archive_entry_cancel_text');
@@ -40,7 +39,7 @@ export function TransactionArchiveAction({
   return (
     <ConfirmationDialog
       cancelText={cancel_text}
-      confirmationText={busy ? archiving_text : archive_label}
+      confirmationText={archive_label}
       loading={busy}
       media={<Archive aria-hidden="true" />}
       onConfirm={handleArchive}

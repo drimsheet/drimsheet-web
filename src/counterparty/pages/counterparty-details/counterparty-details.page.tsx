@@ -9,7 +9,7 @@ import { useCounterpartyDeletionEligibility } from '@/counterparty/hooks/use-cou
 import { useCounterpartyTransactions } from '@/counterparty/hooks/use-counterparty-transactions';
 import { getCounterpartyFormRole } from '@/counterparty/lib/utils/counterparty-form';
 import { TransactionsTable } from '@/journal-entries/components/transactions-table';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import {
@@ -97,7 +97,6 @@ export function CounterpartyDetailsPage() {
     setSortDirection(direction ?? EPaginationSortDirection.Asc);
   };
 
-  const counterparties_label = t('shared:counterparties');
   const all_counterparties_label = t('all_counterparties_label');
 
   if (!counterpartyId) return <Navigate replace to="/counterparties" />;
@@ -105,7 +104,6 @@ export function CounterpartyDetailsPage() {
   if (isPending)
     return (
       <>
-        <AppHeader breadcrumbs={[{ label: counterparties_label }]} />
         <AppBody>
           <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
             <Button
@@ -145,7 +143,6 @@ export function CounterpartyDetailsPage() {
 
   return (
     <>
-      <AppHeader breadcrumbs={[{ label: counterparties_label }]} />
       <AppBody>
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
           <Button

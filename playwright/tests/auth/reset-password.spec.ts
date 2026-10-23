@@ -1,4 +1,5 @@
 import { expect, test } from '@integration/fixtures/test';
+import { registerAuthenticatedAppRoutes } from '@integration/mocks/authenticated-app';
 
 const resetEndpoint = '**/api/v1/auth/reset-password';
 
@@ -14,26 +15,6 @@ function createResponseGate() {
 
   return { promise, resolve };
 }
-
-test('renders main landmark, level-one heading, exact brand link, and back-to-signin link', async ({
-  page,
-}) => {
-  await page.goto(`/auth/reset-password?token=${validToken}`);
-
-  const main = page.getByRole('main');
-  await expect(main).toBeVisible();
-
-  const h1 = page.getByRole('heading', { level: 1 });
-  await expect(h1).toHaveText('Reset your password');
-
-  const brandLink = page.getByRole('link', { name: 'Drimsheet' });
-  await expect(brandLink).toBeVisible();
-  await expect(brandLink).toHaveAttribute('href', '/');
-
-  const backLink = page.getByRole('link', { name: 'Back to sign in' });
-  await expect(backLink).toBeVisible();
-  await expect(backLink).toHaveAttribute('href', '/auth/signin');
-});
 
 test('handles missing token parameter gracefully', async ({ page }) => {
   await page.goto('/auth/reset-password');
@@ -52,61 +33,30 @@ test('handles missing token parameter gracefully', async ({ page }) => {
   await expect(requestLink).toHaveAttribute('href', '/auth/forgot-password');
 });
 
-test('associates validation errors with input via aria-invalid and aria-describedby', async ({
+test('retains reset inputs after rejection, then submits once and reaches the dashboard', async ({
   page,
 }) => {
-  await page.goto(`/auth/reset-password?token=${validToken}`);
-
-  const passwordInput = page.getByLabel('New Password');
-  const confirmPasswordInput = page.getByLabel('Confirm Password');
-  const submitButton = page.getByRole('button', { name: 'Reset password' });
-
-  await submitButton.click();
-
-  const passwordError = page.getByText('Password is required', {
-    exact: true,
-  });
-
-  await expect(passwordError).toBeVisible();
-  await expect(passwordInput).toHaveAttribute('aria-invalid', 'true');
-  const passwordErrorId = await passwordError.getAttribute('id');
-  expect(passwordErrorId).toBeTruthy();
-  await expect(passwordInput).toHaveAttribute(
-    'aria-describedby',
-    passwordErrorId!
-  );
-
-  const confirmError = page.getByText('Confirm Password is required', {
-    exact: true,
-  });
-
-  await expect(confirmError).toBeVisible();
-  await expect(confirmPasswordInput).toHaveAttribute('aria-invalid', 'true');
-  const confirmErrorId = await confirmError.getAttribute('id');
-  expect(confirmErrorId).toBeTruthy();
-  await expect(confirmPasswordInput).toHaveAttribute(
-    'aria-describedby',
-    confirmErrorId!
-  );
-
-  await passwordInput.fill('ValidPassword123!');
-  await confirmPasswordInput.fill('MismatchPassword456!');
-  await submitButton.click();
-
-  const mismatchError = page.getByText('Passwords must match');
-  await expect(mismatchError).toBeVisible();
-  await expect(confirmPasswordInput).toHaveAttribute('aria-invalid', 'true');
-});
-
-test('gates request, disables controls, and sends exactly one POST', async ({
-  page,
-}) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await registerAuthenticatedAppRoutes(page);
   const responseGate = createResponseGate();
   let requestCount = 0;
   let postData: unknown = null;
 
   await page.route(resetEndpoint, async (route) => {
     requestCount += 1;
+    if (requestCount === 1) {
+      await route.fulfill({
+        status: 400,
+        json: {
+          name: 'BadRequestError',
+          errorKey: 'auth_error_token_invalid_unauthorized',
+          validationErrors: [],
+        },
+      });
+
+      return;
+    }
+
     postData = route.request().postDataJSON();
     await responseGate.promise;
     await route.fulfill({
@@ -117,6 +67,17 @@ test('gates request, disables controls, and sends exactly one POST', async ({
 
   await page.goto(`/auth/reset-password?token=${validToken}`);
 
+  await expect(page.getByRole('main')).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Reset your password'
+  );
+  const brandLink = page.getByRole('link', { name: 'Drimsheet', exact: true });
+  await expect(brandLink).toBeVisible();
+  await expect(brandLink).toHaveAttribute('href', '/');
+  const backLink = page.getByRole('link', { name: 'Back to sign in' });
+  await expect(backLink).toBeVisible();
+  await expect(backLink).toHaveAttribute('href', '/auth/signin');
+
   const passwordInput = page.getByLabel('New Password');
   const confirmPasswordInput = page.getByLabel('Confirm Password');
   const submitButton = page.getByRole('button', { name: 'Reset password' });
@@ -124,82 +85,36 @@ test('gates request, disables controls, and sends exactly one POST', async ({
   await passwordInput.fill('ValidPassword123!');
   await confirmPasswordInput.fill('ValidPassword123!');
 
-  await submitButton.click();
-  await passwordInput.press('Enter');
-  await submitButton.click({ force: true }).catch(() => {});
-
-  await expect(passwordInput).toBeDisabled();
-  await expect(confirmPasswordInput).toBeDisabled();
-  await expect(submitButton).toBeDisabled();
-
-  responseGate.resolve();
-
-  await expect(page).toHaveURL('/dashboard');
-  expect(requestCount).toBe(1);
-  expect(postData).toEqual({
-    password: 'ValidPassword123!',
-    confirmPassword: 'ValidPassword123!',
-    token: validToken,
+  await test.step('Failure handling settles before input retention is checked', async () => {
+    await submitButton.click();
+    await expect(page.getByText('Invalid token.')).toBeVisible();
+    await expect(submitButton).toBeEnabled();
+    await expect(passwordInput).toHaveValue('ValidPassword123!');
+    await expect(confirmPasswordInput).toHaveValue('ValidPassword123!');
   });
-});
+  await test.step('Narrow form submits only once while pending', async () => {
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)
+      )
+      .toBe(true);
+    await submitButton.click();
+    await passwordInput.press('Enter');
+    await submitButton.click({ force: true }).catch(() => {});
 
-test('handles API error without clearing entered form state', async ({
-  page,
-}) => {
-  await page.route(resetEndpoint, async (route) => {
-    await route.fulfill({
-      status: 400,
-      json: {
-        name: 'BadRequestError',
-        errorKey: 'invalid_token',
-        validationErrors: [],
-      },
+    await expect(passwordInput).toBeDisabled();
+    await expect(confirmPasswordInput).toBeDisabled();
+    await expect(submitButton).toBeDisabled();
+
+    responseGate.resolve();
+  });
+  await test.step('Submission completes successfully', async () => {
+    await expect(page).toHaveURL('/dashboard');
+    expect(requestCount).toBe(2);
+    expect(postData).toEqual({
+      password: 'ValidPassword123!',
+      confirmPassword: 'ValidPassword123!',
+      token: validToken,
     });
   });
-
-  await page.goto(`/auth/reset-password?token=${validToken}`);
-
-  const passwordInput = page.getByLabel('New Password');
-  const confirmPasswordInput = page.getByLabel('Confirm Password');
-  const submitButton = page.getByRole('button', { name: 'Reset password' });
-
-  await passwordInput.fill('ValidPassword123!');
-  await confirmPasswordInput.fill('ValidPassword123!');
-  await submitButton.click();
-
-  await expect(passwordInput).toBeVisible();
-  await expect(passwordInput).toHaveValue('ValidPassword123!');
-  await expect(confirmPasswordInput).toHaveValue('ValidPassword123!');
-});
-
-test('navigates to /auth/signin when Back to sign in is clicked', async ({
-  page,
-}) => {
-  await page.goto(`/auth/reset-password?token=${validToken}`);
-
-  await page.getByRole('link', { name: 'Back to sign in' }).click();
-  await expect(page).toHaveURL('/auth/signin');
-});
-
-test('reflows at 320px viewport without horizontal scroll', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 320, height: 568 });
-  await page.goto(`/auth/reset-password?token=${validToken}`);
-
-  const scrollWidth = await page.evaluate(
-    () => document.documentElement.scrollWidth
-  );
-
-  expect(scrollWidth).toBeLessThanOrEqual(320);
-
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  await expect(page.getByLabel('New Password')).toBeVisible();
-  await expect(page.getByLabel('Confirm Password')).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: 'Reset password' })
-  ).toBeVisible();
-  await expect(
-    page.getByRole('link', { name: 'Back to sign in' })
-  ).toBeVisible();
 });

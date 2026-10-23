@@ -9,6 +9,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/shared/components/collapsible';
+import { PageTitle } from '@/shared/components/page-title';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +22,6 @@ export function AccountingEntityStep({
   individualName,
   isLoading = false,
   hasError = false,
-  onRetry,
   onSubmit,
 }: Readonly<AccountingEntityStepProps>) {
   const { t } = useTranslation('onboarding');
@@ -34,7 +34,6 @@ export function AccountingEntityStep({
   const about_description = t('entity_about_description');
   const continue_label = t('entity_continue_label');
   const error_text = t('entity_options_error_text');
-  const retry_label = t('entity_options_retry_label');
 
   return (
     <StepLayout
@@ -53,12 +52,7 @@ export function AccountingEntityStep({
     >
       <div className="flex w-full flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <h1
-            id={titleId}
-            className="m-0 text-2xl font-semibold tracking-tight"
-          >
-            {title}
-          </h1>
+          <PageTitle id={titleId}>{title}</PageTitle>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
         <Collapsible defaultOpen className="mb-6 flex flex-col gap-1">
@@ -86,14 +80,6 @@ export function AccountingEntityStep({
           <Alert variant="destructive">
             <AlertDescription>
               <p>{error_text}</p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onRetry}
-              >
-                {retry_label}
-              </Button>
             </AlertDescription>
           </Alert>
         )}

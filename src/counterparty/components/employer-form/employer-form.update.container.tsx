@@ -62,12 +62,10 @@ export function EmployerFormUpdateContainer({
 
   if (!baseline || jurisdictions.isPending) return loadingFallback;
 
-  const typeRestriction = !usage.canChangeType
+  const typeRestriction = usage.used
     ? {
         value: baseline.type,
-        description: t(
-          usage.used ? 'type_locked_description' : 'type_usage_checking_text'
-        ),
+        description: t('type_locked_description'),
       }
     : undefined;
 
@@ -83,6 +81,7 @@ export function EmployerFormUpdateContainer({
       loading={state.saving}
       disabled={baseline.status === 'archived'}
       typeRestriction={typeRestriction}
+      typeLoading={usage.checking && !usage.used}
       jurisdictions={jurisdictions.data ?? []}
       showPostalCode
     />

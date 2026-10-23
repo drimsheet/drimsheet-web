@@ -1,3 +1,5 @@
+import { CounterpartyTypeSelectSkeleton } from '@/counterparty/components/counterparty-type-select';
+import { Field, FieldGroup, FieldSet } from '@/shared/components/field';
 import { Skeleton } from '@/shared/components/skeleton';
 import { useTranslation } from 'react-i18next';
 
@@ -6,13 +8,22 @@ export function CounterpartyFormSkeleton() {
   const loading_text = t('update_loading_text');
 
   return (
-    <output aria-label={loading_text} className="space-y-5">
-      <span className="sr-only">{loading_text}</span>
-      <Skeleton className="h-5 w-24" />
-      <Skeleton className="h-9 w-full" />
-      <Skeleton className="h-5 w-24" />
-      <Skeleton className="h-9 w-full" />
-      <Skeleton className="h-9 w-28 ml-auto" />
-    </output>
+    <div aria-busy="true">
+      <output className="sr-only" aria-label={loading_text} aria-busy="true">
+        {loading_text}
+      </output>
+      <FieldSet aria-hidden="true">
+        <FieldGroup className="gap-5">
+          <Field>
+            <Skeleton className="h-4 w-full max-w-24" />
+            <Skeleton className="h-9 w-full" />
+          </Field>
+          <CounterpartyTypeSelectSkeleton />
+          <div className="flex justify-end gap-2 pt-2">
+            <Skeleton className="h-9 w-28" />
+          </div>
+        </FieldGroup>
+      </FieldSet>
+    </div>
   );
 }

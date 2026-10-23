@@ -1,0 +1,171 @@
+{
+  "accountingInterval": {
+    "createdBy": "user",
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-10-23T00:00:00Z",
+    "id": "accounting-interval",
+    "accountingEntityId": "entity",
+    "fiscalYearId": "year",
+    "unit": "month",
+    "count": 12,
+    "currentPeriodOrdinal": 10,
+    "startDate": "2026-01-01T00:00:00Z",
+    "endDate": "2027-01-01T00:00:00Z",
+    "nextPeriodStartDate": "2026-11-01T00:00:00Z",
+    "periods": [
+      {
+        "createdBy": "user",
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-10-23T00:00:00Z",
+        "id": "october",
+        "intervalId": "accounting-interval",
+        "accountingEntityId": "entity",
+        "ordinal": 10,
+        "name": "October 2026",
+        "startDate": "2026-10-01T00:00:00Z",
+        "endDate": "2026-11-01T00:00:00Z",
+        "status": "open",
+        "closedAt": null
+      }
+    ]
+  },
+  "context": {
+    "accounting": {
+      "createdBy": "user",
+      "createdAt": "2026-01-01T00:00:00Z",
+      "updatedAt": "2026-10-23T00:00:00Z",
+      "id": "accounting",
+      "accountingEntityId": "entity",
+      "name": "Statutory accounts",
+      "accountingStandardCode": "IFRS",
+      "fiscalYearId": "year",
+      "accountingIntervalId": "accounting-interval",
+      "description": null,
+      "closedAt": null
+    },
+    "reporting": {
+      "createdBy": "user",
+      "createdAt": "2026-01-01T00:00:00Z",
+      "updatedAt": "2026-10-23T00:00:00Z",
+      "id": "reporting",
+      "accountingEntityId": "entity",
+      "accountingContextId": "accounting",
+      "reportingIntervalId": "reporting-interval",
+      "name": "Management reports",
+      "reportingCurrencyCode": "USD",
+      "description": null,
+      "closedAt": null
+    },
+    "accountingInterval": {
+      "createdBy": "user",
+      "createdAt": "2026-01-01T00:00:00Z",
+      "updatedAt": "2026-10-23T00:00:00Z",
+      "id": "accounting-interval",
+      "accountingEntityId": "entity",
+      "fiscalYearId": "year",
+      "unit": "month",
+      "count": 12,
+      "currentPeriodOrdinal": 10,
+      "startDate": "2026-01-01T00:00:00Z",
+      "endDate": "2027-01-01T00:00:00Z",
+      "nextPeriodStartDate": "2026-11-01T00:00:00Z",
+      "periods": [
+        {
+          "createdBy": "user",
+          "createdAt": "2026-01-01T00:00:00Z",
+          "updatedAt": "2026-10-23T00:00:00Z",
+          "id": "october",
+          "intervalId": "accounting-interval",
+          "accountingEntityId": "entity",
+          "ordinal": 10,
+          "name": "October 2026",
+          "startDate": "2026-10-01T00:00:00Z",
+          "endDate": "2026-11-01T00:00:00Z",
+          "status": "open",
+          "closedAt": null
+        }
+      ]
+    },
+    "reportingInterval": {
+      "createdBy": "user",
+      "createdAt": "2026-01-01T00:00:00Z",
+      "updatedAt": "2026-10-23T00:00:00Z",
+      "id": "reporting-interval",
+      "accountingEntityId": "entity",
+      "fiscalYearId": "year",
+      "unit": "quarter",
+      "count": 4,
+      "currentPeriodOrdinal": 4,
+      "startDate": "2026-01-01T00:00:00Z",
+      "endDate": "2027-01-01T00:00:00Z",
+      "nextPeriodStartDate": "2027-01-01T00:00:00Z",
+      "periods": [
+        {
+          "createdBy": "user",
+          "createdAt": "2026-01-01T00:00:00Z",
+          "updatedAt": "2026-10-23T00:00:00Z",
+          "id": "q4",
+          "intervalId": "reporting-interval",
+          "accountingEntityId": "entity",
+          "ordinal": 4,
+          "name": "Q4 2026",
+          "startDate": "2026-10-01T00:00:00Z",
+          "endDate": "2027-01-01T00:00:00Z"
+        }
+      ]
+    }
+  },
+  "entity": {
+    "createdBy": "user",
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-10-23T00:00:00Z",
+    "id": "entity",
+    "ownerId": "user",
+    "name": "Amara Studio Ltd",
+    "status": "active",
+    "type": "private_company",
+    "jurisdictionCode": "NG",
+    "functionalCurrencyCode": "NGN"
+  },
+  "now": 1792756800000,
+  "reportingInterval": {
+    "createdBy": "user",
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-10-23T00:00:00Z",
+    "id": "reporting-interval",
+    "accountingEntityId": "entity",
+    "fiscalYearId": "year",
+    "unit": "quarter",
+    "count": 4,
+    "currentPeriodOrdinal": 4,
+    "startDate": "2026-01-01T00:00:00Z",
+    "endDate": "2027-01-01T00:00:00Z",
+    "nextPeriodStartDate": "2027-01-01T00:00:00Z",
+    "periods": [
+      {
+        "createdBy": "user",
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-10-23T00:00:00Z",
+        "id": "q4",
+        "intervalId": "reporting-interval",
+        "accountingEntityId": "entity",
+        "ordinal": 4,
+        "name": "Q4 2026",
+        "startDate": "2026-10-01T00:00:00Z",
+        "endDate": "2027-01-01T00:00:00Z"
+      }
+    ]
+  },
+  "year": {
+    "createdBy": "user",
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-10-23T00:00:00Z",
+    "id": "year",
+    "accountingEntityId": "entity",
+    "name": "FY 2026",
+    "status": "open",
+    "startDate": "2026-01-01T00:00:00Z",
+    "endDate": "2026-12-31T00:00:00Z",
+    "closedAt": null
+  }
+}

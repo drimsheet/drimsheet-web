@@ -30,7 +30,7 @@ const meta = {
       </div>
     ),
   ],
-  args: { currencies, jurisdictions, onRetry: () => {} },
+  args: { currencies, jurisdictions },
 } satisfies Meta<typeof AccountingEntityStep>;
 
 export default meta;

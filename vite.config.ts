@@ -65,6 +65,7 @@ export default defineConfig(({ command, mode }) => {
     plugins,
     define: {
       __APP_RELEASE__: JSON.stringify(appRelease),
+      __APP_VERSION__: JSON.stringify(packageMetadata.version),
     },
     build: {
       sourcemap: sentryBuildEnabled ? 'hidden' : false,

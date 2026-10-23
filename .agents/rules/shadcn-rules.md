@@ -16,4 +16,8 @@ Keep shadcn generation subordinate to the repository architecture.
 - Do not leave component implementations directly under `src/shared/components`.
 - Do not overwrite an owned component without reviewing the generated diff.
 - Preserve the shared dependency boundary after generation.
+- Preserve this repository's shared `Button` `loading` prop. Pending actions
+  must use it instead of upstream examples that manually compose `Spinner`
+  and loading text. Component skeletons must follow the ownership and export
+  contract in `file-responsibility-rules.md`.
 - Use local, pinned project tooling rather than fetching an arbitrary latest CLI version.

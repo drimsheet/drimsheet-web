@@ -1,4 +1,7 @@
 import { Money } from '@/shared/components/money';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
+import { Skeleton } from '@/shared/components/skeleton';
 import { StatusBadge } from '@/shared/components/status-badge';
 import { cn } from '@/shared/lib/utils/cn';
 import { useTranslation } from 'react-i18next';
@@ -45,13 +48,13 @@ export function LedgerAccountSummary({
   );
 
   return (
-    <div className={cn('flex min-w-0 flex-col gap-7', className)} {...props}>
+    <div className={cn('flex min-w-0 flex-col', className)} {...props}>
       <div className="flex min-w-0 flex-col gap-4">
         <AccountBehaviorLabel behavior={account.behavior} />
         <div className="flex min-w-0 flex-wrap items-start justify-between gap-4">
-          <h1 className="m-0 min-w-0 flex-1 font-heading text-2xl/none font-medium tracking-tight wrap-anywhere sm:text-3xl/none">
+          <PageTitle className="min-w-0 flex-1 wrap-anywhere">
             {account.name}
-          </h1>
+          </PageTitle>
           {actions}
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -69,31 +72,63 @@ export function LedgerAccountSummary({
         </div>
       </div>
 
-      <dl className="flex min-w-0 flex-col gap-3">
-        <dt className="text-sm">{balance_label}</dt>
-        <dd className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-2">
-          <Money
-            value={account.balance}
-            localCode={account.functionalBalance.currencyCode}
-            className="font-heading text-4xl font-medium tracking-tight tabular-nums wrap-anywhere sm:text-5xl"
-          />
-          {shouldShowFunctionalBalance && (
-            <span className="flex min-w-0 items-baseline gap-1 text-sm text-muted-foreground tabular-nums">
-              <span className="sr-only">{functional_balance_label}</span>
-              <span aria-hidden="true">≈</span>
-              <Money
-                value={account.functionalBalance}
-                className="min-w-0 wrap-anywhere"
-              />
-            </span>
-          )}
-        </dd>
-        {hasSubAccounts && (
-          <dd className="text-sm text-muted-foreground">
-            {excludes_children_text}
+      <PageSection>
+        <dl className="flex min-w-0 flex-col gap-3">
+          <dt className="text-sm">{balance_label}</dt>
+          <dd className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-2">
+            <Money
+              value={account.balance}
+              localCode={account.functionalBalance.currencyCode}
+              className="font-heading text-4xl font-medium tracking-tight tabular-nums wrap-anywhere sm:text-5xl"
+            />
+            {shouldShowFunctionalBalance && (
+              <span className="flex min-w-0 items-baseline gap-1 text-sm text-muted-foreground tabular-nums">
+                <span className="sr-only">{functional_balance_label}</span>
+                <span aria-hidden="true">≈</span>
+                <Money
+                  value={account.functionalBalance}
+                  className="min-w-0 wrap-anywhere"
+                />
+              </span>
+            )}
           </dd>
-        )}
-      </dl>
+          {hasSubAccounts && (
+            <dd className="text-sm text-muted-foreground">
+              {excludes_children_text}
+            </dd>
+          )}
+        </dl>
+      </PageSection>
+    </div>
+  );
+}
+
+export function LedgerAccountSummarySkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('details_loading_account_summary');
+
+  return (
+    <div aria-busy="true" className="flex min-w-0 flex-col">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
+      <div className="flex min-w-0 flex-col gap-4">
+        <Skeleton className="h-5 w-28" />
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-4">
+          <Skeleton className="h-9 min-w-0 flex-1 max-w-80" />
+          <Skeleton className="h-9 w-24" />
+        </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-5 w-40" />
+        </div>
+      </div>
+      <PageSection>
+        <div className="flex min-w-0 flex-col gap-3">
+          <Skeleton className="h-5 w-28" />
+          <Skeleton className="h-10 w-56 max-w-full sm:h-12" />
+        </div>
+      </PageSection>
     </div>
   );
 }

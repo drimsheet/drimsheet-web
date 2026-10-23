@@ -1,10 +1,9 @@
 import { useAccountCurrencyUpdateEligibility } from '@/account/hooks/use-account-currency-update-eligibility';
 import { useAccountOpeningBalance } from '@/account/hooks/use-account-opening-balance';
 import { useAccountUpdateExchangeRate } from '@/account/hooks/use-account-update-exchange-rate';
-import { useUpdateBankAccount } from '@/account/hooks/use-update-asset-account';
+import { useUpdateBankAccount } from '@/account/hooks/use-update-bank-account';
 import { assetAccountUpdateMapper } from '@/account/lib/mappers/asset-account-update.mapper';
 import { ledgerAccountService } from '@/account/lib/services/ledger-account.service';
-import { Button } from '@/shared/components/button';
 import countries from '@/shared/configs/countries.json' with { type: 'json' };
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useCurrencies } from '@/shared/hooks/use-currencies';
@@ -14,6 +13,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { BankDetailsFormContainer } from './bank-details-form.container';
+import { BankDetailsFormSkeleton } from './skeleton';
 import type {
   BankDetailsFormUpdateContainerProps,
   IBankDetailsFormValues,
@@ -103,8 +103,6 @@ export function BankDetailsFormUpdateContainer({
   }, [update.isPending, onBusyChange]);
 
   const error_text = t('update_bank_details_error_text');
-  const retry_label = t('details_retry_label');
-  const loading_text = t('update_loading_text');
   const currencies_error_text = t('update_currencies_error_text');
 
   const currency_eligibility_error_text = t(
@@ -117,46 +115,39 @@ export function BankDetailsFormUpdateContainer({
     return (
       <div role="alert">
         <p>{opening_balance_error_text}</p>
-        <Button onClick={() => void opening.refetch()}>{retry_label}</Button>
       </div>
     );
 
-  if (opening.openingBalance === undefined)
-    return <p role="status">{loading_text}</p>;
+  if (opening.openingBalance === undefined) return <BankDetailsFormSkeleton />;
 
   if (!bank && read.isError)
     return (
       <div role="alert">
         <p>{error_text}</p>
-        <Button onClick={() => void read.refetch()}>{retry_label}</Button>
       </div>
     );
 
-  if (!bank) return <p role="status">{loading_text}</p>;
+  if (!bank) return <BankDetailsFormSkeleton />;
 
   if (currencyEligibility.isError)
     return (
       <div role="alert">
         <p>{currency_eligibility_error_text}</p>
-        <Button onClick={() => void currencyEligibility.refetch()}>
-          {retry_label}
-        </Button>
       </div>
     );
 
   if (currencyEligibility.isPending || !currencyEligibility.isFetchedAfterMount)
-    return <p role="status">{loading_text}</p>;
+    return <BankDetailsFormSkeleton />;
 
   if (canUpdateCurrency && currencies.isError)
     return (
       <div role="alert">
         <p>{currencies_error_text}</p>
-        <Button onClick={() => void currencies.refetch()}>{retry_label}</Button>
       </div>
     );
 
   if (canUpdateCurrency && currencies.isPending)
-    return <p role="status">{loading_text}</p>;
+    return <BankDetailsFormSkeleton />;
 
   return (
     <BankDetailsFormContainer

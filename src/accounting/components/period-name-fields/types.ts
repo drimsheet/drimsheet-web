@@ -1,10 +1,12 @@
-import type { INamedPeriod } from '@/accounting/lib/types/period.types';
-import type { UPeriodUnit } from '@/shared/lib/api/Api';
+import type {
+  INamedPeriod,
+  UIntervalUnit,
+} from '@/accounting/lib/types/period.types';
 
 export interface PeriodNameFieldsProps {
   title: string;
   periods: INamedPeriod[];
-  unit: UPeriodUnit;
+  unit: UIntervalUnit;
   currentDate: string;
   disabled: boolean;
   getError: (index: number) => Array<{ message?: string }>;

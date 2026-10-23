@@ -95,7 +95,7 @@ export function RequestPasswordResetForm({
         <FieldDescription className="text-center">
           <Link
             to="/auth/signin"
-            className="text-primary hover:text-primary/80 text-sm font-medium"
+            className="text-link hover:text-link/80 text-sm font-medium"
           >
             {back_to_sign_in_text}
           </Link>

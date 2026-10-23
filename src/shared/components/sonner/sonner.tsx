@@ -34,7 +34,8 @@ const Toaster = ({ position = 'top-center', ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast: 'cn-toast',
-          error: '!bg-destructive/15 !text-destructive !border-destructive/30',
+          error:
+            '!bg-destructive-surface !text-destructive !border-destructive-border',
         },
       }}
       {...props}

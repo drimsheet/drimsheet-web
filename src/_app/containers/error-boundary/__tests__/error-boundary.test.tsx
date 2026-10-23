@@ -1,6 +1,5 @@
 import { DefaultErrorBoundary } from '@/_app/containers/error-boundary/error-boundary';
 import { act, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { AxiosError } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -59,32 +58,8 @@ describe('DefaultErrorBoundary', () => {
       )
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Try Again' })
-    ).toBeInTheDocument();
-  });
-
-  it('resets the boundary through the localized fallback action', async () => {
-    vi.useRealTimers();
-    let shouldThrow = true;
-    const user = userEvent.setup();
-
-    function RecoverableChild() {
-      if (shouldThrow) throw new Error('recoverable');
-
-      return <p>Application recovered</p>;
-    }
-
-    render(
-      <DefaultErrorBoundary>
-        <RecoverableChild />
-      </DefaultErrorBoundary>
-    );
-
-    await screen.findByRole('button', { name: 'Try Again' });
-    shouldThrow = false;
-    await user.click(screen.getByRole('button', { name: 'Try Again' }));
-
-    expect(screen.getByText('Application recovered')).toBeInTheDocument();
+      screen.queryByRole('button', { name: /try again|retry/i })
+    ).not.toBeInTheDocument();
   });
 
   it('preserves Axios UI handling without asking the hook to report again', () => {

@@ -59,19 +59,19 @@ export interface CategoryTrendProps {
 }
 
 export interface CounterpartyShareProps {
+  type: 'revenue' | 'expense';
   counterparties: IAccountCounterpartyParticipationDto[];
   pagination?: IPaginationResponseMeta;
   loading: boolean;
   error: boolean;
   onPageChange: (page: number) => void;
-  onRetry: () => void;
   selectedId: string | null;
   onSelect: (participation: IAccountCounterpartyParticipationDto) => void;
 }
 
 export interface CounterpartyShareContainerProps extends Pick<
   CounterpartyShareProps,
-  'selectedId' | 'onSelect'
+  'selectedId' | 'onSelect' | 'type'
 > {
   accountId: string;
 }
@@ -83,6 +83,7 @@ export interface CategoryTransactionsProps {
   transactionsHref?: string;
 }
 
-export interface SectionErrorProps {
-  onRetry: () => void;
-}
+export type CategoryTransactionCountProps = Pick<
+  CategorySummaryProps,
+  'transactionCount'
+>;

@@ -1,12 +1,12 @@
 import type { INamedPeriod } from '@/accounting/lib/types/period.types';
-import type { UPeriodUnit } from '@/shared/lib/api/Api';
+import type { UAccountingIntervalUnit } from '@/shared/lib/api/Api';
 export type { INamedPeriod as IFinancialYearPeriod } from '@/accounting/lib/types/period.types';
 
 export interface IFinancialYearFormValues {
   name: string;
   startDate: string;
   endDate: string;
-  unit: UPeriodUnit;
+  unit: UAccountingIntervalUnit;
   periods: INamedPeriod[];
 }
 

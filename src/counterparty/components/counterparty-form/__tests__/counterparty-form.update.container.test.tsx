@@ -163,3 +163,64 @@ it('starts a fresh edit session when its counterparty ID changes', async () => {
   });
   client.clear();
 });
+
+it('shows a type selector skeleton while checking usage and restores the selected type afterward', async () => {
+  vi.mocked(counterpartyService.getCounterparty).mockResolvedValue(created);
+
+  let resolveUsage!: (
+    value: Awaited<
+      ReturnType<typeof counterpartyService.getCounterpartyTransactions>
+    >
+  ) => void;
+
+  const usage = new Promise<
+    Awaited<ReturnType<typeof counterpartyService.getCounterpartyTransactions>>
+  >((resolve) => {
+    resolveUsage = resolve;
+  });
+
+  vi.mocked(counterpartyService.getCounterpartyTransactions).mockReturnValue(
+    usage
+  );
+
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+
+  render(
+    <QueryClientProvider client={client}>
+      <CounterpartyFormUpdateContainer
+        counterpartyId={created.id}
+        loadingFallback={<CounterpartyFormSkeleton />}
+        onSuccess={vi.fn()}
+      />
+    </QueryClientProvider>
+  );
+  const name = await screen.findByLabelText('Name');
+  expect(
+    await screen.findByRole('status', {
+      name: 'Checking whether the counterparty type can be changed…',
+    })
+  ).toHaveAttribute('aria-busy', 'true');
+  expect(
+    screen.queryByRole('combobox', { name: 'Type' })
+  ).not.toBeInTheDocument();
+  const user = userEvent.setup();
+  await user.clear(name);
+  await user.type(name, 'Retained edit');
+  resolveUsage({
+    data: [],
+    meta: { page: 1, limit: 1, total: 0, totalPages: 0 },
+  });
+  expect(await screen.findByRole('combobox', { name: 'Type' })).toBeEnabled();
+  expect(screen.getByRole('combobox', { name: 'Type' })).toHaveTextContent(
+    'Individual'
+  );
+  expect(name).toHaveValue('Retained edit');
+  expect(
+    screen.queryByRole('status', {
+      name: 'Checking whether the counterparty type can be changed…',
+    })
+  ).not.toBeInTheDocument();
+  client.clear();
+});

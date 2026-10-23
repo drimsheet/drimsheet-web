@@ -1,20 +1,14 @@
 import { Badge } from '@/shared/components/badge';
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/card';
-import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from '@/shared/components/empty';
+import { PageSection } from '@/shared/components/page-section';
 import { Separator } from '@/shared/components/separator';
+import { Skeleton } from '@/shared/components/skeleton';
 import { AccountingEntityAvatar } from '@/user/components/accounting-entity-avatar';
 import { Building2 } from 'lucide-react';
 import { Fragment } from 'react';
@@ -52,17 +46,17 @@ export function ProfileEntities({
   });
 
   return (
-    <Card role="region" aria-labelledby="profile-entities-title">
-      <CardHeader>
-        <CardTitle role="heading" aria-level={2} id="profile-entities-title">
-          {entities_title}
-        </CardTitle>
-        <CardDescription>{entities_description}</CardDescription>
-        <CardAction>
-          <Badge variant="secondary">{count_label}</Badge>
-        </CardAction>
-      </CardHeader>
-      <CardContent>
+    <PageSection
+      title={entities_title}
+      role="region"
+      titleId="profile-entities-title"
+    >
+      <div className="flex flex-wrap items-center gap-3">
+        <p className="text-sm text-muted-foreground">{entities_description}</p>
+        <Badge variant="secondary">{count_label}</Badge>
+      </div>
+
+      <div>
         {entities.length === 0 ? (
           <Empty>
             <EmptyHeader>
@@ -121,7 +115,57 @@ export function ProfileEntities({
             ))}
           </ul>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PageSection>
+  );
+}
+
+export function ProfileEntitiesSkeleton() {
+  const { t } = useTranslation('user');
+  const loading_label = t('profile_entities_title');
+
+  const profile_section_loading_text = t('profile_section_loading_text', {
+    section: loading_label,
+  });
+
+  return (
+    <PageSection
+      aria-busy="true"
+      title={loading_label}
+      className="h-full min-w-0"
+    >
+      <output
+        className="sr-only"
+        aria-label={profile_section_loading_text}
+        aria-busy="true"
+      >
+        {profile_section_loading_text}
+      </output>
+      <Skeleton className="h-5 w-full max-w-96" />
+      <div className="flex flex-col gap-5">
+        {[0, 1].map((row) => (
+          <Fragment key={row}>
+            {row > 0 && <Separator />}
+            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(8rem,0.4fr)_minmax(8rem,0.4fr)] sm:items-center">
+              <div className="flex min-w-0 items-center gap-3">
+                <Skeleton className="size-10 shrink-0 rounded-full" />
+                <div className="flex min-w-0 flex-col gap-1.5">
+                  <Skeleton className="h-6 w-full max-w-40" />
+                  <Skeleton className="h-4 w-32 max-w-full" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 sm:contents">
+                {[0, 1].map((field) => (
+                  <div key={field} className="flex flex-col gap-1">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-6 w-28" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Fragment>
+        ))}
+      </div>
+    </PageSection>
   );
 }

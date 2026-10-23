@@ -5,7 +5,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/shared/components/empty';
-import { Separator } from '@/shared/components/separator';
+import { PageSection } from '@/shared/components/page-section';
 import { ReceiptText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { RecentTransactionsProps } from '../types';
@@ -24,17 +24,7 @@ export function RecentTransactions({
   });
 
   return (
-    <section
-      className="flex min-w-0 flex-col gap-5"
-      aria-labelledby="recent-transactions-title"
-    >
-      <Separator />
-      <h2
-        id="recent-transactions-title"
-        className="m-0 text-base font-semibold"
-      >
-        {title}
-      </h2>
+    <PageSection title={title}>
       {empty && (
         <Empty className="bg-muted/20 px-6 py-10">
           <EmptyHeader>
@@ -49,6 +39,6 @@ export function RecentTransactions({
         </Empty>
       )}
       {!empty && children}
-    </section>
+    </PageSection>
   );
 }

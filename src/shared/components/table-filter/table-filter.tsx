@@ -1,92 +1,105 @@
-import { Check, Filter, Search, X } from 'lucide-react';
-import * as React from 'react';
-import { useTranslation } from 'react-i18next';
-
 import { Button } from '@/shared/components/button';
+import { Checkbox } from '@/shared/components/checkbox';
 import { Input } from '@/shared/components/input';
+import { Label } from '@/shared/components/label';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/shared/components/popover';
+import { Separator } from '@/shared/components/separator';
 import { cn } from '@/shared/lib/utils/cn';
-
-export interface TableFilterOption {
-  label: string;
-  value: string | number;
-}
-
-export interface TableFilterProps {
-  title?: string;
-  options: TableFilterOption[];
-  selectedValues: (string | number)[];
-  onSelect: (value: string | number) => void;
-  onClear: () => void;
-  onSelectAll?: (values: (string | number)[]) => void;
-  trigger?: React.ReactNode;
-}
+import { ListFilter } from 'lucide-react';
+import { useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TableFilterProps } from './types';
 
 export function TableFilter({
   title,
+  multiple = true,
   options,
   selectedValues,
-  onSelect,
-  onClear,
-  onSelectAll,
+  onApply,
   trigger,
+  disabled,
 }: Readonly<TableFilterProps>) {
-  const { t } = useTranslation(['shared']);
+  const { t } = useTranslation('shared');
+  const id = useId();
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<(string | number)[]>([]);
+  const [search, setSearch] = useState('');
 
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const filteredOptions = options.filter((option) =>
+    option.label.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+  );
 
-  const filteredOptions = React.useMemo(() => {
-    if (!searchQuery) return options;
-
-    return options.filter((option) =>
-      option.label.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [options, searchQuery]);
-
-  const handleSelectAll = React.useCallback(() => {
-    const allOptionValues = filteredOptions.map((option) => option.value);
-    if (onSelectAll) {
-      onSelectAll(allOptionValues);
-    } else {
-      filteredOptions.forEach((option) => {
-        if (!selectedValues.includes(option.value)) {
-          onSelect(option.value);
-        }
-      });
+  const handleOpenChange = (next: boolean) => {
+    if (next) {
+      setDraft([...selectedValues]);
+      setSearch('');
     }
-  }, [filteredOptions, selectedValues, onSelect, onSelectAll]);
 
-  const filter_label = title
-    ? t('shared:filter_by', { title })
-    : t('shared:filter');
+    setOpen(next);
+  };
 
-  const clear_label = t('shared:clear');
-  const search_placeholder_text = t('shared:search');
-  const no_results_text = t('shared:no_results_found');
-  const select_all_label = t('shared:select_all');
-  const clear_all_label = t('shared:clear_all');
+  const handleToggle = (value: string | number) => {
+    if (!multiple) {
+      setDraft((current) => (current.includes(value) ? [] : [value]));
+
+      return;
+    }
+
+    setDraft((current) =>
+      current.includes(value)
+        ? current.filter((item) => item !== value)
+        : [...current, value]
+    );
+  };
+
+  const handleApply = () => {
+    onApply(draft);
+    setOpen(false);
+  };
+
+  const handleClear = () => {
+    onApply([]);
+    setOpen(false);
+  };
+
+  const filter_label = title ? t('filter_by', { title }) : t('filter');
+
+  const trigger_label = selectedValues.length
+    ? t('table_filter_active_label', {
+        label: filter_label,
+        count: selectedValues.length,
+      })
+    : filter_label;
+
+  const clear_label = t('clear');
+  const apply_label = t('table_filter_apply_action');
+  const search_label = t('table_filter_search_label');
+  const no_results_text = t('no_results_found');
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        {trigger || (
+        {trigger ?? (
           <Button
+            type="button"
             variant="ghost"
             size="xs"
+            disabled={disabled}
+            aria-label={trigger_label}
             className={cn(
-              'h-7 px-2 text-muted-foreground hover:text-foreground relative group/filter-btn',
+              'h-8 shrink-0 px-1.5 text-muted-foreground pointer-coarse:min-h-11 pointer-coarse:min-w-11',
               selectedValues.length > 0 &&
-                'text-primary bg-primary/10 hover:bg-primary/20 dark:text-primary dark:bg-primary/20 dark:hover:bg-primary/30'
+                'bg-selection text-selection-foreground hover:bg-selection-hover'
             )}
             data-testid="table-filter-trigger"
           >
-            <Filter className="size-3.5 shrink-0" />
+            <ListFilter className="size-3.5" aria-hidden />
             {selectedValues.length > 0 && (
-              <span className="ml-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground animate-in zoom-in-50 duration-200">
+              <span className="text-[11px] font-medium tabular-nums">
                 {selectedValues.length}
               </span>
             )}
@@ -95,105 +108,56 @@ export function TableFilter({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-60 p-0 flex flex-col overflow-hidden border border-border bg-popover text-popover-foreground shadow-lg rounded-xl animate-in fade-in-50 zoom-in-95 duration-100"
+        collisionPadding={16}
+        className="w-64 max-w-[calc(100vw-2rem)] gap-3 border border-input shadow-none ring-0"
+        aria-labelledby={`${id}-title`}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2.5 border-b border-border bg-muted/30">
-          <span className="text-xs font-semibold text-foreground">
+        <fieldset className="flex min-w-0 flex-col gap-3" disabled={disabled}>
+          <legend id={`${id}-title`} className="mb-3 text-sm font-medium">
             {filter_label}
-          </span>
-          {selectedValues.length > 0 && (
+          </legend>
+          {options.length > 5 && (
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              aria-label={search_label}
+              placeholder={search_label}
+            />
+          )}
+          <div className="flex max-h-56 flex-col gap-1 overflow-y-auto">
+            {filteredOptions.map((option) => (
+              <Label
+                key={`${typeof option.value}-${option.value}`}
+                className="min-h-9 gap-3 rounded-sm px-1 text-sm font-normal hover:bg-accent pointer-coarse:min-h-11"
+              >
+                <Checkbox
+                  checked={draft.includes(option.value)}
+                  onCheckedChange={() => handleToggle(option.value)}
+                />
+                {option.label}
+              </Label>
+            ))}
+            {!filteredOptions.length && (
+              <p className="py-3 text-sm text-muted-foreground">
+                {no_results_text}
+              </p>
+            )}
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between gap-3">
             <Button
-              variant="ghost"
-              size="xs"
-              onClick={onClear}
-              className="h-6 px-1.5 text-xs text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 font-medium transition-colors"
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleClear}
             >
               {clear_label}
             </Button>
-          )}
-        </div>
-
-        {/* Search Input */}
-        {options.length > 5 && (
-          <div className="p-2 border-b border-border flex items-center gap-1.5 relative bg-muted/10">
-            <Search className="size-3.5 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <Input
-              placeholder={search_placeholder_text}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-8 pr-7 text-xs bg-background border-input focus-visible:ring-primary/20 rounded-lg w-full"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground rounded-full p-0.5 hover:bg-muted transition-all"
-              >
-                <X className="size-3" />
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Options List */}
-        <div className="max-h-48 overflow-y-auto p-1.5 space-y-0.5 custom-scrollbar">
-          {filteredOptions.length === 0 ? (
-            <div className="text-center py-4 px-2 text-xs text-muted-foreground italic">
-              {no_results_text}
-            </div>
-          ) : (
-            filteredOptions.map((option) => {
-              const isChecked = selectedValues.includes(option.value);
-
-              return (
-                <button
-                  key={option.value}
-                  onClick={() => onSelect(option.value)}
-                  className={cn(
-                    'w-full flex items-center justify-between text-left text-xs px-2.5 py-2 rounded-lg hover:bg-muted transition-all duration-150 font-medium group/option',
-                    isChecked
-                      ? 'text-foreground bg-muted/60'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  <span className="truncate pr-2">{option.label}</span>
-                  <div
-                    className={cn(
-                      'flex size-4 items-center justify-center rounded border transition-all duration-200 shrink-0',
-                      isChecked
-                        ? 'border-primary bg-primary text-primary-foreground scale-100'
-                        : 'border-input group-hover/option:border-muted-foreground scale-95'
-                    )}
-                  >
-                    {isChecked && <Check className="size-2.5 stroke-[3]" />}
-                  </div>
-                </button>
-              );
-            })
-          )}
-        </div>
-
-        {/* Footer Actions */}
-        <div className="flex items-center gap-1.5 px-3 py-2 border-t border-border bg-muted/20">
-          <Button
-            variant="outline"
-            size="xs"
-            onClick={handleSelectAll}
-            className="flex-1 h-7 text-xs font-semibold rounded-lg bg-background hover:bg-muted"
-          >
-            {select_all_label}
-          </Button>
-          {selectedValues.length > 0 && (
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={onClear}
-              className="flex-1 h-7 text-xs font-semibold rounded-lg border-destructive/20 text-destructive bg-background hover:bg-destructive/5 hover:border-destructive/30"
-            >
-              {clear_all_label}
+            <Button type="button" size="sm" onClick={handleApply}>
+              {apply_label}
             </Button>
-          )}
-        </div>
+          </div>
+        </fieldset>
       </PopoverContent>
     </Popover>
   );

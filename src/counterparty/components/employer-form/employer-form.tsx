@@ -26,6 +26,7 @@ export function EmployerForm({
   submitLabel,
   onCancel,
   typeRestriction,
+  typeLoading = false,
   fieldErrors = {},
   showPostalCode = false,
 }: Readonly<EmployerFormProps>) {
@@ -81,10 +82,6 @@ export function EmployerForm({
   const submit_button_label =
     submitLabel ?? t('counterparty:create_button_label');
 
-  const pending_button_label = submitLabel
-    ? t('counterparty:saving_label')
-    : t('counterparty:continue');
-
   const cancel_label = t('counterparty:cancel_label');
 
   return (
@@ -110,6 +107,7 @@ export function EmployerForm({
             onChange={handleTypeChange}
             error={getErrorMessage('type')}
             description={typeRestriction?.description}
+            loading={typeLoading}
             disabled={Boolean(typeRestriction) || disabled || loading}
           />
 
@@ -160,9 +158,10 @@ export function EmployerForm({
             <Button
               type="submit"
               disabled={disabled || loading}
+              loading={loading}
               className="min-w-[100px]"
             >
-              {loading ? pending_button_label : submit_button_label}
+              {submit_button_label}
             </Button>
           </div>
         </FieldGroup>

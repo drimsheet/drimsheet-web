@@ -1,7 +1,8 @@
 import { useJournalEntry } from '@/journal-entries/hooks/use-journal-entry';
 import journalEntryService from '@/journal-entries/lib/services/journal-entry.service';
+import { ErrorBoundary } from '@sentry/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, screen, waitFor } from '@testing-library/react';
 import type { AxiosError } from 'axios';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -16,7 +17,11 @@ function createWrapper() {
   });
 
   return ({ children }: Readonly<{ children: ReactNode }>) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary fallback={<p>Entry unavailable</p>}>
+        {children}
+      </ErrorBoundary>
+    </QueryClientProvider>
   );
 }
 
@@ -35,6 +40,25 @@ describe('useJournalEntry', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(journalEntryService.getJournalEntry).toHaveBeenCalledWith('entry-1');
+  });
+
+  it('surfaces server failure immediately without overriding disabled retries', async () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+
+    vi.mocked(journalEntryService.getJournalEntry).mockRejectedValue(
+      new Error('Server unavailable')
+    );
+    try {
+      renderHook(() => useJournalEntry('failed-entry'), {
+        wrapper: createWrapper(),
+      });
+      expect(await screen.findByText('Entry unavailable')).toBeVisible();
+      expect(journalEntryService.getJournalEntry).toHaveBeenCalledTimes(1);
+    } finally {
+      consoleError.mockRestore();
+    }
   });
 
   it('does not query without an ID', () => {

@@ -39,7 +39,6 @@ const meta = {
     disabled: false,
     onSelect: () => {},
     onOpenChange: () => {},
-    onRetry: () => {},
   },
 } satisfies Meta<typeof CategoryParentPicker>;
 

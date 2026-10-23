@@ -17,11 +17,16 @@ function createResponseGate() {
   return { promise, resolve };
 }
 
-test('announces pending completion and sends one refresh request', async ({
+test('announces pending completion and rejects it without retaining the callback', async ({
   page,
 }) => {
   const responseGate = createResponseGate();
   let requestCount = 0;
+  let profileRequestCount = 0;
+  await page.route('**/api/v1/users/profile', async (route) => {
+    profileRequestCount++;
+    await route.fulfill({ status: 500, json: {} });
+  });
 
   await page.route(refreshEndpoint, async (route) => {
     requestCount += 1;
@@ -36,6 +41,7 @@ test('announces pending completion and sends one refresh request', async ({
     });
   });
 
+  await page.goto('/auth/signin');
   await page.goto(callbackUrl);
 
   const main = page.getByRole('main');
@@ -48,6 +54,13 @@ test('announces pending completion and sends one refresh request', async ({
 
   await expect(page).toHaveURL('/auth/signin');
   await expect(page.getByText(failureMessage)).toBeVisible();
+  expect(requestCount).toBe(1);
+  expect(
+    await page.evaluate(() => localStorage.getItem('isLoggedIn'))
+  ).toBeNull();
+  expect(profileRequestCount).toBe(0);
+  await page.goBack();
+  await expect(page).toHaveURL('/auth/signin');
   expect(requestCount).toBe(1);
 });
 
@@ -81,44 +94,6 @@ test('completes sign-in and replaces the callback with the dashboard', async ({
   expect(refreshRequestCount).toBe(1);
 
   await page.evaluate(() => localStorage.removeItem('isLoggedIn'));
-  await page.goBack();
-
-  await expect(page).toHaveURL('/auth/signin');
-  expect(refreshRequestCount).toBe(1);
-});
-
-test('handles a rejected completion without retaining the callback', async ({
-  page,
-}) => {
-  let refreshRequestCount = 0;
-  let profileRequestCount = 0;
-
-  await page.route(refreshEndpoint, async (route) => {
-    refreshRequestCount += 1;
-    await route.fulfill({
-      status: 401,
-      json: {
-        name: 'AuthenticationError',
-        errorKey: 'auth_error_missing_token',
-        validationErrors: [],
-      },
-    });
-  });
-  await page.route('**/api/v1/users/profile', async (route) => {
-    profileRequestCount += 1;
-    await route.fulfill({ status: 500, json: {} });
-  });
-
-  await page.goto('/auth/signin');
-  await page.goto(callbackUrl);
-
-  await expect(page.getByText(failureMessage)).toBeVisible();
-  await expect(page).toHaveURL('/auth/signin');
-  expect(
-    await page.evaluate(() => localStorage.getItem('isLoggedIn'))
-  ).toBeNull();
-  expect(profileRequestCount).toBe(0);
-
   await page.goBack();
 
   await expect(page).toHaveURL('/auth/signin');

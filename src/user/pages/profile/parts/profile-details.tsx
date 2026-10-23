@@ -1,13 +1,8 @@
 import { Avatar, AvatarFallback } from '@/shared/components/avatar';
 import { Badge } from '@/shared/components/badge';
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/card';
+import { PageSection } from '@/shared/components/page-section';
 import { Separator } from '@/shared/components/separator';
+import { Skeleton } from '@/shared/components/skeleton';
 import { BadgeCheck, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { ProfileDetailsProps } from '../types';
@@ -58,18 +53,13 @@ export function ProfileDetails({
   ];
 
   return (
-    <Card
+    <PageSection
+      title={details_title}
       className="h-full min-w-0"
       role="region"
-      aria-labelledby="profile-details-title"
+      titleId="profile-details-title"
     >
-      <CardHeader>
-        <CardTitle role="heading" aria-level={2} id="profile-details-title">
-          {details_title}
-        </CardTitle>
-        {editAction && <CardAction>{editAction}</CardAction>}
-      </CardHeader>
-      <CardContent className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <Avatar className="size-14">
             <AvatarFallback>{initials.toUpperCase()}</AvatarFallback>
@@ -103,7 +93,56 @@ export function ProfileDetails({
             </div>
           ))}
         </dl>
-      </CardContent>
-    </Card>
+        {editAction && <div className="self-start">{editAction}</div>}
+      </div>
+    </PageSection>
+  );
+}
+
+export function ProfileDetailsSkeleton() {
+  const { t } = useTranslation('user');
+  const loading_label = t('profile_details_title');
+
+  const profile_section_loading_text = t('profile_section_loading_text', {
+    section: loading_label,
+  });
+
+  return (
+    <PageSection
+      aria-busy="true"
+      title={loading_label}
+      className="h-full min-w-0"
+    >
+      <output
+        className="sr-only"
+        aria-label={profile_section_loading_text}
+        aria-busy="true"
+      >
+        {profile_section_loading_text}
+      </output>
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="size-14 shrink-0 rounded-full" />
+          <div className="flex min-w-0 flex-col gap-2">
+            <Skeleton className="h-7 w-40 max-w-full" />
+            <Skeleton className="h-5 w-32" />
+          </div>
+        </div>
+        <Separator />
+        <div className="grid grid-cols-2 gap-x-5 gap-y-6">
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-6 w-full max-w-56" />
+          </div>
+          {[0, 1, 2, 3].map((field) => (
+            <div key={field} className="flex min-w-0 flex-col gap-1.5">
+              <Skeleton className="h-4 w-full max-w-24" />
+              <Skeleton className="h-6 w-full max-w-32" />
+            </div>
+          ))}
+        </div>
+        <Skeleton className="h-8 w-28" />
+      </div>
+    </PageSection>
   );
 }

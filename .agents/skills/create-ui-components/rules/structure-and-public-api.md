@@ -67,10 +67,11 @@ Requirements:
 - `validation.ts`: required when the component owns validation.
 - `<component-name>.container.tsx`: required when the UI needs side effects or
   orchestration.
-- `skeleton.tsx`: optional for a single owner-local loading skeleton. Keep the
-  exported symbol descriptive, use matching `skeleton.test.tsx` and
-  `skeleton.stories.tsx` support names, and use role-based filenames only when
-  the owner has multiple distinct skeletons.
+- `skeleton.tsx`: required when this component needs a loading placeholder.
+  It must mirror the component and export `<ComponentName>Skeleton` through
+  the component's `index.ts`. Use matching `skeleton.stories.tsx` and, when
+  warranted, `skeleton.test.tsx` support names. For a `parts/` component, define
+  and export its skeleton in that component's own `.tsx` file instead.
 - `parts/`: optional and reserved for extracted UI subcomponents used only by
   the owning component.
 - `helper.ts`: required when the component owns deterministic non-UI helpers;
@@ -105,6 +106,9 @@ Private parts follow these ownership rules:
 - A part that needs an owner-level type imports it relatively, such as
   `../types`, rather than through the owner's public alias.
 - Do not export parts from the owner's `index.ts`.
+- A part's skeleton is defined and exported in the same file as that part,
+  remains owner-private, and is covered by the part's mirrored support files.
+  Do not create separate skeleton files under `parts/`.
 - Name parts for their UI role. Ordinal names are acceptable only when order is
   the actual role, such as steps in a fixed wizard.
 - Promote a part to its own `components/<component-name>/` directory when it

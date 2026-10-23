@@ -9,39 +9,15 @@ import { FormattedDate } from '@/shared/components/date';
 import { Money } from '@/shared/components/money';
 import { SearchField } from '@/shared/components/search-field';
 import { StatusBadge } from '@/shared/components/status-badge';
-import { TablePagination } from '@/shared/components/table-pagination';
 import {
   ELedgerAccountStatus,
   type ILedgerAccountDto,
   type IMoneyDto,
-  type IPaginationResponseMeta,
   type ULedgerAccountStatus,
 } from '@/shared/lib/api/Api';
 import { Link } from 'react-router-dom';
 
-export interface LedgerAccountsTableProps {
-  data: ILedgerAccountDto[];
-  loading?: boolean;
-  selectable?: boolean;
-  selectedRowIds?: (string | number)[];
-  onRowSelectionChange?: (selectedIds: (string | number)[]) => void;
-  pagination?: IPaginationResponseMeta;
-  onPageChange?: (page: number) => void;
-  stickyHeader?: boolean;
-  onSortChange: (
-    key: keyof ILedgerAccountDto,
-    direction: 'asc' | 'desc' | null
-  ) => void;
-  onFilterChange: (filters: Record<string, (string | number)[]>) => void;
-  currentSortKey?: string;
-  currentSortDirection?: 'asc' | 'desc' | null;
-  className?: string;
-  'data-testid'?: string;
-  searchValue?: string;
-  onSearchChange: (value: string) => void;
-  filters: Record<string, (string | number)[]>;
-  onAddAccount: () => void;
-}
+import type { LedgerAccountsTableProps } from './types';
 
 export function LedgerAccountsTable({
   data,
@@ -76,12 +52,14 @@ export function LedgerAccountsTable({
     return [
       {
         dataIndex: 'name',
+        proportion: 2.5,
+        minWidth: 220,
         title: account_name_label,
         sortable: true,
         render: (value, row) => (
           <Link
             to={row.id}
-            className="hover:text-brand-primary group-hover/row:text-brand-primary transition-colors duration-200"
+            className="hover:text-link group-hover/row:text-link transition-colors duration-200"
           >
             {String(value)}
           </Link>
@@ -89,6 +67,9 @@ export function LedgerAccountsTable({
       },
       {
         dataIndex: 'balance',
+        align: 'right',
+        proportion: 1.5,
+        minWidth: 190,
         title: balance_text,
         sortable: true,
         render: (value, row) => (
@@ -115,8 +96,9 @@ export function LedgerAccountsTable({
       {
         dataIndex: 'status',
         title: status_text,
-        sortable: true,
+        sortable: false,
         filterable: true,
+        filterMultiple: false,
         filterOptions: [
           { label: active_label, value: ELedgerAccountStatus.Active },
           { label: archived_label, value: ELedgerAccountStatus.Archived },
@@ -149,6 +131,7 @@ export function LedgerAccountsTable({
       },
       {
         dataIndex: 'id',
+        width: 72,
         title: '',
         sortable: false,
         render: () => {
@@ -185,6 +168,11 @@ export function LedgerAccountsTable({
 
       <DataTable
         columns={columns}
+        pagination={
+          pagination && onPageChange
+            ? { meta: pagination, onPageChange }
+            : undefined
+        }
         data={data}
         loading={loading}
         selectable={selectable}
@@ -199,13 +187,6 @@ export function LedgerAccountsTable({
         data-testid={dataTestId}
         filters={filters}
       />
-      {pagination && onPageChange && (
-        <TablePagination
-          meta={pagination}
-          onPageChange={onPageChange}
-          className="mx-0 w-auto justify-end"
-        />
-      )}
     </div>
   );
 }

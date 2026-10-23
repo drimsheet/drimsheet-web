@@ -1,4 +1,7 @@
-import { ProfilePreferences } from '@/user/pages/profile/parts/profile-preferences';
+import {
+  ProfilePreferences,
+  ProfilePreferencesSkeleton,
+} from '@/user/pages/profile/parts/profile-preferences';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
@@ -26,4 +29,8 @@ export const Saved: TStory = { args: { isSaved: true } };
 export const Failed: TStory = { args: { hasError: true } };
 export const ManualAndSystem: TStory = {
   args: { preferences: { theme: 'system', appUsageMode: 'power_user' } },
+};
+
+export const Skeleton: TStory = {
+  render: () => <ProfilePreferencesSkeleton />,
 };

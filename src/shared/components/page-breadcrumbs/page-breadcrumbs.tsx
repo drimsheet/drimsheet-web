@@ -6,20 +6,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/shared/components/breadcrumb';
-import { Skeleton } from '@/shared/components/skeleton';
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
-
-export interface IPageBreadcrumb {
-  label: string;
-  link?: string;
-  next?: IPageBreadcrumb;
-}
-
-export interface PageBreadcrumbsProps {
-  breadcrumb: IPageBreadcrumb;
-  isLoading?: boolean;
-}
+import { PageBreadcrumbsSkeleton } from './skeleton';
+import type { IPageBreadcrumb, PageBreadcrumbsProps } from './types';
 
 function flattenBreadcrumb(breadcrumb: IPageBreadcrumb) {
   const breadcrumbs: IPageBreadcrumb[] = [];
@@ -41,11 +31,9 @@ export function PageBreadcrumbs({
   breadcrumb,
   isLoading,
 }: Readonly<PageBreadcrumbsProps>) {
-  if (isLoading) {
-    return <Skeleton className="w-25 h-3" />;
-  }
-
   const breadcrumbs = flattenBreadcrumb(breadcrumb);
+  if (isLoading)
+    return <PageBreadcrumbsSkeleton itemsCount={breadcrumbs.length} />;
 
   return (
     <Breadcrumb>

@@ -5,6 +5,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/shared/components/collapsible';
+import { PageTitle } from '@/shared/components/page-title';
 import { ChevronDown } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,10 +15,8 @@ import { StepLayout } from './step-layout';
 export function ExpenseCategoriesStep({
   onBack,
   onSubmit,
-  onRetry,
   isSubmitting = false,
   hasStarted = false,
-  isRetryBlocked = false,
 }: Readonly<ExpenseCategoriesStepProps>) {
   const { t } = useTranslation('onboarding');
 
@@ -47,11 +46,10 @@ export function ExpenseCategoriesStep({
             {back_label}
           </Button>
           <Button
-            type={hasStarted ? 'button' : 'submit'}
+            type="submit"
             form={formId}
-            onClick={hasStarted ? onRetry : undefined}
             loading={isSubmitting}
-            disabled={isRetryBlocked}
+            disabled={hasStarted}
           >
             {continue_label}
           </Button>
@@ -60,12 +58,7 @@ export function ExpenseCategoriesStep({
     >
       <div className="flex w-full flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <h1
-            id={titleId}
-            className="m-0 text-2xl font-semibold tracking-tight"
-          >
-            {title}
-          </h1>
+          <PageTitle id={titleId}>{title}</PageTitle>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
         <Collapsible defaultOpen className="mb-6 flex flex-col gap-1">

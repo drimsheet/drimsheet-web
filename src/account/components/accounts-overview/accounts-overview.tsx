@@ -1,20 +1,10 @@
 import { LedgerTypeIcon } from '@/account/components/ledger-type-icon';
 import { Money } from '@/shared/components/money';
-import {
-  ELedgerType,
-  type IMoneyDto,
-  type ULedgerType,
-} from '@/shared/lib/api/Api';
+import { ELedgerType, type ULedgerType } from '@/shared/lib/api/Api';
 import { cn } from '@/shared/lib/utils/cn';
 import { useTranslation } from 'react-i18next';
 
-export interface LedgerAccountsOverviewProps {
-  type: ULedgerType;
-  title: string;
-  balance: IMoneyDto;
-  description: string;
-  className?: string;
-}
+import type { LedgerAccountsOverviewProps } from './types';
 
 export function LedgerAccountsOverview({
   type,
@@ -47,7 +37,7 @@ export function LedgerAccountsOverview({
       <div className="flex items-center gap-4">
         <LedgerTypeIcon type={type} />
         <div className="flex flex-col gap-0.5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {ledgerTypeLabel}
           </span>
           <span className="text-base font-semibold text-foreground font-heading leading-tight">
@@ -64,27 +54,6 @@ export function LedgerAccountsOverview({
         <span className="text-xs sm:text-sm text-muted-foreground text-right leading-normal mt-0.5">
           {description}
         </span>
-      </div>
-    </div>
-  );
-}
-
-export function LedgerAccountsOverviewSkeleton() {
-  return (
-    <div className="flex items-center justify-between p-5 sm:p-5 border border-border bg-card text-card-foreground rounded-2xl shadow-xs animate-pulse">
-      {/* Left Section: Icon and Titles */}
-      <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded-full bg-muted" />
-        <div className="flex flex-col gap-0.5">
-          <span className="w-16 h-3 rounded bg-muted" />
-          <span className="w-24 h-5 rounded bg-muted mt-1" />
-        </div>
-      </div>
-
-      {/* Right Section: Balance and Description */}
-      <div className="flex flex-col items-end gap-0.5">
-        <span className="w-20 h-6 rounded bg-muted" />
-        <span className="w-32 h-3 rounded bg-muted mt-1" />
       </div>
     </div>
   );

@@ -84,5 +84,4 @@ export interface RecentTransactionsProps {
 
 export interface SectionErrorProps {
   title: string;
-  onRetry: () => void;
 }

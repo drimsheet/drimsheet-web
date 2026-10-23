@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/shared/components/card';
 import { Money } from '@/shared/components/money';
+import { Skeleton } from '@/shared/components/skeleton';
 import { cn } from '@/shared/lib/utils/cn';
 import { ArrowDownLeft, ArrowUpRight, Tags } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -15,13 +16,13 @@ export function CategorySummary({ summary }: Readonly<CategorySummaryProps>) {
     {
       title: t('categories_revenue_label'),
       icon: ArrowUpRight,
-      iconColor: 'text-success',
+      iconColor: 'text-financial-income',
       section: summary.revenue,
     },
     {
       title: t('categories_expenses_label'),
       icon: ArrowDownLeft,
-      iconColor: 'text-destructive',
+      iconColor: 'text-financial-expense',
       section: summary.expenses,
     },
   ];
@@ -93,6 +94,41 @@ export function CategorySummary({ summary }: Readonly<CategorySummaryProps>) {
                 {transactions_text}
               </p>
             </section>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export function CategorySummarySkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('categories_loading_label');
+
+  return (
+    <div aria-busy="true" className="flex min-w-0 flex-col gap-3">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
+      <Skeleton className="h-5 w-56 max-w-full" />
+      <Card size="sm">
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3">
+            {[0, 1].map((item) => (
+              <div
+                key={item}
+                className="flex min-w-0 flex-col gap-3 py-1 pl-4 first:border-r first:border-border/50 first:pr-4 first:pl-0 md:px-5"
+              >
+                <Skeleton className="h-5 w-full max-w-28" />
+                <Skeleton className="h-8 w-full max-w-40 md:h-9" />
+                <Skeleton className="h-4 w-full max-w-32" />
+              </div>
+            ))}
+            <div className="col-span-2 mt-4 grid min-w-0 grid-cols-2 items-center gap-2 border-t border-border/50 pt-4 md:col-span-1 md:mt-0 md:flex md:flex-col md:items-start md:gap-3 md:border-t-0 md:border-l md:py-1 md:pl-5">
+              <Skeleton className="h-5 w-full max-w-28" />
+              <Skeleton className="h-8 w-full max-w-40 md:h-9" />
+              <Skeleton className="h-4 w-full max-w-32" />
+            </div>
           </div>
         </CardContent>
       </Card>

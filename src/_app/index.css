@@ -2,13 +2,90 @@
 @import 'shadcn/tailwind.css';
 @import 'tailwindcss';
 
+/* Theme-independent palette. Semantic roles below select these shades. */
+@theme static {
+  --color-neutral-0: #fffefa;
+  --color-neutral-50: #f8f7f2;
+  --color-neutral-100: #efeee8;
+  --color-neutral-200: #e4e3dc;
+  --color-neutral-300: #c3c1ba;
+  --color-neutral-400: #999790;
+  --color-neutral-500: #77756f;
+  --color-neutral-600: #5f5e58;
+  --color-neutral-700: #45433f;
+  --color-neutral-800: #302e2b;
+  --color-neutral-900: #252323;
+  --color-neutral-950: #1a1919;
+  --color-neutral-1000: #121111;
+
+  --color-butter-50: #fffced;
+  --color-butter-100: #fdf8dd;
+  --color-butter-200: #faeebc;
+  --color-butter-300: #f7e599;
+  --color-butter-400: #f4db72;
+  --color-butter-500: #d2b34e;
+  --color-butter-600: #b08c28;
+  --color-butter-700: #896d24;
+  --color-butter-800: #63501f;
+  --color-butter-900: #403418;
+  --color-butter-950: #302714;
+
+  --color-green-50: #f0f8f2;
+  --color-green-100: #dbebe0;
+  --color-green-200: #b0d2bd;
+  --color-green-300: #86b99b;
+  --color-green-400: #6aa183;
+  --color-green-500: #4f8a6b;
+  --color-green-600: #327354;
+  --color-green-700: #285d44;
+  --color-green-800: #1e4835;
+  --color-green-900: #153527;
+  --color-green-950: #102b20;
+
+  --color-terracotta-50: #fcf3ef;
+  --color-terracotta-100: #f5dfd7;
+  --color-terracotta-200: #e6b7a9;
+  --color-terracotta-300: #d58f7c;
+  --color-terracotta-400: #c87e6a;
+  --color-terracotta-500: #ba6c59;
+  --color-terracotta-600: #ad5b48;
+  --color-terracotta-700: #884739;
+  --color-terracotta-800: #65342a;
+  --color-terracotta-900: #45221c;
+  --color-terracotta-950: #351a15;
+
+  --color-blue-50: #f0f6fb;
+  --color-blue-100: #dceaf4;
+  --color-blue-200: #b5d1e6;
+  --color-blue-300: #8eb9d8;
+  --color-blue-400: #709dbe;
+  --color-blue-500: #5281a5;
+  --color-blue-600: #35668c;
+  --color-blue-700: #2b5272;
+  --color-blue-800: #214059;
+  --color-blue-900: #182e41;
+  --color-blue-950: #132536;
+
+  --color-amber-50: #fff8e9;
+  --color-amber-100: #fbedd1;
+  --color-amber-200: #f2d59f;
+  --color-amber-300: #e9be6a;
+  --color-amber-400: #cea04f;
+  --color-amber-500: #b48334;
+  --color-amber-600: #9a6714;
+  --color-amber-700: #7b5314;
+  --color-amber-800: #5e3f13;
+  --color-amber-900: #422d10;
+  --color-amber-950: #35240e;
+}
+
 :root {
-  --sans: 'Figtree', system-ui, 'Segoe UI', sans-serif;
-  --heading: 'Figtree', system-ui, 'Segoe UI', sans-serif;
+  --sans: 'Inter', system-ui, 'Segoe UI', sans-serif;
+  --heading: 'Inter', system-ui, 'Segoe UI', sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
+  font: 16px/1.5 var(--sans);
+  letter-spacing: 0;
   color-scheme: light;
   color: var(--foreground);
   background: var(--background);
@@ -17,49 +94,75 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-
-  --background: oklch(0.9842 0.0034 247.86);
-  --foreground: oklch(0.2077 0.0398 265.75);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2077 0.0398 265.75);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2077 0.0398 265.75);
-  --primary: oklch(0.5461 0.2152 262.88);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.9288 0.0126 255.51);
-  --secondary-foreground: oklch(0.2795 0.0368 260.03);
-  --muted: oklch(0.9683 0.0069 247.9);
-  --muted-foreground: oklch(0.4455 0.0374 257.28);
-  --accent: oklch(0.9319 0.0316 255.59);
-  --accent-foreground: oklch(0.4244 0.1809 265.64);
-  --brand-primary: oklch(0.6231 0.188 259.81);
-  --destructive: oklch(0.5054 0.1905 27.52);
-  --success: oklch(0.5081 0.1049 165.61);
-  --info: oklch(0.5 0.1193 242.75);
-  --warning: oklch(0.5553 0.1455 49);
-  --error: oklch(0.5054 0.1905 27.52);
-  --border: oklch(0.869 0.0198 252.89);
-  --input: oklch(0.869 0.0198 252.89);
-  --ring: oklch(0.6231 0.188 259.81);
-  --chart-1: oklch(0.6231 0.188 259.81);
-  --chart-2: oklch(0.5109 0.0861 186.39);
-  --chart-3: oklch(0.6658 0.1574 58.32);
-  --chart-4: oklch(0.5413 0.2466 293.01);
-  --chart-5: oklch(0.5916 0.218 0.58);
-
-  --radius: 0.45rem;
-
-  --sidebar: var(--card);
-  --sidebar-foreground: var(--foreground);
+  --background: var(--color-neutral-0);
+  --foreground: var(--color-neutral-900);
+  --card: var(--color-neutral-50);
+  --card-foreground: var(--color-neutral-900);
+  --popover: var(--color-neutral-0);
+  --popover-foreground: var(--color-neutral-900);
+  --primary: var(--color-butter-400);
+  --primary-foreground: var(--color-neutral-900);
+  --primary-hover: var(--color-butter-300);
+  --primary-pressed: var(--color-butter-200);
+  --secondary: var(--color-neutral-900);
+  --secondary-foreground: var(--color-neutral-0);
+  --secondary-hover: var(--color-neutral-800);
+  --secondary-pressed: var(--color-neutral-700);
+  --muted: var(--color-neutral-50);
+  --muted-foreground: var(--color-neutral-600);
+  --accent: var(--color-neutral-100);
+  --accent-foreground: var(--color-neutral-900);
+  --border: var(--color-neutral-200);
+  --input: var(--color-neutral-500);
+  --ring: var(--color-neutral-600);
+  --input-surface: var(--color-neutral-50);
+  --sidebar: var(--color-neutral-100);
+  --sidebar-foreground: var(--color-neutral-600);
+  --sidebar-accent: var(--color-butter-400);
+  --sidebar-accent-foreground: var(--color-neutral-900);
+  --link: var(--color-butter-800);
+  --financial-income: var(--color-green-600);
+  --financial-income-surface: var(--color-green-50);
+  --financial-expense: var(--color-terracotta-600);
+  --financial-expense-surface: var(--color-terracotta-50);
+  --financial-neutral: var(--color-neutral-500);
+  --chart-track: var(--color-neutral-200);
+  --selection: var(--color-butter-50);
+  --selection-hover: var(--color-butter-100);
+  --selection-foreground: var(--color-neutral-900);
+  --success: var(--color-green-700);
+  --success-surface: var(--color-green-50);
+  --success-hover: var(--color-green-100);
+  --success-border: var(--color-green-600);
+  --info: var(--color-blue-700);
+  --info-surface: var(--color-blue-50);
+  --info-hover: var(--color-blue-100);
+  --info-border: var(--color-blue-600);
+  --warning: var(--color-amber-700);
+  --warning-surface: var(--color-amber-50);
+  --warning-hover: var(--color-amber-100);
+  --warning-border: var(--color-amber-600);
+  --error: var(--color-terracotta-700);
+  --error-surface: var(--color-terracotta-50);
+  --error-hover: var(--color-terracotta-100);
+  --error-border: var(--color-terracotta-600);
+  --destructive-foreground: var(--color-neutral-0);
+  --brand-primary: var(--primary);
+  --destructive: var(--error);
+  --destructive-surface: var(--error-surface);
+  --destructive-hover: var(--error-hover);
+  --destructive-border: var(--error-border);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--accent-foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
+  --chart-1: var(--financial-income);
+  --chart-2: var(--financial-expense);
+  --chart-3: var(--financial-neutral);
+  --chart-4: var(--financial-income);
+  --chart-5: var(--financial-expense);
+
+  --radius: 0.45rem;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -76,6 +179,7 @@
   }
 
   body {
+    font-size: 0.875rem;
     margin: 0;
   }
 
@@ -87,16 +191,16 @@
   }
 
   h1 {
-    font-size: 56px;
-    letter-spacing: -1.68px;
+    font-size: 30px;
+    letter-spacing: -0.6px;
     margin: 32px 0;
     @media (max-width: 1024px) {
-      font-size: 36px;
+      font-size: 28px;
       margin: 20px 0;
     }
   }
   h2 {
-    font-size: 24px;
+    font-size: 20px;
     line-height: 118%;
     letter-spacing: -0.24px;
     margin: 0 0 8px;
@@ -130,47 +234,109 @@
 
 .dark {
   color-scheme: dark;
-  --background: oklch(0.1831 0.0309 263.38);
-  --foreground: oklch(0.9456 0.0177 253.34);
-  --card: oklch(0.2101 0.0318 264.66);
-  --card-foreground: oklch(0.9456 0.0177 253.34);
-  --popover: oklch(0.2101 0.0318 264.66);
-  --popover-foreground: oklch(0.9456 0.0177 253.34);
-  --primary: oklch(0.7137 0.1434 254.62);
-  --primary-foreground: oklch(0.1831 0.0309 263.38);
-  --secondary: oklch(0.2795 0.0368 260.03);
-  --secondary-foreground: oklch(0.9288 0.0126 255.51);
-  --muted: oklch(0.2449 0.0388 264.35);
-  --muted-foreground: oklch(0.7107 0.0351 256.79);
-  --accent: oklch(0.2823 0.0874 267.94);
-  --accent-foreground: oklch(0.8823 0.0571 254.13);
-  --brand-primary: oklch(0.6231 0.188 259.81);
-  --destructive: oklch(0.7106 0.1661 22.22);
-  --success: oklch(0.7729 0.1535 163.22);
-  --info: oklch(0.7535 0.139 232.66);
-  --warning: oklch(0.8369 0.1644 84.43);
-  --error: oklch(0.7106 0.1661 22.22);
-  --border: oklch(0.3717 0.0392 257.29);
-  --input: oklch(0.3717 0.0392 257.29);
-  --ring: oklch(0.7137 0.1434 254.62);
-  --chart-1: oklch(0.7137 0.1434 254.62);
-  --chart-2: oklch(0.7845 0.1325 181.91);
-  --chart-3: oklch(0.8369 0.1644 84.43);
-  --chart-4: oklch(0.709 0.1592 293.54);
-  --chart-5: oklch(0.7192 0.169 13.43);
-  --sidebar: var(--card);
-  --sidebar-foreground: var(--foreground);
+  --background: var(--color-neutral-950);
+  --foreground: var(--color-neutral-100);
+  --card: var(--color-neutral-900);
+  --card-foreground: var(--color-neutral-100);
+  --popover: var(--color-neutral-900);
+  --popover-foreground: var(--color-neutral-100);
+  --primary: var(--color-butter-400);
+  --primary-foreground: var(--color-neutral-900);
+  --primary-hover: var(--color-butter-300);
+  --primary-pressed: var(--color-butter-200);
+  --secondary: var(--color-neutral-100);
+  --secondary-foreground: var(--color-neutral-900);
+  --secondary-hover: var(--color-neutral-200);
+  --secondary-pressed: var(--color-neutral-300);
+  --muted: var(--color-neutral-900);
+  --muted-foreground: var(--color-neutral-400);
+  --accent: var(--color-neutral-800);
+  --accent-foreground: var(--color-neutral-100);
+  --border: var(--color-neutral-800);
+  --input: var(--color-neutral-500);
+  --ring: var(--color-neutral-400);
+  --input-surface: var(--color-neutral-1000);
+  --sidebar: var(--color-neutral-1000);
+  --sidebar-foreground: var(--color-neutral-300);
+  --sidebar-accent: var(--color-butter-950);
+  --sidebar-accent-foreground: var(--color-butter-400);
+  --link: var(--color-butter-400);
+  --financial-income: var(--color-green-300);
+  --financial-income-surface: var(--color-green-950);
+  --financial-expense: var(--color-terracotta-300);
+  --financial-expense-surface: var(--color-terracotta-950);
+  --financial-neutral: var(--color-neutral-400);
+  --chart-track: var(--color-neutral-800);
+  --selection: var(--color-butter-950);
+  --selection-hover: var(--color-neutral-800);
+  --selection-foreground: var(--color-butter-400);
+  --success: var(--color-green-300);
+  --success-surface: var(--color-green-950);
+  --success-hover: var(--color-green-900);
+  --success-border: var(--color-green-300);
+  --info: var(--color-blue-300);
+  --info-surface: var(--color-blue-950);
+  --info-hover: var(--color-blue-900);
+  --info-border: var(--color-blue-300);
+  --warning: var(--color-amber-300);
+  --warning-surface: var(--color-amber-950);
+  --warning-hover: var(--color-amber-900);
+  --warning-border: var(--color-amber-300);
+  --error: var(--color-terracotta-300);
+  --error-surface: var(--color-terracotta-950);
+  --error-hover: var(--color-terracotta-900);
+  --error-border: var(--color-terracotta-300);
+  --destructive-foreground: var(--color-neutral-950);
+  --brand-primary: var(--primary);
+  --destructive: var(--error);
+  --destructive-surface: var(--error-surface);
+  --destructive-hover: var(--error-hover);
+  --destructive-border: var(--error-border);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--accent-foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
+  --chart-1: var(--financial-income);
+  --chart-2: var(--financial-expense);
+  --chart-3: var(--financial-neutral);
+  --chart-4: var(--financial-income);
+  --chart-5: var(--financial-expense);
 }
 
 @theme inline {
-  --font-sans: 'Figtree', system-ui, 'Segoe UI', sans-serif;
-  --font-heading: 'Figtree', system-ui, 'Segoe UI', sans-serif;
+  --color-destructive-border: var(--destructive-border);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-hover: var(--destructive-hover);
+  --color-destructive-surface: var(--destructive-surface);
+  --color-error-border: var(--error-border);
+  --color-error-hover: var(--error-hover);
+  --color-error-surface: var(--error-surface);
+  --color-financial-expense-surface: var(--financial-expense-surface);
+  --color-financial-income-surface: var(--financial-income-surface);
+  --color-info-border: var(--info-border);
+  --color-info-hover: var(--info-hover);
+  --color-info-surface: var(--info-surface);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-pressed: var(--primary-pressed);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-secondary-pressed: var(--secondary-pressed);
+  --color-selection-foreground: var(--selection-foreground);
+  --color-selection-hover: var(--selection-hover);
+  --color-selection: var(--selection);
+  --color-success-border: var(--success-border);
+  --color-success-hover: var(--success-hover);
+  --color-success-surface: var(--success-surface);
+  --color-warning-border: var(--warning-border);
+  --color-warning-hover: var(--warning-hover);
+  --color-warning-surface: var(--warning-surface);
+  --color-input-surface: var(--input-surface);
+  --color-link: var(--link);
+  --color-financial-income: var(--financial-income);
+  --color-financial-expense: var(--financial-expense);
+  --color-financial-neutral: var(--financial-neutral);
+  --color-chart-track: var(--chart-track);
+  --font-sans: 'Inter', system-ui, 'Segoe UI', sans-serif;
+  --font-heading: 'Inter', system-ui, 'Segoe UI', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -284,43 +450,45 @@
   mix-blend-mode: normal;
 }
 
-/* App navigation: a quiet ledger margin, with blue marking the current page. */
-[data-sidebar='sidebar']:has(.app-sidebar-header) {
-  --sidebar: var(--background);
-}
-
+/* App navigation uses the distinct sidebar surface in both themes. */
 .app-nav [data-sidebar='group-label'] {
   margin-bottom: 0.5rem;
-  font-family: var(--sans);
-  font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  line-height: 1;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted-foreground);
 }
 
 .app-nav [data-sidebar='menu-button'] {
-  font-size: 0.8125rem;
-  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  color: var(--sidebar-foreground);
 }
 
 .app-nav [data-sidebar='menu-button']:hover {
+  background: var(--accent);
   color: var(--foreground);
 }
 
 .app-nav [data-sidebar='menu-button'][data-active='true'] {
+  background: var(--sidebar-accent);
   color: var(--sidebar-accent-foreground);
   font-weight: 600;
-  box-shadow: inset 2px 0 0 var(--sidebar-primary);
-}
-
-.app-nav [data-sidebar='menu-button']:disabled {
-  opacity: 1;
 }
 
 .app-nav [data-slot='badge'] {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   font-weight: 400;
   color: var(--muted-foreground);
+}
+
+[data-slot='input'],
+[data-slot='textarea'],
+[data-slot='select-trigger'],
+[data-slot='input-group'] {
+  background-color: var(--input-surface);
+}
+
+[data-slot='skeleton'] {
+  background-color: var(--border);
 }

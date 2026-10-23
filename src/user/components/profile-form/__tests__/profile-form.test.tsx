@@ -64,7 +64,7 @@ describe('ProfileForm', () => {
     );
     expect(screen.getByLabelText('First name')).toBeDisabled();
     expect(screen.getByLabelText('Last name')).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Saving…' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
   });
 });

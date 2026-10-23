@@ -1,2 +1,8 @@
 export { CounterpartyAddressFields } from './counterparty-address-fields';
-export type { CounterpartyAddressFieldsProps, IAddressValues } from './types';
+export { CounterpartyAddressFieldsSkeleton } from './skeleton';
+
+export type {
+  CounterpartyAddressFieldsProps,
+  CounterpartyAddressFieldsSkeletonProps,
+  IAddressValues,
+} from './types';

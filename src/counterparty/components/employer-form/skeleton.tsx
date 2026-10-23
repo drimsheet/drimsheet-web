@@ -1,3 +1,11 @@
+import { CounterpartyAddressFieldsSkeleton } from '@/counterparty/components/counterparty-address-fields';
+import { CounterpartyTypeSelectSkeleton } from '@/counterparty/components/counterparty-type-select';
+import {
+  Field,
+  FieldGroup,
+  FieldSeparator,
+  FieldSet,
+} from '@/shared/components/field';
 import { Skeleton } from '@/shared/components/skeleton';
 import { useTranslation } from 'react-i18next';
 import type { EmployerFormSkeletonProps } from './types';
@@ -8,27 +16,33 @@ export function EmployerFormSkeleton({
   const { t } = useTranslation('counterparty');
   const loading_text = t('employer_form_loading_text');
 
+  const optional_fields_separator = t('optional_fields_separator');
+
   return (
-    <output aria-label={loading_text} className="space-y-5">
-      <span className="sr-only">{loading_text}</span>
-      <Skeleton className="h-5 w-24" />
-      <Skeleton className="h-9 w-full" />
-      <Skeleton className="h-5 w-24" />
-      <Skeleton className="h-9 w-full" />
-      <Skeleton className="h-5 w-32" />
-      <Skeleton className="h-9 w-full" />
-      <div className="space-y-4 border-t pt-4">
-        <Skeleton className="h-5 w-36" />
-        <Skeleton className="h-9 w-full" />
-        <Skeleton className="h-9 w-full" />
-        <Skeleton className="h-9 w-full" />
-        {showPostalCode && <Skeleton className="h-9 w-full" />}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Skeleton className="h-9 w-full" />
-          <Skeleton className="h-9 w-full" />
-        </div>
-      </div>
-      <Skeleton className="h-9 w-28 ml-auto" />
-    </output>
+    <div aria-busy="true">
+      <output className="sr-only" aria-label={loading_text} aria-busy="true">
+        {loading_text}
+      </output>
+      <FieldSet aria-hidden="true">
+        <FieldGroup className="gap-5">
+          <Field>
+            <Skeleton className="h-4 w-full max-w-24" />
+            <Skeleton className="h-9 w-full" />
+          </Field>
+          <CounterpartyTypeSelectSkeleton />
+          <FieldSeparator className="my-3">
+            {optional_fields_separator}
+          </FieldSeparator>
+          <Field>
+            <Skeleton className="h-4 w-full max-w-32" />
+            <Skeleton className="h-9 w-full" />
+          </Field>
+          <CounterpartyAddressFieldsSkeleton showPostalCode={showPostalCode} />
+          <div className="flex justify-end gap-2 pt-2">
+            <Skeleton className="h-9 w-28" />
+          </div>
+        </FieldGroup>
+      </FieldSet>
+    </div>
   );
 }

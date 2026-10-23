@@ -9,6 +9,7 @@ export interface ICounterpartyFormValues {
 export interface CounterpartyFormProps {
   submitLabel?: string;
   onCancel?: () => void;
+  typeLoading?: boolean;
   typeRestriction?: { value: UCounterpartyType; description: string };
   fieldErrors?: Record<string, string>;
   onSubmit: (values: ICounterpartyFormValues) => void;

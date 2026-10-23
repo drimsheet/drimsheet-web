@@ -1,4 +1,7 @@
-import { CategoryTransactions } from '@/account/pages/category-details/parts/category-transactions';
+import {
+  CategoryTransactions,
+  CategoryTransactionsSkeleton,
+} from '@/account/pages/category-details/parts/category-transactions';
 import type { ICategoryTransaction } from '@/account/pages/category-details/types';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
@@ -30,4 +33,8 @@ export const Filtered: TStory = {
     transactions: transactions.slice(0, 1),
     selectedCounterparty: 'Google',
   },
+};
+
+export const Skeleton: TStory = {
+  render: () => <CategoryTransactionsSkeleton />,
 };

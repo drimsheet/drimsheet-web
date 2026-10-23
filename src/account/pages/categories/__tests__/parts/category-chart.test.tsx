@@ -10,6 +10,7 @@ describe('CategoryChart', () => {
     const amount = { amount: -123450, currencyCode: 'NGN', isMinorUnit: true };
     render(
       <CategoryChart
+        type="revenue"
         title="Revenue by category"
         description="Net revenue"
         section={{
@@ -39,6 +40,7 @@ describe('CategoryChart', () => {
     const amount = { amount: 0, currencyCode: 'NGN', isMinorUnit: false };
     render(
       <CategoryChart
+        type="revenue"
         title="Revenue by category"
         description="Net revenue"
         section={{

@@ -1,10 +1,14 @@
-import { AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
+import { PageTitle } from '@/shared/components/page-title';
+import { useTranslation } from 'react-i18next';
 
 export function DashboardPage() {
+  const { t } = useTranslation('shared');
+  const page_title = t('dashboard');
+
   return (
-    <>
-      <AppHeader />
-      <div>Dashboard</div>
-    </>
+    <AppBody>
+      <PageTitle>{page_title}</PageTitle>
+    </AppBody>
   );
 }

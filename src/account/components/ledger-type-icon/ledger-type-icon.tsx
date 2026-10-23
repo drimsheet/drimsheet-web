@@ -10,23 +10,25 @@ export interface LedgerTypeIconProps {
 const typeConfigs = {
   [ELedgerType.Revenue]: {
     icon: TrendingUp,
-    style: 'bg-success/10 text-success border-success/20',
+    style:
+      'bg-financial-income-surface text-financial-income border-financial-income',
   },
   [ELedgerType.Expense]: {
     icon: Receipt,
-    style: 'bg-destructive/10 text-destructive border-destructive/20',
+    style:
+      'bg-financial-expense-surface text-financial-expense border-financial-expense',
   },
   [ELedgerType.Asset]: {
     icon: Wallet,
-    style: 'bg-info/10 text-info border-info/20',
+    style: 'bg-info-surface text-info border-info-border',
   },
   [ELedgerType.Liability]: {
     icon: CreditCard,
-    style: 'bg-warning/10 text-warning border-warning/20',
+    style: 'bg-warning-surface text-warning border-warning-border',
   },
   [ELedgerType.Equity]: {
     icon: Scale,
-    style: 'bg-primary/10 text-primary border-primary/20',
+    style: 'bg-selection text-selection-foreground border-primary',
   },
 };
 

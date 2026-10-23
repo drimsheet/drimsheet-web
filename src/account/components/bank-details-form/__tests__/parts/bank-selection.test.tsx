@@ -88,11 +88,27 @@ describe('BankSelection', () => {
     expect(onBankNameChange).toHaveBeenCalledWith('Access Bank');
   });
 
-  it('disables bank name input when loading banks', () => {
-    render(<BankSelection {...defaultProps} isBanksLoading />);
+  it('replaces the bank selection with a skeleton until banks arrive', () => {
+    const { rerender } = render(
+      <BankSelection {...defaultProps} isBanksLoading />
+    );
 
-    const bankNameInput = screen.getByRole('combobox', { name: 'Bank name' });
-    expect(bankNameInput).toHaveAttribute('data-disabled');
-    expect(bankNameInput).toHaveAttribute('placeholder', 'Loading banks...');
+    expect(
+      screen.getByRole('status', { name: 'Loading banks...' })
+    ).toHaveAttribute('aria-busy', 'true');
+    expect(
+      screen.queryByRole('combobox', { name: 'Bank name' })
+    ).not.toBeInTheDocument();
+    rerender(<BankSelection {...defaultProps} />);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('combobox', { name: 'Bank name' })
+    ).toBeInTheDocument();
   });
+});
+
+it('keeps country selection available before the bank query is enabled', () => {
+  render(<BankSelection {...defaultProps} bankLocation="" isBanksLoading />);
+  expect(screen.getByPlaceholderText('Select a country')).toBeEnabled();
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
 });

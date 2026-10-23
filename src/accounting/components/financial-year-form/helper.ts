@@ -1,13 +1,16 @@
 import { FISCAL_YEAR_STARTS } from '@/accounting/lib/configs/fiscal-year-start.config';
 import type { TPeriodNameFactory } from '@/accounting/lib/types/period.types';
 import { accountingPeriodUtils } from '@/accounting/lib/utils/accounting-periods';
-import type { UJurisdictionCode } from '@/shared/lib/api/Api';
+import type {
+  UAccountingIntervalUnit,
+  UJurisdictionCode,
+} from '@/shared/lib/api/Api';
 import dayjs from 'dayjs';
 import type { IFinancialYearFormValues } from './types';
 
 function createInitialValues(
   currentDate: string,
-  createName: TPeriodNameFactory,
+  createName: TPeriodNameFactory<UAccountingIntervalUnit>,
   maxFiscalMonths: number,
   defaultName: string,
   values: Partial<IFinancialYearFormValues> = {},

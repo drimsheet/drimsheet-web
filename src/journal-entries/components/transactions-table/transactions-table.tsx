@@ -10,7 +10,6 @@ import { FormattedDate } from '@/shared/components/date';
 import { ItemMedia } from '@/shared/components/item';
 import { Money } from '@/shared/components/money';
 import { SearchField } from '@/shared/components/search-field';
-import { TablePagination } from '@/shared/components/table-pagination';
 import {
   EJournalEntrySourceType,
   ELedgerAccountBalanceEffect,
@@ -108,6 +107,7 @@ export function TransactionsTable({
     const tableColumns: ITableColumn<ITransactionsTableRow>[] = [
       {
         dataIndex: 'direction',
+        width: 64,
         headerRender: () => <span className="sr-only">{directionLabel}</span>,
         render: (_, row) => {
           if (row.direction === EJournalEntrySourceType.Receipt) {
@@ -136,7 +136,7 @@ export function TransactionsTable({
 
           return (
             <ItemMedia
-              className="size-8 rounded-full bg-info/10"
+              className="size-8 rounded-full bg-info-surface"
               role="img"
               aria-label={transferLabel}
               title={transferLabel}
@@ -148,6 +148,7 @@ export function TransactionsTable({
       },
       {
         dataIndex: 'effectiveDate',
+        minWidth: 140,
         title: dateLabel,
         sortable: true,
         render: (value) => (
@@ -159,15 +160,22 @@ export function TransactionsTable({
       },
       {
         dataIndex: 'accountName',
+        proportion: 1.5,
+        minWidth: 180,
         title: accountLabel,
       },
       {
         dataIndex: 'summary',
+        proportion: 2.5,
+        minWidth: 240,
         title: summaryLabel,
         render: (_, row) => <TransactionSummary row={row} />,
       },
       {
         dataIndex: 'amount',
+        align: 'right',
+        proportion: 1.5,
+        minWidth: 170,
         title: amountLabel,
         render: (value) => (
           <Money
@@ -180,6 +188,7 @@ export function TransactionsTable({
 
     tableColumns.push({
       dataIndex: 'action',
+      width: 64,
       title: '',
       render: (_, row) => (
         <Button
@@ -219,6 +228,11 @@ export function TransactionsTable({
 
       <DataTable
         columns={columns}
+        pagination={
+          pagination && onPageChange
+            ? { meta: pagination, onPageChange }
+            : undefined
+        }
         data={rows}
         onSortChange={handleSortChange}
         currentSortKey="effectiveDate"
@@ -226,14 +240,6 @@ export function TransactionsTable({
         className={className}
         data-testid={dataTestId}
       />
-
-      {pagination && onPageChange && (
-        <TablePagination
-          meta={pagination}
-          onPageChange={onPageChange}
-          className="mx-0 w-auto justify-end"
-        />
-      )}
 
       <TransactionDetailsDrawer
         archiving={archiving}

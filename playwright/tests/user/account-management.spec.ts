@@ -83,6 +83,12 @@ async function signIn(page: Page) {
   await page.getByLabel('Password', { exact: true }).fill('Password1!');
   await page.getByRole('button', { name: 'Sign In' }).click();
   await expect(page).toHaveURL('/dashboard');
+  if ((page.viewportSize()?.width ?? 1280) < 768) {
+    await page
+      .getByRole('button', { name: 'Toggle Sidebar', exact: true })
+      .click();
+  }
+
   await expect(
     page.getByRole('button', {
       name: 'Open account management for Integration Entity',
@@ -93,6 +99,7 @@ async function signIn(page: Page) {
 test('opens account management with active and alternate account details', async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 375, height: 900 });
   await signIn(page);
 
   const trigger = page.getByRole('button', {
@@ -121,6 +128,11 @@ test('opens account management with active and alternate account details', async
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
   await expect(trigger).toBeFocused();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth
+    )
+  ).toBe(true);
 });
 
 test('persists a selected color theme preference', async ({ page }) => {
@@ -170,6 +182,24 @@ test('switches accounting entity and reloads with the active entity', async ({
   page,
 }) => {
   await signIn(page);
+  let attempts = 0;
+  await page.route(switchEntityEndpoint, async (route) => {
+    attempts += 1;
+    if (attempts === 1) {
+      await route.fulfill({
+        status: 400,
+        json: {
+          name: 'AccountingError',
+          errorKey: 'accounting_error_accounting_entity_access_forbidden',
+          validationErrors: [],
+        },
+      });
+
+      return;
+    }
+
+    await route.fallback();
+  });
 
   await page
     .getByRole('button', {
@@ -177,6 +207,20 @@ test('switches accounting entity and reloads with the active entity', async ({
     })
     .click();
 
+  await test.step('A rejected switch keeps the current entity', async () => {
+    await page.getByRole('button', { name: 'Switch to Drimsheet' }).click();
+    await expect(
+      page.getByText('Accounting entity access denied.')
+    ).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    const trigger = page.getByRole('button', {
+      name: 'Open account management for Integration Entity',
+    });
+
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+  });
   const switchRequestPromise = page.waitForRequest(switchEntityEndpoint);
 
   const reloadRequestPromise = page.waitForRequest(
@@ -210,35 +254,4 @@ test('switches accounting entity and reloads with the active entity', async ({
   expect(
     await page.evaluate(() => localStorage.getItem('accounting-entity-id'))
   ).toBeNull();
-});
-
-test('keeps the current entity when switching fails', async ({ page }) => {
-  await signIn(page);
-  await page.route(switchEntityEndpoint, async (route) => {
-    await route.fulfill({
-      status: 400,
-      json: {
-        name: 'AccountingError',
-        errorKey: 'accounting_error_accounting_entity_access_forbidden',
-        validationErrors: [],
-      },
-    });
-  });
-
-  await page
-    .getByRole('button', {
-      name: 'Open account management for Integration Entity',
-    })
-    .click();
-  await page.getByRole('button', { name: 'Switch to Drimsheet' }).click();
-
-  await expect(
-    page.getByText('Accounting entity access denied.')
-  ).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(
-    page.getByRole('button', {
-      name: 'Open account management for Integration Entity',
-    })
-  ).toBeVisible();
 });

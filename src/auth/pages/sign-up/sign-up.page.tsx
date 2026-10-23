@@ -3,8 +3,9 @@ import { GoogleAuthButtonContainer } from '@/auth/components/google-auth-button'
 import { SignupForm } from '@/auth/components/signup-form';
 import type { ISignupFormValues } from '@/auth/components/signup-form/types';
 import { useSignupWithEmail } from '@/auth/hooks/use-signup-with-email';
+import { signupMapper } from '@/auth/lib/mappers/signup.mapper';
 import emailSentImg from '@/shared/assets/email-sent.svg';
-import logoImg from '@/shared/assets/logo.svg';
+import { BrandLogo } from '@/shared/components/brand-logo';
 import {
   Card,
   CardContent,
@@ -12,6 +13,7 @@ import {
   CardTitle,
 } from '@/shared/components/card';
 import { FieldDescription, FieldSeparator } from '@/shared/components/field';
+import { PageTitle } from '@/shared/components/page-title';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -27,7 +29,7 @@ export function SignUpPage() {
 
   const handleSignup = async (values: ISignupFormValues) => {
     try {
-      await signup(values);
+      await signup(signupMapper.toRequest(values));
       setSuccess(true);
     } catch (error) {
       handleApiError(error, { showToast: true });
@@ -51,15 +53,11 @@ export function SignUpPage() {
           <CardHeader className="flex flex-col items-center gap-4">
             <img src={emailSentImg} alt={email_sent_text} />
             <CardTitle>
-              <h1 className="font-heading text-2xl/4  font-medium">
-                {account_created_success_title}
-              </h1>
+              <PageTitle>{account_created_success_title}</PageTitle>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
-            <p role="status" aria-live="polite">
-              {check_email_verification_text}
-            </p>
+            <output aria-live="polite">{check_email_verification_text}</output>
           </CardContent>
         </Card>
       </main>
@@ -71,14 +69,10 @@ export function SignUpPage() {
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div className="flex flex-col items-center gap-2 text-center">
           <Link to="/" className="flex flex-col items-center gap-2 font-medium">
-            <div className="flex size-8 items-center justify-center rounded-md">
-              <img src={logoImg} alt="" className="mb-6 min-w-12 rounded-sm" />
-            </div>
+            <BrandLogo alt="" className="mb-2 w-48" />
             <span className="sr-only">{drimsheet_limited}.</span>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {create_account_text}
-          </h1>
+          <PageTitle>{create_account_text}</PageTitle>
         </div>
 
         <div className="grid gap-4">
@@ -91,10 +85,7 @@ export function SignUpPage() {
 
         <FieldDescription className="text-center">
           {already_have_account_text}{' '}
-          <Link
-            to="/auth/signin"
-            className="text-primary hover:text-primary/80"
-          >
+          <Link to="/auth/signin" className="text-link hover:text-link/80">
             {sign_in_link_text}
           </Link>
         </FieldDescription>

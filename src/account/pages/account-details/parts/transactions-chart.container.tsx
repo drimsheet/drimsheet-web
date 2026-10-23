@@ -1,12 +1,15 @@
+import { PageSection } from '@/shared/components/page-section';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import accountDetailsHelpers from '../helper';
-import { useAccountCashFlow } from '../hooks/use-account-details';
+import { useAccountCashFlow } from '../hooks/use-account-cash-flow';
 import type { AccountSectionProps } from '../types';
 import { CashFlowPeriod } from './cash-flow-period';
 import { SectionError } from './section-error';
-import { TransactionsChart } from './transactions-chart';
-import { TransactionsChartSkeleton } from './transactions-chart-skeleton';
+import {
+  TransactionsChart,
+  TransactionsChartSkeleton,
+} from './transactions-chart';
 
 export function TransactionsChartContainer({
   accountId,
@@ -29,17 +32,17 @@ export function TransactionsChartContainer({
   const title = t('details_cash_flow_title');
 
   return (
-    <section aria-label={title} className="flex min-w-0 flex-col gap-3">
-      <CashFlowPeriod
-        period={period}
-        periods={periods}
-        onPeriodChange={setPeriod}
-      />
+    <PageSection title={title}>
+      <div className="flex flex-wrap justify-end">
+        <CashFlowPeriod
+          period={period}
+          periods={periods}
+          onPeriodChange={setPeriod}
+        />
+      </div>
       {flow.isPending && <TransactionsChartSkeleton />}
-      {flow.isError && (
-        <SectionError title={title} onRetry={() => void flow.refetch()} />
-      )}
+      {flow.isError && <SectionError title={title} />}
       {flow.isSuccess && <TransactionsChart cashFlow={flow.data} />}
-    </section>
+    </PageSection>
   );
 }

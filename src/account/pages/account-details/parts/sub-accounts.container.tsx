@@ -1,10 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useSubAccounts } from '../hooks/use-account-details';
+import { useSubAccounts } from '../hooks/use-sub-accounts';
 import type { AccountSectionProps } from '../types';
 import { SectionError } from './section-error';
-import { SubAccounts } from './sub-accounts';
-import { SubAccountsSkeleton } from './sub-accounts-skeleton';
+import { SubAccounts, SubAccountsSkeleton } from './sub-accounts';
 
 export function SubAccountsContainer({
   accountId,
@@ -16,10 +15,7 @@ export function SubAccountsContainer({
 
   if (accounts.isPending) return <SubAccountsSkeleton />;
 
-  if (accounts.isError)
-    return (
-      <SectionError title={title} onRetry={() => void accounts.refetch()} />
-    );
+  if (accounts.isError) return <SectionError title={title} />;
 
   return (
     <SubAccounts

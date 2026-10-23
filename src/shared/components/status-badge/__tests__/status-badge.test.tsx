@@ -17,9 +17,9 @@ describe('StatusBadge', () => {
     const badge = screen.getByText('Neutral');
 
     expect(badge).toHaveClass(
-      'bg-neutral/10',
-      'text-neutral',
-      'border-neutral/20'
+      'bg-muted',
+      'text-muted-foreground',
+      'border-border'
     );
 
     const dot = screen.getByTestId('status-badge-dot');
@@ -32,44 +32,44 @@ describe('StatusBadge', () => {
       {
         Component: Success,
         name: 'Success',
-        bg: 'bg-success/10',
+        bg: 'bg-success-surface',
         text: 'text-success',
-        border: 'border-success/20',
+        border: 'border-success-border',
       },
       {
         Component: Info,
         name: 'Info',
-        bg: 'bg-info/10',
+        bg: 'bg-info-surface',
         text: 'text-info',
-        border: 'border-info/20',
+        border: 'border-info-border',
       },
       {
         Component: Warning,
         name: 'Warning',
-        bg: 'bg-warning/10',
+        bg: 'bg-warning-surface',
         text: 'text-warning',
-        border: 'border-warning/20',
+        border: 'border-warning-border',
       },
       {
         Component: Error,
         name: 'Error',
-        bg: 'bg-error/10',
+        bg: 'bg-error-surface',
         text: 'text-error',
-        border: 'border-error/20',
+        border: 'border-error-border',
       },
       {
         Component: Neutral,
         name: 'Neutral',
-        bg: 'bg-neutral/10',
-        text: 'text-neutral',
-        border: 'border-neutral/20',
+        bg: 'bg-muted',
+        text: 'text-muted-foreground',
+        border: 'border-border',
       },
       {
         Component: Primary,
         name: 'Primary',
-        bg: 'bg-primary/10',
-        text: 'text-primary',
-        border: 'border-primary/20',
+        bg: 'bg-selection',
+        text: 'text-selection-foreground',
+        border: 'border-primary',
       },
     ] as const;
 

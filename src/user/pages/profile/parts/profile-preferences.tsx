@@ -1,13 +1,5 @@
 import { Alert, AlertDescription } from '@/shared/components/alert';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/shared/components/card';
-import {
   Field,
   FieldContent,
   FieldDescription,
@@ -17,8 +9,10 @@ import {
   FieldSet,
   FieldTitle,
 } from '@/shared/components/field';
+import { PageSection } from '@/shared/components/page-section';
 import { RadioGroup, RadioGroupItem } from '@/shared/components/radio-group';
 import { Separator } from '@/shared/components/separator';
+import { Skeleton } from '@/shared/components/skeleton';
 import { Check, Monitor, Moon, Sun } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -74,19 +68,16 @@ export function ProfilePreferences({
   else if (isSaved) save_status = t('profile_preferences_saved_text');
 
   return (
-    <Card
+    <PageSection
+      title={preferences_title}
       className="h-full min-w-0"
       role="region"
-      aria-labelledby="profile-preferences-title"
+      titleId="profile-preferences-title"
       aria-busy={isSaving}
     >
-      <CardHeader>
-        <CardTitle role="heading" aria-level={2} id="profile-preferences-title">
-          {preferences_title}
-        </CardTitle>
-        <CardDescription>{preferences_description}</CardDescription>
-      </CardHeader>
-      <CardContent>
+      <p className="text-sm text-muted-foreground">{preferences_description}</p>
+
+      <div>
         <FieldGroup>
           <FieldSet disabled={isSaving}>
             <FieldLegend variant="label" id={`${id}-theme`}>
@@ -153,13 +144,71 @@ export function ProfilePreferences({
             </Alert>
           )}
         </FieldGroup>
-      </CardContent>
-      <CardFooter className="mt-auto gap-2">
+      </div>
+      <div className="mt-auto flex items-center gap-2">
         {isSaved && <Check className="size-3.5 text-success" aria-hidden />}
-        <p role="status" className="text-xs text-muted-foreground">
-          {save_status}
-        </p>
-      </CardFooter>
-    </Card>
+        <output className="text-xs text-muted-foreground">{save_status}</output>
+      </div>
+    </PageSection>
+  );
+}
+
+export function ProfilePreferencesSkeleton() {
+  const { t } = useTranslation('user');
+  const loading_label = t('profile_preferences_title');
+
+  const profile_section_loading_text = t('profile_section_loading_text', {
+    section: loading_label,
+  });
+
+  return (
+    <PageSection
+      aria-busy="true"
+      title={loading_label}
+      className="h-full min-w-0"
+    >
+      <output
+        className="sr-only"
+        aria-label={profile_section_loading_text}
+        aria-busy="true"
+      >
+        {profile_section_loading_text}
+      </output>
+      <Skeleton className="h-5 w-full" />
+      <div className="flex flex-col gap-7">
+        <div className="flex flex-col gap-4">
+          <Skeleton className="h-4 w-20" />
+          <div className="grid grid-cols-3 gap-3">
+            {[0, 1, 2].map((theme) => (
+              <div
+                key={theme}
+                className="flex flex-col items-center gap-2 rounded-lg border p-4"
+              >
+                <Skeleton className="size-5" />
+                <Skeleton className="h-5 w-full max-w-14" />
+                <Skeleton className="size-4 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <Separator />
+        <div className="flex flex-col gap-3">
+          <Skeleton className="h-4 w-28" />
+          {[0, 1].map((mode) => (
+            <div
+              key={mode}
+              className="flex items-center gap-3 rounded-lg border p-4"
+            >
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <Skeleton className="h-5 w-full max-w-36" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <Skeleton className="size-4 shrink-0 rounded-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <Skeleton className="mt-auto h-4 w-40" />
+    </PageSection>
   );
 }

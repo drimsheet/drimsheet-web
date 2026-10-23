@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from '@/shared/components/select';
 import { useTranslation } from 'react-i18next';
+import { CounterpartyTypeSelectSkeleton } from './skeleton';
 import type { CounterpartyTypeSelectProps } from './types';
 
 export function CounterpartyTypeSelect({
@@ -15,9 +16,12 @@ export function CounterpartyTypeSelect({
   onChange,
   error,
   disabled = false,
+  loading = false,
   description,
 }: Readonly<CounterpartyTypeSelectProps>) {
   const { t } = useTranslation(['counterparty']);
+
+  if (loading) return <CounterpartyTypeSelectSkeleton />;
 
   const descriptionId = 'counterparty-type-description';
   const errorId = 'counterparty-type-error';

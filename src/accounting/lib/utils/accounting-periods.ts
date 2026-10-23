@@ -2,6 +2,7 @@ import type {
   INamedPeriod,
   IPeriodSettings,
   TPeriodNameFactory,
+  UIntervalUnit,
 } from '@/accounting/lib/types/period.types';
 import dayjs from 'dayjs';
 
@@ -29,9 +30,9 @@ function isValidRange(
   );
 }
 
-function createPeriods(
-  values: IPeriodSettings,
-  createName: TPeriodNameFactory,
+function createPeriods<TUnit extends UIntervalUnit>(
+  values: IPeriodSettings<TUnit>,
+  createName: TPeriodNameFactory<TUnit>,
   maxFiscalMonths: number,
   previousPeriods: INamedPeriod[] = []
 ): INamedPeriod[] {

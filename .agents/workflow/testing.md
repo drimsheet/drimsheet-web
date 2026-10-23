@@ -2,7 +2,9 @@
 
 ## Goal
 
-Choose the runner and isolation boundary from the behavior under test.
+Choose the least expensive adequate runner and isolation boundary for the
+behavior under test. Default to extending existing coverage before adding
+another browser journey.
 
 ## Test Matrix
 
@@ -62,21 +64,51 @@ Keep complete page and route journeys in Playwright.
 
 ## Browser Integration Tests
 
-1. Identify one frontend-owned user outcome.
-2. Inspect the public route, page or dialog composition, generated API
-   contracts, and nearby lower-level coverage.
-3. Place the spec at
-   `playwright/tests/<feature>/<user-outcome>.spec.ts`.
+### Decide whether a case is warranted
+
+Apply the admission, consolidation, assertion, and execution-cost requirements
+in [Testing Rules](../rules/testing-rules.md#browser-integration) before writing
+or retaining browser coverage in an audit.
+
+1. Identify the concrete regression and the composed frontend boundary that
+   needs protection. Inspect the route, page/dialog, API contract, and existing
+   lower-level tests; do not infer value from a test's title.
+2. Find the existing journey that can own the check. Prefer extending it, or
+   extending lower-level coverage when browser composition is not material.
+3. Add a separate browser case only when it passes the admission requirements.
+   Record the regression, lower-level gap, and reason it cannot reasonably
+   join an existing journey in the change summary. Do not create a separate
+   justification document or boilerplate comments for each assertion.
+4. For an audit, account for every case in the requested scope, including
+   expanded matrix variants. Give a reasoned keep/consolidate/move/remove
+   disposition and identify the destination journey or lower-level owner.
+   Flag weak assertions even when the case should remain. Apply edits only
+   within the user's requested scope.
+
+### Build the chosen journey
+
+1. Extend the owning spec under
+   `playwright/tests/<feature>/<user-outcome>.spec.ts`; create a file only when
+   no appropriate owner exists.
+2. Group compatible stages with `test.step`. A form may fail, show the settled
+   error, preserve input, accept another normal submission, block duplicate
+   submits while pending, and finish successfully in one test. Include
+   cancel/reopen/reset or responsive interaction in that flow when relevant.
+3. Keep distinct outcomes or dependencies separate when they cannot share a
+   coherent lifecycle. Do not combine unrelated work into a giant CRUD test.
 4. Import `test` and `expect` from `@integration/fixtures/test`.
 5. Register deterministic first-party API routes before navigation or the
    interaction that can issue them.
 6. Navigate through the public application route.
 7. Use the real page, dialog, forms, providers, router, and portal behavior.
 8. Interact through accessible roles, labels, and visible text.
-9. Assert visible state, URL, focus, browser behavior, and request payloads
-   where they are part of the frontend contract.
-10. Run each scenario independently and together to detect shared-state or
-    ordering assumptions.
+9. Assert the completed visible outcome and relevant frontend request contract.
+   Make mocks distinguish query states, hold each relevant pending request,
+   and exercise actual history/focus/scrolling behavior where claimed.
+10. Review each assertion against a plausible regression: could it still pass
+    if submission did nothing, the error never settled, stale data remained,
+    or the request used the wrong scope? Strengthen or remove ineffective
+    checks before treating the journey as coverage.
 
 Do not call live first-party services. Integration mode points
 `VITE_API_URL` at the local Vite origin so a missed intercept cannot reach a
@@ -151,7 +183,29 @@ repository, record these exact requirements with the owning pipeline.
 
 ## Final Verification
 
-Run focused tests first, then the applicable broader checks:
+Match local verification to the change; the commands below are available
+checks, not a requirement to run every command for every task.
+
+- For guidance-only edits, review consistency and validate the changed
+  Markdown/skill files. Do not start the browser suite or build the app.
+- For test changes, run integration typechecking and the affected specs. Use
+  focused scenario/spec runs and an affected group where needed to verify
+  independence and expose ordering assumptions; avoid automatically running
+  every case twice. Run relevant lower-level tests when relying on them to
+  replace removed browser coverage.
+- Broaden to the full suite when shared fixtures, routing, configuration, or
+  unresolved failures create wider risk. Rerun after relevant edits or to
+  investigate failures; stop repeating successful checks without new evidence.
+  Preserve the required CI checks above.
+- Keep files stable during browser runs to avoid development-server reloads
+  contaminating results. Inspect failure diagnostics before changing or
+  weakening an assertion.
+- Report what ran, failures and their resolution, and what remains unverified.
+  For consolidation, report the coverage retained and removed duplication.
+  Distinguish a measured duration change from a reduction in case count;
+  performance comparisons need comparable runner conditions and retry counts.
+
+Run applicable checks:
 
 ```bash
 npm test -- --run
@@ -163,10 +217,11 @@ npm run lint
 npm run build
 ```
 
-Verify runner separation with `npx playwright test --list`: Playwright should
-list only `playwright/**/*.spec.ts`, and Vitest should not discover those
-specs. Report checks that cannot run because the required browser binary or
-environment capability is unavailable.
+When test inventory or runner configuration changes, verify discovery with
+`npx playwright test --list`: Playwright should list only
+`playwright/**/*.spec.ts`, and Vitest should not discover those specs. Report
+checks that cannot run because the required browser binary or environment
+capability is unavailable.
 
 ## Dialog-Owned Support
 

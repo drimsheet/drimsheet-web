@@ -280,7 +280,7 @@ function DocumentUploadContent({
             <>
               <button
                 type="button"
-                className="flex w-fit items-center gap-3 rounded-md py-4 pr-3 text-sm font-medium outline-none transition-colors hover:text-primary focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="flex w-fit items-center gap-3 rounded-md py-4 pr-3 text-sm font-medium outline-none transition-colors hover:text-link focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={openFilePicker}
               >
                 <span className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground [&_svg:not([class*='size-'])]:size-5">

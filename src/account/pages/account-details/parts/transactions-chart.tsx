@@ -6,6 +6,7 @@ import {
 } from '@/shared/components/chart';
 import { Empty, EmptyHeader, EmptyTitle } from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
+import { Skeleton } from '@/shared/components/skeleton';
 import { currencyService } from '@/shared/lib/services/currency.service';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -43,10 +44,13 @@ export function TransactionsChart({
   const hasActivity = moneyIn !== 0 || moneyOut !== 0;
 
   const config = {
-    moneyIn: { label: t('details_money_in_label'), color: 'var(--success)' },
+    moneyIn: {
+      label: t('details_money_in_label'),
+      color: 'var(--financial-income)',
+    },
     moneyOut: {
       label: t('details_money_out_label'),
-      color: 'var(--destructive)',
+      color: 'var(--financial-expense)',
     },
   } satisfies TChartConfig;
 
@@ -68,7 +72,7 @@ export function TransactionsChart({
       <dl className="flex flex-wrap gap-x-12 gap-y-5">
         <div className="flex flex-col gap-2">
           <dt className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span aria-hidden className="size-3 bg-success" />
+            <span aria-hidden className="size-3 bg-financial-income" />
             {total_in_label}
           </dt>
           <dd>
@@ -88,7 +92,7 @@ export function TransactionsChart({
                   height="5"
                   patternUnits="userSpaceOnUse"
                 >
-                  <rect width="5" height="5" fill="var(--destructive)" />
+                  <rect width="5" height="5" fill="var(--financial-expense)" />
                   <path
                     d="M0 5L5 0"
                     stroke="var(--background)"
@@ -201,6 +205,27 @@ export function TransactionsChart({
           </EmptyHeader>
         </Empty>
       )}
+    </div>
+  );
+}
+
+export function TransactionsChartSkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('details_loading_transactions_chart');
+
+  return (
+    <div aria-busy="true">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
+      <div className="flex flex-col gap-5">
+        <Skeleton className="h-4 w-48" />
+        <div className="flex flex-wrap gap-x-12 gap-y-5">
+          <Skeleton className="h-16 w-36" />
+          <Skeleton className="h-16 w-36" />
+        </div>
+        <Skeleton className="h-64 w-full" />
+      </div>
     </div>
   );
 }

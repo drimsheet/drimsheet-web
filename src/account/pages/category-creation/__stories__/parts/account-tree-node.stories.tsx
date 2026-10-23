@@ -1,4 +1,7 @@
-import { AccountTreeNode } from '@/account/pages/category-creation/parts/account-tree-node';
+import {
+  AccountTreeNode,
+  AccountTreeNodeSkeleton,
+} from '@/account/pages/category-creation/parts/account-tree-node';
 import type { TCategoryAccount } from '@/account/pages/category-creation/types';
 import { RadioGroup } from '@/shared/components/radio-group';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -57,3 +60,5 @@ export const LongName: Story = {
     },
   },
 };
+
+export const Skeleton: Story = { render: () => <AccountTreeNodeSkeleton /> };

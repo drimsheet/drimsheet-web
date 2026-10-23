@@ -1,4 +1,5 @@
 import { AppSidebar } from '@/_app/components/app-sidebar';
+import { APP_VERSION } from '@/_app/lib/configs/app.config';
 import { SidebarProvider } from '@/shared/components/sidebar';
 import { TooltipProvider } from '@/shared/components/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -28,8 +29,9 @@ describe('AppSidebar', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Drimsheet')).toBeInTheDocument();
-    expect(screen.getByText('Beta')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Drimsheet' })).toBeInTheDocument();
+    expect(screen.getByText(`v${APP_VERSION}`)).toBeInTheDocument();
+    expect(screen.queryByText('Beta')).not.toBeInTheDocument();
 
     expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute(
       'data-active',

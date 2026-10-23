@@ -1,3 +1,4 @@
+import { RecentTransactionsSkeleton } from '@/account/pages/account-details/parts/recent-transactions';
 import type {
   IJournalEntryListDto,
   ILedgerAccountDto,
@@ -110,3 +111,5 @@ export const Empty: Story = { args: { transactions: [], empty: true } };
 export const NoSearchResults: Story = {
   args: { transactions: [], search: 'Unmatched', pagination: undefined },
 };
+
+export const Skeleton: Story = { render: () => <RecentTransactionsSkeleton /> };

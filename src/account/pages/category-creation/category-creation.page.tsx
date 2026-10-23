@@ -1,5 +1,7 @@
 import { categoryService } from '@/account/lib/services/category.service';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFormik, type FormikProps } from 'formik';
 import { useState } from 'react';
@@ -27,12 +29,11 @@ export function CategoryCreationPage() {
       onSubmit: handleSubmit,
     });
 
+  const accountsQuery = { class: form.values.type as 'revenue' | 'expense' };
+
   const accounts = useQuery({
-    queryKey: ['categoryService', 'chartOfAccounts', form.values.type],
-    queryFn: () =>
-      categoryService.getChartOfAccounts({
-        class: form.values.type as 'revenue' | 'expense',
-      }),
+    queryKey: ['categoryService', 'getChartOfAccounts', accountsQuery],
+    queryFn: () => categoryService.getChartOfAccounts(accountsQuery),
     enabled: pickerOpen && !!form.values.type,
     retry: false,
   });
@@ -72,7 +73,7 @@ export function CategoryCreationPage() {
       toast.success(t('category_creation_success'));
       navigate('/categories');
     } catch {
-      // Keep the selected parent and both names available for correction or retry.
+      // Keep the selected parent and both names available for correction.
     }
   }
 
@@ -110,39 +111,31 @@ export function CategoryCreationPage() {
   };
 
   const title = t('category_creation_title');
-  const categories_label = t('categories_table_breadcrumb');
   const description = t('category_creation_description');
 
   return (
     <>
-      <AppHeader
-        breadcrumbs={[
-          { label: categories_label, to: '/categories' },
-          { label: title },
-        ]}
-      />
       <AppBody>
-        <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-8 pb-10">
+        <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col">
           <div className="flex flex-col gap-2">
-            <h1 className="my-0 text-2xl font-semibold tracking-tight">
-              {title}
-            </h1>
+            <PageTitle>{title}</PageTitle>
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
-          <CategoryCreationForm
-            form={form}
-            parent={parent}
-            accounts={accounts.data ?? []}
-            loadingAccounts={accounts.isFetching}
-            accountsError={accounts.isError}
-            pending={mutation.isPending || form.isSubmitting}
-            error={mutation.isError}
-            onTypeChange={handleTypeChange}
-            onParentChange={handleParentChange}
-            onPickerOpenChange={setPickerOpen}
-            onRetryAccounts={() => void accounts.refetch()}
-            onCancel={() => navigate('/categories')}
-          />
+          <PageSection>
+            <CategoryCreationForm
+              form={form}
+              parent={parent}
+              accounts={accounts.data ?? []}
+              loadingAccounts={accounts.isFetching}
+              accountsError={accounts.isError}
+              pending={mutation.isPending || form.isSubmitting}
+              error={mutation.isError}
+              onTypeChange={handleTypeChange}
+              onParentChange={handleParentChange}
+              onPickerOpenChange={setPickerOpen}
+              onCancel={() => navigate('/categories')}
+            />
+          </PageSection>
         </div>
       </AppBody>
     </>

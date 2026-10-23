@@ -2,13 +2,14 @@ import { CounterpartiesTableContainer } from '@/counterparty/components/counterp
 import type { UCounterpartyRoleSelectValue } from '@/counterparty/components/counterparty-role-select';
 import { CounterpartyCreationDialog } from '@/counterparty/dialogs/counterparty-creation';
 import { CounterpartyRoleSelectionDialog } from '@/counterparty/dialogs/counterparty-role-selection';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export function CounterpartiesPage() {
-  const { t } = useTranslation(['counterparty', 'shared']);
-
+  const { t } = useTranslation('shared');
   const [showRoleSelection, setShowRoleSelection] = useState(false);
 
   const [selectedRole, setSelectedRole] =
@@ -19,17 +20,17 @@ export function CounterpartiesPage() {
     setSelectedRole(role);
   };
 
-  const counterparties_label = t('shared:counterparties');
+  const page_title = t('counterparties');
 
   return (
     <>
-      <AppHeader breadcrumbs={[{ label: counterparties_label }]} />
-
       <AppBody>
-        <CounterpartiesTableContainer
-          onAddCounterparty={() => setShowRoleSelection(true)}
-        />
-
+        <PageTitle>{page_title}</PageTitle>
+        <PageSection>
+          <CounterpartiesTableContainer
+            onAddCounterparty={() => setShowRoleSelection(true)}
+          />
+        </PageSection>
         <CounterpartyRoleSelectionDialog
           open={showRoleSelection}
           onClose={() => setShowRoleSelection(false)}

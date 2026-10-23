@@ -2,10 +2,9 @@ import { Button } from '@/shared/components/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuItemSkeleton,
   DropdownMenuTrigger,
 } from '@/shared/components/dropdown-menu';
-import { Skeleton } from '@/shared/components/skeleton';
 import {
   ECounterpartyStatus,
   type ICounterpartyDto,
@@ -112,12 +111,9 @@ export function CounterpartyRowActions({
             onSelect={() => setArchiveOpen(true)}
           />
           {checkingDeleteEligibility && (
-            <DropdownMenuItem
+            <DropdownMenuItemSkeleton
               aria-label={checking_deletion_eligibility_text}
-              disabled
-            >
-              <Skeleton className="h-5 w-full" />
-            </DropdownMenuItem>
+            />
           )}
           {!checkingDeleteEligibility && canDelete && (
             <CounterpartyDeleteAction onSelect={handleDelete} />

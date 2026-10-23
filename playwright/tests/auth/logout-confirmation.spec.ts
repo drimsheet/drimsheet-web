@@ -68,36 +68,7 @@ async function openLogoutDialog(page: Page) {
   return page.getByRole('alertdialog', { name: dialogTitle });
 }
 
-test('opens with accessible title and description, then cancels without logout', async ({
-  page,
-}) => {
-  let logoutRequestCount = 0;
-
-  await signIn(page);
-  await page.route(logoutEndpoint, async (route) => {
-    logoutRequestCount += 1;
-    await route.fulfill({ status: 204 });
-  });
-
-  const dialog = await openLogoutDialog(page);
-
-  await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText(dialogDescription);
-
-  const cancelButton = dialog.getByRole('button', { name: 'Cancel' });
-  await expect(cancelButton).toBeFocused();
-
-  await page.keyboard.press('Tab');
-  await expect(dialog.getByRole('button', { name: 'Log out' })).toBeFocused();
-
-  await cancelButton.click();
-
-  await expect(dialog).not.toBeVisible();
-  await expect(page).toHaveURL('/dashboard');
-  expect(logoutRequestCount).toBe(0);
-});
-
-test('keeps a single pending logout request and disables dialog actions', async ({
+test('cancels logout, then submits once and clears protected history', async ({
   page,
 }) => {
   const responseGate = createResponseGate();
@@ -106,21 +77,39 @@ test('keeps a single pending logout request and disables dialog actions', async 
   await signIn(page);
   await page.route(logoutEndpoint, async (route) => {
     logoutRequestCount += 1;
+    expect(route.request().method()).toBe('POST');
     await responseGate.promise;
     await route.fulfill({ status: 204 });
   });
 
   const dialog = await openLogoutDialog(page);
+  await test.step('Cancellation keeps the session', async () => {
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(dialogDescription);
+
+    const cancelButton = dialog.getByRole('button', { name: 'Cancel' });
+    await expect(cancelButton).toBeFocused();
+
+    await page.keyboard.press('Tab');
+    await expect(dialog.getByRole('button', { name: 'Log out' })).toBeFocused();
+
+    await cancelButton.click();
+
+    await expect(dialog).not.toBeVisible();
+    await expect(page).toHaveURL('/dashboard');
+    expect(logoutRequestCount).toBe(0);
+  });
+  await openLogoutDialog(page);
   const logoutButton = dialog.getByRole('button', { name: 'Log out' });
 
   await logoutButton.click();
 
   await expect(
-    dialog.getByRole('button', { name: 'Logging out...' })
+    dialog.getByRole('button', { name: 'Logging out...', exact: true })
   ).toBeDisabled();
   await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
   await expect(
-    dialog.getByRole('button', { name: 'Logging out...' })
+    dialog.getByRole('button', { name: 'Logging out...', exact: true })
   ).toHaveAttribute('aria-busy', 'true');
   await expect.poll(() => logoutRequestCount).toBe(1);
 
@@ -133,48 +122,28 @@ test('keeps a single pending logout request and disables dialog actions', async 
 
   await expect(page).toHaveURL('/auth/signin');
   expect(logoutRequestCount).toBe(1);
-});
+  await test.step('Logout clears the session and protects browser history', async () => {
+    expect(await page.evaluate(() => localStorage.getItem('isLoggedIn'))).toBe(
+      null
+    );
+    expect(logoutRequestCount).toBe(1);
 
-test('logs out, replaces dashboard history, and blocks cached protected UI', async ({
-  page,
-}) => {
-  let logoutRequestCount = 0;
+    await page.goBack();
 
-  await signIn(page);
-  await page.route(logoutEndpoint, async (route) => {
-    logoutRequestCount += 1;
-    await route.fulfill({ status: 204 });
+    await expect(page).toHaveURL('/auth/signin');
+    await expect(
+      page.getByRole('button', { name: /open account management/i })
+    ).not.toBeVisible();
+    await expect(page.getByText('Dashboard')).not.toBeVisible();
+
+    await page.goto('/dashboard');
+
+    await expect(page).toHaveURL('/auth/signin');
+    await expect(
+      page.getByRole('button', { name: /open account management/i })
+    ).not.toBeVisible();
+    await expect(page.getByText('Dashboard')).not.toBeVisible();
   });
-
-  const logoutRequest = page.waitForRequest(logoutEndpoint);
-  const dialog = await openLogoutDialog(page);
-
-  await dialog.getByRole('button', { name: 'Log out' }).click();
-
-  const request = await logoutRequest;
-
-  expect(request.method()).toBe('POST');
-  await expect(page).toHaveURL('/auth/signin');
-  expect(await page.evaluate(() => localStorage.getItem('isLoggedIn'))).toBe(
-    null
-  );
-  expect(logoutRequestCount).toBe(1);
-
-  await page.goBack();
-
-  await expect(page).toHaveURL('/auth/signin');
-  await expect(
-    page.getByRole('button', { name: /open account management/i })
-  ).not.toBeVisible();
-  await expect(page.getByText('Dashboard')).not.toBeVisible();
-
-  await page.goto('/dashboard');
-
-  await expect(page).toHaveURL('/auth/signin');
-  await expect(
-    page.getByRole('button', { name: /open account management/i })
-  ).not.toBeVisible();
-  await expect(page.getByText('Dashboard')).not.toBeVisible();
 });
 
 test('keeps the authenticated context and reports API errors when logout fails', async ({

@@ -5,7 +5,7 @@ const meta = {
   title: 'Ledger Accounts/Categories/Error',
   component: CategorySectionError,
   tags: ['autodocs'],
-  args: { title: 'Category overview', onRetry: () => {} },
+  args: { title: 'Category overview' },
 } satisfies Meta<typeof CategorySectionError>;
 
 export default meta;

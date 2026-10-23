@@ -1,7 +1,9 @@
 import { CategoryEditorDialog } from '@/account/dialogs/category-editor';
 import { categoryService } from '@/account/lib/services/category.service';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
 import type { IRevenueExpenseAccountDto } from '@/shared/lib/api/Api';
@@ -11,7 +13,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import categoriesHelpers from './helper';
-import { useCategoryAccounts } from './hooks/use-categories';
+import { useCategoryAccounts } from './hooks/use-category-accounts';
 import { CategoryArchiveConfirmation } from './parts/archive-confirmation';
 import { CategoryOverviewContainer } from './parts/category-overview.container';
 import { CategoryPeriod } from './parts/category-period';
@@ -97,24 +99,17 @@ export function CategoriesPage() {
 
   return (
     <>
-      <AppHeader breadcrumbs={[{ label: title }]} />
       <AppBody>
-        <div className="flex min-w-0 flex-col gap-8 pb-8">
+        <div className="flex min-w-0 flex-col">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <h1 className="my-0 text-2xl font-semibold tracking-tight">
-              {title}
-            </h1>
+            <PageTitle>{title}</PageTitle>
             <Button onClick={() => navigate('/categories/new')}>
               <Plus data-icon="inline-start" />
               {add_label}
             </Button>
           </div>
-          <section
-            aria-label={overview_title}
-            className="flex min-w-0 flex-col gap-4"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-base font-medium">{overview_title}</h2>
+          <PageSection title={overview_title}>
+            <div className="flex flex-wrap justify-end">
               <CategoryPeriod
                 period={period}
                 periods={periods}
@@ -125,13 +120,8 @@ export function CategoriesPage() {
               query={categoriesHelpers.periodQuery(period, now)}
               onViewAccount={handleViewAccount}
             />
-          </section>
-          {accounts.isError && (
-            <CategorySectionError
-              title={table_title}
-              onRetry={() => void accounts.refetch()}
-            />
-          )}
+          </PageSection>
+          {accounts.isError && <CategorySectionError title={table_title} />}
           <CategoryTable
             accounts={accounts.data}
             loading={accounts.isPending}

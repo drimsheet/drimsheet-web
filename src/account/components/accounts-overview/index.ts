@@ -1,1 +1,4 @@
-export * from './accounts-overview';
+export { LedgerAccountsOverview } from './accounts-overview';
+export { LedgerAccountsOverviewSkeleton } from './skeleton';
+
+export type { LedgerAccountsOverviewProps } from './types';

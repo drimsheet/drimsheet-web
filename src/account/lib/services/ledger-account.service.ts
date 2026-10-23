@@ -2,13 +2,35 @@ import { drimsheetApi } from '@/shared/lib/api';
 import {
   ELedgerAccountSubType,
   ELedgerType,
+  type IDateRangeDto,
   type IGetAccountCashFlowQuery,
   type IGetAccountCounterpartyParticipationQuery,
+  type IGetAssetLiabilityAccountParticipationQuery,
   type IGetJournalEntriesQuery,
   type IGetLedgerAccountsQuery,
   type IGetPermittedPostingAccountsQuery,
   type IHeaderAccountNameAliasesReq,
 } from '@/shared/lib/api/Api';
+
+async function getAssetLiabilityAccounts(
+  query: IGetAssetLiabilityAccountParticipationQuery,
+  signal?: AbortSignal
+) {
+  return (
+    await drimsheetApi.reporting.getAssetLiabilityAccountParticipation(query, {
+      signal,
+    })
+  ).data;
+}
+
+async function getAssetLiabilitySummary(
+  query: IDateRangeDto,
+  signal?: AbortSignal
+) {
+  return (
+    await drimsheetApi.reporting.getAssetLiabilitySummary(query, { signal })
+  ).data;
+}
 
 async function getLedgerAccounts(query: IGetLedgerAccountsQuery) {
   const response = await drimsheetApi.ledger.getLedgerAccounts(query);
@@ -120,6 +142,8 @@ async function setupHeaderAccounts(payload: IHeaderAccountNameAliasesReq) {
 }
 
 export const ledgerAccountService = Object.freeze({
+  getAssetLiabilityAccounts,
+  getAssetLiabilitySummary,
   setupHeaderAccounts,
   getAccountCounterpartyParticipation,
   getLedgerAccounts,

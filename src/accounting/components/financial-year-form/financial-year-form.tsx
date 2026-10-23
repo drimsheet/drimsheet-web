@@ -19,7 +19,10 @@ import {
   SelectValue,
 } from '@/shared/components/select';
 import { useFieldErrorMessage } from '@/shared/hooks/use-field-error-message';
-import { EPeriodUnit, type UPeriodUnit } from '@/shared/lib/api/Api';
+import {
+  EAccountingIntervalUnit,
+  type UAccountingIntervalUnit,
+} from '@/shared/lib/api/Api';
 import { useFormik } from 'formik';
 import { TriangleAlert } from 'lucide-react';
 import { useId } from 'react';
@@ -42,7 +45,7 @@ export function FinancialYearForm({
   const fiscalMonthLimit = Math.min(maxFiscalMonths, 23);
   const validationSchema = useFinancialYearFormValidation(fiscalMonthLimit);
 
-  const createPeriodName = (unit: UPeriodUnit, index: number) =>
+  const createPeriodName = (unit: UAccountingIntervalUnit, index: number) =>
     t(`financial_period_${unit}_default`, { index });
 
   const formik = useFormik<IFinancialYearFormValues>({
@@ -116,7 +119,7 @@ export function FinancialYearForm({
   const handleEndChange = (endDate: string) =>
     handlePeriodSettingsChange({ endDate });
 
-  const handleUnitChange = (unit: UPeriodUnit) =>
+  const handleUnitChange = (unit: UAccountingIntervalUnit) =>
     handlePeriodSettingsChange({ unit });
 
   const periods_title = t('financial_periods_title');
@@ -231,7 +234,7 @@ export function FinancialYearForm({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {Object.values(EPeriodUnit).map((unit) => (
+                  {Object.values(EAccountingIntervalUnit).map((unit) => (
                     <SelectItem key={unit} value={unit}>
                       {t(`financial_year_group_${unit}_label`)}
                     </SelectItem>

@@ -1,19 +1,22 @@
 import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
+import { PageSection } from '@/shared/components/page-section';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
-import { useSubAccounts } from './hooks/use-account-details';
+import { useSubAccounts } from './hooks/use-sub-accounts';
 import { AccountActionsContainer } from './parts/account-actions.container';
-import { LedgerAccountSummary } from './parts/account-summary';
-import { AccountSummarySkeleton } from './parts/account-summary-skeleton';
-import { BankDetailsSkeleton } from './parts/bank-details-skeleton';
+import {
+  LedgerAccountSummary,
+  LedgerAccountSummarySkeleton,
+} from './parts/account-summary';
+import { BankDetailsSkeleton } from './parts/bank-details';
 import { BankDetailsContainer } from './parts/bank-details.container';
-import { RecentTransactionsSkeleton } from './parts/recent-transactions-skeleton';
+import { RecentTransactionsSkeleton } from './parts/recent-transactions';
 import { RecentTransactionsContainer } from './parts/recent-transactions.container';
 import { SectionError } from './parts/section-error';
-import { SubAccountsSkeleton } from './parts/sub-accounts-skeleton';
+import { SubAccountsSkeleton } from './parts/sub-accounts';
 import { SubAccountsContainer } from './parts/sub-accounts.container';
-import { TransactionsChartSkeleton } from './parts/transactions-chart-skeleton';
+import { TransactionsChartSkeleton } from './parts/transactions-chart';
 import { TransactionsChartContainer } from './parts/transactions-chart.container';
 
 export function AccountDetailsPage() {
@@ -28,7 +31,6 @@ export function AccountDetailsPage() {
     !account.isControlAccount &&
     (account.behavior === 'bank' || account.behavior === 'petty_cash');
 
-  const accounts_label = t('shared:accounts');
   const error_title = t('ledger-accounts:details_account_error_title');
 
   if (
@@ -41,29 +43,20 @@ export function AccountDetailsPage() {
 
   return (
     <>
-      <AppHeader
-        breadcrumbs={[
-          { label: accounts_label, to: '/accounts' },
-          { label: account?.name ?? accounts_label },
-        ]}
-      />
       <AppBody>
-        <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col gap-10 pb-10">
+        <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col">
           {accountQuery.isPending && (
             <>
-              <AccountSummarySkeleton />
+              <LedgerAccountSummarySkeleton />
               <BankDetailsSkeleton />
               <SubAccountsSkeleton />
-              <TransactionsChartSkeleton />
+              <PageSection>
+                <TransactionsChartSkeleton />
+              </PageSection>
               <RecentTransactionsSkeleton />
             </>
           )}
-          {accountQuery.isError && (
-            <SectionError
-              title={error_title}
-              onRetry={() => void accountQuery.refetch()}
-            />
-          )}
+          {accountQuery.isError && <SectionError title={error_title} />}
           {accountQuery.isSuccess && account && (
             <>
               <LedgerAccountSummary

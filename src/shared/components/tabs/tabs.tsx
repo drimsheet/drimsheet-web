@@ -1,6 +1,7 @@
 import { cn } from '@/shared/lib/utils/cn';
 import type { KeyboardEvent } from 'react';
 import type { TabsProps } from './types';
+import { useTabsIndicator } from './use-tabs-indicator';
 
 export function Tabs({
   items,
@@ -8,6 +9,8 @@ export function Tabs({
   onValueChange,
   ariaLabel,
 }: Readonly<TabsProps>) {
+  const { tabListRef, indicatorStyle } = useTabsIndicator({ items, value });
+
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
       return;
@@ -41,10 +44,18 @@ export function Tabs({
 
   return (
     <div
+      ref={tabListRef}
       role="tablist"
       aria-label={ariaLabel}
-      className="inline-flex rounded-md bg-muted p-1"
+      className="relative isolate inline-flex rounded-md bg-muted p-1"
     >
+      {indicatorStyle && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute top-0 left-0 rounded-sm bg-primary shadow-xs transition-[transform,width,height] duration-200 ease-out motion-reduce:transition-none"
+          style={indicatorStyle}
+        />
+      )}
       {items.map((item) => {
         const isSelected = item.value === value;
 
@@ -59,9 +70,9 @@ export function Tabs({
             onClick={() => onValueChange(item.value)}
             onKeyDown={handleKeyDown}
             className={cn(
-              'rounded-sm px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',
+              'relative rounded-sm px-4 py-2 text-sm font-medium transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',
               isSelected
-                ? 'bg-primary text-primary-foreground shadow-xs'
+                ? 'text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >

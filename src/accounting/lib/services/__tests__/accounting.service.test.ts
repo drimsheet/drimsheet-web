@@ -14,6 +14,11 @@ vi.mock('@/shared/lib/api', () => ({
       getActiveAccountingEntity: vi.fn(),
       getUserAccountingEntities: vi.fn(),
       getJurisdictions: vi.fn(),
+      getFiscalYears: vi.fn(),
+      getAccountingContext: vi.fn(),
+      getReportingContext: vi.fn(),
+      getAccountingInterval: vi.fn(),
+      getReportingInterval: vi.fn(),
       switchAccountingEntity: vi.fn(),
     },
   },
@@ -185,5 +190,53 @@ describe('accountingService', () => {
       secondEntity,
     ]);
     expect(accountingService.getAccountingEntityId()).toBeUndefined();
+  });
+});
+
+describe('entity details transport', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    accountingService.removeAccountingEntity();
+  });
+
+  it('reads another entity without replacing the active entity', async () => {
+    vi.mocked(drimsheetApi.accounting.getActiveAccountingEntity)
+      .mockResolvedValueOnce({ data: firstEntity } as never)
+      .mockResolvedValueOnce({ data: secondEntity } as never);
+    await accountingService.getAccountingEntity();
+    await expect(
+      accountingService.getEntityDetails(secondEntity.id)
+    ).resolves.toEqual(secondEntity);
+    expect(
+      drimsheetApi.accounting.getActiveAccountingEntity
+    ).toHaveBeenLastCalledWith({
+      headers: { 'x-accounting-entity-id': secondEntity.id },
+    });
+    expect(accountingService.getAccountingEntityId()).toBe(firstEntity.id);
+  });
+
+  it('does not request intervals for absent contexts', async () => {
+    vi.mocked(drimsheetApi.accounting.getAccountingContext).mockResolvedValue({
+      data: null,
+    } as never);
+    vi.mocked(drimsheetApi.accounting.getReportingContext).mockResolvedValue({
+      data: null,
+    } as never);
+    await expect(
+      accountingService.getFiscalYearContext(secondEntity.id, 'year')
+    ).resolves.toEqual({
+      accounting: null,
+      reporting: null,
+      accountingInterval: null,
+      reportingInterval: null,
+    });
+    expect(
+      drimsheetApi.accounting.getAccountingInterval
+    ).not.toHaveBeenCalled();
+    expect(drimsheetApi.accounting.getReportingInterval).not.toHaveBeenCalled();
+    expect(drimsheetApi.accounting.getAccountingContext).toHaveBeenCalledWith(
+      'year',
+      { headers: { 'x-accounting-entity-id': secondEntity.id } }
+    );
   });
 });

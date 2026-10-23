@@ -1,7 +1,5 @@
-import {
-  useCheckCounterpartyDeletionEligibility,
-  useCounterpartyDeletionEligibility,
-} from '@/counterparty/hooks/use-counterparty-deletion-eligibility';
+import { useCheckCounterpartyDeletionEligibility } from '@/counterparty/hooks/use-check-counterparty-deletion-eligibility';
+import { useCounterpartyDeletionEligibility } from '@/counterparty/hooks/use-counterparty-deletion-eligibility';
 import { counterpartyService } from '@/counterparty/lib/services/counterparty.service';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';

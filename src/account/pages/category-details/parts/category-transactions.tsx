@@ -1,9 +1,15 @@
 import { Badge } from '@/shared/components/badge';
 import { Button } from '@/shared/components/button';
-import { DataTable, type ITableColumn } from '@/shared/components/data-table';
+import {
+  DataTable,
+  DataTableSkeleton,
+  type ITableColumn,
+} from '@/shared/components/data-table';
 import { FormattedDate } from '@/shared/components/date';
 import { Money } from '@/shared/components/money';
+import { PageSection } from '@/shared/components/page-section';
 import { SearchField } from '@/shared/components/search-field';
+import { Skeleton } from '@/shared/components/skeleton';
 import { TablePagination } from '@/shared/components/table-pagination';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -107,15 +113,7 @@ export function CategoryTransactions({
   });
 
   return (
-    <section className="flex min-w-0 flex-col gap-4" aria-label={title}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-base font-medium">{title}</h2>
-        {transactionsHref && (
-          <Button variant="link" asChild>
-            <a href={transactionsHref}>{view_label}</a>
-          </Button>
-        )}
-      </div>
+    <PageSection title={title}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="w-full sm:max-w-xs">
           <SearchField
@@ -125,6 +123,11 @@ export function CategoryTransactions({
             onChange={(event) => handleSearchChange(event.target.value)}
           />
         </div>
+        {transactionsHref && (
+          <Button variant="link" asChild>
+            <a href={transactionsHref}>{view_label}</a>
+          </Button>
+        )}
         {selectedCounterparty !== null && (
           <Button variant="outline" size="sm" onClick={onClearCounterparty}>
             {clear_label}
@@ -152,6 +155,30 @@ export function CategoryTransactions({
           onPageChange={setPage}
         />
       </div>
-    </section>
+    </PageSection>
+  );
+}
+
+export function CategoryTransactionsSkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('details_loading_recent_transactions');
+
+  const categories_transactions_label = t('categories_transactions_label');
+
+  return (
+    <PageSection title={categories_transactions_label} aria-busy="true">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Skeleton className="h-9 w-full sm:max-w-xs" />
+        <Skeleton className="h-9 w-36" />
+      </div>
+      <DataTableSkeleton columnsCount={5} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Skeleton className="h-5 w-36" />
+        <Skeleton className="h-8 w-48" />
+      </div>
+    </PageSection>
   );
 }

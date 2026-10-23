@@ -142,7 +142,7 @@ describe('TransactionsTableContainer', () => {
       screen.getByPlaceholderText('Search transactions...'),
       'gift'
     );
-    await user.click(screen.getByRole('columnheader', { name: 'Date' }));
+    await user.click(screen.getByRole('button', { name: 'Sort by Date' }));
 
     await waitFor(() => {
       expect(screen.getByLabelText('Location search')).toHaveTextContent(

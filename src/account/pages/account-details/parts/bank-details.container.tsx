@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { useBankDetails } from '../hooks/use-account-details';
+import { useBankDetails } from '../hooks/use-bank-details';
 import type { AccountSectionProps } from '../types';
-import { BankDetails } from './bank-details';
-import { BankDetailsSkeleton } from './bank-details-skeleton';
+import { BankDetails, BankDetailsSkeleton } from './bank-details';
 import { SectionError } from './section-error';
 
 export function BankDetailsContainer({
@@ -15,8 +14,7 @@ export function BankDetailsContainer({
 
   if (bank.isPending) return <BankDetailsSkeleton />;
 
-  if (bank.isError)
-    return <SectionError title={title} onRetry={() => void bank.refetch()} />;
+  if (bank.isError) return <SectionError title={title} />;
 
   if (!bank.data)
     return <p className="text-sm text-muted-foreground">{missing_text}</p>;

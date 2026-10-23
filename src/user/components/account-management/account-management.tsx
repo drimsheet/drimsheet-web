@@ -49,7 +49,7 @@ export function AccountManagement({
         <AccountingEntityAvatar
           name={activeEntity.name}
           size="lg"
-          fallbackClassName="bg-primary font-semibold text-primary-foreground"
+          fallbackClassName="bg-secondary font-semibold text-secondary-foreground"
         />
         <p className="mt-2 max-w-full truncate font-medium">
           {activeEntity.name}

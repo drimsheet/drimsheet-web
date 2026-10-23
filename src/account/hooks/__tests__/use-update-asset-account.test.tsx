@@ -1,7 +1,5 @@
-import {
-  useUpdateBankAccount,
-  useUpdatePettyCashAccount,
-} from '@/account/hooks/use-update-asset-account';
+import { useUpdateBankAccount } from '@/account/hooks/use-update-bank-account';
+import { useUpdatePettyCashAccount } from '@/account/hooks/use-update-petty-cash-account';
 import { assetAccountService } from '@/account/lib/services/asset-account.service';
 import type { ILedgerAccountDto } from '@/shared/lib/api/Api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

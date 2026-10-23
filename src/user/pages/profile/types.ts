@@ -26,7 +26,5 @@ export interface ProfileEntitiesProps {
 }
 
 export interface ProfileSectionStateProps {
-  isLoading: boolean;
   label: string;
-  onRetry: () => void;
 }

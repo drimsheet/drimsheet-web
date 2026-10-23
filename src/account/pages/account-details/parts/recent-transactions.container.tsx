@@ -1,10 +1,12 @@
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAccountTransactions } from '../hooks/use-account-details';
+import { useAccountTransactions } from '../hooks/use-account-transactions';
 import type { AccountSectionProps } from '../types';
-import { RecentTransactions } from './recent-transactions';
-import { RecentTransactionsSkeleton } from './recent-transactions-skeleton';
+import {
+  RecentTransactions,
+  RecentTransactionsSkeleton,
+} from './recent-transactions';
 import { SectionError } from './section-error';
 
 export function RecentTransactionsContainer({
@@ -41,10 +43,7 @@ export function RecentTransactionsContainer({
 
   if (transactions.isPending) return <RecentTransactionsSkeleton />;
 
-  if (transactions.isError)
-    return (
-      <SectionError title={title} onRetry={() => void transactions.refetch()} />
-    );
+  if (transactions.isError) return <SectionError title={title} />;
 
   const empty =
     !transactions.isPlaceholderData &&

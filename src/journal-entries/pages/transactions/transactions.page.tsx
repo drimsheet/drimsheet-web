@@ -1,5 +1,7 @@
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -16,35 +18,37 @@ export function TransactionsPage() {
     setSearchParams(next);
   };
 
-  const title = t('shared:transactions');
+  const page_title = t('shared:transactions');
   const new_transaction_label = t('shared:new_transaction');
   const filter_description = t('journal-entries:category_filter_description');
   const clear_filter_label = t('journal-entries:clear_category_filter_label');
 
   return (
     <>
-      <AppHeader breadcrumbs={[{ label: title }]} />
       <AppBody>
-        {searchParams.has('accountId') && (
-          <div className="flex flex-wrap items-center gap-3">
-            <p className="text-sm text-muted-foreground">
-              {filter_description}
-            </p>
-            <Button variant="outline" onClick={handleClearCategory}>
-              {clear_filter_label}
-            </Button>
-          </div>
-        )}
-        <TransactionsTableContainer
-          actionButton={
-            <Button asChild>
-              <Link to="/transactions/inflow">
-                <Plus />
-                {new_transaction_label}
-              </Link>
-            </Button>
-          }
-        />
+        <PageTitle>{page_title}</PageTitle>
+        <PageSection>
+          {searchParams.has('accountId') && (
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-sm text-muted-foreground">
+                {filter_description}
+              </p>
+              <Button variant="outline" onClick={handleClearCategory}>
+                {clear_filter_label}
+              </Button>
+            </div>
+          )}
+          <TransactionsTableContainer
+            actionButton={
+              <Button asChild>
+                <Link to="/transactions/inflow">
+                  <Plus />
+                  {new_transaction_label}
+                </Link>
+              </Button>
+            }
+          />
+        </PageSection>
       </AppBody>
     </>
   );

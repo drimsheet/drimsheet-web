@@ -1,8 +1,8 @@
+import { useCanAccessAlpha1 } from '@/shared/hooks/use-can-access-alpha1';
 import {
   featureFlagKeys,
-  useCanAccessAlpha1,
   useFeatureFlags,
-} from '@/shared/hooks/use-feature-flag';
+} from '@/shared/hooks/use-feature-flags';
 import { useBoolVariation } from '@launchdarkly/react-sdk';
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

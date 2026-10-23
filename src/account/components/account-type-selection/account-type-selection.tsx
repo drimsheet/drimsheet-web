@@ -101,10 +101,10 @@ export function AccountTypeSelection({
               htmlFor={optionId}
               className={cn(
                 'flex cursor-pointer items-center gap-4 rounded-lg border border-border p-3 outline-none transition-all',
-                'hover:bg-accent/50 focus-within:ring-2 focus-within:ring-ring',
+                'has-[[data-slot=radio-group-item]:focus-visible]:ring-1 has-[[data-slot=radio-group-item]:focus-visible]:ring-ring',
                 isSelected
-                  ? 'bg-accent/40 border-primary shadow-sm'
-                  : 'bg-card',
+                  ? 'bg-selection text-selection-foreground hover:bg-selection-hover border-primary shadow-sm'
+                  : 'bg-card text-card-foreground hover:bg-accent',
                 disabled && 'cursor-not-allowed opacity-50 hover:bg-card'
               )}
             >
@@ -121,7 +121,7 @@ export function AccountTypeSelection({
               </div>
 
               <div className="flex flex-col gap-0.5 text-left">
-                <span className="text-base font-semibold leading-tight text-foreground">
+                <span className="text-base font-semibold leading-tight">
                   {option.label}
                 </span>
                 <span className="text-sm leading-normal text-muted-foreground">

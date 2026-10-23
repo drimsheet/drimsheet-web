@@ -4,5 +4,6 @@
   "profile": "Profile",
   "unavailable": "Not available",
   "toggle_sidebar": "Toggle sidebar",
-  "legal_entity": "Legal Entity"
+  "app_version_label": "Drimsheet version {{version}}",
+  "legal_entity": "Legal Entities"
 }

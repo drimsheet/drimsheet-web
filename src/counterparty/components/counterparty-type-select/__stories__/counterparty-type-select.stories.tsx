@@ -59,3 +59,5 @@ export const TransactionRestricted: Story = {
       'This counterparty’s type cannot be changed because it has been used in a transaction. Create a new counterparty if a different type is required.',
   },
 };
+
+export const Loading: Story = { args: { loading: true } };

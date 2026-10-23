@@ -1,92 +1,78 @@
 import type {
-  IAccountingContextDto,
-  IReportingContextDto,
+  IAccountingEntity,
+  IAccountingEntityCreationDto,
+  TEntityId,
 } from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
 import {
+  alternateAccountingEntity,
   authenticatedAccountingEntity,
   authenticatedUser,
   registerAuthenticatedAppRoutes,
 } from '@integration/mocks/authenticated-app';
+import type { Page } from '@playwright/test';
 
-const accountingEndpoint = '**/api/v1/accounting/accounting-contexts';
-const reportingEndpoint = '**/api/v1/accounting/reporting-contexts';
 const timestamp = '2026-01-01T00:00:00Z';
 
-const accountingContext: IAccountingContextDto = {
-  id: 'accounting-2026',
-  createdBy: authenticatedUser.id,
-  name: 'Statutory books',
-  description: null,
-  accountingEntityId: authenticatedAccountingEntity.id,
-  accountingStandardCode: 'IFRS',
-  fiscalYearId: 'fy-2026',
-  currentAccountingPeriodId: 'feb-2026',
-  createdAt: timestamp,
-  updatedAt: timestamp,
-  closedAt: null,
-  fiscalYear: {
-    id: 'fy-2026',
-    createdBy: authenticatedUser.id,
-    name: 'FY 2026',
-    accountingEntityId: authenticatedAccountingEntity.id,
-    startDate: timestamp,
-    endDate: '2026-12-31T00:00:00Z',
-    status: 'closing',
-    closedAt: null,
-    updatedAt: timestamp,
+const entities: IAccountingEntity[] = [
+  { ...alternateAccountingEntity, name: 'Amara Studio Ltd' },
+  {
+    ...alternateAccountingEntity,
+    id: '00000000-0000-4000-8000-000000000004' as TEntityId,
+    name: 'Amara Consulting',
+    type: 'sole_trader',
+    jurisdictionCode: 'GB',
+    functionalCurrencyCode: 'GBP',
+    status: 'archived',
   },
-  accountingPeriods: ['January', 'February'].map((name, index) => ({
-    id: index === 0 ? 'jan-2026' : 'feb-2026',
-    createdBy: authenticatedUser.id,
-    name: `${name} 2026`,
-    accountingEntityId: authenticatedAccountingEntity.id,
-    fiscalYearId: 'fy-2026',
-    unit: 'month',
-    count: 1,
-    startDate: index === 0 ? timestamp : '2026-02-01T00:00:00Z',
-    endDate: index === 0 ? '2026-01-31T00:00:00Z' : '2026-02-28T00:00:00Z',
-    status: 'open',
-    closedAt: null,
-    updatedAt: timestamp,
-  })),
-};
+  authenticatedAccountingEntity,
+];
 
-const reportingContext: IReportingContextDto = {
-  id: 'reporting-2026',
-  createdBy: authenticatedUser.id,
-  name: 'Management reporting',
-  description: null,
-  accountingEntityId: authenticatedAccountingEntity.id,
-  accountingStandardCode: 'IFRS',
-  accountingContextId: accountingContext.id,
-  reportingCurrencyCode: 'USD',
-  currentReportingPeriodId: 'q2-2026',
-  createdAt: timestamp,
-  updatedAt: timestamp,
-  closedAt: null,
-  fiscalYear: accountingContext.fiscalYear,
-  reportingPeriods: [1, 2].map((quarter) => ({
-    id: `q${quarter}-2026`,
-    createdBy: authenticatedUser.id,
-    name: `Q${quarter} 2026`,
-    accountingEntityId: authenticatedAccountingEntity.id,
-    fiscalYearId: 'fy-2026',
-    unit: 'quarter',
-    count: 1,
-    startDate: quarter === 1 ? timestamp : '2026-04-01T00:00:00Z',
-    endDate: quarter === 1 ? '2026-03-31T00:00:00Z' : '2026-06-30T00:00:00Z',
-    updatedAt: timestamp,
-  })),
-};
+const jurisdictions = [
+  {
+    code: 'NG',
+    name: 'Nigeria',
+    currencyCode: 'NGN',
+    maxFiscalMonths: 23,
+    accountingStandards: {
+      individual: ['IFRS'],
+      sole_trader: ['IFRS'],
+      private_company: ['IFRS'],
+    },
+  },
+];
+
+const currencies = [
+  { code: 'NGN', name: 'Nigerian Naira', symbol: '₦', minorUnit: 2 },
+];
+
+async function fillCreationForm(page: Page) {
+  await page.getByRole('button', { name: 'Add a new legal entity' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Add a new legal entity' });
+  await dialog.getByRole('combobox', { name: 'Who is this for?' }).click();
+  await page.getByRole('option', { name: 'Company', exact: true }).click();
+  await dialog.getByLabel('Name', { exact: true }).fill('New Studio Ltd');
+  await dialog
+    .getByRole('combobox', { name: 'Country of residence' })
+    .fill('Nigeria');
+  await page.getByRole('option', { name: /Nigeria/ }).click();
+  await expect(
+    dialog.getByRole('combobox', { name: 'Official currency' })
+  ).toHaveValue('Nigerian Naira');
+
+  return dialog;
+}
 
 test.beforeEach(async ({ page }) => {
   await registerAuthenticatedAppRoutes(page);
-  await page.route(accountingEndpoint, (route) =>
-    route.fulfill({ json: [accountingContext] })
+  await page.route('**/api/v1/accounting/accounting-entities', (route) =>
+    route.fulfill({ json: entities })
   );
-  await page.route(reportingEndpoint, (route) =>
-    route.fulfill({ json: [reportingContext] })
+  await page.route('**/api/v1/accounting/jurisdictions', (route) =>
+    route.fulfill({ json: jurisdictions })
+  );
+  await page.route('**/api/v1/currencies', (route) =>
+    route.fulfill({ json: currencies })
   );
   await page.route('**/api/v1/users/preferences', (route) =>
     route.fulfill({
@@ -107,221 +93,286 @@ test.beforeEach(async ({ page }) => {
     route.fulfill({ json: { accessToken: 'integration-test-token' } })
   );
   await page.addInitScript(() => {
-    localStorage.setItem('theme', 'light');
+    if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'light');
   });
   await page.goto('/auth/signin');
   await page.getByLabel('Email').fill(authenticatedUser.email);
   await page.getByLabel('Password', { exact: true }).fill('Password1!');
   await page.getByRole('button', { name: 'Sign In' }).click();
   await expect(page).toHaveURL('/dashboard');
-});
-
-test('opens Legal Entity from navigation and shows the saved working periods', async ({
-  page,
-}, testInfo) => {
-  await page.setViewportSize({ width: 1440, height: 1100 });
-  await page.getByRole('link', { name: 'Legal Entity', exact: true }).click();
-  await expect(page).toHaveURL('/legal-entity');
   await expect(
-    page.getByRole('link', { name: 'Legal Entity', exact: true })
-  ).toHaveAttribute('aria-current', 'page');
-  await expect(
-    page.getByRole('heading', { name: 'Legal Entity', exact: true })
+    page.getByRole('button', {
+      name: 'Open account management for Integration Entity',
+    })
   ).toBeVisible();
-  const details = page.getByRole('region', { name: 'Details', exact: true });
-  await expect(details).toContainText('Integration Entity');
-  await expect(details).toContainText('Individual');
-  await expect(details).toContainText('Official Currency');
-  await expect(details).toContainText('NGN');
-  await expect(details).toContainText('Country of Residence');
-  await expect(details).toContainText('Nigeria');
-  await expect(details).toContainText('Active');
-
-  const accounting = page.getByRole('region', {
-    name: 'Accounting Context',
-    exact: true,
-  });
-
-  await expect(accounting).toContainText('February 2026');
-  await expect(accounting).not.toContainText('January 2026');
-  await expect(accounting).toContainText('Month');
-  await expect(accounting).toContainText('Closing');
-  await expect(accounting).toContainText('Feb 1, 2026');
-  await expect(accounting).toContainText('Feb 28, 2026');
-
-  const reporting = page.getByRole('region', {
-    name: 'Reporting Context',
-    exact: true,
-  });
-
-  await expect(reporting).toContainText('Q2 2026');
-  await expect(reporting).not.toContainText('Q1 2026');
-  await expect(reporting).toContainText('USD');
-  await expect(reporting).toContainText('Quarter');
-  await expect(reporting).toContainText('Apr 1, 2026');
-  await expect(reporting).toContainText('Jun 30, 2026');
-  await page.screenshot({
-    path: testInfo.outputPath('legal-entity-desktop.png'),
-    fullPage: true,
-    animations: 'disabled',
-  });
-  await page.evaluate(() => document.documentElement.classList.add('dark'));
-  await page.screenshot({
-    path: testInfo.outputPath('legal-entity-dark.png'),
-    fullPage: true,
-    animations: 'disabled',
-  });
 });
 
-test('keeps accounting visible when reporting fails and retries only that section', async ({
+test('lists all legal entities and their metadata without requesting contexts', async ({
   page,
 }) => {
-  let failReporting = true;
-  let accountingRequests = 0;
-  await page.route(accountingEndpoint, (route) => {
-    accountingRequests += 1;
-
-    return route.fulfill({ json: [accountingContext] });
-  });
-  await page.route(reportingEndpoint, (route) =>
-    route.fulfill(
-      failReporting ? { status: 500, json: {} } : { json: [reportingContext] }
-    )
-  );
-  await page.getByRole('link', { name: 'Legal Entity', exact: true }).click();
-  await expect(
-    page.getByRole('region', { name: 'Accounting Context', exact: true })
-  ).toContainText('February 2026');
-
-  const reporting = page.getByRole('region', {
-    name: 'Reporting Context',
-    exact: true,
-  });
-
-  await expect(reporting.getByRole('alert')).toContainText(
-    'We couldn’t load Reporting Context'
-  );
-  failReporting = false;
-  await reporting.getByRole('button', { name: 'Try again' }).click();
-  await expect(reporting).toContainText('Q2 2026');
-  await expect(reporting.getByRole('alert')).toHaveCount(0);
-  expect(accountingRequests).toBe(1);
-});
-
-test('shows independent loading and empty context states', async ({ page }) => {
-  let releaseAccounting!: () => void;
-
-  const accountingReady = new Promise<void>((resolve) => {
-    releaseAccounting = resolve;
-  });
-
-  await page.route(accountingEndpoint, async (route) => {
-    await accountingReady;
+  const contextRequests: string[] = [];
+  await page.route('**/api/v1/accounting/*-contexts', async (route) => {
+    contextRequests.push(route.request().url());
     await route.fulfill({ json: [] });
   });
-  await page.route(reportingEndpoint, (route) => route.fulfill({ json: [] }));
-  await page.getByRole('link', { name: 'Legal Entity', exact: true }).click();
-
-  const accounting = page.getByRole('region', {
-    name: 'Accounting Context',
-    exact: true,
-  });
-
-  const reporting = page.getByRole('region', {
-    name: 'Reporting Context',
-    exact: true,
-  });
-
-  await expect(accounting.getByRole('status')).toHaveAccessibleName(
-    'Loading Accounting Context…'
-  );
-  await expect(reporting).toContainText('No open contexts');
-  releaseAccounting();
-  await expect(accounting).toContainText('No open contexts');
-  await expect(accounting.getByRole('status')).toHaveCount(0);
-});
-
-test('does not substitute the first period when the saved selections are missing', async ({
-  page,
-}) => {
-  await page.route(accountingEndpoint, (route) =>
-    route.fulfill({
-      json: [{ ...accountingContext, currentAccountingPeriodId: 'missing' }],
-    })
-  );
-  await page.route(reportingEndpoint, (route) =>
-    route.fulfill({
-      json: [{ ...reportingContext, currentReportingPeriodId: 'missing' }],
-    })
-  );
-  await page.getByRole('link', { name: 'Legal Entity', exact: true }).click();
-  for (const name of ['Accounting Context', 'Reporting Context']) {
-    const section = page.getByRole('region', { name, exact: true });
-    await expect(section.getByRole('alert')).toContainText(
-      'The selected period is not available'
-    );
-    await expect(section).toContainText('Not available');
-  }
-
-  await expect(page.getByText('January 2026', { exact: true })).toHaveCount(0);
-  await expect(page.getByText('Q1 2026', { exact: true })).toHaveCount(0);
-});
-
-test('renders every returned context and wraps long entity names on mobile', async ({
-  page,
-}, testInfo) => {
-  const longName =
-    'Northstar International Accounting and Advisory Services Limited';
-
-  await page.route('**/api/v1/accounting/accounting-entity', (route) =>
-    route.fulfill({
-      json: { ...authenticatedAccountingEntity, name: longName },
-    })
-  );
-  await page.route(accountingEndpoint, (route) =>
-    route.fulfill({
-      json: [
-        accountingContext,
-        {
-          ...accountingContext,
-          id: 'accounting-2027',
-          name: 'Next fiscal year',
-        },
-      ],
-    })
-  );
-  await page.route(reportingEndpoint, (route) =>
-    route.fulfill({
-      json: [
-        reportingContext,
-        {
-          ...reportingContext,
-          id: 'reporting-local',
-          name: 'Local reporting',
-          reportingCurrencyCode: 'NGN',
-        },
-      ],
-    })
-  );
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/legal-entity');
+  await page.getByRole('link', { name: 'Legal Entities', exact: true }).click();
+  await expect(page).toHaveURL('/legal-entity');
   await expect(
-    page.getByRole('region', { name: 'Details', exact: true })
-  ).toContainText(longName);
+    page.getByRole('link', { name: 'Legal Entities', exact: true })
+  ).toHaveAttribute('aria-current', 'page');
   await expect(
-    page.getByRole('heading', { name: 'Next fiscal year' })
+    page.getByRole('heading', { name: 'Legal entities', exact: true })
   ).toBeVisible();
+  const list = page.getByRole('list', { name: 'Your accounting entities' });
+  await expect(list.getByRole('listitem')).toHaveCount(3);
   await expect(
-    page.getByRole('heading', { name: 'Local reporting' })
+    list.getByRole('heading', { name: 'Amara Studio Ltd' })
   ).toBeVisible();
+  await expect(list.getByText('Private company')).toBeVisible();
+
+  const soleTrader = list
+    .getByRole('listitem')
+    .filter({ hasText: 'Amara Consulting' });
+
+  await expect(soleTrader).toContainText('Sole trader');
+  await expect(soleTrader).toContainText('United Kingdom');
+  await expect(soleTrader).toContainText('GBP');
+  await expect(soleTrader).toContainText('Archived');
+  await expect(page.getByRole('table')).toHaveCount(0);
+  await page.reload();
+  await expect(list.getByRole('listitem')).toHaveCount(3);
+  expect(contextRequests).toEqual([]);
+  await page.setViewportSize({ width: 375, height: 900 });
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth
     )
   ).toBe(true);
-  await page.screenshot({
-    path: testInfo.outputPath('legal-entity-mobile.png'),
-    fullPage: true,
-    animations: 'disabled',
+  await test.step('Entity links navigate without changing the active context', async () => {
+    const entityWrites: string[] = [];
+    await page.route('**/api/v1/accounting/accounting-entity', (route) =>
+      route.fulfill({
+        json:
+          route.request().headers()['x-accounting-entity-id'] === entities[0].id
+            ? entities[0]
+            : authenticatedAccountingEntity,
+      })
+    );
+    await page.route('**/api/v1/accounting/fiscal-years', (route) =>
+      route.fulfill({ json: [] })
+    );
+
+    await page.route('**/api/v1/accounting/**', async (route) => {
+      if (route.request().method() !== 'GET') {
+        entityWrites.push(route.request().url());
+
+        return route.fulfill({ status: 500, json: {} });
+      }
+
+      return route.fallback();
+    });
+
+    const name = list.getByRole('link', { name: 'Amara Studio Ltd' });
+
+    await expect(name).toHaveAttribute(
+      'href',
+      `/legal-entity/${entities[0].id}`
+    );
+    await expect(name).toHaveCSS('text-decoration-line', 'none');
+    await name.hover();
+    await expect(name).toHaveCSS('text-decoration-line', 'none');
+    await name.focus();
+    await expect(name).toHaveCSS('text-decoration-line', 'none');
+    await expect(name).toHaveCSS('outline-width', '2px');
+
+    const trigger = list.getByRole('button', {
+      name: 'Actions for Amara Studio Ltd',
+    });
+
+    await trigger.click();
+    await expect(
+      page.getByRole('menuitem', { name: 'Switch to entity' })
+    ).toBeDisabled();
+    await expect(
+      page.getByRole('menuitem', { name: 'Edit entity' })
+    ).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+
+    const current = list
+      .getByRole('listitem')
+      .filter({ hasText: 'Integration Entity' });
+
+    await expect(current.getByText('Current', { exact: true })).toBeVisible();
+    await current
+      .getByRole('button', { name: 'Actions for Integration Entity' })
+      .click();
+    await expect(page.getByRole('menuitem')).toHaveCount(1);
+    await expect(
+      page.getByRole('menuitem', { name: 'Edit entity' })
+    ).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await name.click();
+    await expect(page).toHaveURL(`/legal-entity/${entities[0].id}`);
+    await expect(
+      page.getByRole('heading', { name: 'Amara Studio Ltd' })
+    ).toBeVisible();
+    await page.reload();
+    await expect(
+      page.getByRole('heading', { name: 'Amara Studio Ltd' })
+    ).toBeVisible();
+    expect(entityWrites).toEqual([]);
   });
+});
+
+test('creates an entity, prevents dismissal while saving, and updates the list without switching', async ({
+  page,
+}) => {
+  let saved = false;
+  let attempts = 0;
+  let payload: IAccountingEntityCreationDto | undefined;
+  let release!: () => void;
+
+  const responseGate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  const created: IAccountingEntity = {
+    ...alternateAccountingEntity,
+    id: '00000000-0000-4000-8000-000000000009' as TEntityId,
+    name: 'New Studio Ltd',
+  };
+
+  const switches: string[] = [];
+  await page.route('**/api/v1/accounting/accounting-entity/switch', (route) => {
+    switches.push(route.request().url());
+
+    return route.fulfill({ json: created });
+  });
+  await page.route('**/api/v1/accounting/accounting-entities', (route) =>
+    route.fulfill({ json: saved ? [...entities, created] : entities })
+  );
+  await page.route('**/api/v1/accounting/accounting-entity', async (route) => {
+    if (route.request().method() !== 'POST') return route.fallback();
+
+    payload = route.request().postDataJSON();
+    attempts += 1;
+    if (attempts === 1) {
+      await route.fulfill({ status: 500, json: {} });
+
+      return;
+    }
+
+    await responseGate;
+    saved = true;
+    await route.fulfill({ json: created });
+  });
+  await page.getByRole('link', { name: 'Legal Entities', exact: true }).click();
+  const dialog = await fillCreationForm(page);
+  await dialog
+    .getByRole('button', { name: 'Create legal entity', exact: true })
+    .click();
+  await test.step('Failure settles and cancellation clears the draft', async () => {
+    await expect(dialog.getByRole('alert')).toContainText(
+      'Your details have been kept'
+    );
+    await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
+      'New Studio Ltd'
+    );
+    await expect(
+      dialog.getByRole('button', { name: 'Create legal entity', exact: true })
+    ).toBeEnabled();
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await page.getByRole('button', { name: 'Add a new legal entity' }).click();
+    await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue('');
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await fillCreationForm(page);
+  });
+  await dialog
+    .getByRole('button', { name: 'Create legal entity', exact: true })
+    .click();
+  await expect(
+    dialog.getByRole('button', { name: 'Create legal entity', exact: true })
+  ).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeVisible();
+  release();
+  await expect(dialog).not.toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'New Studio Ltd' })
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('list', { name: 'Your accounting entities' })
+      .getByRole('listitem')
+  ).toHaveCount(4);
+  await expect(
+    page.getByRole('button', { name: 'Add a new legal entity' })
+  ).toBeFocused();
+  expect(payload).toEqual({
+    name: 'New Studio Ltd',
+    entityType: 'private_company',
+    jurisdictionCode: 'NG',
+    functionalCurrencyCode: 'NGN',
+  });
+  expect(switches).toEqual([]);
+});
+
+test('recovers from unavailable form options', async ({ page }) => {
+  let fail = true;
+  await page.route('**/api/v1/accounting/jurisdictions', (route) => {
+    if (fail) return route.fulfill({ status: 500, json: {} });
+
+    return route.fulfill({ json: jurisdictions });
+  });
+  await page.getByRole('link', { name: 'Legal Entities', exact: true }).click();
+  await page.getByRole('button', { name: 'Add a new legal entity' }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('alert')).toContainText(
+    'We couldn’t load the countries and currencies'
+  );
+  await expect(
+    dialog.getByRole('button', { name: 'Create legal entity', exact: true })
+  ).toBeDisabled();
+  fail = false;
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
+  await page.getByRole('button', { name: 'Add a new legal entity' }).click();
+  await expect(dialog.getByLabel('Name', { exact: true })).toBeVisible();
+  await expect(
+    dialog.getByRole('button', { name: 'Create legal entity', exact: true })
+  ).toBeEnabled();
+});
+
+test('keeps the last list when refresh fails and recovers after browser refresh', async ({
+  page,
+}) => {
+  await page.route('**/api/v1/accounting/accounting-entities', (route) =>
+    route.fulfill({ status: 500, json: {} })
+  );
+  await page.getByRole('link', { name: 'Legal Entities', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText(
+    'The last available list is shown'
+  );
+  await expect(
+    page
+      .getByRole('list', { name: 'Your accounting entities' })
+      .getByRole('listitem')
+  ).toHaveCount(3);
+  await page.route('**/api/v1/accounting/accounting-entities', (route) =>
+    route.fulfill({ json: entities })
+  );
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(
+    page
+      .getByRole('list', { name: 'Your accounting entities' })
+      .getByRole('listitem')
+  ).toHaveCount(3);
 });

@@ -1,4 +1,7 @@
-import { BankDetails } from '@/account/pages/account-details/parts/bank-details';
+import {
+  BankDetails,
+  BankDetailsSkeleton,
+} from '@/account/pages/account-details/parts/bank-details';
 import type { IBankDetails } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -49,3 +52,5 @@ export const LongDetails: Story = {
     },
   },
 };
+
+export const Skeleton: Story = { render: () => <BankDetailsSkeleton /> };

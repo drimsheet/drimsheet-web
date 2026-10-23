@@ -1,9 +1,10 @@
+import { PageTitle } from '@/shared/components/page-title';
 import { Tabs, type ITabItem } from '@/shared/components/tabs';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 export function TransactionLayout() {
-  const { t } = useTranslation('journal-entries');
+  const { t } = useTranslation(['journal-entries', 'shared']);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -14,16 +15,20 @@ export function TransactionLayout() {
   ];
 
   const activeValue = location.pathname.split('/').at(-1) ?? 'inflow';
+  const page_title = t('shared:new_transaction');
   const tabs_aria_label = t('tabs_aria_label');
 
   return (
-    <div className="flex flex-col gap-8">
-      <Tabs
-        items={items}
-        value={activeValue}
-        ariaLabel={tabs_aria_label}
-        onValueChange={(value) => navigate(`/transactions/${value}`)}
-      />
+    <div className="flex flex-col">
+      <PageTitle>{page_title}</PageTitle>
+      <div className="mt-7">
+        <Tabs
+          items={items}
+          value={activeValue}
+          ariaLabel={tabs_aria_label}
+          onValueChange={(value) => navigate(`/transactions/${value}`)}
+        />
+      </div>
       <Outlet />
     </div>
   );

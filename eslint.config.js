@@ -9,6 +9,8 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import preferLoadingUi from './scripts/eslint-rules/prefer-loading-ui.js';
+import preferNativeStatus from './scripts/eslint-rules/prefer-native-status.js';
 
 export default defineConfig([
   globalIgnores([
@@ -60,9 +62,31 @@ export default defineConfig([
     },
   },
   {
-    files: ['src/*/{pages,dialogs}/*/{parts,hooks}/*.{ts,tsx}'],
+    files: ['**/*.{jsx,tsx}'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+    plugins: {
+      local: {
+        rules: {
+          'prefer-native-status': preferNativeStatus,
+          'prefer-loading-ui': preferLoadingUi,
+        },
+      },
+    },
     rules: {
-      // Direct page and dialog parts and hooks may import their owner's private contracts.
+      'local/prefer-native-status': 'error',
+      'local/prefer-loading-ui': 'error',
+    },
+  },
+  {
+    files: [
+      'src/*/{pages,dialogs}/*/{parts,hooks}/*.{ts,tsx}',
+      'src/*/components/*/parts/*.{ts,tsx}',
+    ],
+    rules: {
+      // Private parts and hooks may import their owner's contracts and helpers.
       'no-relative-import-paths/no-relative-import-paths': [
         'warn',
         { allowSameFolder: true, allowedDepth: 1, rootDir: 'src', prefix: '@' },

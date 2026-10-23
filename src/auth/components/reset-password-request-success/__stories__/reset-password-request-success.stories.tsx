@@ -18,32 +18,8 @@ const meta = {
     layout: 'centered',
   },
   tags: ['autodocs'],
-  args: { onRetry: () => {}, countdown: 30, loading: false },
-  argTypes: {
-    onRetry: { action: 'retry clicked' },
-  },
 } satisfies Meta<typeof RequestPasswordResetSuccess>;
 
 export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const CountingDown: Story = {
-  args: {
-    countdown: 30,
-    loading: false,
-  },
-};
-
-export const ReadyToRetry: Story = {
-  args: {
-    countdown: 0,
-    loading: false,
-  },
-};
-
-export const Loading: Story = {
-  args: {
-    countdown: 0,
-    loading: true,
-  },
-};
+type TStory = StoryObj<typeof meta>;
+export const Default: TStory = {};
