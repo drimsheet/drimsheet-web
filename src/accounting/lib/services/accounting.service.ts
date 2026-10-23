@@ -50,18 +50,6 @@ export const accountingService = {
     return (await drimsheetApi.accounting.createReportingContext(payload)).data;
   },
 
-  async getAccountingContexts() {
-    const { data } = await drimsheetApi.accounting.getAccountingContexts();
-
-    return data;
-  },
-
-  async getReportingContexts() {
-    const { data } = await drimsheetApi.accounting.getReportingContexts();
-
-    return data;
-  },
-
   getAccountingEntityId() {
     return activeAccountingEntity?.id ?? reloadAccountingEntityId;
   },
