@@ -1,5 +1,6 @@
 /**
- * ⚠️ This is a hardcoded map of fiscal year starts for each jurisdiction.
+ * ⚠️ This is a hardcoded map of fiscal year starts for each jurisdiction
+ * // TODO: move to core
  */
 
 import {
@@ -7,10 +8,10 @@ import {
   type UJurisdictionCode,
 } from '@/shared/lib/api/Api';
 
-export type IFiscalYearStart = {
+export interface IFiscalYearStart {
   month: number;
   day: number;
-};
+}
 
 export const FISCAL_YEAR_STARTS: Record<UJurisdictionCode, IFiscalYearStart> = {
   [EJurisdictionCode.AD]: { month: 1, day: 1 },

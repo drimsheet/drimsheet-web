@@ -2,7 +2,6 @@ import { AppSidebar } from '@/_app/components/app-sidebar';
 import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entities';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
 import { LogoutConfirmationDialog } from '@/auth/dialogs/logout-confirmation';
-import { OnboardingManagerContainer } from '@/onboarding/components/onboarding-manager';
 import { AppHeaderActionsProvider } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
 import { FullPageLoader } from '@/shared/components/full-page-loader';
@@ -11,7 +10,7 @@ import { AccountingEntityAvatarContainer } from '@/user/components/accounting-en
 import { BellIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 export function AppLayout() {
   const { pathname } = useLocation();
@@ -34,6 +33,10 @@ export function AppLayout() {
 
   if (isLoading) {
     return <FullPageLoader label={tShared('loading_application_status')} />;
+  }
+
+  if (accountingEntities?.length === 0) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   const notificationsAriaLabel = tUser('notifications_aria_label');
@@ -68,7 +71,6 @@ export function AppLayout() {
           </AppHeaderActionsProvider>
         </SidebarInset>
       </SidebarProvider>
-      <OnboardingManagerContainer />
       <LogoutConfirmationDialog
         open={showLogoutConfirmation}
         onOpenChange={setShowLogoutConfirmation}

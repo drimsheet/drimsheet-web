@@ -1,4 +1,3 @@
-import { AccountingEntityCreationDialog } from '@/accounting/dialogs/accounting-entity-creation';
 import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entities';
 import { useSwitchAccountingEntity } from '@/accounting/hooks/use-switch-accounting-entity';
 import { accountingService } from '@/accounting/lib/services/accounting.service';
@@ -25,7 +24,6 @@ export function AccountManagementDialog({
 }: Readonly<AccountManagementDialogProps>) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [showAccountCreation, setShowAccountCreation] = useState(false);
   const logoutRequestedRef = useRef(false);
   const titleId = useId();
   const { data: accountingEntities = [] } = useAccountingEntities();
@@ -50,11 +48,6 @@ export function AccountManagementDialog({
     navigate('/profile');
   };
 
-  const handleAddAccount = () => {
-    setOpen(false);
-    setShowAccountCreation(true);
-  };
-
   const handleLogoutClick = () => {
     logoutRequestedRef.current = true;
     setOpen(false);
@@ -68,11 +61,6 @@ export function AccountManagementDialog({
     onLogoutClick();
   };
 
-  const handleAccountCreated = async () => {
-    setShowAccountCreation(false);
-    window.location.reload();
-  };
-
   const handleThemeChange = (theme: UAppThemePreference) => {
     updatePreferences(
       { theme },
@@ -83,41 +71,32 @@ export function AccountManagementDialog({
   };
 
   return (
-    <>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>{children}</PopoverTrigger>
-        <PopoverContent
-          align="end"
-          sideOffset={8}
-          aria-labelledby={titleId}
-          onCloseAutoFocus={handleCloseAutoFocus}
-          className="max-h-[calc(100vh-5rem)] w-80 gap-0 overflow-y-auto rounded-xl p-0"
-        >
-          <AccountManagement
-            accountingEntities={accountingEntities}
-            activeEntity={activeEntity}
-            email={profile?.email}
-            onAddAccount={handleAddAccount}
-            onProfileClick={handleProfileClick}
-            onLogoutClick={handleLogoutClick}
-            onSelectEntity={handleSelectEntity}
-            themeAction={
-              <AnimatedThemeToggler
-                showText
-                onThemeChange={handleThemeChange}
-                className="flex h-9 w-full items-center justify-start gap-1.5 px-5 text-sm font-medium hover:bg-muted"
-              />
-            }
-            titleId={titleId}
-          />
-        </PopoverContent>
-      </Popover>
-
-      <AccountingEntityCreationDialog
-        onClose={() => setShowAccountCreation(false)}
-        open={showAccountCreation}
-        done={handleAccountCreated}
-      />
-    </>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>{children}</PopoverTrigger>
+      <PopoverContent
+        align="end"
+        sideOffset={8}
+        aria-labelledby={titleId}
+        onCloseAutoFocus={handleCloseAutoFocus}
+        className="max-h-[calc(100vh-5rem)] w-80 gap-0 overflow-y-auto rounded-xl p-0"
+      >
+        <AccountManagement
+          accountingEntities={accountingEntities}
+          activeEntity={activeEntity}
+          email={profile?.email}
+          onProfileClick={handleProfileClick}
+          onLogoutClick={handleLogoutClick}
+          onSelectEntity={handleSelectEntity}
+          themeAction={
+            <AnimatedThemeToggler
+              showText
+              onThemeChange={handleThemeChange}
+              className="flex h-9 w-full items-center justify-start gap-1.5 px-5 text-sm font-medium hover:bg-muted"
+            />
+          }
+          titleId={titleId}
+        />
+      </PopoverContent>
+    </Popover>
   );
 }

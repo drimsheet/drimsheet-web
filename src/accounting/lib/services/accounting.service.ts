@@ -1,8 +1,13 @@
 import { drimsheetApi } from '@/shared/lib/api';
 import type {
+  IAccountingContextCreationReq,
   IAccountingEntity,
   IAccountingEntityCreationDto,
   IAccountingEntitySwitchReq,
+  IAccountingIntervalCreationReq,
+  IFiscalYearCreationReq,
+  IReportingContextCreationReq,
+  IReportingIntervalCreationReq,
 } from '@/shared/lib/api/Api';
 import { parseApiError } from '@/shared/lib/api/errors';
 import { storageService } from '@/shared/lib/services/storage.service';
@@ -18,6 +23,33 @@ function setActiveAccountingEntity(accountingEntity: IAccountingEntity) {
 }
 
 export const accountingService = {
+  async createAccountingEntity(payload: IAccountingEntityCreationDto) {
+    return (await drimsheetApi.accounting.createAccountingEntity(payload)).data;
+  },
+
+  async createFiscalYear(payload: IFiscalYearCreationReq) {
+    return (await drimsheetApi.accounting.createFiscalYear(payload)).data;
+  },
+
+  async createAccountingInterval(payload: IAccountingIntervalCreationReq) {
+    return (await drimsheetApi.accounting.createAccountingInterval(payload))
+      .data;
+  },
+
+  async createAccountingContext(payload: IAccountingContextCreationReq) {
+    return (await drimsheetApi.accounting.createAccountingContext(payload))
+      .data;
+  },
+
+  async createReportingInterval(payload: IReportingIntervalCreationReq) {
+    return (await drimsheetApi.accounting.createReportingInterval(payload))
+      .data;
+  },
+
+  async createReportingContext(payload: IReportingContextCreationReq) {
+    return (await drimsheetApi.accounting.createReportingContext(payload)).data;
+  },
+
   async getAccountingContexts() {
     const { data } = await drimsheetApi.accounting.getAccountingContexts();
 
@@ -76,14 +108,5 @@ export const accountingService = {
     setActiveAccountingEntity(res.data);
 
     return res.data;
-  },
-
-  async createAccountingEntity(payload: IAccountingEntityCreationDto) {
-    const { data } =
-      await drimsheetApi.accounting.createAccountingEntity(payload);
-
-    setActiveAccountingEntity(data);
-
-    return data;
   },
 };

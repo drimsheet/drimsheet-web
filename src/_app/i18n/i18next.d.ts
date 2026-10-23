@@ -4,6 +4,7 @@ import accountingEn from '@/accounting/i18n/locales/en/accounting.json';
 import authEn from '@/auth/i18n/locales/en/auth.json';
 import counterpartyEn from '@/counterparty/i18n/locales/en/counterparty.json';
 import journalEntriesEn from '@/journal-entries/i18n/locales/en/journal-entries.json';
+import onboardingEn from '@/onboarding/i18n/locales/en/onboarding.json';
 import apiErrorsEn from '@/shared/i18n/locales/en/api-errors.json';
 import sharedEn from '@/shared/i18n/locales/en/shared.json';
 import userEn from '@/user/i18n/locales/en/user.json';
@@ -20,6 +21,7 @@ declare module 'i18next' {
       'journal-entries': typeof journalEntriesEn;
       'ledger-accounts': typeof ledgerAccountsEn;
       accounting: typeof accountingEn;
+      onboarding: typeof onboardingEn;
       'api-errors': typeof apiErrorsEn;
       user: typeof userEn;
     };

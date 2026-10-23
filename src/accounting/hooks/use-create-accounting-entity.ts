@@ -4,7 +4,8 @@ import { useMutation } from '@tanstack/react-query';
 
 export function useCreateAccountingEntity() {
   return useMutation({
-    mutationFn: (data: IAccountingEntityCreationDto) =>
-      accountingService.createAccountingEntity(data),
+    mutationFn: (payload: IAccountingEntityCreationDto) =>
+      accountingService.createAccountingEntity(payload),
+    retry: false,
   });
 }

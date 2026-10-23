@@ -2,7 +2,6 @@ import { accountingService } from '@/accounting/lib/services/accounting.service'
 import { drimsheetApi } from '@/shared/lib/api';
 import type {
   IAccountingEntity,
-  IAccountingEntityCreationDto,
   IAccountingEntitySwitchReq,
   TEntityId,
 } from '@/shared/lib/api/Api';
@@ -12,7 +11,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@/shared/lib/api', () => ({
   drimsheetApi: {
     accounting: {
-      createAccountingEntity: vi.fn(),
       getActiveAccountingEntity: vi.fn(),
       getUserAccountingEntities: vi.fn(),
       getJurisdictions: vi.fn(),
@@ -187,20 +185,5 @@ describe('accountingService', () => {
       secondEntity,
     ]);
     expect(accountingService.getAccountingEntityId()).toBeUndefined();
-  });
-
-  it('stores a newly created accounting entity in memory', async () => {
-    const payload = {} as IAccountingEntityCreationDto;
-    vi.mocked(drimsheetApi.accounting.createAccountingEntity).mockResolvedValue(
-      { data: firstEntity } as never
-    );
-
-    await expect(
-      accountingService.createAccountingEntity(payload)
-    ).resolves.toEqual(firstEntity);
-    expect(drimsheetApi.accounting.createAccountingEntity).toHaveBeenCalledWith(
-      payload
-    );
-    expect(accountingService.getAccountingEntityId()).toBe(firstEntity.id);
   });
 });

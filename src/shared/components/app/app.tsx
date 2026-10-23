@@ -50,12 +50,14 @@ export interface IBreadCrumb {
 
 export interface AppHeaderProps extends React.ComponentProps<'header'> {
   breadcrumbs?: IBreadCrumb[];
+  showSidebarTrigger?: boolean;
 }
 
 export function AppHeader({
   breadcrumbs,
   children,
   className,
+  showSidebarTrigger = true,
   ...props
 }: Readonly<AppHeaderProps>) {
   const actions = useContext(AppHeaderActionsContext);
@@ -68,8 +70,8 @@ export function AppHeader({
         className
       )}
     >
-      <div className="flex flex-wrap items-center gap-4">
-        <SidebarTrigger />
+      <div className="flex w-full flex-wrap items-center gap-4">
+        {showSidebarTrigger && <SidebarTrigger />}
         {breadcrumbs && breadcrumbs.length > 0 && (
           <Breadcrumb>
             <BreadcrumbList>

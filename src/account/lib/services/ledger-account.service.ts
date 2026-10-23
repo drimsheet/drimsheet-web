@@ -7,6 +7,7 @@ import {
   type IGetJournalEntriesQuery,
   type IGetLedgerAccountsQuery,
   type IGetPermittedPostingAccountsQuery,
+  type IHeaderAccountNameAliasesReq,
 } from '@/shared/lib/api/Api';
 
 async function getLedgerAccounts(query: IGetLedgerAccountsQuery) {
@@ -114,7 +115,12 @@ async function getAccountCounterpartyParticipation(
   return response.data;
 }
 
+async function setupHeaderAccounts(payload: IHeaderAccountNameAliasesReq) {
+  return (await drimsheetApi.ledger.setupHeaderAccounts(payload)).data;
+}
+
 export const ledgerAccountService = Object.freeze({
+  setupHeaderAccounts,
   getAccountCounterpartyParticipation,
   getLedgerAccounts,
   getPettyBaseCashFilters,

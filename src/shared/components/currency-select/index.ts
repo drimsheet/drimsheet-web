@@ -1,1 +1,2 @@
-export * from './currency-select';
+export { CurrencySelect } from './currency-select';
+export type { CurrencySelectProps } from './types';
