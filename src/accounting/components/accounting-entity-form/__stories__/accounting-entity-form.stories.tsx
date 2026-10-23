@@ -30,7 +30,7 @@ const meta = {
       </div>
     ),
   ],
-  args: { currencies, jurisdictions },
+  args: { currencies, jurisdictions, individualName: 'Ada Okafor' },
 } satisfies Meta<typeof AccountingEntityForm>;
 
 export default meta;
@@ -47,3 +47,18 @@ export const Populated: TStory = {
   },
 };
 export const Disabled: TStory = { args: { disabled: true } };
+
+export const CurrencyMismatch: TStory = {
+  args: {
+    currencies: [
+      ...currencies,
+      { code: 'USD', name: 'US Dollar', symbol: '$', minorUnit: 2 },
+    ],
+    initialValues: {
+      entityType: 'individual',
+      name: 'Ada Okafor',
+      jurisdictionCode: 'NG',
+      functionalCurrencyCode: 'USD',
+    },
+  },
+};

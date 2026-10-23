@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from '@/shared/components/alert';
 import { CountryComboBox } from '@/shared/components/country-combobox';
 import { CurrencySelect } from '@/shared/components/currency-select';
 import {
@@ -17,8 +18,12 @@ import {
   SelectValue,
 } from '@/shared/components/select';
 import { useFieldErrorMessage } from '@/shared/hooks/use-field-error-message';
-import { EAccountingEntityType } from '@/shared/lib/api/Api';
+import {
+  EAccountingEntityType,
+  type UAccountingEntityType,
+} from '@/shared/lib/api/Api';
 import { useFormik } from 'formik';
+import { TriangleAlert } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import accountingEntityFormHelpers from './helper';
@@ -32,6 +37,7 @@ export function AccountingEntityForm({
   id,
   currencies,
   jurisdictions,
+  individualName,
   initialValues,
   disabled = false,
   onSubmit,
@@ -62,6 +68,53 @@ export function AccountingEntityForm({
   const nameErrors = getErrorMessage('name');
   const isDisabled = disabled || formik.isSubmitting;
 
+  const selectedCountry = jurisdictions.find(
+    ({ code }) => code === formik.values.jurisdictionCode
+  );
+
+  const hasCurrencyMismatch = Boolean(
+    selectedCountry &&
+    formik.values.functionalCurrencyCode &&
+    selectedCountry.currencyCode !== formik.values.functionalCurrencyCode
+  );
+
+  const handleTypeChange = (entityType: UAccountingEntityType) => {
+    void formik.setValues((values) => ({
+      ...values,
+      entityType,
+      name:
+        entityType === EAccountingEntityType.Individual && individualName
+          ? individualName
+          : values.name,
+    }));
+  };
+
+  const handleCountryChange = (jurisdictionCode: string) => {
+    const country = jurisdictions.find(({ code }) => code === jurisdictionCode);
+
+    void formik.setValues((values) => ({
+      ...values,
+      jurisdictionCode,
+      functionalCurrencyCode:
+        country?.currencyCode ?? values.functionalCurrencyCode,
+    }));
+  };
+
+  const handleCurrencyChange = (functionalCurrencyCode: string) => {
+    const matchingCountries = jurisdictions.filter(
+      ({ currencyCode }) => currencyCode === functionalCurrencyCode
+    );
+
+    void formik.setValues((values) => ({
+      ...values,
+      functionalCurrencyCode,
+      jurisdictionCode:
+        !values.jurisdictionCode && matchingCountries.length === 1
+          ? matchingCountries[0].code
+          : values.jurisdictionCode,
+    }));
+  };
+
   const type_label = t('entity_type_label');
   const type_placeholder = t('entity_type_placeholder');
   const individual_label = t('entity_type_individual_label');
@@ -72,6 +125,11 @@ export function AccountingEntityForm({
   const country_label = t('entity_country_label');
   const currency_label = t('entity_currency_label');
 
+  const currency_mismatch_text = t('entity_currency_mismatch_text', {
+    country: selectedCountry?.name,
+    currency: selectedCountry?.currencyCode,
+  });
+
   return (
     <form id={id} onSubmit={formik.handleSubmit} noValidate>
       <FieldSet disabled={isDisabled}>
@@ -81,9 +139,7 @@ export function AccountingEntityForm({
             <Select
               value={formik.values.entityType}
               disabled={isDisabled}
-              onValueChange={(value) =>
-                formik.setFieldValue('entityType', value)
-              }
+              onValueChange={handleTypeChange}
             >
               <SelectTrigger
                 id={`${fieldId}-type`}
@@ -133,9 +189,7 @@ export function AccountingEntityForm({
             label={country_label}
             value={formik.values.jurisdictionCode}
             jurisdictions={jurisdictions}
-            onChange={(value) =>
-              formik.setFieldValue('jurisdictionCode', value)
-            }
+            onChange={handleCountryChange}
             error={getErrorMessage('jurisdictionCode')}
             disabled={isDisabled}
           />
@@ -144,12 +198,16 @@ export function AccountingEntityForm({
             label={currency_label}
             value={formik.values.functionalCurrencyCode}
             currencies={currencies}
-            onChange={(value) =>
-              formik.setFieldValue('functionalCurrencyCode', value)
-            }
+            onChange={handleCurrencyChange}
             error={getErrorMessage('functionalCurrencyCode')}
             disabled={isDisabled}
           />
+          {hasCurrencyMismatch && (
+            <Alert variant="destructive">
+              <TriangleAlert aria-hidden />
+              <AlertDescription>{currency_mismatch_text}</AlertDescription>
+            </Alert>
+          )}
         </FieldGroup>
       </FieldSet>
     </form>

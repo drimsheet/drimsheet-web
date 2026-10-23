@@ -324,9 +324,7 @@ for (const viewport of [
       .fill('Ada Okafor');
     await page.getByRole('combobox', { name: 'Country of residence' }).click();
     await page.getByRole('option', { name: /Nigeria/ }).click();
-    await page
-      .getByRole('combobox', { name: 'Main currency for your records' })
-      .click();
+    await page.getByRole('combobox', { name: 'Official currency' }).click();
     await page.getByRole('option', { name: /Nigerian Naira/ }).click();
     await page
       .getByRole('button', { name: 'Continue to financial year' })
@@ -677,3 +675,106 @@ for (const viewport of [
     });
   });
 }
+
+for (const theme of ['light', 'dark'] as const) {
+  test(`continues with a currency mismatch without creating an entity in ${theme} theme`, async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize(
+      theme === 'dark'
+        ? { width: 375, height: 812 }
+        : { width: 1280, height: 900 }
+    );
+    await page.addInitScript(
+      (selectedTheme) => localStorage.setItem('theme', selectedTheme),
+      theme
+    );
+    await page.route(entityListEndpoint, (route) =>
+      route.fulfill({ json: [] })
+    );
+    await page.route('**/api/v1/currencies', (route) =>
+      route.fulfill({
+        json: [
+          ...currencies,
+          { code: 'USD', name: 'US Dollar', symbol: '$', minorUnit: 2 },
+        ],
+      })
+    );
+    const creationRequests: string[] = [];
+    await page.route(
+      '**/api/v1/accounting/accounting-entity',
+      async (route) => {
+        if (route.request().method() === 'POST') {
+          creationRequests.push(route.request().postData() ?? '');
+        }
+
+        await route.fulfill({ status: 400, json: {} });
+      }
+    );
+    await page.goto(verificationUrl);
+    await page.getByRole('combobox', { name: 'Who is this for?' }).click();
+    await page.getByRole('option', { name: 'Individual', exact: true }).click();
+    await expect(
+      page.getByRole('textbox', { name: 'Name', exact: true })
+    ).toHaveValue('Integration User');
+    await page.getByRole('combobox', { name: 'Country of residence' }).click();
+    await page.getByRole('option', { name: /Nigeria/ }).click();
+    const currency = page.getByRole('combobox', { name: 'Official currency' });
+    await expect(currency).toHaveValue('Nigerian Naira');
+    await currency.fill('US Dollar');
+    await page.getByRole('option', { name: /US Dollar/ }).click();
+    await expect(page.getByRole('alert')).toContainText(
+      'The selected currency does not match the official currency of Nigeria (NGN). You can still continue.'
+    );
+
+    const next = page.getByRole('button', {
+      name: 'Continue to financial year',
+    });
+
+    await expect(next).toBeEnabled();
+    await page.screenshot({
+      path: testInfo.outputPath('currency-mismatch.png'),
+      animations: 'disabled',
+    });
+    await next.click();
+    await expect(
+      page.getByRole('heading', { name: 'Set up your financial year' })
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(currency).toHaveValue('US Dollar');
+    await expect(
+      page.getByRole('textbox', { name: 'Name', exact: true })
+    ).toHaveValue('Integration User');
+    expect(creationRequests).toEqual([]);
+  });
+}
+
+test('waits for profile data before allowing the individual selection', async ({
+  page,
+}) => {
+  let releaseProfile = () => {};
+
+  const profileResponse = new Promise<void>((resolve) => {
+    releaseProfile = resolve;
+  });
+
+  await page.route('**/api/v1/users/profile', async (route) => {
+    await profileResponse;
+    await route.fulfill({
+      json: { firstName: 'Ada', lastName: 'Okafor', email: 'ada@example.com' },
+    });
+  });
+  await page.route(entityListEndpoint, (route) => route.fulfill({ json: [] }));
+  await page.goto(verificationUrl);
+  await expect(page.getByRole('status')).toHaveText('Loading Drimsheet');
+  await expect(
+    page.getByRole('combobox', { name: 'Who is this for?' })
+  ).toHaveCount(0);
+  releaseProfile();
+  await expect(page).toHaveURL('/onboarding');
+  await page.getByRole('combobox', { name: 'Who is this for?' }).click();
+  await page.getByRole('option', { name: 'Individual', exact: true }).click();
+  await expect(
+    page.getByRole('textbox', { name: 'Name', exact: true })
+  ).toHaveValue('Ada Okafor');
+});

@@ -15,6 +15,7 @@ export interface AccountingEntityFormProps {
   id?: string;
   currencies: ICurrencyDto[];
   jurisdictions: IJurisdictionDto[];
+  individualName?: string;
   initialValues?: Partial<IAccountingEntityFormValues>;
   disabled?: boolean;
   onSubmit?: (values: IAccountingEntityFormValues) => void | Promise<void>;

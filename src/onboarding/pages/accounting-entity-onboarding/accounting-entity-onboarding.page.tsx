@@ -8,6 +8,7 @@ import { SidebarProvider } from '@/shared/components/sidebar';
 import { useCurrencies } from '@/shared/hooks/use-currencies';
 import { useJurisdictions } from '@/shared/hooks/use-jurisdictions';
 import { dateUtils } from '@/shared/lib/utils/date';
+import { useProfile } from '@/user/hooks/use-profile';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccountingEntityStep } from './parts/accounting-entity-step';
@@ -33,10 +34,14 @@ export function AccountingEntityOnboardingPage() {
 
   const [currentDate] = useState(() => dateUtils.formatDateForApi(new Date()));
   const mainRef = useRef<HTMLElement>(null);
+  const { data: profile } = useProfile();
   const currenciesQuery = useCurrencies();
   const jurisdictionsQuery = useJurisdictions({ throwOnError: false });
 
   const isLoading = currenciesQuery.isPending || jurisdictionsQuery.isPending;
+
+  const individualName =
+    `${profile?.firstName ?? ''} ${profile?.lastName ?? ''}`.trim();
 
   const hasError =
     !isLoading &&
@@ -104,6 +109,7 @@ export function AccountingEntityOnboardingPage() {
           </p>
           <div className={currentStep === 1 ? 'flex flex-1' : 'hidden'}>
             <AccountingEntityStep
+              individualName={individualName}
               currencies={currenciesQuery.data ?? []}
               jurisdictions={jurisdictionsQuery.data ?? []}
               isLoading={isLoading}

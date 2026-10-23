@@ -12,7 +12,7 @@ export interface StepLayoutProps {
 
 export interface AccountingEntityStepProps extends Pick<
   AccountingEntityFormProps,
-  'currencies' | 'jurisdictions' | 'onSubmit'
+  'currencies' | 'jurisdictions' | 'individualName' | 'onSubmit'
 > {
   isLoading?: boolean;
   hasError?: boolean;

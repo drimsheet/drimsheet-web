@@ -18,6 +18,7 @@ import { StepLayout } from './step-layout';
 export function AccountingEntityStep({
   currencies,
   jurisdictions,
+  individualName,
   isLoading = false,
   hasError = false,
   onRetry,
@@ -102,6 +103,7 @@ export function AccountingEntityStep({
             onSubmit={onSubmit}
             currencies={currencies}
             jurisdictions={jurisdictions}
+            individualName={individualName}
             disabled={hasError}
           />
         )}
