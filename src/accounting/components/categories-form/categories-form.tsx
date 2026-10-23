@@ -9,24 +9,25 @@ import {
 } from '@/shared/components/field';
 import { useId, useState, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import incomeCategoriesFormHelpers from './helper';
-import { CreateIncomeCategoryForm } from './parts/create-income-category-form';
-import type { IIncomeCategoryDraft, IncomeCategoriesFormProps } from './types';
+import categoriesFormHelpers from './helper';
+import { CreateCategoryForm } from './parts/create-category-form';
+import type { CategoriesFormProps, ICategoryDraft } from './types';
 
-export function IncomeCategoriesForm({
+export function CategoriesForm({
+  kind,
   id,
   initialValues,
   disabled = false,
   onSubmit,
-}: Readonly<IncomeCategoriesFormProps>) {
+}: Readonly<CategoriesFormProps>) {
   const { t } = useTranslation('accounting');
   const fieldId = useId();
-  const groups = incomeCategoriesFormHelpers.createGroups(t);
+  const groups = categoriesFormHelpers.createGroups(t, kind);
 
   const [values, setValues] = useState(() =>
-    incomeCategoriesFormHelpers.createInitialValues(
+    categoriesFormHelpers.createInitialValues(
       groups,
-      (name) => t('income_categories_default_label', { name }),
+      (name) => t('categories_default_label', { name }),
       initialValues
     )
   );
@@ -51,7 +52,7 @@ export function IncomeCategoriesForm({
     setIsAdding(true);
   };
 
-  const handleAdd = (draft: IIncomeCategoryDraft) => {
+  const handleAdd = (draft: ICategoryDraft) => {
     const parent = groups.find(({ id }) => id === draft.parentId);
     if (!parent) return;
 
@@ -74,17 +75,18 @@ export function IncomeCategoriesForm({
     if (!disabled) onSubmit?.(values);
   };
 
-  const title = t('income_categories_recommended_title');
+  const title = t('categories_recommended_title');
 
-  const selected_text = t('income_categories_selected_label', {
+  const selected_text = t('categories_selected_label', {
     count: selectedCount,
   });
 
-  const add_label = t('income_categories_add_label');
+  const add_label = t(`${kind}_categories_add_label`);
 
   if (isAdding)
     return (
-      <CreateIncomeCategoryForm
+      <CreateCategoryForm
+        kind={kind}
         groups={groups}
         categories={values.categories}
         disabled={disabled}

@@ -1,10 +1,11 @@
-import { IncomeCategoriesForm } from '@/accounting/components/income-categories-form';
+import { CategoriesForm } from '@/accounting/components/categories-form';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
-  title: 'Accounting/Income Categories Form',
-  component: IncomeCategoriesForm,
+  title: 'Accounting/Categories Form',
+  component: CategoriesForm,
   tags: ['autodocs'],
+  args: { kind: 'income' },
   decorators: [
     (Story) => (
       <div className="w-full max-w-[620px] p-6">
@@ -12,7 +13,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof IncomeCategoriesForm>;
+} satisfies Meta<typeof CategoriesForm>;
 
 export default meta;
 type TStory = StoryObj<typeof meta>;
@@ -38,3 +39,5 @@ export const CustomCategory: TStory = {
     },
   },
 };
+
+export const Expense: TStory = { args: { kind: 'expense' } };

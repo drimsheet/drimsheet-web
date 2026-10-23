@@ -1,4 +1,4 @@
-import { IncomeCategoriesForm } from '@/accounting/components/income-categories-form';
+import { CategoriesForm } from '@/accounting/components/categories-form';
 import { Button } from '@/shared/components/button';
 import {
   Collapsible,
@@ -13,10 +13,12 @@ import { StepLayout } from './step-layout';
 
 export function IncomeCategoriesStep({
   onBack,
+  onSubmit,
 }: Readonly<IncomeCategoriesStepProps>) {
   const { t } = useTranslation('onboarding');
 
   const titleId = useId();
+  const formId = useId();
 
   const title = t('income_categories_step_title');
   const description = t('income_categories_step_description');
@@ -33,7 +35,7 @@ export function IncomeCategoriesStep({
           <Button type="button" variant="outline" onClick={onBack}>
             {back_label}
           </Button>
-          <Button type="button">
+          <Button type="submit" form={formId}>
             {continue_label}
             <ArrowRight data-icon="inline-end" />
           </Button>
@@ -70,7 +72,7 @@ export function IncomeCategoriesStep({
             <p className="text-sm text-muted-foreground">{about_description}</p>
           </CollapsibleContent>
         </Collapsible>
-        <IncomeCategoriesForm />
+        <CategoriesForm kind="income" id={formId} onSubmit={onSubmit} />
       </div>
     </StepLayout>
   );

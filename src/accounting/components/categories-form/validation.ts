@@ -1,27 +1,27 @@
 import type { TFunction } from 'i18next';
 import * as yup from 'yup';
-import type { IIncomeCategory, IIncomeCategoryGroup } from './types';
+import type { ICategory, ICategoryGroup } from './types';
 
-export function incomeCategorySchema(
+export function categorySchema(
   t: TFunction<'accounting'>,
-  groups: IIncomeCategoryGroup[],
-  categories: IIncomeCategory[]
+  groups: ICategoryGroup[],
+  categories: ICategory[]
 ) {
   return yup.object({
     parentId: yup
       .string()
-      .required(t('income_category_parent_required_error'))
+      .required(t('category_parent_required_error'))
       .oneOf(
         groups.map(({ id }) => id),
-        t('income_category_parent_required_error')
+        t('category_parent_required_error')
       ),
     name: yup
       .string()
       .trim()
-      .required(t('income_category_name_required_error'))
+      .required(t('category_name_required_error'))
       .test(
         'unique-sibling',
-        t('income_category_name_duplicate_error'),
+        t('category_name_duplicate_error'),
         function (name) {
           return !categories.some(
             (category) =>

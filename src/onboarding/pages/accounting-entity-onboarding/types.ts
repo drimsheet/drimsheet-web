@@ -1,4 +1,5 @@
 import type { AccountingEntityFormProps } from '@/accounting/components/accounting-entity-form';
+import type { CategoriesFormProps } from '@/accounting/components/categories-form';
 import type { FinancialYearFormProps } from '@/accounting/components/financial-year-form';
 import type { ReportsFormProps } from '@/accounting/components/reports-form';
 import type { ReactNode } from 'react';
@@ -42,6 +43,13 @@ export interface ReportsStepProps extends Pick<
   onBack: () => void;
 }
 
-export interface IncomeCategoriesStepProps {
+export interface IncomeCategoriesStepProps extends Pick<
+  CategoriesFormProps,
+  'onSubmit'
+> {
+  onBack: () => void;
+}
+
+export interface ExpenseCategoriesStepProps {
   onBack: () => void;
 }

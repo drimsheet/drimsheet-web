@@ -1,8 +1,8 @@
 import type {
-  CreateIncomeCategoryFormProps,
-  IIncomeCategoryDraft,
-} from '@/accounting/components/income-categories-form/types';
-import { incomeCategorySchema } from '@/accounting/components/income-categories-form/validation';
+  CreateCategoryFormProps,
+  ICategoryDraft,
+} from '@/accounting/components/categories-form/types';
+import { categorySchema } from '@/accounting/components/categories-form/validation';
 import { Button } from '@/shared/components/button';
 import {
   Field,
@@ -24,32 +24,33 @@ import { useFormik } from 'formik';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export function CreateIncomeCategoryForm({
+export function CreateCategoryForm({
+  kind,
   groups,
   categories,
   disabled,
   onSubmit,
   onCancel,
-}: Readonly<CreateIncomeCategoryFormProps>) {
+}: Readonly<CreateCategoryFormProps>) {
   const { t } = useTranslation('accounting');
   const fieldId = useId();
 
-  const formik = useFormik<IIncomeCategoryDraft>({
+  const formik = useFormik<ICategoryDraft>({
     initialValues: { parentId: '', name: '' },
-    validationSchema: incomeCategorySchema(t, groups, categories),
+    validationSchema: categorySchema(t, groups, categories),
     onSubmit: (values) => onSubmit({ ...values, name: values.name.trim() }),
   });
 
   const parentError = formik.touched.parentId && formik.errors.parentId;
   const nameError = formik.touched.name && formik.errors.name;
 
-  const title = t('income_category_create_title');
-  const description = t('income_category_create_description');
-  const parent_label = t('income_category_parent_label');
-  const parent_placeholder = t('income_category_parent_placeholder');
-  const name_label = t('income_category_name_label');
-  const cancel_label = t('income_category_cancel_label');
-  const add_label = t('income_category_save_label');
+  const title = t('category_create_title');
+  const description = t(`${kind}_category_create_description`);
+  const parent_label = t('category_parent_label');
+  const parent_placeholder = t('category_parent_placeholder');
+  const name_label = t('category_name_label');
+  const cancel_label = t('category_cancel_label');
+  const add_label = t('category_save_label');
 
   return (
     <form

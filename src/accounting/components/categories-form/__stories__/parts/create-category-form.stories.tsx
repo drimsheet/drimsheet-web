@@ -1,11 +1,12 @@
-import { CreateIncomeCategoryForm } from '@/accounting/components/income-categories-form/parts/create-income-category-form';
+import { CreateCategoryForm } from '@/accounting/components/categories-form/parts/create-category-form';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
-  title: 'Accounting/Income Categories Form/Create Category',
-  component: CreateIncomeCategoryForm,
+  title: 'Accounting/Categories Form/Create Category',
+  component: CreateCategoryForm,
   tags: ['autodocs'],
   args: {
+    kind: 'income',
     groups: [
       { id: 'services', name: 'Services' },
       { id: 'gifts', name: 'Gifts' },
@@ -21,7 +22,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof CreateIncomeCategoryForm>;
+} satisfies Meta<typeof CreateCategoryForm>;
 
 export default meta;
 type TStory = StoryObj<typeof meta>;

@@ -1,4 +1,5 @@
 import type { IAccountingEntityFormValues } from '@/accounting/components/accounting-entity-form';
+import type { ICategoriesFormValues } from '@/accounting/components/categories-form';
 import type { IFinancialYearFormValues } from '@/accounting/components/financial-year-form';
 import type { IReportsFormValues } from '@/accounting/components/reports-form';
 import logoImg from '@/shared/assets/logo.svg';
@@ -10,6 +11,7 @@ import { dateUtils } from '@/shared/lib/utils/date';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccountingEntityStep } from './parts/accounting-entity-step';
+import { ExpenseCategoriesStep } from './parts/expense-categories-step';
 import { FinancialYearStep } from './parts/financial-year-step';
 import { IncomeCategoriesStep } from './parts/income-categories-step';
 import { ReportsStep } from './parts/reports-step';
@@ -26,6 +28,8 @@ export function AccountingEntityOnboardingPage() {
     useState<IFinancialYearFormValues>();
 
   const [reportsValues, setReportsValues] = useState<IReportsFormValues>();
+
+  const [incomeValues, setIncomeValues] = useState<ICategoriesFormValues>();
 
   const [currentDate] = useState(() => dateUtils.formatDateForApi(new Date()));
   const mainRef = useRef<HTMLElement>(null);
@@ -58,6 +62,11 @@ export function AccountingEntityOnboardingPage() {
   const handleReportsSubmit = (values: IReportsFormValues) => {
     setReportsValues(values);
     setCurrentStep(4);
+  };
+
+  const handleIncomeSubmit = (values: ICategoriesFormValues) => {
+    setIncomeValues(values);
+    setCurrentStep(5);
   };
 
   useEffect(() => {
@@ -127,7 +136,15 @@ export function AccountingEntityOnboardingPage() {
           )}
           {reportsValues && (
             <div className={currentStep === 4 ? 'flex flex-1' : 'hidden'}>
-              <IncomeCategoriesStep onBack={() => setCurrentStep(3)} />
+              <IncomeCategoriesStep
+                onBack={() => setCurrentStep(3)}
+                onSubmit={handleIncomeSubmit}
+              />
+            </div>
+          )}
+          {incomeValues && (
+            <div className={currentStep === 5 ? 'flex flex-1' : 'hidden'}>
+              <ExpenseCategoriesStep onBack={() => setCurrentStep(4)} />
             </div>
           )}
         </main>

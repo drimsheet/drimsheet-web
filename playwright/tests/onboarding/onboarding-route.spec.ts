@@ -258,7 +258,7 @@ for (const viewport of [
   { name: 'desktop', width: 1280, height: 900 },
   { name: 'mobile', width: 375, height: 812 },
 ]) {
-  test(`builds financial year, reports, and income categories on ${viewport.name}`, async ({
+  test(`builds financial year, reports, and category steps on ${viewport.name}`, async ({
     page,
   }, testInfo) => {
     const expectPinnedActions = async (
@@ -517,8 +517,78 @@ for (const viewport of [
       .getByRole('button', { name: 'Continue to expense categories' })
       .click();
     await expect(
-      page.getByRole('heading', { name: 'Choose your income categories' })
+      page.getByRole('heading', { name: 'Choose your expense categories' })
     ).toBeVisible();
+    await expect(page.getByRole('main')).toContainText('Step 5 of 5');
+    await expectPinnedActions('Choose your expense categories', 'Finish setup');
+    if (viewport.name === 'desktop') {
+      await expect(
+        page
+          .getByRole('navigation', { name: 'Onboarding steps' })
+          .getByRole('listitem')
+          .nth(4)
+      ).toHaveAttribute('aria-current', 'step');
+    }
+
+    await expect(page.getByRole('status')).toHaveText('4 selected');
+    await expect(
+      page.getByRole('checkbox', { name: 'Consulting' })
+    ).toHaveCount(0);
+    await page.screenshot({
+      path: testInfo.outputPath('expense-categories.png'),
+      animations: 'disabled',
+    });
+    await page.getByRole('checkbox', { name: 'Interest (Default)' }).uncheck();
+    await page.getByRole('button', { name: 'Add expense category' }).click();
+    await page
+      .getByRole('textbox', { name: /Category name/ })
+      .fill('Discard this');
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(page.getByRole('status')).toHaveText('3 selected');
+    await page.getByRole('button', { name: 'Add expense category' }).click();
+    await page.getByRole('combobox', { name: /Parent account/ }).click();
+    await page
+      .getByRole('option', { name: 'Direct costs', exact: true })
+      .click();
+    await page
+      .getByRole('textbox', { name: /Category name/ })
+      .fill('Materials');
+    await page.getByRole('button', { name: 'Add to setup' }).click();
+    await expect(
+      page.getByRole('checkbox', { name: 'Materials' })
+    ).toBeChecked();
+    await expect(page.getByRole('status')).toHaveText('4 selected');
+    await page.getByRole('button', { name: 'Finish setup' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Choose your expense categories' })
+    ).toBeVisible();
+    await expect(page).toHaveURL('/onboarding');
+    await page
+      .getByRole('button', { name: 'About expense categories' })
+      .click();
+    await expect(
+      page.getByRole('button', { name: 'About expense categories' })
+    ).toHaveAttribute('aria-expanded', 'false');
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(
+      page.getByRole('checkbox', { name: 'Consulting' })
+    ).toBeChecked();
+    await expect(
+      page.getByRole('checkbox', { name: 'Gifts (Default)' })
+    ).not.toBeChecked();
+    await expect(page.getByRole('checkbox', { name: 'Materials' })).toHaveCount(
+      0
+    );
+    await page
+      .getByRole('button', { name: 'Continue to expense categories' })
+      .click();
+    await expect(
+      page.getByRole('checkbox', { name: 'Materials' })
+    ).toBeChecked();
+    await expect(
+      page.getByRole('checkbox', { name: 'Interest (Default)' })
+    ).not.toBeChecked();
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
     await page.getByRole('button', { name: 'About income categories' }).click();
     await expect(
       page.getByRole('button', { name: 'About income categories' })

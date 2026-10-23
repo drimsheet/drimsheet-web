@@ -28,5 +28,10 @@
   "income_categories_step_description": "Select the categories you want to create.",
   "income_categories_about_title": "About income categories",
   "income_categories_about_description": "Income categories group similar earnings. Every category needs a parent; Drimsheet sets up the required parent groups automatically.",
-  "income_categories_continue_label": "Continue to expense categories"
+  "income_categories_continue_label": "Continue to expense categories",
+  "expense_categories_step_title": "Choose your expense categories",
+  "expense_categories_step_description": "Select the categories you want to create.",
+  "expense_categories_about_title": "About expense categories",
+  "expense_categories_about_description": "Expense categories group similar costs. Every category needs a parent; Drimsheet sets up the required parent groups automatically.",
+  "expense_categories_continue_label": "Finish setup"
 }

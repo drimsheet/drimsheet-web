@@ -1,8 +1,8 @@
-import { incomeCategorySchema } from '@/accounting/components/income-categories-form/validation';
+import { categorySchema } from '@/accounting/components/categories-form/validation';
 import i18n from 'i18next';
 import { describe, expect, it } from 'vitest';
 
-const schema = incomeCategorySchema(
+const schema = categorySchema(
   i18n.getFixedT('en', 'accounting'),
   [
     { id: 'services', name: 'Services' },
@@ -18,7 +18,7 @@ const schema = incomeCategorySchema(
   ]
 );
 
-describe('incomeCategorySchema', () => {
+describe('categorySchema', () => {
   it('requires a valid parent and a nonblank name', async () => {
     await expect(
       schema.validate({ parentId: 'unknown', name: 'Sales' })
