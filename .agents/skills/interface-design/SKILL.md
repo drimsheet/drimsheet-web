@@ -105,13 +105,29 @@ headings, and selective semibold emphasis. Hierarchy comes from size, weight,
 contrast, and space together; do not apply a marketing-style single-weight rule.
 Use tabular numerals for amounts and other aligned or changing numbers.
 
-Starting points from the approved direction, adaptable to the component:
+**Page section headings:** use 12px, medium weight, uppercase text with 0.07em
+letter spacing and the muted foreground token. These label the main sections
+within a page, such as **OVERVIEW** and **ALL CATEGORIES**. Use concise wording
+that avoids repeating context already established by the page title.
 
-- Body and controls: 13–14px; supporting labels: 11–12px; section titles: 16px;
-  page titles: 28–32px. Keep supporting text readable and support zoom.
-- Use a 4px spacing base, typically 8–12px within controls, 16–24px within groups,
-  and 28–32px between major sections. Give related fields tighter spacing than
-  unrelated sections.
+- Implementation: `m-0 text-xs font-medium uppercase tracking-[0.07em] text-muted-foreground`.
+  Reset heading margins so adjacent help icons and controls align correctly.
+- Keep semantic heading elements and sentence-case translation values; apply
+  uppercase through CSS.
+- Page titles retain their larger hierarchy. Nested chart labels, such as
+  “Revenue by category” and “Expenses by category”, use 14px, medium weight,
+  sentence case, and muted foreground (`text-sm font-medium text-muted-foreground`).
+
+Starting points for other typography and layout, adaptable to the component:
+
+- Body and controls: 13–14px; supporting labels: 11–12px; page titles: 28–32px.
+  Keep supporting text readable and support zoom.
+- **Page section spacing:** use 48px on desktop and 32px on mobile between
+  major page sections, including the gap from the page title/actions to the
+  first section. Implement with `gap-8 md:gap-12` on the page's section stack.
+- Use a 4px spacing base, typically 8–12px within controls and 16–24px within
+  groups. Keep content within a section more tightly grouped than the major
+  sections themselves.
 - A desktop sidebar around 192–224px serves the content. Use about 32px desktop
   content padding and 16–20px on small screens; adapt to existing layout needs.
 - Controls around 40–44px tall, small 4–6px radii, and modest panel rounding keep

@@ -156,7 +156,9 @@ export function CategoryTable({
   return (
     <section aria-label={title} className="flex min-w-0 flex-col gap-4">
       <div className="flex items-center gap-3">
-        <h2 className="m-0 text-lg font-semibold">{title}</h2>
+        <h2 className="m-0 text-xs font-medium uppercase tracking-[0.07em] text-muted-foreground">
+          {title}
+        </h2>
         <CategoryHelp label={table_help_label}>
           <p>{description}</p>
           <p>{details_text}</p>

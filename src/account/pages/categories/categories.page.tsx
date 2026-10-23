@@ -98,7 +98,7 @@ export function CategoriesPage() {
   return (
     <>
       <AppBody>
-        <div className="flex min-w-0 flex-col gap-8 pb-8">
+        <div className="flex min-w-0 flex-col gap-8 pb-8 md:gap-12">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <h1 className="my-0 text-2xl font-semibold tracking-tight">
               {title}
@@ -113,7 +113,9 @@ export function CategoriesPage() {
             className="flex min-w-0 flex-col gap-4"
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-base font-medium">{overview_title}</h2>
+              <h2 className="m-0 text-xs font-medium uppercase tracking-[0.07em] text-muted-foreground">
+                {overview_title}
+              </h2>
               <CategoryPeriod
                 period={period}
                 periods={periods}

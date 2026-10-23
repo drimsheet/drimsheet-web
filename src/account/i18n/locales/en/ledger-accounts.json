@@ -226,7 +226,7 @@
   "categories_revenue_chart_description": "Net revenue and share of total revenue for this period",
   "categories_expenses_chart_description": "Net expenses and share of total expenses for this period",
   "categories_chart_empty_text": "No activity in this period",
-  "categories_overview_title": "Category overview",
+  "categories_overview_title": "Overview",
   "categories_load_error_text": "We couldn’t load this section. Please try again.",
   "categories_retry_label": "Try again",
   "categories_loading_label": "Loading category overview",

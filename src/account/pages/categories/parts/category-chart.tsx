@@ -44,9 +44,9 @@ export function CategoryChart({
       </CardHeader>
       <CardContent className="px-4 pb-4">
         {rows.length === 0 && (
-          <Empty className="px-4 py-6">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
+          <Empty className="px-4 py-3">
+            <EmptyHeader className="gap-1">
+              <EmptyMedia variant="icon" className="mb-0">
                 <ChartNoAxesCombined aria-hidden />
               </EmptyMedia>
               <EmptyTitle>{empty_text}</EmptyTitle>
