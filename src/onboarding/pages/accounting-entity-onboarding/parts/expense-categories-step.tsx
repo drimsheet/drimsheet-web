@@ -13,16 +13,24 @@ import { StepLayout } from './step-layout';
 
 export function ExpenseCategoriesStep({
   onBack,
+  onSubmit,
+  onRetry,
+  isSubmitting = false,
+  hasStarted = false,
+  isRetryBlocked = false,
 }: Readonly<ExpenseCategoriesStepProps>) {
   const { t } = useTranslation('onboarding');
 
   const titleId = useId();
+  const formId = useId();
 
   const title = t('expense_categories_step_title');
   const description = t('expense_categories_step_description');
   const about_title = t('expense_categories_about_title');
   const about_description = t('expense_categories_about_description');
+
   const continue_label = t('expense_categories_continue_label');
+
   const back_label = t('financial_year_back_label');
 
   return (
@@ -30,10 +38,23 @@ export function ExpenseCategoriesStep({
       titleId={titleId}
       actions={
         <>
-          <Button type="button" variant="outline" onClick={onBack}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            disabled={hasStarted || isSubmitting}
+          >
             {back_label}
           </Button>
-          <Button type="button">{continue_label}</Button>
+          <Button
+            type={hasStarted ? 'button' : 'submit'}
+            form={formId}
+            onClick={hasStarted ? onRetry : undefined}
+            loading={isSubmitting}
+            disabled={isRetryBlocked}
+          >
+            {continue_label}
+          </Button>
         </>
       }
     >
@@ -67,7 +88,12 @@ export function ExpenseCategoriesStep({
             <p className="text-sm text-muted-foreground">{about_description}</p>
           </CollapsibleContent>
         </Collapsible>
-        <CategoriesForm kind="expense" />
+        <CategoriesForm
+          id={formId}
+          kind="expense"
+          disabled={hasStarted || isSubmitting}
+          onSubmit={onSubmit}
+        />
       </div>
     </StepLayout>
   );

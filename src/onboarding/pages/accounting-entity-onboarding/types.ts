@@ -2,6 +2,10 @@ import type { AccountingEntityFormProps } from '@/accounting/components/accounti
 import type { CategoriesFormProps } from '@/accounting/components/categories-form';
 import type { FinancialYearFormProps } from '@/accounting/components/financial-year-form';
 import type { ReportsFormProps } from '@/accounting/components/reports-form';
+import type {
+  IAccountingEntity,
+  ILedgerAccountDto,
+} from '@/shared/lib/api/Api';
 import type { ReactNode } from 'react';
 
 export interface StepLayoutProps {
@@ -51,6 +55,25 @@ export interface IncomeCategoriesStepProps extends Pick<
   onBack: () => void;
 }
 
-export interface ExpenseCategoriesStepProps {
+export interface ExpenseCategoriesStepProps extends Pick<
+  CategoriesFormProps,
+  'onSubmit'
+> {
   onBack: () => void;
+  onRetry?: () => void;
+  isSubmitting?: boolean;
+  hasStarted?: boolean;
+  isRetryBlocked?: boolean;
+}
+
+export interface IOnboardingProgress {
+  entity?: IAccountingEntity;
+  switched?: boolean;
+  fiscalYearId?: string;
+  accountingIntervalId?: string;
+  accountingContextId?: string;
+  reportingIntervalId?: string;
+  reportingContextId?: string;
+  headerAccounts?: ILedgerAccountDto[];
+  savedCategories: Set<string>;
 }

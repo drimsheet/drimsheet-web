@@ -1796,14 +1796,7 @@ export interface IAccountingEntityCreationDto {
   name: string;
   entityType: UAccountingEntityType;
   jurisdictionCode: UJurisdictionCode;
-  accountingStandardCode: UAccountingStandardCode;
   functionalCurrencyCode: UCurrencyCode;
-  reportingCurrencyCode: UCurrencyCode;
-  /** Fiscal year creation DTO */
-  fiscalYear: IFiscalYearCreationDto;
-  accountingPeriod: IPeriodCreationDto;
-  reportingPeriod: IPeriodCreationDto;
-  appPreferences: IUserAppPreferences;
 }
 
 export interface IAccountingEntityDto {
@@ -1829,6 +1822,263 @@ export interface IAccountingEntityUpdateReq {
 
 export interface IAccountingEntitySwitchReq {
   accountingEntityId: string;
+}
+
+export interface IFiscalYearCreationReq {
+  accountingEntityId: string;
+  name?: string;
+  /** @format date-time */
+  startDate: string;
+  /** @format date-time */
+  endDate: string;
+  status: UFiscalYearStatus;
+}
+
+export interface IAccountingIntervalCreationReq {
+  unit: UAccountingIntervalUnit;
+  /**
+   * Total number of periods, not the number of units per period.
+   * @format double
+   */
+  count: number;
+  periods: IPeriodMakePayload[];
+  fiscalYearId: string;
+}
+
+export interface IAccountingContextCreationReq {
+  fiscalYearId: string;
+  accountingStandardCode: UAccountingStandardCode;
+  accountingIntervalId: string;
+  name: string;
+  description: string | null;
+}
+
+export interface IReportingIntervalCreationReq {
+  unit: UReportingIntervalUnit;
+  /**
+   * Total number of periods, not the number of units per period.
+   * @format double
+   */
+  count: number;
+  periods: IPeriodMakePayload[];
+  fiscalYearId: string;
+}
+
+export interface IReportingContextCreationReq {
+  accountingContextId: string;
+  reportingIntervalId: string;
+  reportingCurrencyCode: UCurrencyCode;
+  name: string;
+  description: string | null;
+}
+
+export interface IFiscalYear {
+  id: TEntityId;
+  createdBy: TEntityId;
+  name: string;
+  status: UFiscalYearStatus;
+  accountingEntityId: TEntityId;
+  /** @format date-time */
+  startDate: string;
+  /** @format date-time */
+  endDate: string;
+  /** @format date-time */
+  closedAt: string | null;
+  /** @format date-time */
+  updatedAt: string;
+}
+
+export interface IAccountingInterval {
+  /**
+   * Total number of periods, not the number of units per period.
+   * @format double
+   */
+  count: number;
+  periods: IAccountingPeriod[];
+  id: TEntityId;
+  accountingEntityId: TEntityId;
+  /**
+   * Inclusive start instant.
+   * @format date-time
+   */
+  startDate: string;
+  /**
+   * Exclusive end instant.
+   * @format date-time
+   */
+  endDate: string;
+  /** @format double */
+  currentPeriodOrdinal: number;
+  /** @format date-time */
+  nextPeriodStartDate: string;
+  unit: UAccountingIntervalUnit;
+  fiscalYearId: TEntityId;
+  createdBy: TEntityId;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+}
+
+export interface IAccountingContext {
+  createdBy: TEntityId;
+  id: TEntityId;
+  name: string;
+  description: string | null;
+  accountingEntityId: TEntityId;
+  accountingStandardCode: UAccountingStandardCode;
+  fiscalYearId: TEntityId;
+  accountingIntervalId: TEntityId;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+  /** @format date-time */
+  closedAt: string | null;
+}
+
+export interface IReportingInterval {
+  /**
+   * Total number of periods, not the number of units per period.
+   * @format double
+   */
+  count: number;
+  periods: IReportingPeriod[];
+  id: TEntityId;
+  accountingEntityId: TEntityId;
+  /**
+   * Inclusive start instant.
+   * @format date-time
+   */
+  startDate: string;
+  /**
+   * Exclusive end instant.
+   * @format date-time
+   */
+  endDate: string;
+  /** @format double */
+  currentPeriodOrdinal: number;
+  /** @format date-time */
+  nextPeriodStartDate: string;
+  unit: UReportingIntervalUnit;
+  fiscalYearId: TEntityId;
+  createdBy: TEntityId;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+}
+
+export interface IReportingContext {
+  createdBy: TEntityId;
+  id: TEntityId;
+  name: string;
+  description: string | null;
+  accountingEntityId: TEntityId;
+  reportingCurrencyCode: UCurrencyCode;
+  accountingContextId: TEntityId;
+  reportingIntervalId: TEntityId;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+  /** @format date-time */
+  closedAt: string | null;
+}
+
+export type UFiscalYearStatus =
+  (typeof EFiscalYearStatus)[keyof typeof EFiscalYearStatus];
+
+export const EFiscalYearStatus = {
+  Pending: 'pending',
+  Open: 'open',
+  Closing: 'closing',
+  Closed: 'closed',
+} as const;
+
+export type UAccountingIntervalUnit =
+  (typeof EAccountingIntervalUnit)[keyof typeof EAccountingIntervalUnit];
+
+export const EAccountingIntervalUnit = {
+  Day: 'day',
+  Week: 'week',
+  Month: 'month',
+  Quarter: 'quarter',
+  Year: 'year',
+} as const;
+
+export interface IPeriodMakePayload {
+  name: string;
+}
+
+export type UReportingIntervalUnit =
+  (typeof EReportingIntervalUnit)[keyof typeof EReportingIntervalUnit];
+
+export const EReportingIntervalUnit = {
+  Day: 'day',
+  Week: 'week',
+  Month: 'month',
+  Quarter: 'quarter',
+  Year: 'year',
+} as const;
+
+export interface IAccountingPeriod {
+  id: TEntityId;
+  intervalId: TEntityId;
+  accountingEntityId: TEntityId;
+  /** @format double */
+  ordinal: number;
+  name: string;
+  /**
+   * Inclusive start instant.
+   * @format date-time
+   */
+  startDate: string;
+  /**
+   * Exclusive end instant, shared with the following period's start.
+   * @format date-time
+   */
+  endDate: string;
+  status: UAccountingPeriodStatus;
+  createdBy: TEntityId;
+  /** @format date-time */
+  closedAt: string | null;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+}
+
+export type UAccountingPeriodStatus =
+  (typeof EAccountingPeriodStatus)[keyof typeof EAccountingPeriodStatus];
+
+export const EAccountingPeriodStatus = {
+  Open: 'open',
+  Closed: 'closed',
+} as const;
+
+export interface IReportingPeriod {
+  id: TEntityId;
+  intervalId: TEntityId;
+  accountingEntityId: TEntityId;
+  /** @format double */
+  ordinal: number;
+  name: string;
+  /**
+   * Inclusive start instant.
+   * @format date-time
+   */
+  startDate: string;
+  /**
+   * Exclusive end instant, shared with the following period's start.
+   * @format date-time
+   */
+  endDate: string;
+  createdBy: TEntityId;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
 }
 
 import type {
@@ -3512,6 +3762,106 @@ export class Api<
       this.request<void, IHttpErrorDto>({
         path: `/accounting/accounting-entity/archive`,
         method: 'POST',
+        ...params,
+      }),
+
+    /**
+     * @description Creates only a fiscal year and its history for an existing entity owned by the caller.
+     *
+     * @tags Accounting
+     * @name CreateFiscalYear
+     * @request POST:/accounting/fiscal-year
+     */
+    createFiscalYear: (
+      data: IFiscalYearCreationReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IFiscalYear, IHttpErrorDto>({
+        path: `/accounting/fiscal-year`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Creates an interval and its periods for x-accounting-entity-id.
+     *
+     * @tags Accounting
+     * @name CreateAccountingInterval
+     * @request POST:/accounting/accounting-intervals
+     */
+    createAccountingInterval: (
+      data: IAccountingIntervalCreationReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IAccountingInterval, IHttpErrorDto>({
+        path: `/accounting/accounting-intervals`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Creates a context for x-accounting-entity-id from existing records; archived entities return 409.Explicit period selection is required for current, historical, and future years and never changes period status or posting eligibility.
+     *
+     * @tags Accounting
+     * @name CreateAccountingContext
+     * @request POST:/accounting/accounting-context
+     */
+    createAccountingContext: (
+      data: IAccountingContextCreationReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IAccountingContext, IHttpErrorDto>({
+        path: `/accounting/accounting-context`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Creates an interval and its periods for x-accounting-entity-id.
+     *
+     * @tags Accounting
+     * @name CreateReportingInterval
+     * @request POST:/accounting/reporting-intervals
+     */
+    createReportingInterval: (
+      data: IReportingIntervalCreationReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IReportingInterval, IHttpErrorDto>({
+        path: `/accounting/reporting-intervals`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Creates only a reporting context and its history for x-accounting-entity-id; archived entities return 409. The selected reporting period must share the linked accounting context's entity and fiscal year.
+     *
+     * @tags Accounting
+     * @name CreateReportingContext
+     * @request POST:/accounting/reporting-context
+     */
+    createReportingContext: (
+      data: IReportingContextCreationReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IReportingContext, IHttpErrorDto>({
+        path: `/accounting/reporting-context`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
         ...params,
       }),
 

@@ -556,7 +556,9 @@ for (const viewport of [
       page.getByRole('checkbox', { name: 'Materials' })
     ).toBeChecked();
     await expect(page.getByRole('status')).toHaveText('4 selected');
-    await page.getByRole('button', { name: 'Finish setup' }).click();
+    await expect(
+      page.getByRole('button', { name: 'Finish setup' })
+    ).toBeEnabled();
     await expect(
       page.getByRole('heading', { name: 'Choose your expense categories' })
     ).toBeVisible();

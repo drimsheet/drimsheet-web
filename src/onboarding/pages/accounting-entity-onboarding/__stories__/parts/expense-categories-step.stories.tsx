@@ -7,6 +7,8 @@ const meta = {
   tags: ['autodocs'],
   args: {
     onBack: () => {},
+    onSubmit: () => {},
+    onRetry: () => {},
   },
   decorators: [
     (Story) => (
@@ -20,3 +22,18 @@ const meta = {
 export default meta;
 type TStory = StoryObj<typeof meta>;
 export const Default: TStory = {};
+
+export const Submitting: TStory = {
+  args: { isSubmitting: true, hasStarted: true },
+};
+export const Retry: TStory = {
+  args: {
+    hasStarted: true,
+  },
+};
+export const Unconfirmed: TStory = {
+  args: {
+    hasStarted: true,
+    isRetryBlocked: true,
+  },
+};

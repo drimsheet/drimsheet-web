@@ -22,6 +22,15 @@ The page supplies data and presentation props; it must not import the transactio
 container or private helpers. This exception does not extend to feature hooks,
 services, or components.
 
+### Accounting onboarding composition exception
+
+`src/onboarding/pages/accounting-entity-onboarding/` may compose public
+accounting form contracts, accounting/account mutation hooks, accounting mappers
+and category configuration, and user profile/preferences hooks to complete onboarding.
+Orchestration stays in this page owner; transport stays in the owning feature
+services. This exception does not extend to other onboarding components or
+feature hooks.
+
 ## Page Ownership Boundaries
 
 - A page directory is an orchestration owner. Its parts, hooks, helpers, types,
