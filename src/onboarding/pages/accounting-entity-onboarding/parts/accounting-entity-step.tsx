@@ -22,7 +22,6 @@ export function AccountingEntityStep({
   individualName,
   isLoading = false,
   hasError = false,
-  onRetry,
   onSubmit,
 }: Readonly<AccountingEntityStepProps>) {
   const { t } = useTranslation('onboarding');
@@ -35,7 +34,6 @@ export function AccountingEntityStep({
   const about_description = t('entity_about_description');
   const continue_label = t('entity_continue_label');
   const error_text = t('entity_options_error_text');
-  const retry_label = t('entity_options_retry_label');
 
   return (
     <StepLayout
@@ -82,14 +80,6 @@ export function AccountingEntityStep({
           <Alert variant="destructive">
             <AlertDescription>
               <p>{error_text}</p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onRetry}
-              >
-                {retry_label}
-              </Button>
             </AlertDescription>
           </Alert>
         )}

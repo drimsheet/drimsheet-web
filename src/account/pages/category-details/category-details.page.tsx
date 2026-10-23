@@ -105,9 +105,7 @@ export function CategoryDetailsPage() {
               <CategoryActivitySkeleton />
             </>
           )}
-          {accountQuery.isError && (
-            <CategoryDetailsError onRetry={() => void accountQuery.refetch()} />
-          )}
+          {accountQuery.isError && <CategoryDetailsError />}
           {account && isCategory && (
             <>
               <CategorySummary
@@ -129,9 +127,7 @@ export function CategoryDetailsPage() {
                 )}
                 {(history.isError ||
                   (history.isSuccess && activity === null)) && (
-                  <CategoryDetailsError
-                    onRetry={() => void history.refetch()}
-                  />
+                  <CategoryDetailsError />
                 )}
                 {history.isSuccess && activity && (
                   <CategoryTrend

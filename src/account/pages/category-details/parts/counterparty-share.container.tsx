@@ -36,7 +36,6 @@ export function CounterpartyShareContainer({
       loading={participation.isPending}
       error={participation.isError}
       onPageChange={setPage}
-      onRetry={() => void participation.refetch()}
       selectedId={selectedId}
       onSelect={onSelect}
     />

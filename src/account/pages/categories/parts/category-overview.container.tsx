@@ -21,12 +21,7 @@ export function CategoryOverviewContainer({
   return (
     <div className="flex min-w-0 flex-col gap-4">
       {summary.isPending && <CategoriesSkeleton />}
-      {summary.isError && (
-        <CategorySectionError
-          title={overview_title}
-          onRetry={() => void summary.refetch()}
-        />
-      )}
+      {summary.isError && <CategorySectionError title={overview_title} />}
       {summary.isSuccess && (
         <>
           <CategorySummary summary={summary.data} />

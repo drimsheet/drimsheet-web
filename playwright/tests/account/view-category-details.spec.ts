@@ -242,7 +242,7 @@ test('redirects existing revenue account links to the category detail page', asy
   ).toContainText('60%');
 });
 
-test('keeps the balance visible while history loads, fails, and retries to an empty state', async ({
+test('keeps the balance visible when history fails and recovers after browser refresh', async ({
   page,
 }) => {
   await setup(page);
@@ -284,7 +284,10 @@ test('keeps the balance visible while history loads, fails, and retries to an em
       },
     })
   );
-  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(
     page
       .getByRole('region', { name: 'Counterparty share' })
@@ -350,7 +353,7 @@ test('pages server participation while preserving the transaction filter', async
   ).toBeVisible();
 });
 
-test('keeps transactions usable when participation fails and retries the share card', async ({
+test('keeps transactions usable when participation fails and recovers after browser refresh', async ({
   page,
 }) => {
   await setup(page);
@@ -371,7 +374,10 @@ test('keeps transactions usable when participation fails and retries the share c
       json: { data: [], meta: { page: 1, limit: 5, total: 0, totalPages: 0 } },
     })
   );
-  await share.getByRole('button', { name: 'Try again' }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(share.getByText('No counterparty activity yet.')).toBeVisible();
 });
 

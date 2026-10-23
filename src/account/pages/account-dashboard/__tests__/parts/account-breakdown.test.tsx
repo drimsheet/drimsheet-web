@@ -12,7 +12,6 @@ const props: AccountBreakdownProps = {
   hasMore: false,
   loadingMore: false,
   onLoadMore: () => {},
-  onRetry: () => {},
   onViewAccount: () => {},
 };
 
@@ -44,13 +43,11 @@ describe('AccountBreakdown', () => {
     await userEvent.click(button);
     expect(onViewAccount).toHaveBeenCalledWith('contra');
   });
-  it('retries a failed additional page while preserving previously loaded accounts', async () => {
-    const onRetry = vi.fn();
+  it('preserves loaded accounts after a page failure without offering retry', () => {
     render(
       <AccountBreakdown
         {...props}
         error
-        onRetry={onRetry}
         accounts={[
           {
             accountId: 'existing',
@@ -69,7 +66,9 @@ describe('AccountBreakdown', () => {
       screen.getByRole('button', { name: /Existing balance/ })
     ).toBeVisible();
     expect(screen.queryByText('No assets yet')).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
-    expect(onRetry).toHaveBeenCalledOnce();
+    expect(screen.getByRole('alert')).toBeVisible();
+    expect(
+      screen.queryByRole('button', { name: /retry/i })
+    ).not.toBeInTheDocument();
   });
 });

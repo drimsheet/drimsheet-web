@@ -197,7 +197,7 @@ test('retains saved settings on failure and allows another attempt', async ({
   await expect(page.getByRole('alert')).not.toBeVisible();
 });
 
-test('retries an unavailable preferences section without hiding profile details', async ({
+test('keeps profile details visible when preferences fail and recovers after refresh', async ({
   page,
 }) => {
   await page.route(preferencesEndpoint, (route) =>
@@ -213,7 +213,10 @@ test('retries an unavailable preferences section without hiding profile details'
   await page.route(preferencesEndpoint, (route) =>
     route.fulfill({ json: preferences })
   );
-  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(
     page.getByRole('radio', { name: 'Light', exact: true })
   ).toBeChecked();

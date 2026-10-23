@@ -30,5 +30,5 @@ export function useAccountOpeningBalance(accountId: string) {
   )
     setOpeningBalance(read.data);
 
-  return { openingBalance, isError: read.isError, refetch: read.refetch };
+  return { openingBalance, isError: read.isError };
 }

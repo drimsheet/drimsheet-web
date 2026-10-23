@@ -50,7 +50,3 @@ export interface PeriodSummaryProps {
   endDate: string;
   status?: UAccountingPeriodStatus;
 }
-export interface SectionErrorProps {
-  onRetry: () => void;
-  pending?: boolean;
-}

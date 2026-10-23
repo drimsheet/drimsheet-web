@@ -65,7 +65,6 @@ export interface CounterpartyShareProps {
   loading: boolean;
   error: boolean;
   onPageChange: (page: number) => void;
-  onRetry: () => void;
   selectedId: string | null;
   onSelect: (participation: IAccountCounterpartyParticipationDto) => void;
 }
@@ -82,8 +81,4 @@ export interface CategoryTransactionsProps {
   selectedCounterparty: string | null;
   onClearCounterparty: () => void;
   transactionsHref?: string;
-}
-
-export interface SectionErrorProps {
-  onRetry: () => void;
 }

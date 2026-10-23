@@ -121,12 +121,7 @@ export function CategoriesPage() {
               onViewAccount={handleViewAccount}
             />
           </PageSection>
-          {accounts.isError && (
-            <CategorySectionError
-              title={table_title}
-              onRetry={() => void accounts.refetch()}
-            />
-          )}
+          {accounts.isError && <CategorySectionError title={table_title} />}
           <CategoryTable
             accounts={accounts.data}
             loading={accounts.isPending}

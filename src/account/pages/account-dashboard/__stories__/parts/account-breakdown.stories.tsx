@@ -36,7 +36,6 @@ const meta = {
     hasMore: true,
     loadingMore: false,
     onLoadMore: () => {},
-    onRetry: () => {},
     onViewAccount: () => {},
   },
 } satisfies Meta<typeof AccountBreakdown>;

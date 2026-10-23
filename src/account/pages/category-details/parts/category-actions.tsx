@@ -41,7 +41,7 @@ export function CategoryActions({
       await onArchive();
       setArchiveOpen(false);
     } catch {
-      // The container reports the error; retain the confirmation for retry.
+      // The container reports the error; retain the confirmation.
     } finally {
       setSubmitting(false);
     }

@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { expect, it } from 'vitest';
 
 it('replaces the skeleton with the form after options load', () => {
-  const props = { currencies: [], jurisdictions: [], onRetry: () => {} };
+  const props = { currencies: [], jurisdictions: [] };
   const { rerender } = render(<AccountingEntityStep {...props} isLoading />);
 
   expect(screen.getByRole('status')).toHaveTextContent(

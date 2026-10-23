@@ -9,7 +9,7 @@ interface IJurisdictionsQueryOptions {
 
 export function useJurisdictions(options: IJurisdictionsQueryOptions = {}) {
   return useQuery({
-    // A dialog's local retry/error state must not affect boundary-owned readers.
+    // A dialog's local error state must not affect boundary-owned readers.
     queryKey: [
       'jurisdictionService',
       'getJurisdictions',

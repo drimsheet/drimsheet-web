@@ -40,7 +40,7 @@ export function AccountActions({
       await onArchive();
       setOpen(false);
     } catch {
-      // The container reports the error; retain the dialog for retry.
+      // The container reports the error; retain the dialog and its error state.
     } finally {
       setSubmitting(false);
     }

@@ -286,7 +286,7 @@ test('switches class, clears the old parent, and creates income under a control 
   });
 });
 
-test('handles chart loading, retry, empty results, expansion and cancelled selection', async ({
+test('handles chart loading, refresh recovery, empty results, expansion and cancelled selection', async ({
   page,
 }) => {
   await setup(page);
@@ -314,7 +314,12 @@ test('handles chart loading, retry, empty results, expansion and cancelled selec
     'We couldn’t load the chart of accounts.'
   );
   await page.route(chartEndpoint, (route) => route.fulfill({ json: [] }));
-  await sheet.getByRole('button', { name: 'Try again' }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
+  await page.getByRole('radio', { name: 'Expenses', exact: true }).click();
+  await page.getByRole('button', { name: 'Select Parent' }).click();
   await expect(sheet.getByText('No parent accounts available')).toBeVisible();
   await sheet.getByRole('button', { name: 'Cancel', exact: true }).click();
   await page.route(chartEndpoint, (route) =>

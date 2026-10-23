@@ -55,11 +55,6 @@ export function AccountingEntityCreationDialog({
 
   const canShowForm = !isLoading && !hasOptionsError;
 
-  const handleRetry = () => {
-    void currencies.refetch();
-    void jurisdictions.refetch();
-  };
-
   const handleClose = () => {
     if (!submitting) onClose();
   };
@@ -100,7 +95,6 @@ export function AccountingEntityCreationDialog({
   const description = t('legal_entity_create_description');
   const options_error = t('legal_entity_options_error');
   const submit_error = t('legal_entity_create_error');
-  const retry_label = t('legal_entities_retry_label');
   const cancel_label = t('legal_entity_cancel_label');
   const submit_label = t('legal_entity_create_label');
   const submitting_label = t('legal_entity_creating_label');
@@ -122,14 +116,6 @@ export function AccountingEntityCreationDialog({
             <AlertDescription>
               <div className="flex flex-col items-start gap-3">
                 <span>{options_error}</span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleRetry}
-                  disabled={currencies.isFetching || jurisdictions.isFetching}
-                >
-                  {retry_label}
-                </Button>
               </div>
             </AlertDescription>
           </Alert>

@@ -41,10 +41,7 @@ export function RecentTransactionsContainer({
 
   if (transactions.isPending) return <RecentTransactionsSkeleton />;
 
-  if (transactions.isError)
-    return (
-      <SectionError title={title} onRetry={() => void transactions.refetch()} />
-    );
+  if (transactions.isError) return <SectionError title={title} />;
 
   const empty =
     !transactions.isPlaceholderData &&

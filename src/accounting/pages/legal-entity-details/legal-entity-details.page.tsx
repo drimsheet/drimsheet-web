@@ -67,12 +67,7 @@ export function LegalEntityDetailsPage() {
           </BreadcrumbList>
         </Breadcrumb>
         {entity.isPending && <EntityDetailsSkeleton />}
-        {entity.isError && (
-          <SectionError
-            pending={entity.isFetching}
-            onRetry={() => void entity.refetch()}
-          />
-        )}
+        {entity.isError && <SectionError />}
         {entity.data && (
           <>
             <EntitySummary
@@ -86,12 +81,7 @@ export function LegalEntityDetailsPage() {
             />
             <PageSection title={context_title} className="gap-6 py-0">
               {years.isPending && <EntityDetailsSkeleton />}
-              {years.isError && (
-                <SectionError
-                  pending={years.isFetching}
-                  onRetry={() => void years.refetch()}
-                />
-              )}
+              {years.isError && <SectionError />}
               {years.data?.length === 0 && (
                 <Empty>
                   <EmptyHeader>
@@ -107,12 +97,7 @@ export function LegalEntityDetailsPage() {
                     onChange={setSelectedId}
                   />
                   {context.isPending && <EntityDetailsSkeleton />}
-                  {context.isError && (
-                    <SectionError
-                      pending={context.isFetching}
-                      onRetry={() => void context.refetch()}
-                    />
-                  )}
+                  {context.isError && <SectionError />}
                   {context.data && (
                     <ContextDetails context={context.data} now={now} />
                   )}

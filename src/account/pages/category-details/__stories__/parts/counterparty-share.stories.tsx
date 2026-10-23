@@ -48,7 +48,6 @@ const meta = {
     loading: false,
     error: false,
     onPageChange: fn(),
-    onRetry: fn(),
     pagination: { page: 1, limit: 5, total: 8, totalPages: 2 },
   },
 } satisfies Meta<typeof CounterpartyShare>;

@@ -146,6 +146,13 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
 
 ## `hooks/`
 
+- Do not add custom application retry logic: no retry loops/backoff, query or
+  mutation overrides that enable retries, dedicated retry buttons/handlers, or
+  checkpoint/resume machinery for failed workflows. Keep errors visible through
+  i18n and rely on browser refresh for recovery. Normal form submission and data
+  loading are not retry mechanisms. The existing auth token refresh/replay and
+  Playwright test retries are intentional exceptions; preserve them.
+
 - Put reusable UI and API hooks here.
 - Hooks may coordinate state and side effects, but they should still remain reusable within the feature or shared scope.
 - Define only one custom hook per file, including private hooks.

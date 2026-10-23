@@ -259,14 +259,18 @@ test('recovers from unavailable form options', async ({ page }) => {
     dialog.getByRole('button', { name: 'Create legal entity', exact: true })
   ).toBeDisabled();
   fail = false;
-  await dialog.getByRole('button', { name: 'Try again' }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
+  await page.getByRole('button', { name: 'Add a new legal entity' }).click();
   await expect(dialog.getByLabel('Name', { exact: true })).toBeVisible();
   await expect(
     dialog.getByRole('button', { name: 'Create legal entity', exact: true })
   ).toBeEnabled();
 });
 
-test('keeps the last list when refresh fails and supports retry', async ({
+test('keeps the last list when refresh fails and recovers after browser refresh', async ({
   page,
 }) => {
   await page.route('**/api/v1/accounting/accounting-entities', (route) =>
@@ -284,7 +288,10 @@ test('keeps the last list when refresh fails and supports retry', async ({
   await page.route('**/api/v1/accounting/accounting-entities', (route) =>
     route.fulfill({ json: entities })
   );
-  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(page.getByRole('alert')).toHaveCount(0);
   await expect(
     page

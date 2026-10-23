@@ -1,5 +1,5 @@
 import { RequestPasswordResetForm } from '@/auth/components/request-password-reset-form';
-import { RequestPasswordResetSuccessContainer } from '@/auth/components/reset-password-request-success';
+import { RequestPasswordResetSuccess } from '@/auth/components/reset-password-request-success';
 import { useRequestPasswordReset } from '@/auth/hooks/use-request-password-reset';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { PageTitle } from '@/shared/components/page-title';
@@ -42,22 +42,6 @@ export function RequestPasswordResetPage() {
     }
   };
 
-  const handleResend = async () => {
-    if (!submittedEmail || inFlight) return;
-
-    setInFlight(true);
-    try {
-      await requestPasswordReset(submittedEmail);
-      toast.success(password_reset_link_sent_text);
-    } catch (error) {
-      handleApiError(error, {
-        showToast: true,
-      });
-    } finally {
-      setInFlight(false);
-    }
-  };
-
   const isSuccess = Boolean(submittedEmail);
 
   return (
@@ -89,10 +73,7 @@ export function RequestPasswordResetPage() {
 
         <div>
           {isSuccess ? (
-            <RequestPasswordResetSuccessContainer
-              onRetry={handleResend}
-              loading={inFlight}
-            />
+            <RequestPasswordResetSuccess />
           ) : (
             <RequestPasswordResetForm
               onSubmit={(values) => handleRequestReset(values.email)}

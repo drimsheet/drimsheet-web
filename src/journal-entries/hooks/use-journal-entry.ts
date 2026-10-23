@@ -10,8 +10,6 @@ export function useJournalEntry(id: string | undefined) {
     queryKey: journalEntryQueryKey(id),
     queryFn: () => journalEntryService.getJournalEntry(id ?? ''),
     enabled: Boolean(id),
-    retry: (failureCount, error) =>
-      parseApiError(error).statusCode !== 404 && failureCount < 3,
     throwOnError: (error) => parseApiError(error).statusCode !== 404,
   });
 }

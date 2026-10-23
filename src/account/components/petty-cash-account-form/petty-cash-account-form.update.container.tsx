@@ -3,7 +3,6 @@ import { useAccountOpeningBalance } from '@/account/hooks/use-account-opening-ba
 import { useAccountUpdateExchangeRate } from '@/account/hooks/use-account-update-exchange-rate';
 import { useUpdatePettyCashAccount } from '@/account/hooks/use-update-petty-cash-account';
 import { assetAccountUpdateMapper } from '@/account/lib/mappers/asset-account-update.mapper';
-import { Button } from '@/shared/components/button';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useCurrencies } from '@/shared/hooks/use-currencies';
 import { useEffect, useState } from 'react';
@@ -84,7 +83,6 @@ export function PettyCashAccountFormUpdateContainer({
     return () => onBusyChange(false);
   }, [update.isPending, onBusyChange]);
 
-  const retry_label = t('details_retry_label');
   const loading_text = t('update_loading_text');
   const currencies_error_text = t('update_currencies_error_text');
 
@@ -98,7 +96,6 @@ export function PettyCashAccountFormUpdateContainer({
     return (
       <div role="alert">
         <p>{opening_balance_error_text}</p>
-        <Button onClick={() => void opening.refetch()}>{retry_label}</Button>
       </div>
     );
 
@@ -109,9 +106,6 @@ export function PettyCashAccountFormUpdateContainer({
     return (
       <div role="alert">
         <p>{currency_eligibility_error_text}</p>
-        <Button onClick={() => void currencyEligibility.refetch()}>
-          {retry_label}
-        </Button>
       </div>
     );
 
@@ -122,7 +116,6 @@ export function PettyCashAccountFormUpdateContainer({
     return (
       <div role="alert">
         <p>{currencies_error_text}</p>
-        <Button onClick={() => void currencies.refetch()}>{retry_label}</Button>
       </div>
     );
 

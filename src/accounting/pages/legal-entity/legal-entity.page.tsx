@@ -34,7 +34,6 @@ export function LegalEntityPage() {
   });
 
   const refresh_error = t('legal_entities_refresh_error');
-  const retry_label = t('legal_entities_retry_label');
 
   return (
     <AppBody>
@@ -63,14 +62,6 @@ export function LegalEntityPage() {
               <AlertDescription>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <span>{refresh_error}</span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={entities.isFetching}
-                    onClick={() => void entities.refetch()}
-                  >
-                    {retry_label}
-                  </Button>
                 </div>
               </AlertDescription>
             </Alert>

@@ -39,9 +39,7 @@ export function TransactionsChartContainer({
         />
       </div>
       {flow.isPending && <TransactionsChartSkeleton />}
-      {flow.isError && (
-        <SectionError title={title} onRetry={() => void flow.refetch()} />
-      )}
+      {flow.isError && <SectionError title={title} />}
       {flow.isSuccess && <TransactionsChart cashFlow={flow.data} />}
     </PageSection>
   );

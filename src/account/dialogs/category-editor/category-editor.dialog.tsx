@@ -47,7 +47,7 @@ export function CategoryEditorDialog({
       ]);
       onClose();
     } catch {
-      // Keep input in place; the form displays a translated retryable error.
+      // Keep input in place; the form displays a translated error.
     }
   };
 

@@ -8,7 +8,6 @@ const meta = {
   args: {
     onBack: () => {},
     onSubmit: () => {},
-    onRetry: () => {},
   },
   decorators: [
     (Story) => (
@@ -26,14 +25,8 @@ export const Default: TStory = {};
 export const Submitting: TStory = {
   args: { isSubmitting: true, hasStarted: true },
 };
-export const Retry: TStory = {
+export const Started: TStory = {
   args: {
     hasStarted: true,
-  },
-};
-export const Unconfirmed: TStory = {
-  args: {
-    hasStarted: true,
-    isRetryBlocked: true,
   },
 };

@@ -4,7 +4,6 @@ import { useAccountUpdateExchangeRate } from '@/account/hooks/use-account-update
 import { useUpdateBankAccount } from '@/account/hooks/use-update-bank-account';
 import { assetAccountUpdateMapper } from '@/account/lib/mappers/asset-account-update.mapper';
 import { ledgerAccountService } from '@/account/lib/services/ledger-account.service';
-import { Button } from '@/shared/components/button';
 import countries from '@/shared/configs/countries.json' with { type: 'json' };
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useCurrencies } from '@/shared/hooks/use-currencies';
@@ -103,7 +102,6 @@ export function BankDetailsFormUpdateContainer({
   }, [update.isPending, onBusyChange]);
 
   const error_text = t('update_bank_details_error_text');
-  const retry_label = t('details_retry_label');
   const loading_text = t('update_loading_text');
   const currencies_error_text = t('update_currencies_error_text');
 
@@ -117,7 +115,6 @@ export function BankDetailsFormUpdateContainer({
     return (
       <div role="alert">
         <p>{opening_balance_error_text}</p>
-        <Button onClick={() => void opening.refetch()}>{retry_label}</Button>
       </div>
     );
 
@@ -128,7 +125,6 @@ export function BankDetailsFormUpdateContainer({
     return (
       <div role="alert">
         <p>{error_text}</p>
-        <Button onClick={() => void read.refetch()}>{retry_label}</Button>
       </div>
     );
 
@@ -138,9 +134,6 @@ export function BankDetailsFormUpdateContainer({
     return (
       <div role="alert">
         <p>{currency_eligibility_error_text}</p>
-        <Button onClick={() => void currencyEligibility.refetch()}>
-          {retry_label}
-        </Button>
       </div>
     );
 
@@ -151,7 +144,6 @@ export function BankDetailsFormUpdateContainer({
     return (
       <div role="alert">
         <p>{currencies_error_text}</p>
-        <Button onClick={() => void currencies.refetch()}>{retry_label}</Button>
       </div>
     );
 

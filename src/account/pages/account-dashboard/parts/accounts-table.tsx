@@ -28,7 +28,6 @@ export function AccountsTable({
   onSearchChange,
   onTypeChange,
   onPageChange,
-  onRetry,
   onAddAccount,
   onViewAccount,
 }: Readonly<AccountsTableProps>) {
@@ -141,7 +140,7 @@ export function AccountsTable({
           {loading_label}
         </span>
       )}
-      {error && <DashboardError title={error_title} onRetry={onRetry} />}
+      {error && <DashboardError title={error_title} />}
       {!error && (
         <DataTable
           columns={columns}

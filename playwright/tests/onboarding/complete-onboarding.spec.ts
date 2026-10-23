@@ -317,7 +317,7 @@ for (const path of [
   '/accounting/reporting-context',
   '/ledger/expenses',
 ]) {
-  test(`resumes after a rejected ${path} without repeating confirmed writes`, async ({
+  test(`stops after a rejected ${path} without offering workflow resumption`, async ({
     page,
   }) => {
     const writes = await prepare(page, { path });
@@ -330,19 +330,11 @@ for (const path of [
     await expect(
       page.getByRole('checkbox', { name: 'Materials' })
     ).toBeChecked();
-    const confirmedCount = writes.length - 1;
-    await page.getByRole('button', { name: 'Finish setup' }).click();
-    await expect(page).toHaveURL('/dashboard');
-
-    const expected = [
-      preferencesPath,
-      ...paths,
-      ...Array(4).fill('/ledger/revenues'),
-      ...Array(4).fill('/ledger/expenses'),
-    ];
-
-    expected.splice(confirmedCount, 0, path);
-    expect(writes.map(({ path }) => path)).toEqual(expected);
+    await expect(
+      page.getByRole('button', { name: 'Finish setup' })
+    ).toBeDisabled();
+    expect(writes.at(-1)?.path).toBe(path);
+    expect(writes.filter((write) => write.path === path)).toHaveLength(1);
     expect(writes.filter(({ path }) => path === paths[0])).toHaveLength(1);
   });
 }
@@ -404,10 +396,12 @@ test('shows the API error toast for activation failure without exposing workflow
   await expect(
     page.getByText(/Could not finish legal entity activation/)
   ).toHaveCount(0);
-  await page.getByRole('button', { name: 'Finish setup' }).click();
-  await expect(page).toHaveURL('/dashboard');
+  await expect(
+    page.getByRole('button', { name: 'Finish setup' })
+  ).toBeDisabled();
+  await expect(page).toHaveURL('/onboarding');
   expect(writes.filter(({ path }) => path === paths[0])).toHaveLength(1);
-  expect(writes.filter(({ path }) => path === paths[1])).toHaveLength(2);
+  expect(writes.filter(({ path }) => path === paths[1])).toHaveLength(1);
 });
 
 test('does not create a legal entity when updating preferences fails', async ({
@@ -424,12 +418,9 @@ test('does not create a legal entity when updating preferences fails', async ({
     page.getByText('Invalid theme option.', { exact: true })
   ).toBeVisible();
   expect(writes.map(({ path }) => path)).toEqual([preferencesPath]);
-  await page.getByRole('button', { name: 'Finish setup' }).click();
-  await expect(page).toHaveURL('/dashboard');
-  expect(writes.slice(0, 3).map(({ path }) => path)).toEqual([
-    preferencesPath,
-    preferencesPath,
-    paths[0],
-  ]);
-  expect(writes.filter(({ path }) => path === paths[0])).toHaveLength(1);
+  await expect(
+    page.getByRole('button', { name: 'Finish setup' })
+  ).toBeDisabled();
+  await expect(page).toHaveURL('/onboarding');
+  expect(writes.filter(({ path }) => path === paths[0])).toHaveLength(0);
 });

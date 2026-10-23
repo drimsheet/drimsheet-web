@@ -65,7 +65,6 @@ function FormHarness({
       onTypeChange={() => {}}
       onParentChange={() => {}}
       onPickerOpenChange={() => {}}
-      onRetryAccounts={() => {}}
       onCancel={() => {}}
     />
   );

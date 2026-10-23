@@ -65,7 +65,7 @@ export function TransactionDeleteAction({
       setOpen(false);
       setConfirmationText('');
     } catch {
-      // The caller presents the API error; keep the confirmation open for retry.
+      // The caller presents the API error; keep the confirmation open.
     } finally {
       setPendingAction(null);
     }

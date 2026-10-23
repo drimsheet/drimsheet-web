@@ -15,8 +15,7 @@ export function BankDetailsContainer({
 
   if (bank.isPending) return <BankDetailsSkeleton />;
 
-  if (bank.isError)
-    return <SectionError title={title} onRetry={() => void bank.refetch()} />;
+  if (bank.isError) return <SectionError title={title} />;
 
   if (!bank.data)
     return <p className="text-sm text-muted-foreground">{missing_text}</p>;

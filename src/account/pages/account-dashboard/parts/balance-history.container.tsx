@@ -39,12 +39,6 @@ export function BalanceHistoryContainer({
       onPeriodChange(value);
   };
 
-  const handleRetry = () => {
-    snapshots
-      .filter((query) => query.isError)
-      .forEach((query) => void query.refetch());
-  };
-
   const title = t('dashboard_history_title');
   const period_label = t('dashboard_period_label');
   const error_title = t('dashboard_history_error_title');
@@ -79,11 +73,7 @@ export function BalanceHistoryContainer({
       </div>
       {!summaryError && loading && <DashboardSkeleton section="history" />}
       {!summaryError && !loading && failed && (
-        <DashboardError
-          title={error_title}
-          onRetry={handleRetry}
-          pending={snapshots.some((query) => query.isFetching)}
-        />
+        <DashboardError title={error_title} />
       )}
       {!summaryError && !loading && !failed && <BalanceTrend points={points} />}
     </div>

@@ -42,7 +42,6 @@ export function CategoryParentPicker({
   validationError,
   onSelect,
   onOpenChange,
-  onRetry,
 }: Readonly<CategoryParentPickerProps>) {
   const { t } = useTranslation('ledger-accounts');
   const id = useId();
@@ -78,7 +77,6 @@ export function CategoryParentPicker({
   const error_text = t('category_creation_accounts_error');
   const empty_title = t('category_creation_accounts_empty');
   const empty_description = t('category_creation_accounts_empty_description');
-  const retry_label = t('categories_retry_label');
   const cancel_label = t('categories_cancel_label');
   const confirm_label = t('category_creation_use_parent');
   const close_label = t('category_creation_close_picker');
@@ -157,12 +155,7 @@ export function CategoryParentPicker({
             )}
             {!loading && error && (
               <Alert variant="destructive">
-                <AlertDescription>
-                  {error_text}
-                  <Button type="button" variant="outline" onClick={onRetry}>
-                    {retry_label}
-                  </Button>
-                </AlertDescription>
+                <AlertDescription>{error_text}</AlertDescription>
               </Alert>
             )}
             {!loading && !error && accounts.length === 0 && (

@@ -252,7 +252,7 @@ test('filters and paginates accounts on the server while the month only changes 
   ).toBe(true);
 });
 
-test('keeps loading, independent errors, retry and empty states useful', async ({
+test('keeps loading, independent errors, refresh recovery and empty states useful', async ({
   page,
 }) => {
   await setup(page);
@@ -286,7 +286,10 @@ test('keeps loading, independent errors, retry and empty states useful', async (
       },
     })
   );
-  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(page.getByText('No activity in this period')).toHaveCount(2);
   await page.route(accountsEndpoint, (route) =>
     route.fulfill({ status: 500, json: { message: 'failure' } })
@@ -301,7 +304,10 @@ test('keeps loading, independent errors, retry and empty states useful', async (
       json: { data: [], meta: { page: 1, totalPages: 0, total: 0, limit: 10 } },
     })
   );
-  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(page.getByText('No categories found')).toBeVisible();
 });
 

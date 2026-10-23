@@ -73,7 +73,7 @@ export function CategoryCreationPage() {
       toast.success(t('category_creation_success'));
       navigate('/categories');
     } catch {
-      // Keep the selected parent and both names available for correction or retry.
+      // Keep the selected parent and both names available for correction.
     }
   }
 
@@ -133,7 +133,6 @@ export function CategoryCreationPage() {
               onTypeChange={handleTypeChange}
               onParentChange={handleParentChange}
               onPickerOpenChange={setPickerOpen}
-              onRetryAccounts={() => void accounts.refetch()}
               onCancel={() => navigate('/categories')}
             />
           </PageSection>

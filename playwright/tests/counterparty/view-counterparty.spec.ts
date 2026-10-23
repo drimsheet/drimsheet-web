@@ -281,10 +281,10 @@ test('uses the error boundary for a missing profile without querying transaction
     page.getByRole('heading', { name: 'Something went wrong' })
   ).toBeVisible();
   expect(transactionsRequested).toBe(false);
-  await expect(page.getByRole('button', { name: 'Try Again' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Try Again' })).toHaveCount(0);
 });
 
-test('uses the error boundary when transactions fail and recovers through its retry action', async ({
+test('uses the error boundary when transactions fail and recovers after browser refresh', async ({
   page,
 }) => {
   await setup(page);
@@ -304,7 +304,10 @@ test('uses the error boundary when transactions fail and recovers through its re
     page.getByRole('heading', { name: 'Something went wrong' })
   ).toBeVisible();
   fail = false;
-  await page.getByRole('button', { name: 'Try Again', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expectProfile(page);
   await expect(
     page.getByRole('heading', { name: 'No transactions yet' })
@@ -326,7 +329,10 @@ test('recovers from a failed profile request through the error boundary', async 
     page.getByRole('heading', { name: 'Something went wrong' })
   ).toBeVisible();
   fail = false;
-  await page.getByRole('button', { name: 'Try Again', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expectProfile(page);
 });
 

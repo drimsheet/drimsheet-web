@@ -16,7 +16,6 @@ export function CounterpartyShare({
   loading,
   error,
   onPageChange,
-  onRetry,
   selectedId,
   onSelect,
 }: Readonly<CounterpartyShareProps>) {
@@ -37,7 +36,6 @@ export function CounterpartyShare({
   const self_label = t('category_details_self_label');
   const loading_label = t('category_details_share_loading_label');
   const error_text = t('details_load_error_text');
-  const retry_label = t('details_retry_label');
   const previous_label = t('category_details_share_previous_label');
   const next_label = t('category_details_share_next_label');
 
@@ -72,12 +70,7 @@ export function CounterpartyShare({
         )}
         {!loading && error && (
           <Alert variant="destructive">
-            <AlertDescription>
-              {error_text}
-              <Button variant="ghost" onClick={onRetry}>
-                {retry_label}
-              </Button>
-            </AlertDescription>
+            <AlertDescription>{error_text}</AlertDescription>
           </Alert>
         )}
         {ready && counterparties.length === 0 && (

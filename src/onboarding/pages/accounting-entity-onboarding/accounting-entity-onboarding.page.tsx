@@ -27,7 +27,6 @@ import { SidebarProvider, SidebarTrigger } from '@/shared/components/sidebar';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useCurrencies } from '@/shared/hooks/use-currencies';
 import { useJurisdictions } from '@/shared/hooks/use-jurisdictions';
-import { parseApiError } from '@/shared/lib/api';
 import {
   EAppThemePreference,
   EAppUsageModePreference,
@@ -48,7 +47,6 @@ import { FinancialYearStep } from './parts/financial-year-step';
 import { IncomeCategoriesStep } from './parts/income-categories-step';
 import { ReportsStep } from './parts/reports-step';
 import { AccountingEntityOnboardingSidebar } from './parts/sidebar';
-import type { IOnboardingProgress } from './types';
 
 export function AccountingEntityOnboardingPage() {
   const accountControl = useOutletContext<ReactNode>();
@@ -58,14 +56,8 @@ export function AccountingEntityOnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
-  const [isRetryBlocked, setIsRetryBlocked] = useState(false);
   const handleApiError = useApiErrorHandler();
-  const expenseValuesRef = useRef<ICategoriesFormValues>(undefined);
   const submittingRef = useRef(false);
-
-  const progressRef = useRef<IOnboardingProgress>({
-    savedCategories: new Set(),
-  });
 
   const updatePreferences = useUpdatePreferences();
   const createEntity = useCreateAccountingEntity();
@@ -131,7 +123,7 @@ export function AccountingEntityOnboardingPage() {
     // The forms emitted validated payloads. These guards only enforce workflow state.
     if (
       submittingRef.current ||
-      isRetryBlocked ||
+      hasStarted ||
       !entityValues ||
       !financialYearValues ||
       !reportsValues ||
@@ -156,84 +148,72 @@ export function AccountingEntityOnboardingPage() {
     submittingRef.current = true;
     setIsSubmitting(true);
     setHasStarted(true);
-    expenseValuesRef.current ??= expenseValues;
-    const progress = progressRef.current;
+
+    let entity: IAccountingEntity;
 
     try {
-      if (!progress.entity) {
-        await updatePreferences.mutateAsync({
-          appUsageMode: EAppUsageModePreference.NonPowerUser,
-          theme: EAppThemePreference.System,
-        });
-      }
+      await updatePreferences.mutateAsync({
+        appUsageMode: EAppUsageModePreference.NonPowerUser,
+        theme: EAppThemePreference.System,
+      });
 
-      progress.entity ??= await createEntity.mutateAsync(
+      entity = await createEntity.mutateAsync(
         accountingEntityMapper.toDto(entityValues)
       );
-      const entityId = progress.entity.id;
+      const entityId = entity.id;
 
-      if (!progress.switched) {
-        await switchEntity.mutateAsync({ accountingEntityId: entityId });
-        progress.switched = true;
-      }
+      await switchEntity.mutateAsync({ accountingEntityId: entityId });
 
-      progress.fiscalYearId ??= (
+      const fiscalYearId = (
         await createFiscalYear.mutateAsync(
           fiscalYearMapper.toDto(financialYearValues, entityId)
         )
       ).id;
 
-      progress.accountingIntervalId ??= (
+      const accountingIntervalId = (
         await createAccountingInterval.mutateAsync(
-          accountingIntervalMapper.toDto(
-            financialYearValues,
-            progress.fiscalYearId
-          )
+          accountingIntervalMapper.toDto(financialYearValues, fiscalYearId)
         )
       ).id;
 
-      progress.accountingContextId ??= (
+      const accountingContextId = (
         await createAccountingContext.mutateAsync(
           accountingContextMapper.toDto(
             financialYearValues,
-            progress.fiscalYearId,
-            progress.accountingIntervalId,
+            fiscalYearId,
+            accountingIntervalId,
             standard
           )
         )
       ).id;
 
-      progress.reportingIntervalId ??= (
+      const reportingIntervalId = (
         await createReportingInterval.mutateAsync(
-          reportingIntervalMapper.toDto(reportsValues, progress.fiscalYearId)
+          reportingIntervalMapper.toDto(reportsValues, fiscalYearId)
         )
       ).id;
 
-      progress.reportingContextId ??= (
-        await createReportingContext.mutateAsync(
-          reportingContextMapper.toDto(
-            reportsValues,
-            progress.accountingContextId,
-            progress.reportingIntervalId
-          )
+      await createReportingContext.mutateAsync(
+        reportingContextMapper.toDto(
+          reportsValues,
+          accountingContextId,
+          reportingIntervalId
         )
-      ).id;
+      );
 
-      progress.headerAccounts ??= await setupHeaders.mutateAsync(
+      const headerAccounts = await setupHeaders.mutateAsync(
         accountingEntityOnboardingHelpers.createHeaderAliases(t)
       );
 
       const selectedCategories = [
         ...incomeValues.categories,
-        ...expenseValuesRef.current.categories,
+        ...expenseValues.categories,
       ].filter(({ selected }) => selected);
 
       for (const category of selectedCategories) {
-        if (progress.savedCategories.has(category.id)) continue;
-
         const config = onboardingCategoriesConfig[category.parentId];
 
-        const parent = progress.headerAccounts.find(
+        const parent = headerAccounts.find(
           (account) =>
             account.isControlAccount &&
             account.type === config.type &&
@@ -255,17 +235,8 @@ export function AccountingEntityOnboardingPage() {
             expenseAccountMapper.toDto(category, parent.id, config.behavior)
           );
         }
-
-        progress.savedCategories.add(category.id);
       }
     } catch (error) {
-      const failure = parseApiError(error);
-
-      // Unknown write outcomes must not be retried blindly without backend reconciliation.
-      const blocked =
-        failure.code === 0 || failure.code >= 500 || failure.code === 409;
-
-      setIsRetryBlocked(blocked);
       handleApiError(error, { showToast: true });
 
       return;
@@ -275,7 +246,6 @@ export function AccountingEntityOnboardingPage() {
     }
 
     // Cache refreshes are reads and cannot turn completed writes into a failed submission.
-    const entity = progress.entity;
     queryClient.setQueryData(
       ['accountingService', 'getAccountingEntity'],
       entity
@@ -302,19 +272,10 @@ export function AccountingEntityOnboardingPage() {
     navigate('/dashboard', { replace: true });
   };
 
-  const handleFinishRetry = () => {
-    if (expenseValuesRef.current) void handleFinish(expenseValuesRef.current);
-  };
-
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0 });
     mainRef.current?.focus({ preventScroll: true });
   }, [currentStep]);
-
-  const handleRetry = () => {
-    void currenciesQuery.refetch();
-    void jurisdictionsQuery.refetch();
-  };
 
   const step_status = t('step_status', { step: currentStep, total: 5 });
 
@@ -344,7 +305,6 @@ export function AccountingEntityOnboardingPage() {
               jurisdictions={jurisdictionsQuery.data ?? []}
               isLoading={isLoading}
               hasError={hasError}
-              onRetry={handleRetry}
               onSubmit={handleEntitySubmit}
             />
           </div>
@@ -386,10 +346,8 @@ export function AccountingEntityOnboardingPage() {
               <ExpenseCategoriesStep
                 onBack={() => setCurrentStep(4)}
                 onSubmit={handleFinish}
-                onRetry={handleFinishRetry}
                 isSubmitting={isSubmitting}
                 hasStarted={hasStarted}
-                isRetryBlocked={isRetryBlocked}
               />
             </div>
           )}

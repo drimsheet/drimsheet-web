@@ -47,7 +47,6 @@ export interface CategoryTableProps {
 
 export interface CategorySectionErrorProps {
   title: string;
-  onRetry: () => void;
 }
 
 export interface ICategoryTableRow extends IRevenueExpenseAccountDto {

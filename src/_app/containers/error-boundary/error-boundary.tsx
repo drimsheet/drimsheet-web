@@ -3,20 +3,17 @@ import type {
   DefaultErrorFallbackProps,
   IErrorBoundaryFallbackData,
 } from '@/_app/containers/error-boundary/types';
-import { Button } from '@/shared/components/button';
 import { FeatureNotAvailable } from '@/shared/components/feature-not-available';
 import { FullPageLoader } from '@/shared/components/full-page-loader';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { isFeatureFlagApiError } from '@/shared/lib/api';
 import { ErrorBoundary as SentryErrorBoundary } from '@sentry/react';
-import { QueryErrorResetBoundary } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const DefaultErrorFallback = ({
   error,
-  resetError,
 }: Readonly<DefaultErrorFallbackProps>) => {
   const { t } = useTranslation('shared');
   const [show, setShow] = useState(false);
@@ -50,9 +47,6 @@ const DefaultErrorFallback = ({
           {errorMessage}
         </pre>
       )}
-      <Button onClick={resetError} className="mt-4">
-        {t('try_again_text')}
-      </Button>
     </div>
   );
 };
@@ -76,20 +70,15 @@ export const DefaultErrorBoundary = ({
   };
 
   return (
-    <QueryErrorResetBoundary>
-      {({ reset }) => (
-        <SentryErrorBoundary
-          onReset={reset}
-          fallback={renderFallback}
-          onError={(error: unknown) => {
-            if (isAxiosError(error)) {
-              handleApiError(error, { report: false });
-            }
-          }}
-        >
-          {children}
-        </SentryErrorBoundary>
-      )}
-    </QueryErrorResetBoundary>
+    <SentryErrorBoundary
+      fallback={renderFallback}
+      onError={(error: unknown) => {
+        if (isAxiosError(error)) {
+          handleApiError(error, { report: false });
+        }
+      }}
+    >
+      {children}
+    </SentryErrorBoundary>
   );
 };

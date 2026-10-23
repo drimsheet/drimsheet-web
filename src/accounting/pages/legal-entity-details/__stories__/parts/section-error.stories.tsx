@@ -5,10 +5,9 @@ const meta = {
   title: 'Accounting/Legal Entity Details/SectionError',
   component: SectionError,
   tags: ['autodocs'],
-  args: { onRetry: () => {}, pending: false },
+  args: {},
 } satisfies Meta<typeof SectionError>;
 
 export default meta;
 type TStory = StoryObj<typeof meta>;
 export const Default: TStory = {};
-export const Retrying: TStory = { args: { pending: true } };

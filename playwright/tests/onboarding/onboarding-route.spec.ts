@@ -232,7 +232,7 @@ test('keeps entered details when help is collapsed and blocks incomplete submiss
   ).toBeVisible();
 });
 
-test('recovers from unavailable country options using retry', async ({
+test('recovers from unavailable country options after browser refresh', async ({
   page,
 }) => {
   let failCountries = true;
@@ -244,11 +244,14 @@ test('recovers from unavailable country options using retry', async ({
   });
   await page.goto(verificationUrl);
   await expect(page.getByRole('alert')).toContainText(
-    'We couldn’t load countries and currencies. Please try again.'
+    'We couldn’t load countries and currencies. Refresh the page to try again.'
   );
   await expect(page.getByRole('textbox', { name: 'Name' })).toBeDisabled();
   failCountries = false;
-  await page.getByRole('button', { name: 'Try again', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(page.getByRole('textbox', { name: 'Name' })).toBeEnabled();
   await expect(page.getByRole('alert')).toHaveCount(0);
 });

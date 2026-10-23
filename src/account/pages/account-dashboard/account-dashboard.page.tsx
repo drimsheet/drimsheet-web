@@ -92,13 +92,6 @@ export function AccountsDashboardPage() {
 
   const handleAddAccount = () => setShowAccountTypeSelection(true);
 
-  const handleRetryPage = () => {
-    void accounts.refetch();
-    void summary.refetch();
-    void assets.refetch();
-    void liabilities.refetch();
-  };
-
   const title = t('shared:accounts');
   const add_label = t('ledger-accounts:add_account');
   const overview_title = t('ledger-accounts:dashboard_overview_title');
@@ -122,10 +115,7 @@ export function AccountsDashboardPage() {
         </header>
         {pageError && (
           <PageSection>
-            <DashboardError
-              title={page_error_title}
-              onRetry={handleRetryPage}
-            />
+            <DashboardError title={page_error_title} />
           </PageSection>
         )}
         {!pageError && noAccounts && (
@@ -138,11 +128,7 @@ export function AccountsDashboardPage() {
             <PageSection title={overview_title}>
               {summary.isPending && <DashboardSkeleton section="summary" />}
               {summary.isError && (
-                <DashboardError
-                  title={summary_error_title}
-                  onRetry={() => void summary.refetch()}
-                  pending={summary.isFetching}
-                />
+                <DashboardError title={summary_error_title} />
               )}
               {summary.isSuccess && <AccountsSummary summary={summary.data} />}
               <Separator />
@@ -171,11 +157,6 @@ export function AccountsDashboardPage() {
                     hasMore={query.hasNextPage}
                     loadingMore={query.isFetching}
                     onLoadMore={() => void query.fetchNextPage()}
-                    onRetry={() =>
-                      void (query.isFetchNextPageError
-                        ? query.fetchNextPage()
-                        : query.refetch())
-                    }
                     onViewAccount={handleViewAccount}
                   />
                 ))}
@@ -190,7 +171,6 @@ export function AccountsDashboardPage() {
               onSearchChange={table.handleSearchChange}
               onTypeChange={handleTypeChange}
               onPageChange={table.handlePageChange}
-              onRetry={() => void accounts.refetch()}
               onAddAccount={handleAddAccount}
               onViewAccount={handleViewAccount}
             />

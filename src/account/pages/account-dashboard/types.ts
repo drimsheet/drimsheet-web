@@ -29,7 +29,6 @@ export interface AccountBreakdownProps {
   hasMore: boolean;
   loadingMore: boolean;
   onLoadMore: () => void;
-  onRetry: () => void;
   onViewAccount: (id: string) => void;
 }
 
@@ -42,7 +41,6 @@ export interface AccountsTableProps {
   onSearchChange: (search: string) => void;
   onTypeChange: (type: string) => void;
   onPageChange: (page: number) => void;
-  onRetry: () => void;
   onAddAccount: () => void;
   onViewAccount: (id: string) => void;
 }
@@ -65,8 +63,6 @@ export interface DashboardSkeletonProps {
 
 export interface DashboardErrorProps {
   title: string;
-  onRetry: () => void;
-  pending?: boolean;
 }
 
 export interface AccountPageEmptyStateProps {

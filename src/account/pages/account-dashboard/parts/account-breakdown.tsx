@@ -23,7 +23,6 @@ export function AccountBreakdown({
   hasMore,
   loadingMore,
   onLoadMore,
-  onRetry,
   onViewAccount,
 }: Readonly<AccountBreakdownProps>) {
   const { t, i18n } = useTranslation('ledger-accounts');
@@ -114,13 +113,7 @@ export function AccountBreakdown({
             })}
           </ul>
         )}
-        {error && (
-          <DashboardError
-            title={error_title}
-            onRetry={onRetry}
-            pending={loadingMore}
-          />
-        )}
+        {error && <DashboardError title={error_title} />}
         {hasMore && !error && (
           <Button
             variant="ghost"

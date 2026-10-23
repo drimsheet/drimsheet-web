@@ -54,12 +54,7 @@ export function AccountDetailsPage() {
               <RecentTransactionsSkeleton />
             </>
           )}
-          {accountQuery.isError && (
-            <SectionError
-              title={error_title}
-              onRetry={() => void accountQuery.refetch()}
-            />
-          )}
+          {accountQuery.isError && <SectionError title={error_title} />}
           {accountQuery.isSuccess && account && (
             <>
               <LedgerAccountSummary

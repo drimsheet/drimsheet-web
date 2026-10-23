@@ -26,7 +26,6 @@ function props(
     selectedId: 'self',
     onSelect: vi.fn(),
     onPageChange: vi.fn(),
-    onRetry: vi.fn(),
     ...overrides,
   };
 }
@@ -85,7 +84,7 @@ describe('CounterpartyShare', () => {
     );
     expect(values.onPageChange).toHaveBeenCalledWith(2);
   });
-  it('does not show an empty state while loading or after failure and supports retry', async () => {
+  it('does not show an empty state while loading or after failure or offer a retry action', () => {
     const values = props({ counterparties: [], loading: true });
     const { rerender } = render(<CounterpartyShare {...values} />);
     expect(
@@ -99,8 +98,9 @@ describe('CounterpartyShare', () => {
     expect(
       screen.queryByText('No counterparty activity yet.')
     ).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
-    expect(values.onRetry).toHaveBeenCalledOnce();
+    expect(
+      screen.queryByRole('button', { name: /try again/i })
+    ).not.toBeInTheDocument();
   });
   it('shows the empty state', () => {
     const values = props({ counterparties: [] });

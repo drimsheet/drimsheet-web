@@ -1,5 +1,4 @@
 import { Alert, AlertDescription, AlertTitle } from '@/shared/components/alert';
-import { Button } from '@/shared/components/button';
 import { PageSection } from '@/shared/components/page-section';
 import { Skeleton } from '@/shared/components/skeleton';
 import { useTranslation } from 'react-i18next';
@@ -8,12 +7,10 @@ import type { ProfileSectionStateProps } from '../types';
 export function ProfileSectionState({
   isLoading,
   label,
-  onRetry,
 }: Readonly<ProfileSectionStateProps>) {
   const { t } = useTranslation('user');
   const loading_text = t('profile_section_loading_text', { section: label });
   const error_text = t('profile_section_error_text', { section: label });
-  const retry_label = t('profile_retry_label');
 
   if (isLoading) {
     return (
@@ -35,12 +32,7 @@ export function ProfileSectionState({
     <PageSection>
       <Alert variant="destructive" className="self-start">
         <AlertTitle>{label}</AlertTitle>
-        <AlertDescription>
-          {error_text}
-          <Button variant="outline" onClick={onRetry}>
-            {retry_label}
-          </Button>
-        </AlertDescription>
+        <AlertDescription>{error_text}</AlertDescription>
       </Alert>
     </PageSection>
   );

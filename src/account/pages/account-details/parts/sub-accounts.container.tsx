@@ -16,10 +16,7 @@ export function SubAccountsContainer({
 
   if (accounts.isPending) return <SubAccountsSkeleton />;
 
-  if (accounts.isError)
-    return (
-      <SectionError title={title} onRetry={() => void accounts.refetch()} />
-    );
+  if (accounts.isError) return <SectionError title={title} />;
 
   return (
     <SubAccounts

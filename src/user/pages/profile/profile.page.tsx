@@ -94,7 +94,6 @@ export function ProfilePage() {
               <ProfileSectionState
                 isLoading={profileQuery.isPending}
                 label={details_title}
-                onRetry={() => void profileQuery.refetch()}
               />
             )}
             {preferences ? (
@@ -109,7 +108,6 @@ export function ProfilePage() {
               <ProfileSectionState
                 isLoading={preferencesQuery.isPending}
                 label={preferences_title}
-                onRetry={() => void preferencesQuery.refetch()}
               />
             )}
           </div>
@@ -123,7 +121,6 @@ export function ProfilePage() {
             <ProfileSectionState
               isLoading={entitiesQuery.isPending}
               label={entities_title}
-              onRetry={() => void entitiesQuery.refetch()}
             />
           )}
         </div>

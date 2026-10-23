@@ -36,7 +36,6 @@ const meta = {
     onSearchChange: () => {},
     onTypeChange: () => {},
     onPageChange: () => {},
-    onRetry: () => {},
     onAddAccount: () => {},
     onViewAccount: () => {},
   },

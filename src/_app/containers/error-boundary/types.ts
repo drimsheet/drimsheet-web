@@ -4,7 +4,6 @@ export interface IErrorBoundaryFallbackData {
   readonly error: unknown;
   readonly componentStack: string;
   readonly eventId: string;
-  readonly resetError: () => void;
 }
 
 export type TErrorBoundaryFallback =
@@ -18,5 +17,4 @@ export interface DefaultErrorBoundaryProps {
 
 export interface DefaultErrorFallbackProps {
   readonly error: unknown;
-  readonly resetError: () => void;
 }

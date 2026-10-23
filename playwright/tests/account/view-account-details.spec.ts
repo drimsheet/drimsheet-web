@@ -396,7 +396,10 @@ test('petty cash skips the bank endpoint and retains other sections when cash fl
       },
     })
   );
-  await chart.getByRole('button', { name: 'Try again' }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(
     chart.getByText('No money moved during this period.')
   ).toBeVisible();
@@ -1206,7 +1209,7 @@ for (const state of ['unsupported', 'archived'] as const) {
   });
 }
 
-test('allows retrying a failed bank-details load before editing', async ({
+test('recovers a failed bank-details load after refreshing before editing', async ({
   page,
 }) => {
   await setup(page, { children: false });
@@ -1236,9 +1239,13 @@ test('allows retrying a failed bank-details load before editing', async ({
   await page.getByRole('button', { name: 'Edit', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Edit bank account' });
   await expect(dialog.getByRole('alert')).toContainText(
-    'Unable to load bank details. Please try again.'
+    'Unable to load bank details. Refresh the page to try again.'
   );
-  await dialog.getByRole('button', { name: 'Try again' }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
   await expect(dialog.getByLabel('Bank account name')).toHaveValue(
     'Acme Studio Ltd'
   );
@@ -1321,7 +1328,7 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
     ).toBeDisabled();
   });
 
-  test(`blocks ${behavior} editing until the opening balance loads and supports retry`, async ({
+  test(`blocks ${behavior} editing until the opening balance loads and recovers after browser refresh`, async ({
     page,
   }) => {
     await setup(page, {
@@ -1362,7 +1369,11 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
     await expect(
       dialog.getByRole('button', { name: 'Save changes' })
     ).toHaveCount(0);
-    await dialog.getByRole('button', { name: 'Try again' }).click();
+    await expect(
+      page.getByRole('button', { name: /^(Retry|Try again)$/i })
+    ).toHaveCount(0);
+    await page.reload();
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
     await expect(
       dialog.getByRole('button', { name: 'Save changes' })
     ).toBeVisible();
@@ -1449,7 +1460,7 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
     expect(requests).toEqual([{ name: 'Renamed account' }]);
   });
 
-  test(`keeps ${behavior} currency editing unavailable after an eligibility error and supports retry`, async ({
+  test(`keeps ${behavior} currency editing unavailable after an eligibility error and recovers after browser refresh`, async ({
     page,
   }) => {
     await setup(page, {
@@ -1468,7 +1479,7 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByRole('alert')).toContainText(
-      'Unable to check whether the currency can be updated. Please try again.'
+      'Unable to check whether the currency can be updated. Refresh the page to try again.'
     );
     await expect(
       dialog.getByRole('combobox', { name: 'Currency', exact: true })
@@ -1476,7 +1487,11 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
     await expect(
       dialog.getByRole('button', { name: 'Save changes' })
     ).toHaveCount(0);
-    await dialog.getByRole('button', { name: 'Try again' }).click();
+    await expect(
+      page.getByRole('button', { name: /^(Retry|Try again)$/i })
+    ).toHaveCount(0);
+    await page.reload();
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
     await expect(
       dialog.getByRole('combobox', { name: 'Currency', exact: true })
     ).toBeEnabled();

@@ -5,7 +5,7 @@ const meta = {
   title: 'User/Profile/SectionState',
   component: ProfileSectionState,
   tags: ['autodocs'],
-  args: { label: 'Preferences', isLoading: true, onRetry: () => {} },
+  args: { label: 'Preferences', isLoading: true },
 } satisfies Meta<typeof ProfileSectionState>;
 
 export default meta;

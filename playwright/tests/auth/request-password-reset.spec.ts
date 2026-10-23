@@ -120,7 +120,9 @@ test('fulfills initial request and shows persistent success view without leaking
   );
 
   await expect(page.getByLabel('Email')).not.toBeVisible();
-  await expect(page.getByRole('button', { name: /Retry in/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /retry|resend/i })).toHaveCount(
+    0
+  );
 });
 
 test('retains email and form when initial request fails', async ({ page }) => {
@@ -146,105 +148,27 @@ test('retains email and form when initial request fails', async ({ page }) => {
   );
 });
 
-test('advances cooldown, resends request, and keeps success view while pending', async ({
-  page,
-}) => {
+test('keeps the success view without a resend control', async ({ page }) => {
   let requestCount = 0;
-  const responseGate = createResponseGate();
-
-  await page.clock.install();
-
   await page.route(resetEndpoint, async (route) => {
     requestCount += 1;
-    if (requestCount === 2) {
-      await responseGate.promise;
-    }
-
     await route.fulfill({
       status: 200,
       json: { message: 'Password reset link sent' },
     });
   });
-
   await page.goto('/auth/forgot-password');
   await page.getByLabel('Email').fill('user@example.com');
   await page.getByRole('button', { name: 'Get password reset link' }).click();
-
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Email Sent'
   );
-
-  const countdownButton = page.getByRole('button', { name: /Retry in 30s/i });
-  await expect(countdownButton).toBeVisible();
-
-  for (let i = 0; i < 30; i += 1) {
-    await page.clock.fastForward(1000);
-  }
-
-  const retryButton = page.getByRole('button', { name: 'Retry' });
-  await expect(retryButton).toBeEnabled();
-
-  await retryButton.click();
-
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Email Sent'
+  await expect(page.getByRole('button', { name: /retry|resend/i })).toHaveCount(
+    0
   );
-
-  responseGate.resolve();
-
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Email Sent'
-  );
-  expect(requestCount).toBe(2);
-});
-
-test('retains success view on resend API failure', async ({ page }) => {
-  let requestCount = 0;
-
-  await page.clock.install();
-
-  await page.route(resetEndpoint, async (route) => {
-    requestCount += 1;
-    if (requestCount === 2) {
-      await route.fulfill({
-        status: 500,
-        json: {
-          name: 'InternalServerError',
-          errorKey: 'internal_server_error',
-          validationErrors: [],
-        },
-      });
-
-      return;
-    }
-
-    await route.fulfill({
-      status: 200,
-      json: { message: 'Password reset link sent' },
-    });
-  });
-
-  await page.goto('/auth/forgot-password');
-  await page.getByLabel('Email').fill('user@example.com');
-  await page.getByRole('button', { name: 'Get password reset link' }).click();
-
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Email Sent'
-  );
-
-  const countdownButton = page.getByRole('button', { name: /Retry in 30s/i });
-  await expect(countdownButton).toBeVisible();
-
-  for (let i = 0; i < 30; i += 1) {
-    await page.clock.fastForward(1000);
-  }
-
-  await page.getByRole('button', { name: 'Retry' }).click();
-
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Email Sent'
-  );
-  expect(requestCount).toBe(2);
+  expect(requestCount).toBe(1);
+  await page.getByRole('link', { name: 'Back to sign in' }).click();
+  await expect(page).toHaveURL('/auth/signin');
 });
 
 test('navigates to /auth/signin when Back to sign in is clicked', async ({

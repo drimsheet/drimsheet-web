@@ -160,13 +160,16 @@ test('shows loading then a recoverable page error without invented balances', as
   state.summaryError = false;
   state.tableError = false;
   state.breakdownError = false;
-  await page.getByRole('button', { name: 'Retry', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(page.getByRole('region', { name: 'Overview' })).toContainText(
     '₦12,480,000'
   );
 });
 
-test('recovers history and table errors independently while preserving available balances', async ({
+test('preserves available balances on section errors and recovers after browser refresh', async ({
   page,
 }) => {
   const state = await setup(page);
@@ -177,7 +180,10 @@ test('recovers history and table errors independently while preserving available
   );
   await expect(page.getByRole('table')).toContainText('Operating');
   state.historyError = false;
-  await page.getByRole('button', { name: 'Retry', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(
     page.getByText('View chart data', { exact: true })
   ).toBeVisible();
@@ -190,7 +196,10 @@ test('recovers history and table errors independently while preserving available
     '₦12,480,000'
   );
   state.tableError = false;
-  await page.getByRole('button', { name: 'Retry', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(page.getByRole('table')).toContainText('Account 23');
 });
 
@@ -254,19 +263,18 @@ test('keeps the table usable when balances or one breakdown fail', async ({
     page.getByRole('region', { name: 'Assets', exact: true })
   ).toContainText('Couldn’t load account shares');
   state.summaryError = false;
-  await page
-    .getByRole('region', { name: 'Overview' })
-    .getByRole('button', { name: 'Retry' })
-    .first()
-    .click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(page.getByRole('region', { name: 'Overview' })).toContainText(
     '₦12,480,000'
   );
   state.breakdownError = false;
-  await page
-    .getByRole('region', { name: 'Assets', exact: true })
-    .getByRole('button', { name: 'Retry' })
-    .click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(
     page.getByRole('region', { name: 'Assets', exact: true })
   ).toContainText('Operating');

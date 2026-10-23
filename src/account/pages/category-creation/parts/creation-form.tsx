@@ -30,7 +30,6 @@ export function CategoryCreationForm({
   onTypeChange,
   onParentChange,
   onPickerOpenChange,
-  onRetryAccounts,
   onCancel,
 }: Readonly<CategoryCreationFormProps>) {
   const { t } = useTranslation('ledger-accounts');
@@ -117,7 +116,6 @@ export function CategoryCreationForm({
           validationError={parentError}
           onSelect={onParentChange}
           onOpenChange={onPickerOpenChange}
-          onRetry={onRetryAccounts}
         />
         {isPromotion && (
           <FieldGroup>

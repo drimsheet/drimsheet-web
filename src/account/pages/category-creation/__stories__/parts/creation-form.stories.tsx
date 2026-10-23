@@ -48,7 +48,6 @@ const meta = {
     onTypeChange: () => {},
     onParentChange: () => {},
     onPickerOpenChange: () => {},
-    onRetryAccounts: () => {},
     onCancel: () => {},
   },
   render: function Render(args) {

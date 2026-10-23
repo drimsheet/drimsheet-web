@@ -175,7 +175,10 @@ test('recovers from failed details and supports an entity without fiscal years',
     'We couldn’t load these details'
   );
   failed = false;
-  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(
+    page.getByRole('button', { name: /^(Retry|Try again)$/i })
+  ).toHaveCount(0);
+  await page.reload();
   await expect(page.getByRole('heading', { name: entity.name })).toBeVisible();
   await expect(
     page.getByText('No fiscal years have been set up for this entity.')

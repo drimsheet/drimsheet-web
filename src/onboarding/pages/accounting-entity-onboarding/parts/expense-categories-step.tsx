@@ -15,10 +15,8 @@ import { StepLayout } from './step-layout';
 export function ExpenseCategoriesStep({
   onBack,
   onSubmit,
-  onRetry,
   isSubmitting = false,
   hasStarted = false,
-  isRetryBlocked = false,
 }: Readonly<ExpenseCategoriesStepProps>) {
   const { t } = useTranslation('onboarding');
 
@@ -48,11 +46,10 @@ export function ExpenseCategoriesStep({
             {back_label}
           </Button>
           <Button
-            type={hasStarted ? 'button' : 'submit'}
+            type="submit"
             form={formId}
-            onClick={hasStarted ? onRetry : undefined}
             loading={isSubmitting}
-            disabled={isRetryBlocked}
+            disabled={hasStarted}
           >
             {continue_label}
           </Button>
