@@ -40,7 +40,7 @@ export function TablePagination({
     <nav
       aria-label={pagination_label}
       className={cn(
-        'flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs text-muted-foreground',
+        'flex flex-wrap items-center justify-end gap-3 px-4 py-3 text-xs text-muted-foreground',
         className
       )}
     >

@@ -205,11 +205,7 @@ export function CategoryTable({
         />
       </div>
       {accounts && !loading && (
-        <TablePagination
-          meta={accounts.meta}
-          onPageChange={onPageChange}
-          className="justify-end"
-        />
+        <TablePagination meta={accounts.meta} onPageChange={onPageChange} />
       )}
     </section>
   );

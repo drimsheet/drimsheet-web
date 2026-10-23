@@ -8,7 +8,7 @@ export function useCreateBankAccount() {
     mutationFn: assetAccountService.createBankAccount,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['ledgerAccountService', 'getLedgerAccounts'],
+        queryKey: ['ledgerAccountService'],
       });
     },
   });

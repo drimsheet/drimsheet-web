@@ -1,5 +1,6 @@
 import type { IBankAccountCreationReq } from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
+import { registerAccountDashboardRoutes } from '@integration/mocks/account-dashboard';
 import {
   authenticatedUser,
   registerAuthenticatedAppRoutes,
@@ -15,6 +16,7 @@ const banksEndpoint = '**/api/v1/banks*';
 
 async function registerAccountPageRoutes(page: Page) {
   await registerAuthenticatedAppRoutes(page);
+  await registerAccountDashboardRoutes(page);
 
   await page.route(refreshEndpoint, async (route) => {
     await route.fulfill({

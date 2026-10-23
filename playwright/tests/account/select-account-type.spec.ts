@@ -1,5 +1,6 @@
 import type { IPettyCashAccountCreationReq } from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
+import { registerAccountDashboardRoutes } from '@integration/mocks/account-dashboard';
 import {
   authenticatedUser,
   registerAuthenticatedAppRoutes,
@@ -15,6 +16,7 @@ const exchangeRatesEndpoint = '**/api/v1/currencies/exchange-rates*';
 
 async function registerAccountPageRoutes(page: Page) {
   await registerAuthenticatedAppRoutes(page);
+  await registerAccountDashboardRoutes(page);
 
   await page.route(refreshEndpoint, async (route) => {
     await route.fulfill({

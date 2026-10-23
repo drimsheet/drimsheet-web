@@ -8,7 +8,7 @@ export function useCreatePettyCashAccount() {
     mutationFn: assetAccountService.createPettyCashAccount,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['ledgerAccountService', 'getLedgerAccounts'],
+        queryKey: ['ledgerAccountService'],
       });
     },
   });
