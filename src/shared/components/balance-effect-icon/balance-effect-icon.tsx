@@ -19,20 +19,28 @@ function BalanceEffectIcon({
     case 'increase':
       return (
         <ItemMedia
-          className={cn(defaultClassName, className, 'bg-success-surface')}
+          className={cn(
+            defaultClassName,
+            className,
+            'bg-financial-income-surface'
+          )}
           {...props}
         >
-          <TrendingUp className="size-7 text-success" />
+          <TrendingUp className="size-7 text-financial-income" />
         </ItemMedia>
       );
 
     case 'decrease':
       return (
         <ItemMedia
-          className={cn(defaultClassName, className, 'bg-error-surface')}
+          className={cn(
+            defaultClassName,
+            className,
+            'bg-financial-expense-surface'
+          )}
           {...props}
         >
-          <TrendingDown className="size-7 text-error" />
+          <TrendingDown className="size-7 text-financial-expense" />
         </ItemMedia>
       );
 

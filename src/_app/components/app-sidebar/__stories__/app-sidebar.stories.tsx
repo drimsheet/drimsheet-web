@@ -64,3 +64,8 @@ export const Dark: Story = {
   args: { currentPath: '/accounts' },
   parameters: { dark: true },
 };
+
+export const DarkCollapsed: Story = {
+  args: { currentPath: '/transactions' },
+  parameters: { dark: true, collapsed: true },
+};

@@ -1,7 +1,9 @@
 import { NavConfigurations } from '@/_app/components/nav-configurations';
 import { NavMain, type INavItem } from '@/_app/components/nav-main';
-import { Badge } from '@/shared/components/badge';
+import { APP_VERSION } from '@/_app/lib/configs/app.config';
 import { BrandLogo } from '@/shared/components/brand-logo';
+import { Button } from '@/shared/components/button';
+import { Separator } from '@/shared/components/separator';
 import {
   Sidebar,
   SidebarContent,
@@ -14,11 +16,17 @@ import {
   SidebarTrigger,
 } from '@/shared/components/sidebar';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/shared/components/tooltip';
+import {
   ArrowLeftRight,
   BellIcon,
   Building2,
   Calculator,
   HandCoins,
+  Info,
   Landmark,
   LayoutDashboard,
   Tags,
@@ -91,33 +99,30 @@ export function AppSidebar({
   );
 
   const drimsheet_text = t('shared:drimsheet');
-  const beta_text = t('shared:beta');
+
+  const app_version_label = t('navigation:app_version_label', {
+    version: APP_VERSION,
+  });
+
   const toggle_sidebar_label = t('navigation:toggle_sidebar');
   const notifications_label = t('user:notifications_aria_label');
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="app-sidebar-header gap-5 px-5 py-6 group-data-[collapsible=icon]:px-2">
+      <SidebarHeader className="app-sidebar-header px-4 py-6 group-data-[collapsible=icon]:px-2">
         <div className="flex items-center gap-2">
-          <div role="img" aria-label={drimsheet_text}>
-            <BrandLogo
-              alt=""
-              className="block group-data-[collapsible=icon]:hidden"
-            />
-            <BrandLogo
-              alt=""
-              variant="mark"
-              className="hidden group-data-[collapsible=icon]:block"
-            />
-          </div>
-          <Badge
-            variant="outline"
+          <SidebarTrigger
+            aria-label={toggle_sidebar_label}
+            className="shrink-0"
+          />
+          <div
+            role="img"
+            aria-label={drimsheet_text}
             className="group-data-[collapsible=icon]:hidden"
           >
-            {beta_text}
-          </Badge>
+            <BrandLogo alt="" className="block" />
+          </div>
         </div>
-        <SidebarTrigger aria-label={toggle_sidebar_label} />
       </SidebarHeader>
       <SidebarContent className="gap-8 pb-4 group-data-[collapsible=icon]:overflow-y-auto">
         <NavMain items={accountingNavigation} />
@@ -137,6 +142,29 @@ export function AppSidebar({
           </SidebarMenuItem>
         </SidebarMenu>
         {accountControl}
+        <div className="mt-1 flex flex-col gap-3">
+          <Separator />
+          <p
+            aria-label={app_version_label}
+            className="px-3 pb-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden"
+          >
+            v{APP_VERSION}
+          </p>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label={app_version_label}
+                className="hidden self-center group-data-[collapsible=icon]:inline-flex"
+              >
+                <Info aria-hidden />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">{app_version_label}</TooltipContent>
+          </Tooltip>
+        </div>
       </SidebarFooter>
       <SidebarRail
         aria-label={toggle_sidebar_label}
