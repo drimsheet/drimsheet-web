@@ -88,5 +88,20 @@
   "financial_period_week_default": "W{{index}}",
   "financial_period_month_default": "M{{index}}",
   "financial_period_quarter_default": "Q{{index}}",
-  "financial_period_year_default": "Full year"
+  "financial_period_year_default": "Full year",
+  "reports_financial_year_label": "Financial year",
+  "reports_name_label": "Reporting setup name",
+  "reports_name_placeholder": "e.g. {{name}} reports",
+  "reports_currency_label": "Currency for your reports",
+  "reports_unit_label": "How much time should each report cover?",
+  "reports_unit_placeholder": "Select a grouping",
+  "reports_group_day_label": "One day",
+  "reports_group_week_label": "One week",
+  "reports_group_month_label": "One month",
+  "reports_group_quarter_label": "Three months — a quarter",
+  "reports_group_year_label": "The whole financial year",
+  "reports_periods_title": "Name your reporting periods",
+  "reports_name_required_error": "Enter a reporting setup name.",
+  "reports_currency_required_error": "Select a currency for your reports.",
+  "reports_unit_required_error": "Select how much time each report covers."
 }

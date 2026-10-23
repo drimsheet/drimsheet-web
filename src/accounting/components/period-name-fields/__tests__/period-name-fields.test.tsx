@@ -1,10 +1,11 @@
-import { AccountingPeriods } from '@/accounting/components/financial-year-form/parts/accounting-periods';
-import type { AccountingPeriodsProps } from '@/accounting/components/financial-year-form/types';
+import type { PeriodNameFieldsProps } from '@/accounting/components/period-name-fields';
+import { PeriodNameFields } from '@/accounting/components/period-name-fields';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
-const props: AccountingPeriodsProps = {
+const props: PeriodNameFieldsProps = {
+  title: 'Name your accounting periods',
   periods: [{ name: 'Q1', startDate: '2026-01-01', endDate: '2026-03-31' }],
   unit: 'quarter',
   currentDate: '2026-02-01',
@@ -14,10 +15,10 @@ const props: AccountingPeriodsProps = {
   onNameBlur: () => {},
 };
 
-describe('AccountingPeriods accessibility', () => {
+describe('PeriodNameFields accessibility', () => {
   it('lets keyboard users focus the named scroll region and its inputs', async () => {
     const user = userEvent.setup();
-    render(<AccountingPeriods {...props} />);
+    render(<PeriodNameFields {...props} />);
 
     await user.tab();
     expect(
@@ -34,7 +35,7 @@ describe('AccountingPeriods accessibility', () => {
 
   it('links rendered errors without leaving missing error descriptions when cleared', () => {
     const { rerender } = render(
-      <AccountingPeriods
+      <PeriodNameFields
         {...props}
         getError={() => [{ message: 'Enter a name for this period.' }]}
       />
@@ -48,7 +49,7 @@ describe('AccountingPeriods accessibility', () => {
     );
 
     rerender(
-      <AccountingPeriods
+      <PeriodNameFields
         {...props}
         currentDate="2026-04-01"
         getError={() => [{ message: undefined }]}

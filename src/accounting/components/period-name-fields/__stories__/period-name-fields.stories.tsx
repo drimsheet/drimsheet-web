@@ -1,11 +1,12 @@
-import { AccountingPeriods } from '@/accounting/components/financial-year-form/parts/accounting-periods';
+import { PeriodNameFields } from '@/accounting/components/period-name-fields';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
-  title: 'Accounting/Financial Year Form/Accounting Periods',
-  component: AccountingPeriods,
+  title: 'Accounting/Period Name Fields',
+  component: PeriodNameFields,
   tags: ['autodocs'],
   args: {
+    title: 'Name your accounting periods',
     currentDate: '2026-10-22',
     unit: 'quarter',
     disabled: false,
@@ -19,7 +20,7 @@ const meta = {
       { name: 'Q4', startDate: '2026-10-01', endDate: '2026-12-31' },
     ],
   },
-} satisfies Meta<typeof AccountingPeriods>;
+} satisfies Meta<typeof PeriodNameFields>;
 
 export default meta;
 type TStory = StoryObj<typeof meta>;

@@ -1,20 +1,14 @@
+import type { INamedPeriod } from '@/accounting/lib/types/period.types';
 import type { UPeriodUnit } from '@/shared/lib/api/Api';
-
-export interface IFinancialYearPeriod {
-  name: string;
-  startDate: string;
-  endDate: string;
-}
+export type { INamedPeriod as IFinancialYearPeriod } from '@/accounting/lib/types/period.types';
 
 export interface IFinancialYearFormValues {
   name: string;
   startDate: string;
   endDate: string;
   unit: UPeriodUnit;
-  periods: IFinancialYearPeriod[];
+  periods: INamedPeriod[];
 }
-
-export type TPeriodNameFactory = (unit: UPeriodUnit, index: number) => string;
 
 export interface FinancialYearFormProps {
   id?: string;
@@ -23,14 +17,4 @@ export interface FinancialYearFormProps {
   initialValues?: Partial<IFinancialYearFormValues>;
   disabled?: boolean;
   onSubmit?: (values: IFinancialYearFormValues) => void | Promise<void>;
-}
-
-export interface AccountingPeriodsProps {
-  periods: IFinancialYearPeriod[];
-  unit: UPeriodUnit;
-  currentDate: string;
-  disabled: boolean;
-  getError: (field: string) => Array<{ message?: string }>;
-  onNameChange: (index: number, value: string) => void;
-  onNameBlur: (index: number) => void;
 }

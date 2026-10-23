@@ -9,15 +9,18 @@ import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { FinancialYearStepProps } from '../types';
+import { StepLayout } from './step-layout';
 
 export function FinancialYearStep({
   currentDate,
   maxFiscalMonths,
   onBack,
+  onSubmit,
 }: Readonly<FinancialYearStepProps>) {
   const { t } = useTranslation('onboarding');
 
   const titleId = useId();
+  const formId = useId();
 
   const title = t('financial_year_step_title');
   const description = t('financial_year_step_description');
@@ -27,9 +30,19 @@ export function FinancialYearStep({
   const back_label = t('financial_year_back_label');
 
   return (
-    <section
-      aria-labelledby={titleId}
-      className="flex w-full max-w-[620px] flex-1 flex-col gap-6"
+    <StepLayout
+      titleId={titleId}
+      actions={
+        <>
+          <Button type="button" variant="outline" onClick={onBack}>
+            {back_label}
+          </Button>
+          <Button type="submit" form={formId}>
+            {continue_label}
+            <ArrowRight data-icon="inline-end" />
+          </Button>
+        </>
+      }
     >
       <div className="flex w-full flex-col gap-4">
         <div className="flex flex-col gap-2">
@@ -62,19 +75,12 @@ export function FinancialYearStep({
           </CollapsibleContent>
         </Collapsible>
         <FinancialYearForm
+          id={formId}
+          onSubmit={onSubmit}
           currentDate={currentDate}
           maxFiscalMonths={maxFiscalMonths}
         />
       </div>
-      <footer className="mt-auto flex flex-wrap justify-between gap-3">
-        <Button type="button" variant="outline" onClick={onBack}>
-          {back_label}
-        </Button>
-        <Button type="button">
-          {continue_label}
-          <ArrowRight data-icon="inline-end" />
-        </Button>
-      </footer>
-    </section>
+    </StepLayout>
   );
 }

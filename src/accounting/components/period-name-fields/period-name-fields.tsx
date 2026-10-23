@@ -1,15 +1,14 @@
+import { accountingPeriodUtils } from '@/accounting/lib/utils/accounting-periods';
 import { Badge } from '@/shared/components/badge';
 import { FieldError } from '@/shared/components/field';
 import { Input } from '@/shared/components/input';
 import { Label } from '@/shared/components/label';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
-// eslint-disable-next-line no-relative-import-paths/no-relative-import-paths -- Keep the helper private to this component owner.
-import financialYearFormHelpers from '../helper';
-// eslint-disable-next-line no-relative-import-paths/no-relative-import-paths -- Private parts share their owner's types.
-import type { AccountingPeriodsProps } from '../types';
+import type { PeriodNameFieldsProps } from './types';
 
-export function AccountingPeriods({
+export function PeriodNameFields({
+  title,
   periods,
   unit,
   currentDate,
@@ -17,10 +16,9 @@ export function AccountingPeriods({
   getError,
   onNameChange,
   onNameBlur,
-}: Readonly<AccountingPeriodsProps>) {
+}: Readonly<PeriodNameFieldsProps>) {
   const { t, i18n } = useTranslation('accounting');
   const fieldId = useId();
-  const title = t('financial_periods_title');
   const count_text = t('financial_periods_count', { count: periods.length });
   const current_label = t('financial_period_current_label');
   const empty_text = t('financial_year_dates_hint');
@@ -51,7 +49,7 @@ export function AccountingPeriods({
           <div className="flex flex-col gap-4">
             {periods.map((period, index) => {
               const inputId = `${fieldId}-${index}`;
-              const errors = getError(`periods.${index}.name`);
+              const errors = getError(index);
               const hasError = errors.some(({ message }) => Boolean(message));
 
               const period_label = t(`financial_period_${unit}_label`, {
@@ -89,14 +87,14 @@ export function AccountingPeriods({
                       className="text-xs tabular-nums text-muted-foreground"
                     >
                       <time dateTime={period.startDate}>
-                        {financialYearFormHelpers.formatDate(
+                        {accountingPeriodUtils.formatDate(
                           period.startDate,
                           i18n.language
                         )}
                       </time>
                       {' – '}
                       <time dateTime={period.endDate}>
-                        {financialYearFormHelpers.formatDate(
+                        {accountingPeriodUtils.formatDate(
                           period.endDate,
                           i18n.language
                         )}

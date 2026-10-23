@@ -1,8 +1,8 @@
+import { accountingPeriodUtils } from '@/accounting/lib/utils/accounting-periods';
 import { EPeriodUnit } from '@/shared/lib/api/Api';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as yup from 'yup';
-import financialYearFormHelpers from './helper';
 
 export function useFinancialYearFormValidation(maxFiscalMonths: number) {
   const { t } = useTranslation('accounting');
@@ -18,7 +18,7 @@ export function useFinancialYearFormValidation(maxFiscalMonths: number) {
           .string()
           .required(t('financial_year_start_required_error'))
           .test('date', t('financial_year_start_required_error'), (value) =>
-            financialYearFormHelpers.isValidDate(value ?? '')
+            accountingPeriodUtils.isValidDate(value ?? '')
           ),
         endDate: yup
           .string()
@@ -27,7 +27,7 @@ export function useFinancialYearFormValidation(maxFiscalMonths: number) {
             'range',
             t('financial_year_range_error', { months: maxFiscalMonths }),
             function (value) {
-              return financialYearFormHelpers.isValidRange(
+              return accountingPeriodUtils.isValidRange(
                 this.parent.startDate,
                 value ?? '',
                 maxFiscalMonths

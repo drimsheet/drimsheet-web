@@ -258,15 +258,65 @@ for (const viewport of [
   { name: 'desktop', width: 1280, height: 900 },
   { name: 'mobile', width: 375, height: 812 },
 ]) {
-  test(`builds the financial year with bounded period scrolling on ${viewport.name}`, async ({
+  test(`builds financial year and reports with bounded period scrolling on ${viewport.name}`, async ({
     page,
   }, testInfo) => {
+    const expectPinnedActions = async (
+      title: string,
+      continueLabel: string
+    ) => {
+      const step = page.getByRole('region', { name: title, exact: true });
+      const content = step.locator('[data-slot="onboarding-step-content"]');
+      const main = page.getByRole('main');
+      const action = step.getByRole('button', { name: continueLabel });
+      const header = page.getByRole('banner');
+      const actionBounds = await action.boundingBox();
+      const headerBounds = await header.boundingBox();
+
+      const maxScroll = await main.evaluate(
+        (element) => element.scrollHeight - element.clientHeight
+      );
+
+      await expect(action).toBeInViewport({ ratio: 1 });
+      await expect(main).toHaveCSS('overflow-y', 'auto');
+      await expect(content).toHaveCSS('overflow-y', 'visible');
+      expect(
+        await main.evaluate((element) => element.getBoundingClientRect().right)
+      ).toBe(
+        await header.evaluate(
+          (element) => element.getBoundingClientRect().right
+        )
+      );
+      await main.evaluate((element) =>
+        element.scrollTo(0, element.scrollHeight)
+      );
+      await expect
+        .poll(() => main.evaluate((element) => element.scrollTop))
+        .toBe(maxScroll);
+      await expect(action).toBeInViewport({ ratio: 1 });
+      expect(await action.boundingBox()).toEqual(actionBounds);
+      expect(await header.boundingBox()).toEqual(headerBounds);
+      expect(
+        await content.evaluate(
+          (element) => element.getBoundingClientRect().bottom
+        )
+      ).toBeLessThanOrEqual(actionBounds!.y);
+      await main.evaluate((element) => element.scrollTo(0, 0));
+    };
+
     await page.setViewportSize(viewport);
     await page.clock.setFixedTime(new Date('2026-10-22T12:00:00Z'));
     await page.route(entityListEndpoint, async (route) => {
       await route.fulfill({ json: [] });
     });
     await page.goto(verificationUrl);
+    await expect(
+      page.getByRole('textbox', { name: 'Name', exact: true })
+    ).toBeEnabled();
+    await expectPinnedActions(
+      'Create a Legal Entity',
+      'Continue to financial year'
+    );
     await page.getByRole('combobox', { name: 'Who is this for?' }).click();
     await page.getByRole('option', { name: 'Individual', exact: true }).click();
     await page
@@ -285,6 +335,10 @@ for (const viewport of [
       page.getByRole('heading', { name: 'Set up your financial year' })
     ).toBeVisible();
     await expect(page.getByRole('main')).toContainText('Step 2 of 5');
+    await expectPinnedActions(
+      'Set up your financial year',
+      'Continue to reports'
+    );
     if (viewport.name === 'desktop') {
       await expect(
         page
@@ -305,6 +359,10 @@ for (const viewport of [
       animations: 'disabled',
     });
     await page.getByRole('button', { name: 'Continue to reports' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Set up your reports' })
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
     await expect(
       page.getByRole('heading', { name: 'Set up your financial year' })
     ).toBeVisible();
@@ -361,6 +419,135 @@ for (const viewport of [
     ).toBe(true);
     await page.screenshot({
       path: testInfo.outputPath('financial-year-daily.png'),
+      animations: 'disabled',
+    });
+    await page.getByRole('button', { name: 'Continue to reports' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Set up your reports' })
+    ).toBeVisible();
+    await expect(page.getByRole('main')).toContainText('Step 3 of 5');
+    await expectPinnedActions(
+      'Set up your reports',
+      'Continue to income categories'
+    );
+    if (viewport.name === 'mobile') {
+      await page.setViewportSize({ width: viewport.width, height: 500 });
+      await expectPinnedActions(
+        'Set up your reports',
+        'Continue to income categories'
+      );
+      await page.getByRole('textbox', { name: 'Reporting setup name' }).focus();
+      await expect(
+        page.getByRole('textbox', { name: 'Reporting setup name' })
+      ).toBeInViewport({ ratio: 1 });
+      await page.setViewportSize(viewport);
+    }
+
+    await expect(
+      page.getByRole('region', { name: 'Financial year', exact: true })
+    ).toContainText('FY 2026');
+
+    const reportPeriods = page.getByRole('region', {
+      name: 'Name your reporting periods',
+    });
+
+    await expect(reportPeriods.getByRole('textbox')).toHaveCount(4);
+    if (viewport.name === 'desktop') {
+      await expect(
+        page
+          .getByRole('navigation', { name: 'Onboarding steps' })
+          .getByRole('listitem')
+          .nth(2)
+      ).toHaveAttribute('aria-current', 'step');
+    }
+
+    await page
+      .getByRole('textbox', { name: 'Reporting setup name' })
+      .fill('Board pack');
+    await page
+      .getByRole('combobox', { name: 'Currency for your reports' })
+      .click();
+    await page.getByRole('option', { name: /Nigerian Naira/ }).click();
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await reportPeriods
+      .getByRole('textbox', { name: 'Quarter 1', exact: true })
+      .fill('Board review');
+    await page.screenshot({
+      path: testInfo.outputPath('reports.png'),
+      animations: 'disabled',
+    });
+    await page
+      .getByRole('button', { name: 'Continue to income categories' })
+      .click();
+    await expect(
+      page.getByRole('heading', { name: 'Set up your reports' })
+    ).toBeVisible();
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await page
+      .getByRole('button', { name: 'How reporting periods work' })
+      .click();
+    await expect(
+      page.getByRole('button', { name: 'How reporting periods work' })
+    ).toHaveAttribute('aria-expanded', 'false');
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await page
+      .getByRole('textbox', { name: 'Financial year name' })
+      .fill('Revised FY 2026');
+    await page.getByRole('button', { name: 'Year ends' }).click();
+    await page.getByRole('button', { name: /December 30th, 2026/ }).click();
+    await page.getByRole('button', { name: 'Continue to reports' }).click();
+    await expect(
+      page.getByRole('region', { name: 'Financial year', exact: true })
+    ).toContainText('Revised FY 2026');
+    await expect(
+      page.getByRole('textbox', { name: 'Reporting setup name' })
+    ).toHaveValue('Board pack');
+    await expect(
+      page.getByRole('combobox', { name: 'Currency for your reports' })
+    ).toHaveValue('Nigerian Naira');
+    await expect(
+      reportPeriods.getByRole('textbox', { name: 'Quarter 1', exact: true })
+    ).toHaveValue('Board review');
+    await expect(
+      reportPeriods.getByRole('textbox', { name: 'Quarter 4', exact: true })
+    ).toHaveAccessibleDescription('Oct 1, 2026 – Dec 30, 2026 Current');
+    await page
+      .getByRole('combobox', {
+        name: 'How much time should each report cover?',
+      })
+      .click();
+    await page.getByRole('option', { name: 'One day', exact: true }).click();
+    await expect(reportPeriods.getByRole('textbox')).toHaveCount(364);
+    expect(
+      await reportPeriods.evaluate((element) => ({
+        maxHeight: getComputedStyle(element).maxHeight,
+        overflowY: getComputedStyle(element).overflowY,
+        height: element.getBoundingClientRect().height,
+        canScroll: element.scrollHeight > element.clientHeight,
+      }))
+    ).toEqual({
+      maxHeight: '400px',
+      overflowY: 'auto',
+      height: 400,
+      canScroll: true,
+    });
+    await reportPeriods.focus();
+    await page.keyboard.press('End');
+    await expect
+      .poll(() => reportPeriods.evaluate((element) => element.scrollTop))
+      .toBeGreaterThan(0);
+    await expect(
+      reportPeriods.getByRole('textbox', { name: 'Day 364', exact: true })
+    ).toBeInViewport();
+    expect(
+      await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth <= innerWidth &&
+          document.documentElement.scrollHeight <= innerHeight
+      )
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath('reports-daily.png'),
       animations: 'disabled',
     });
   });

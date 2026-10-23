@@ -13,6 +13,7 @@ import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { AccountingEntityStepProps } from '../types';
+import { StepLayout } from './step-layout';
 
 export function AccountingEntityStep({
   currencies,
@@ -35,9 +36,19 @@ export function AccountingEntityStep({
   const retry_label = t('entity_options_retry_label');
 
   return (
-    <section
-      aria-labelledby={titleId}
-      className="flex w-full max-w-[620px] flex-1 flex-col gap-6"
+    <StepLayout
+      titleId={titleId}
+      actions={
+        <Button
+          className="ml-auto"
+          type="submit"
+          form={formId}
+          disabled={isLoading || hasError}
+        >
+          {continue_label}
+          <ArrowRight data-icon="inline-end" />
+        </Button>
+      }
     >
       <div className="flex w-full flex-col gap-4">
         <div className="flex flex-col gap-2">
@@ -95,12 +106,6 @@ export function AccountingEntityStep({
           />
         )}
       </div>
-      <footer className="mt-auto flex justify-end">
-        <Button type="submit" form={formId} disabled={isLoading || hasError}>
-          {continue_label}
-          <ArrowRight data-icon="inline-end" />
-        </Button>
-      </footer>
-    </section>
+    </StepLayout>
   );
 }

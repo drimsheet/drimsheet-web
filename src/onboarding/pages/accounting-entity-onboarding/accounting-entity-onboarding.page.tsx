@@ -1,4 +1,5 @@
 import type { IAccountingEntityFormValues } from '@/accounting/components/accounting-entity-form';
+import type { IFinancialYearFormValues } from '@/accounting/components/financial-year-form';
 import logoImg from '@/shared/assets/logo.svg';
 import { AppHeader } from '@/shared/components/app';
 import { SidebarProvider } from '@/shared/components/sidebar';
@@ -9,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AccountingEntityStep } from './parts/accounting-entity-step';
 import { FinancialYearStep } from './parts/financial-year-step';
+import { ReportsStep } from './parts/reports-step';
 import { AccountingEntityOnboardingSidebar } from './parts/sidebar';
 
 export function AccountingEntityOnboardingPage() {
@@ -17,6 +19,9 @@ export function AccountingEntityOnboardingPage() {
 
   const [entityValues, setEntityValues] =
     useState<IAccountingEntityFormValues>();
+
+  const [financialYearValues, setFinancialYearValues] =
+    useState<IFinancialYearFormValues>();
 
   const [currentDate] = useState(() => dateUtils.formatDateForApi(new Date()));
   const mainRef = useRef<HTMLElement>(null);
@@ -41,9 +46,14 @@ export function AccountingEntityOnboardingPage() {
     setCurrentStep(2);
   };
 
+  const handleFinancialYearSubmit = (values: IFinancialYearFormValues) => {
+    setFinancialYearValues(values);
+    setCurrentStep(3);
+  };
+
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0 });
-    mainRef.current?.focus();
+    mainRef.current?.focus({ preventScroll: true });
   }, [currentStep]);
 
   const handleRetry = () => {
@@ -69,9 +79,11 @@ export function AccountingEntityOnboardingPage() {
         <main
           ref={mainRef}
           tabIndex={-1}
-          className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto outline-none px-6 py-8 sm:px-8 lg:px-10"
+          className="flex min-h-0 min-w-0 flex-1 scroll-pb-36 flex-col gap-4 overflow-y-auto overscroll-contain outline-none"
         >
-          <p className="text-xs text-muted-foreground">{step_status}</p>
+          <p className="shrink-0 px-6 pt-8 text-xs text-muted-foreground sm:px-8 lg:px-10">
+            {step_status}
+          </p>
           <div className={currentStep === 1 ? 'flex flex-1' : 'hidden'}>
             <AccountingEntityStep
               currencies={currenciesQuery.data ?? []}
@@ -88,6 +100,18 @@ export function AccountingEntityOnboardingPage() {
                 currentDate={currentDate}
                 maxFiscalMonths={jurisdiction?.maxFiscalMonths}
                 onBack={() => setCurrentStep(1)}
+                onSubmit={handleFinancialYearSubmit}
+              />
+            </div>
+          )}
+          {financialYearValues && (
+            <div className={currentStep === 3 ? 'flex flex-1' : 'hidden'}>
+              <ReportsStep
+                financialYear={financialYearValues}
+                currencies={currenciesQuery.data ?? []}
+                currentDate={currentDate}
+                maxFiscalMonths={jurisdiction?.maxFiscalMonths}
+                onBack={() => setCurrentStep(2)}
               />
             </div>
           )}

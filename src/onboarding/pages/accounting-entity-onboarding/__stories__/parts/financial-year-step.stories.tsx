@@ -8,7 +8,7 @@ const meta = {
   args: { currentDate: '2026-10-22', maxFiscalMonths: 18, onBack: () => {} },
   decorators: [
     (Story) => (
-      <div className="flex min-h-screen p-6">
+      <div className="flex h-dvh flex-col overflow-y-auto pt-6">
         <Story />
       </div>
     ),

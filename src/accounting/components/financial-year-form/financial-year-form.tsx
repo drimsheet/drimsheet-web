@@ -1,3 +1,5 @@
+import { PeriodNameFields } from '@/accounting/components/period-name-fields';
+import { accountingPeriodUtils } from '@/accounting/lib/utils/accounting-periods';
 import { DateInput } from '@/shared/components/date-input';
 import {
   Field,
@@ -21,7 +23,6 @@ import { useFormik } from 'formik';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import financialYearFormHelpers from './helper';
-import { AccountingPeriods } from './parts/accounting-periods';
 import type { FinancialYearFormProps, IFinancialYearFormValues } from './types';
 import { useFinancialYearFormValidation } from './validation';
 
@@ -74,7 +75,7 @@ export function FinancialYearForm({
     const previous =
       next.unit === formik.values.unit ? formik.values.periods : [];
 
-    const periods = financialYearFormHelpers.createPeriods(
+    const periods = accountingPeriodUtils.createPeriods(
       next,
       createPeriodName,
       maxFiscalMonths,
@@ -94,6 +95,7 @@ export function FinancialYearForm({
   const handleUnitChange = (unit: UPeriodUnit) =>
     handlePeriodSettingsChange({ unit });
 
+  const periods_title = t('financial_periods_title');
   const name_label = t('financial_year_name_label');
 
   const name_placeholder = t('financial_year_name_placeholder', {
@@ -192,12 +194,13 @@ export function FinancialYearForm({
             </Select>
             <FieldError id={`${fieldId}-unit-error`} errors={unitErrors} />
           </Field>
-          <AccountingPeriods
+          <PeriodNameFields
+            title={periods_title}
             periods={formik.values.periods}
             unit={formik.values.unit}
             currentDate={currentDate}
             disabled={isDisabled}
-            getError={getError}
+            getError={(index) => getError(`periods.${index}.name`)}
             onNameChange={(index, value) =>
               formik.setFieldValue(`periods.${index}.name`, value)
             }
