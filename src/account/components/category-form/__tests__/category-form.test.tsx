@@ -21,7 +21,10 @@ describe('CategoryForm', () => {
       await screen.findByText('Enter a category name.')
     ).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
-    await user.type(screen.getByLabelText('Category name'), 'Consulting');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Name' }),
+      'Consulting'
+    );
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
     expect(onSubmit).toHaveBeenCalledWith(
       { name: 'Consulting' },
@@ -42,7 +45,7 @@ describe('CategoryForm', () => {
       />
     );
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Category name')).toHaveValue('Rent');
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Rent');
     expect(screen.getByRole('alert')).toHaveTextContent(
       'We couldn’t save this category.'
     );
