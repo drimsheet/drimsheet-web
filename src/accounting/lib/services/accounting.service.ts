@@ -4,6 +4,7 @@ import type {
   IAccountingEntity,
   IAccountingEntityCreationDto,
   IAccountingEntitySwitchReq,
+  IAccountingEntityUpdateReq,
   IAccountingIntervalCreationReq,
   IFiscalYearCreationReq,
   IReportingContextCreationReq,
@@ -23,6 +24,73 @@ function setActiveAccountingEntity(accountingEntity: IAccountingEntity) {
 }
 
 export const accountingService = {
+  async getEntityDetails(entityId: string) {
+    return (
+      await drimsheetApi.accounting.getActiveAccountingEntity({
+        headers: { 'x-accounting-entity-id': entityId },
+      })
+    ).data;
+  },
+
+  async getFiscalYears(entityId: string) {
+    return (
+      await drimsheetApi.accounting.getFiscalYears({
+        headers: { 'x-accounting-entity-id': entityId },
+      })
+    ).data;
+  },
+
+  async getFiscalYearContext(entityId: string, fiscalYearId: string) {
+    const params = { headers: { 'x-accounting-entity-id': entityId } };
+
+    const [accounting, reporting] = await Promise.all([
+      drimsheetApi.accounting.getAccountingContext(fiscalYearId, params),
+      drimsheetApi.accounting.getReportingContext(fiscalYearId, params),
+    ]);
+
+    const [accountingInterval, reportingInterval] = await Promise.all([
+      accounting.data
+        ? drimsheetApi.accounting.getAccountingInterval(fiscalYearId, params)
+        : null,
+      reporting.data
+        ? drimsheetApi.accounting.getReportingInterval(fiscalYearId, params)
+        : null,
+    ]);
+
+    return {
+      accounting: accounting.data,
+      reporting: reporting.data,
+      accountingInterval: accountingInterval?.data ?? null,
+      reportingInterval: reportingInterval?.data ?? null,
+    };
+  },
+
+  async updateEntity(entityId: string, payload: IAccountingEntityUpdateReq) {
+    const { data } = await drimsheetApi.accounting.updateAccountingEntity(
+      payload,
+      {
+        headers: { 'x-accounting-entity-id': entityId },
+      }
+    );
+
+    if (activeAccountingEntity?.id === entityId)
+      setActiveAccountingEntity(data);
+
+    return data;
+  },
+
+  async archiveEntity(entityId: string) {
+    await drimsheetApi.accounting.archiveAccountingEntity({
+      headers: { 'x-accounting-entity-id': entityId },
+    });
+  },
+
+  async deleteEntity(entityId: string) {
+    await drimsheetApi.accounting.deleteAccountingEntity({
+      headers: { 'x-accounting-entity-id': entityId },
+    });
+  },
+
   async createAccountingEntity(payload: IAccountingEntityCreationDto) {
     return (await drimsheetApi.accounting.createAccountingEntity(payload)).data;
   },

@@ -347,10 +347,21 @@ for (const theme of ['light', 'dark'] as const) {
   }
 }
 
-test('opens entity placeholders from name links and keeps compact actions inactive', async ({
+test('opens entity details from name links and keeps compact actions inactive', async ({
   page,
 }) => {
   const entityWrites: string[] = [];
+  await page.route('**/api/v1/accounting/accounting-entity', (route) =>
+    route.fulfill({
+      json:
+        route.request().headers()['x-accounting-entity-id'] === entities[0].id
+          ? entities[0]
+          : authenticatedAccountingEntity,
+    })
+  );
+  await page.route('**/api/v1/accounting/fiscal-years', (route) =>
+    route.fulfill({ json: [] })
+  );
 
   await page.route('**/api/v1/accounting/**', async (route) => {
     if (route.request().method() !== 'GET') {
@@ -402,8 +413,12 @@ test('opens entity placeholders from name links and keeps compact actions inacti
   await page.keyboard.press('Escape');
   await name.click();
   await expect(page).toHaveURL(`/legal-entity/${entities[0].id}`);
-  await expect(page.getByText('Hello world', { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Amara Studio Ltd' })
+  ).toBeVisible();
   await page.reload();
-  await expect(page.getByText('Hello world', { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Amara Studio Ltd' })
+  ).toBeVisible();
   expect(entityWrites).toEqual([]);
 });

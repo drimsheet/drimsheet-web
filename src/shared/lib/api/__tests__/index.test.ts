@@ -39,3 +39,27 @@ describe('drimsheetApi request correlation', () => {
     expect(correlationIds).not.toContain('caller-controlled-value');
   });
 });
+
+describe('drimsheetApi entity scope', () => {
+  afterEach(() => configureDrimsheetApi({}));
+
+  it('preserves an explicit entity scope and defaults other requests to the active entity', async () => {
+    configureDrimsheetApi({ getAccountingEntityId: () => 'active-entity' });
+    const scopes: unknown[] = [];
+
+    const adapter: AxiosAdapter = async (config) => {
+      scopes.push(config.headers.get('x-accounting-entity-id'));
+
+      return { config, data: {}, headers: {}, status: 200, statusText: 'OK' };
+    };
+
+    await drimsheetApi.instance.get('/accounting/accounting-entity', {
+      adapter,
+      headers: { 'x-accounting-entity-id': 'viewed-entity' },
+    });
+    await drimsheetApi.instance.get('/accounting/accounting-entity', {
+      adapter,
+    });
+    expect(scopes).toEqual(['viewed-entity', 'active-entity']);
+  });
+});

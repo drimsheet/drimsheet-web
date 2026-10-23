@@ -3758,6 +3758,21 @@ export class Api<
       }),
 
     /**
+     * @description Returns the fiscal year's accounting interval and its ordered periods.
+     *
+     * @tags Accounting
+     * @name GetAccountingInterval
+     * @request GET:/accounting/fiscal-years/{id}/accounting-interval
+     */
+    getAccountingInterval: (id: string, params: RequestParams = {}) =>
+      this.request<IAccountingInterval, IHttpErrorDto>({
+        path: `/accounting/fiscal-years/${id}/accounting-interval`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
      * @description Returns the fiscal year's context, including closed contexts, or null.
      *
      * @tags Accounting
@@ -3767,6 +3782,21 @@ export class Api<
     getReportingContext: (id: string, params: RequestParams = {}) =>
       this.request<IReportingContext | null, IHttpErrorDto>({
         path: `/accounting/fiscal-years/${id}/reporting-context`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Returns the fiscal year's reporting interval and its ordered periods.
+     *
+     * @tags Accounting
+     * @name GetReportingInterval
+     * @request GET:/accounting/fiscal-years/{id}/reporting-interval
+     */
+    getReportingInterval: (id: string, params: RequestParams = {}) =>
+      this.request<IReportingInterval, IHttpErrorDto>({
+        path: `/accounting/fiscal-years/${id}/reporting-interval`,
         method: 'GET',
         format: 'json',
         ...params,

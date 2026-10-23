@@ -40,7 +40,7 @@ drimsheetApi.instance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    if (accountingEntityId) {
+    if (accountingEntityId && !config.headers.has('x-accounting-entity-id')) {
       config.headers['x-accounting-entity-id'] = accountingEntityId;
     }
 
