@@ -3,8 +3,7 @@ import type { FullPageLoaderProps } from './types';
 
 export function FullPageLoader({ label }: Readonly<FullPageLoaderProps>) {
   return (
-    <div
-      role="status"
+    <output
       aria-live="polite"
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-md"
     >
@@ -14,6 +13,6 @@ export function FullPageLoader({ label }: Readonly<FullPageLoaderProps>) {
         alt=""
       />
       <span className="sr-only">{label}</span>
-    </div>
+    </output>
   );
 }

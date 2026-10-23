@@ -119,7 +119,7 @@ export function BankDetailsFormUpdateContainer({
     );
 
   if (opening.openingBalance === undefined)
-    return <p role="status">{loading_text}</p>;
+    return <output className="block">{loading_text}</output>;
 
   if (!bank && read.isError)
     return (
@@ -128,7 +128,7 @@ export function BankDetailsFormUpdateContainer({
       </div>
     );
 
-  if (!bank) return <p role="status">{loading_text}</p>;
+  if (!bank) return <output className="block">{loading_text}</output>;
 
   if (currencyEligibility.isError)
     return (
@@ -138,7 +138,7 @@ export function BankDetailsFormUpdateContainer({
     );
 
   if (currencyEligibility.isPending || !currencyEligibility.isFetchedAfterMount)
-    return <p role="status">{loading_text}</p>;
+    return <output className="block">{loading_text}</output>;
 
   if (canUpdateCurrency && currencies.isError)
     return (
@@ -148,7 +148,7 @@ export function BankDetailsFormUpdateContainer({
     );
 
   if (canUpdateCurrency && currencies.isPending)
-    return <p role="status">{loading_text}</p>;
+    return <output className="block">{loading_text}</output>;
 
   return (
     <BankDetailsFormContainer

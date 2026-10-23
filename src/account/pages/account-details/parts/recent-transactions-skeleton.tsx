@@ -7,7 +7,10 @@ export function RecentTransactionsSkeleton() {
   const loading_label = t('details_loading_recent_transactions');
 
   return (
-    <PageSection role="status" aria-label={loading_label} aria-busy="true">
+    <PageSection aria-busy="true">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
       <div className="flex flex-col gap-6">
         <Skeleton className="h-5 w-48" />
         <Skeleton className="h-8 w-full" />

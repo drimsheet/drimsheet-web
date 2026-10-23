@@ -142,12 +142,10 @@ export function CategoryParentPicker({
           </SheetHeader>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
             {loading && (
-              <div
-                role="status"
-                aria-label={loading_label}
-                className="flex flex-col gap-3"
-              >
-                <span className="sr-only">{loading_label}</span>
+              <div className="flex flex-col gap-3">
+                <output className="sr-only" aria-label={loading_label}>
+                  {loading_label}
+                </output>
                 {[1, 2, 3, 4].map((row) => (
                   <Skeleton key={row} className="h-12 w-full" />
                 ))}

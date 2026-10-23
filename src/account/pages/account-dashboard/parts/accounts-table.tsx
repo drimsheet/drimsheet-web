@@ -135,11 +135,7 @@ export function AccountsTable({
           />
         </div>
       </div>
-      {loading && (
-        <span role="status" className="sr-only">
-          {loading_label}
-        </span>
-      )}
+      {loading && <output className="sr-only">{loading_label}</output>}
       {error && <DashboardError title={error_title} />}
       {!error && (
         <DataTable

@@ -58,11 +58,10 @@ export function CounterpartyShare({
 
       <div className="flex flex-col gap-3">
         {loading && (
-          <div
-            role="status"
-            aria-label={loading_label}
-            className="flex min-h-56 flex-col gap-5"
-          >
+          <div className="flex min-h-56 flex-col gap-5">
+            <output className="sr-only" aria-label={loading_label}>
+              {loading_label}
+            </output>
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />

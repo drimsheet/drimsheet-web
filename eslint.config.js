@@ -9,6 +9,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import preferNativeStatus from './scripts/eslint-rules/prefer-native-status.js';
 
 export default defineConfig([
   globalIgnores([
@@ -57,6 +58,19 @@ export default defineConfig([
         'warn',
         { allowSameFolder: true, rootDir: 'src', prefix: '@' },
       ],
+    },
+  },
+  {
+    files: ['**/*.{jsx,tsx}'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+    plugins: {
+      local: { rules: { 'prefer-native-status': preferNativeStatus } },
+    },
+    rules: {
+      'local/prefer-native-status': 'error',
     },
   },
   {

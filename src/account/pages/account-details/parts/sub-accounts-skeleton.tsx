@@ -7,12 +7,10 @@ export function SubAccountsSkeleton() {
   const loading_label = t('details_loading_sub_accounts');
 
   return (
-    <PageSection
-      role="status"
-      aria-label={loading_label}
-      aria-busy="true"
-      className="bg-muted px-6"
-    >
+    <PageSection aria-busy="true" className="bg-muted px-6">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
       <div className="flex flex-col gap-6">
         <Skeleton className="h-5 w-40" />
         {[0, 1].map((row) => (

@@ -57,9 +57,7 @@ export function SignUpPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
-            <p role="status" aria-live="polite">
-              {check_email_verification_text}
-            </p>
+            <output aria-live="polite">{check_email_verification_text}</output>
           </CardContent>
         </Card>
       </main>

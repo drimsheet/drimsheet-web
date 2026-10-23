@@ -10,8 +10,10 @@ export function VendorFormSkeleton({
   const loading_text = t('vendor_form_loading_text');
 
   return (
-    <div role="status" aria-label={loading_text} className="space-y-5">
-      <span className="sr-only">{loading_text}</span>
+    <div className="space-y-5">
+      <output className="sr-only" aria-label={loading_text}>
+        {loading_text}
+      </output>
       <Skeleton className="h-5 w-24" />
       <Skeleton className="h-9 w-full" />
       <Skeleton className="h-5 w-24" />

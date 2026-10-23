@@ -6,7 +6,10 @@ export function AccountSummarySkeleton() {
   const loading_label = t('details_loading_account_summary');
 
   return (
-    <div role="status" aria-label={loading_label} aria-busy="true">
+    <div aria-busy="true">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
       <div className="flex flex-col gap-4">
         <Skeleton className="h-4 w-28" />
         <Skeleton className="h-9 w-3/4" />

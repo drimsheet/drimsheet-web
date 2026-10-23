@@ -35,11 +35,11 @@ export function AccountingEntityAvatarContainer({
     const loading_label = t('account_management_loading_status');
 
     return (
-      <Skeleton
-        role="status"
-        aria-label={loading_label}
-        className="h-12 w-full rounded-md group-data-[collapsible=icon]:size-8"
-      />
+      <Skeleton className="h-12 w-full rounded-md group-data-[collapsible=icon]:size-8">
+        <output className="sr-only" aria-label={loading_label}>
+          {loading_label}
+        </output>
+      </Skeleton>
     );
   }
 

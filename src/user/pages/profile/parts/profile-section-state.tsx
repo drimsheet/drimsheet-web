@@ -14,12 +14,10 @@ export function ProfileSectionState({
 
   if (isLoading) {
     return (
-      <PageSection
-        role="status"
-        aria-label={loading_text}
-        className="min-h-64 gap-5"
-      >
-        <span className="sr-only">{loading_text}</span>
+      <PageSection className="min-h-64 gap-5">
+        <output className="sr-only" aria-label={loading_text}>
+          {loading_text}
+        </output>
         <Skeleton className="h-5 w-32" />
         <Skeleton className="h-14 w-full" />
         <Skeleton className="h-4 w-3/4" />

@@ -100,7 +100,7 @@ export function PettyCashAccountFormUpdateContainer({
     );
 
   if (opening.openingBalance === undefined)
-    return <p role="status">{loading_text}</p>;
+    return <output className="block">{loading_text}</output>;
 
   if (currencyEligibility.isError)
     return (
@@ -110,7 +110,7 @@ export function PettyCashAccountFormUpdateContainer({
     );
 
   if (currencyEligibility.isPending || !currencyEligibility.isFetchedAfterMount)
-    return <p role="status">{loading_text}</p>;
+    return <output className="block">{loading_text}</output>;
 
   if (canUpdateCurrency && currencies.isError)
     return (
@@ -120,7 +120,7 @@ export function PettyCashAccountFormUpdateContainer({
     );
 
   if (canUpdateCurrency && currencies.isPending)
-    return <p role="status">{loading_text}</p>;
+    return <output className="block">{loading_text}</output>;
 
   return (
     <PettyCashAccountForm

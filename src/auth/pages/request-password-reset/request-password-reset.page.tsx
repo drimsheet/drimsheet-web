@@ -59,11 +59,12 @@ export function RequestPasswordResetPage() {
             {isSuccess ? email_sent_text : reset_password_title}
           </PageTitle>
           {isSuccess ? (
-            <div role="status" aria-live="polite" className="mt-2">
-              <p className="text-sm text-muted-foreground">
-                {password_reset_link_sent_text}
-              </p>
-            </div>
+            <output
+              aria-live="polite"
+              className="mt-2 block text-sm text-muted-foreground"
+            >
+              {password_reset_link_sent_text}
+            </output>
           ) : (
             <p className="mt-2 text-sm text-muted-foreground">
               {reset_password_description}

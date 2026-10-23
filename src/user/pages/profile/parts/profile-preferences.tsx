@@ -146,9 +146,7 @@ export function ProfilePreferences({
       </div>
       <div className="mt-auto flex items-center gap-2">
         {isSaved && <Check className="size-3.5 text-success" aria-hidden />}
-        <p role="status" className="text-xs text-muted-foreground">
-          {save_status}
-        </p>
+        <output className="text-xs text-muted-foreground">{save_status}</output>
       </div>
     </PageSection>
   );

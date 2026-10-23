@@ -20,6 +20,10 @@ Before making changes, follow the rules in:
 - Preserve dependency direction and file responsibility boundaries.
 - Map form values directly to generated DTOs through explicit, validation-free
   mappers.
+- Prefer native `<output>` over `role="status"` for status messages and loading
+  announcements where appropriate. Keep skeleton layout containers intact and
+  use a screen-reader-only `<output>` for their announcement. Follow the native
+  status semantics rules in `.agents/rules/file-responsibility-rules.md`.
 - Never introduce plain-text user-facing errors; route validation messages,
   toast copy, dialog errors, and error fallbacks through i18n instead.
 - Do not add custom application retry logic, automatic retry overrides, retry

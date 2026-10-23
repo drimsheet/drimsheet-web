@@ -6,7 +6,10 @@ export function TransactionsChartSkeleton() {
   const loading_label = t('details_loading_transactions_chart');
 
   return (
-    <div role="status" aria-label={loading_label} aria-busy="true">
+    <div aria-busy="true">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
       <div className="flex flex-col gap-5">
         <Skeleton className="h-4 w-48" />
         <div className="flex gap-8">

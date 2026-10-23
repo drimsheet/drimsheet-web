@@ -78,6 +78,43 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
 - Containers may connect hooks, services, dialogs, loaders, and page-level state to a pure component.
 - Containers should keep business logic thin and delegate reusable logic to hooks or `lib/`.
 
+## Native Status Semantics
+
+- Prefer native `<output>` for status messages, operation results, autosave
+  feedback, and loading announcements when its HTML content model fits. Do not
+  use a `div`, `span`, or `p` with `role="status"` when `<output>` serves the
+  same purpose. `<output>` already has an implicit status role; do not add a
+  redundant `role="status"` to it.
+- Keep structural elements such as sections, cards, lists, definition lists,
+  and form groups intact. For skeletons, put the translated announcement in an
+  `<output className="sr-only">` within the appropriate container instead of
+  assigning the status role to the whole layout. `<output>` accepts phrasing
+  content; do not wrap block elements or entire skeleton layouts in it.
+- Preserve translated accessible names, relevant `aria-busy` state, and
+  existing announcement behavior. Avoid duplicate announcements. Apply
+  display utilities such as `block` or `flex` when replacing a block element
+  directly so the layout stays unchanged.
+- Retain explicit `role="status"` only when native `<output>` is unsuitable,
+  such as an SVG status indicator that must retain its SVG element contract.
+  Do not use this exception for ordinary HTML message containers.
+- ESLint's `local/prefer-native-status` rule enforces this for explicit status
+  roles in JSX, including literal expressions and conditional branches. It
+  also checks component wrappers such as `PageSection`, `Card`, and `Field`.
+  Native `<svg>` elements and bindings imported from `lucide-react` are allowed.
+  Other necessary SVG exceptions require a narrowly scoped ESLint disable
+  comment explaining the element contract. The rule runs in `npm run lint`,
+  staged-file linting, and CI; it does not automatically rewrite markup.
+
+```tsx
+// A visible operation result.
+<output className="block text-sm">{save_status}</output>
+
+// Inside a component-owned skeleton, alongside its visual placeholders.
+<output className="sr-only" aria-label={loading_label}>
+  {loading_label}
+</output>
+```
+
 ## Component `skeleton.tsx`
 
 - Use `skeleton.tsx` for a single loading skeleton owned by one component

@@ -7,12 +7,10 @@ export function BankDetailsSkeleton() {
   const loading_label = t('details_loading_bank_details');
 
   return (
-    <PageSection
-      role="status"
-      aria-label={loading_label}
-      aria-busy="true"
-      className="bg-muted px-6"
-    >
+    <PageSection aria-busy="true" className="bg-muted px-6">
+      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+        {loading_label}
+      </output>
       <div className="flex flex-col gap-6">
         <Skeleton className="h-5 w-32" />
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">

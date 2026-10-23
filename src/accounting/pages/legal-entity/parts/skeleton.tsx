@@ -6,11 +6,10 @@ export function LegalEntityListSkeleton() {
   const loading_label = t('legal_entities_loading_label');
 
   return (
-    <div
-      role="status"
-      aria-label={loading_label}
-      className="flex flex-col gap-6"
-    >
+    <div className="flex flex-col gap-6">
+      <output className="sr-only" aria-label={loading_label}>
+        {loading_label}
+      </output>
       {[0, 1, 2].map((row) => (
         <div key={row} aria-hidden className="flex items-center gap-4 py-3">
           <Skeleton className="size-10 shrink-0" />
