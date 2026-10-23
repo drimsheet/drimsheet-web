@@ -108,16 +108,7 @@ export function CategoryTransactions({
   });
 
   return (
-    <PageSection
-      title={title}
-      actions={
-        transactionsHref && (
-          <Button variant="link" asChild>
-            <a href={transactionsHref}>{view_label}</a>
-          </Button>
-        )
-      }
-    >
+    <PageSection title={title}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="w-full sm:max-w-xs">
           <SearchField
@@ -127,6 +118,11 @@ export function CategoryTransactions({
             onChange={(event) => handleSearchChange(event.target.value)}
           />
         </div>
+        {transactionsHref && (
+          <Button variant="link" asChild>
+            <a href={transactionsHref}>{view_label}</a>
+          </Button>
+        )}
         {selectedCounterparty !== null && (
           <Button variant="outline" size="sm" onClick={onClearCounterparty}>
             {clear_label}

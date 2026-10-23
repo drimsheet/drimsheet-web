@@ -47,11 +47,13 @@ export function ProfileEntities({
   return (
     <PageSection
       title={entities_title}
-      actions={<Badge variant="secondary">{count_label}</Badge>}
       role="region"
       titleId="profile-entities-title"
     >
-      <p className="text-sm text-muted-foreground">{entities_description}</p>
+      <div className="flex flex-wrap items-center gap-3">
+        <p className="text-sm text-muted-foreground">{entities_description}</p>
+        <Badge variant="secondary">{count_label}</Badge>
+      </div>
 
       <div>
         {entities.length === 0 ? (

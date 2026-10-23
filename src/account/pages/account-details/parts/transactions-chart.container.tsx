@@ -30,16 +30,14 @@ export function TransactionsChartContainer({
   const title = t('details_cash_flow_title');
 
   return (
-    <PageSection
-      title={title}
-      actions={
+    <PageSection title={title}>
+      <div className="flex flex-wrap justify-end">
         <CashFlowPeriod
           period={period}
           periods={periods}
           onPeriodChange={setPeriod}
         />
-      }
-    >
+      </div>
       {flow.isPending && <TransactionsChartSkeleton />}
       {flow.isError && (
         <SectionError title={title} onRetry={() => void flow.refetch()} />

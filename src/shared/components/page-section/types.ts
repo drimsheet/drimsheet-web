@@ -6,6 +6,4 @@ export interface PageSectionProps extends Omit<
 > {
   title?: ReactNode;
   titleId?: string;
-  titleAdornment?: ReactNode;
-  actions?: ReactNode;
 }

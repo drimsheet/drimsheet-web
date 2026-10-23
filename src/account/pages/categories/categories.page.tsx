@@ -108,16 +108,14 @@ export function CategoriesPage() {
               {add_label}
             </Button>
           </div>
-          <PageSection
-            title={overview_title}
-            actions={
+          <PageSection title={overview_title}>
+            <div className="flex flex-wrap justify-end">
               <CategoryPeriod
                 period={period}
                 periods={periods}
                 onPeriodChange={setPeriod}
               />
-            }
-          >
+            </div>
             <CategoryOverviewContainer
               query={categoriesHelpers.periodQuery(period, now)}
               onViewAccount={handleViewAccount}

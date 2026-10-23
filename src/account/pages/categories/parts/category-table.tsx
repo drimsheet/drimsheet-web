@@ -155,22 +155,20 @@ export function CategoryTable({
   ];
 
   return (
-    <PageSection
-      title={title}
-      titleAdornment={
-        <CategoryHelp label={table_help_label}>
-          <p>{description}</p>
-          <p>{details_text}</p>
-        </CategoryHelp>
-      }
-    >
+    <PageSection title={title}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Tabs
-          ariaLabel={filter_label}
-          value={type}
-          onValueChange={onTypeChange}
-          items={tabs}
-        />
+        <div className="flex flex-wrap items-center gap-3">
+          <Tabs
+            ariaLabel={filter_label}
+            value={type}
+            onValueChange={onTypeChange}
+            items={tabs}
+          />
+          <CategoryHelp label={table_help_label}>
+            <p>{description}</p>
+            <p>{details_text}</p>
+          </CategoryHelp>
+        </div>
         <div className="w-full max-w-sm">
           <SearchField
             type="search"

@@ -44,21 +44,17 @@ describe('PageSection', () => {
     );
   });
 
-  it('preserves an explicit accessible name and adjacent controls', () => {
+  it('preserves an explicit accessible name', () => {
     render(
-      <PageSection
-        title="Your entities · 2"
-        aria-label="Your entities"
-        actions={<button>Add entity</button>}
-        titleAdornment={<button>About entities</button>}
-      />
+      <PageSection title="Your entities · 2" aria-label="Your entities" />
     );
     const section = screen.getByRole('region', { name: 'Your entities' });
+    expect(section).not.toHaveAttribute('aria-labelledby');
     expect(
-      within(section).getByRole('button', { name: 'Add entity' })
-    ).toBeVisible();
-    expect(
-      within(section).getByRole('button', { name: 'About entities' })
+      within(section).getByRole('heading', {
+        level: 2,
+        name: 'Your entities · 2',
+      })
     ).toBeVisible();
   });
 });

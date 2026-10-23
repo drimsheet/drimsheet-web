@@ -1,4 +1,3 @@
-import { Button } from '@/shared/components/button';
 import { PageSection } from '@/shared/components/page-section';
 import { PageTitle } from '@/shared/components/page-title';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -18,9 +17,6 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 export const WithoutTitle: Story = { args: { title: undefined } };
-export const WithAction: Story = {
-  args: { actions: <Button variant="outline">View transactions</Button> },
-};
 export const PageComposition: Story = {
   render: () => (
     <div className="max-w-3xl">
@@ -28,7 +24,7 @@ export const PageComposition: Story = {
       <PageSection title="Overview">
         <p>Balances and recent account activity.</p>
       </PageSection>
-      <PageSection title="All accounts" actions={<Button>Add account</Button>}>
+      <PageSection title="All accounts">
         <p>Your bank and petty cash accounts.</p>
       </PageSection>
       <PageSection>

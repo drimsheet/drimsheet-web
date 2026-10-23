@@ -54,7 +54,6 @@ export function ProfileDetails({
   return (
     <PageSection
       title={details_title}
-      actions={editAction}
       className="h-full min-w-0"
       role="region"
       titleId="profile-details-title"
@@ -93,6 +92,7 @@ export function ProfileDetails({
             </div>
           ))}
         </dl>
+        {editAction && <div className="self-start">{editAction}</div>}
       </div>
     </PageSection>
   );

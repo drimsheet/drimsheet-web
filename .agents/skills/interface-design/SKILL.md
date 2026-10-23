@@ -116,7 +116,14 @@ within a page, such as **OVERVIEW** and **ALL CATEGORIES**. Use concise wording
 that avoids repeating context already established by the page title.
 
 - Implementation: `m-0 text-xs font-medium uppercase tracking-[0.07em] text-muted-foreground`.
-  Reset heading margins so adjacent help icons and controls align correctly.
+  Reset heading margins to preserve consistent section spacing.
+- **Title-only headers:** page section headers must contain only the section
+  title, never actions, buttons, links, filters, period selectors, help controls,
+  badges, or other adornments. `PageSection` must not expose action or adornment
+  slots; do not embed controls in its `title` prop to bypass this rule.
+- Place section-specific controls and supporting information in the section's
+  content area, alongside the relevant form, chart, or table controls. Place
+  page-level actions with the page title.
 - Keep semantic heading elements and sentence-case translation values; apply
   uppercase through CSS.
 - Page titles retain their larger hierarchy. Nested chart labels, such as
@@ -272,6 +279,8 @@ unless the underlying chart explicitly represents signed cash movement.
 - Is the app layout free of a global top bar, with a distinct sidebar?
 - Does each page compose its own breadcrumbs, headings, and relevant actions
   using shared primitives?
+- Do page section headers contain only titles, with all actions and supporting
+  controls placed outside the header?
 - Are global controls in the sidebar and accessible in collapsed/mobile states?
 - Is there no divider or shadow beneath the breadcrumbs?
 - Do all colors come from the documented palette, with theme aliases selecting
