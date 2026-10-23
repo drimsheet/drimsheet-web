@@ -1769,56 +1769,6 @@ export interface IAccountingContext {
   closedAt: string | null;
 }
 
-export interface IReportingContext {
-  createdBy: TEntityId;
-  id: TEntityId;
-  name: string;
-  description: string | null;
-  accountingEntityId: TEntityId;
-  reportingCurrencyCode: UCurrencyCode;
-  accountingContextId: TEntityId;
-  reportingIntervalId: TEntityId;
-  /** @format date-time */
-  createdAt: string;
-  /** @format date-time */
-  updatedAt: string;
-  /** @format date-time */
-  closedAt: string | null;
-}
-
-export interface IAccountingStandardDto {
-  individual: string[];
-  sole_trader: string[];
-  private_company: string[];
-}
-
-export interface IJurisdictionDto {
-  code: string;
-  name: string;
-  currencyCode: string;
-  /** @format double */
-  maxFiscalMonths: number;
-  accountingStandards: IAccountingStandardDto;
-}
-
-/** Standalone accounting entity creation DTO */
-export interface IAccountingEntityCreationDto {
-  name: string;
-  entityType: UAccountingEntityType;
-  jurisdictionCode: UJurisdictionCode;
-  functionalCurrencyCode: UCurrencyCode;
-}
-
-export interface IFiscalYearCreationReq {
-  accountingEntityId: string;
-  name?: string;
-  /** @format date-time */
-  startDate: string;
-  /** @format date-time */
-  endDate: string;
-  status: UFiscalYearStatus;
-}
-
 export interface IAccountingPeriod {
   id: TEntityId;
   intervalId: TEntityId;
@@ -1867,14 +1817,13 @@ export interface IPeriod {
 
 /** From T, pick a set of properties whose keys are in the union K */
 export interface PickIIntervalExcludeKeysUnit {
+  id: TEntityId;
+  accountingEntityId: TEntityId;
   /**
    * Total number of periods, not the number of units per period.
    * @format double
    */
   count: number;
-  periods: IPeriod[];
-  id: TEntityId;
-  accountingEntityId: TEntityId;
   /**
    * Inclusive start instant.
    * @format date-time
@@ -1889,17 +1838,17 @@ export interface PickIIntervalExcludeKeysUnit {
   currentPeriodOrdinal: number;
   /** @format date-time */
   nextPeriodStartDate: string;
+  periods: IPeriod[];
 }
 
 export interface IAccountingInterval {
+  id: TEntityId;
+  accountingEntityId: TEntityId;
   /**
    * Total number of periods, not the number of units per period.
    * @format double
    */
   count: number;
-  periods: IAccountingPeriod[];
-  id: TEntityId;
-  accountingEntityId: TEntityId;
   /**
    * Inclusive start instant.
    * @format date-time
@@ -1914,6 +1863,7 @@ export interface IAccountingInterval {
   currentPeriodOrdinal: number;
   /** @format date-time */
   nextPeriodStartDate: string;
+  periods: IAccountingPeriod[];
   unit: UAccountingIntervalUnit;
   fiscalYearId: TEntityId;
   createdBy: TEntityId;
@@ -1923,27 +1873,21 @@ export interface IAccountingInterval {
   updatedAt: string;
 }
 
-export interface IPeriodMakePayload {
-  name: string;
-}
-
-export interface IAccountingIntervalCreationReq {
-  unit: UAccountingIntervalUnit;
-  /**
-   * Total number of periods, not the number of units per period.
-   * @format double
-   */
-  count: number;
-  periods: IPeriodMakePayload[];
-  fiscalYearId: string;
-}
-
-export interface IAccountingContextCreationReq {
-  fiscalYearId: string;
-  accountingStandardCode: UAccountingStandardCode;
-  accountingIntervalId: string;
+export interface IReportingContext {
+  createdBy: TEntityId;
+  id: TEntityId;
   name: string;
   description: string | null;
+  accountingEntityId: TEntityId;
+  reportingCurrencyCode: UCurrencyCode;
+  accountingContextId: TEntityId;
+  reportingIntervalId: TEntityId;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+  /** @format date-time */
+  closedAt: string | null;
 }
 
 export interface IReportingPeriod {
@@ -1971,14 +1915,13 @@ export interface IReportingPeriod {
 }
 
 export interface IReportingInterval {
+  id: TEntityId;
+  accountingEntityId: TEntityId;
   /**
    * Total number of periods, not the number of units per period.
    * @format double
    */
   count: number;
-  periods: IReportingPeriod[];
-  id: TEntityId;
-  accountingEntityId: TEntityId;
   /**
    * Inclusive start instant.
    * @format date-time
@@ -1993,6 +1936,7 @@ export interface IReportingInterval {
   currentPeriodOrdinal: number;
   /** @format date-time */
   nextPeriodStartDate: string;
+  periods: IReportingPeriod[];
   unit: UReportingIntervalUnit;
   fiscalYearId: TEntityId;
   createdBy: TEntityId;
@@ -2000,6 +1944,62 @@ export interface IReportingInterval {
   createdAt: string;
   /** @format date-time */
   updatedAt: string;
+}
+
+export interface IAccountingStandardDto {
+  individual: string[];
+  sole_trader: string[];
+  private_company: string[];
+}
+
+export interface IJurisdictionDto {
+  code: string;
+  name: string;
+  currencyCode: string;
+  /** @format double */
+  maxFiscalMonths: number;
+  accountingStandards: IAccountingStandardDto;
+}
+
+/** Standalone accounting entity creation DTO */
+export interface IAccountingEntityCreationDto {
+  name: string;
+  entityType: UAccountingEntityType;
+  jurisdictionCode: UJurisdictionCode;
+  functionalCurrencyCode: UCurrencyCode;
+}
+
+export interface IFiscalYearCreationReq {
+  accountingEntityId: string;
+  name?: string;
+  /** @format date-time */
+  startDate: string;
+  /** @format date-time */
+  endDate: string;
+  status: UFiscalYearStatus;
+}
+
+export interface IPeriodMakePayload {
+  name: string;
+}
+
+export interface IAccountingIntervalCreationReq {
+  unit: UAccountingIntervalUnit;
+  /**
+   * Total number of periods, not the number of units per period.
+   * @format double
+   */
+  count: number;
+  periods: IPeriodMakePayload[];
+  fiscalYearId: string;
+}
+
+export interface IAccountingContextCreationReq {
+  fiscalYearId: string;
+  accountingStandardCode: UAccountingStandardCode;
+  accountingIntervalId: string;
+  name: string;
+  description: string | null;
 }
 
 export interface IReportingIntervalCreationReq {
