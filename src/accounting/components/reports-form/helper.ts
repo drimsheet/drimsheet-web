@@ -3,7 +3,7 @@ import type {
   TPeriodNameFactory,
 } from '@/accounting/lib/types/period.types';
 import { accountingPeriodUtils } from '@/accounting/lib/utils/accounting-periods';
-import type { UPeriodUnit } from '@/shared/lib/api/Api';
+import type { UReportingIntervalUnit } from '@/shared/lib/api/Api';
 import type {
   IReportsFormFields,
   IReportsFormValues,
@@ -11,7 +11,7 @@ import type {
 } from './types';
 
 function periodKey(
-  unit: UPeriodUnit,
+  unit: UReportingIntervalUnit,
   period: Pick<INamedPeriod, 'startDate' | 'endDate'>
 ) {
   return `${unit}_${period.startDate}_${period.endDate}`;
@@ -38,7 +38,7 @@ function createInitialValues(
 function createPeriods(
   values: IReportsFormFields,
   financialYear: ReportsFormProps['financialYear'],
-  createName: TPeriodNameFactory,
+  createName: TPeriodNameFactory<UReportingIntervalUnit>,
   maxFiscalMonths: number
 ) {
   const periods = accountingPeriodUtils.createPeriods(

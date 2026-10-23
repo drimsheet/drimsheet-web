@@ -1,5 +1,5 @@
 import { accountingPeriodUtils } from '@/accounting/lib/utils/accounting-periods';
-import { EPeriodUnit } from '@/shared/lib/api/Api';
+import { EAccountingIntervalUnit } from '@/shared/lib/api/Api';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as yup from 'yup';
@@ -38,7 +38,7 @@ export function useFinancialYearFormValidation(maxFiscalMonths: number) {
           .string()
           .required(t('financial_year_unit_required_error'))
           .oneOf(
-            Object.values(EPeriodUnit),
+            Object.values(EAccountingIntervalUnit),
             t('financial_year_unit_required_error')
           ),
         periods: yup

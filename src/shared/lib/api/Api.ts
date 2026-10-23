@@ -10,6 +10,81 @@
  * ---------------------------------------------------------------
  */
 
+export const EReportingIntervalUnit = {
+  Day: 'day',
+  Week: 'week',
+  Month: 'month',
+  Quarter: 'quarter',
+  Year: 'year',
+} as const;
+export type UReportingIntervalUnit =
+  (typeof EReportingIntervalUnit)[keyof typeof EReportingIntervalUnit];
+
+export const EAccountingPeriodStatus = {
+  Open: 'open',
+  Closed: 'closed',
+} as const;
+export type UAccountingPeriodStatus =
+  (typeof EAccountingPeriodStatus)[keyof typeof EAccountingPeriodStatus];
+
+export const EAccountingIntervalUnit = {
+  Day: 'day',
+  Week: 'week',
+  Month: 'month',
+  Quarter: 'quarter',
+  Year: 'year',
+} as const;
+export type UAccountingIntervalUnit =
+  (typeof EAccountingIntervalUnit)[keyof typeof EAccountingIntervalUnit];
+
+export const EAccountingStandardCode = {
+  AASB: 'AASB',
+  ASPE: 'ASPE',
+  CAS: 'CAS',
+  CGNC: 'CGNC',
+  EAS: 'EAS',
+  HGB: 'HGB',
+  HKFRS: 'HKFRS',
+  IFRS: 'IFRS',
+  IND_AS: 'IND_AS',
+  ISRAELI_GAAP: 'ISRAELI_GAAP',
+  J_GAAP: 'J_GAAP',
+  K_IFRS: 'K_IFRS',
+  MFRS: 'MFRS',
+  NIF: 'NIF',
+  NZ_IFRS: 'NZ_IFRS',
+  OIC: 'OIC',
+  PCG: 'PCG',
+  PFRS: 'PFRS',
+  PGC: 'PGC',
+  PSAK: 'PSAK',
+  RAS: 'RAS',
+  RJ: 'RJ',
+  SCF: 'SCF',
+  SFRS: 'SFRS',
+  SWISS_GAAP_FER: 'SWISS_GAAP_FER',
+  SYSCOHADA: 'SYSCOHADA',
+  TFRS: 'TFRS',
+  THAI_FRS: 'THAI_FRS',
+  TIFRS: 'TIFRS',
+  UK_GAAP: 'UK_GAAP',
+  US_GAAP: 'US_GAAP',
+  VAS: 'VAS',
+  LOCAL_GAAP: 'LOCAL_GAAP',
+  CASH_BASIS: 'CASH_BASIS',
+} as const;
+export type UAccountingStandardCode =
+  (typeof EAccountingStandardCode)[keyof typeof EAccountingStandardCode];
+
+export const EFiscalYearStatus = {
+  Pending: 'pending',
+  Open: 'open',
+  Closing: 'closing',
+  Closed: 'closed',
+} as const;
+export type UFiscalYearStatus =
+  (typeof EFiscalYearStatus)[keyof typeof EFiscalYearStatus];
+
 export const EJurisdictionCode = {
   AD: 'AD',
   AE: 'AE',
@@ -159,62 +234,6 @@ export const EAccountingEntityStatus = {
 } as const;
 export type UAccountingEntityStatus =
   (typeof EAccountingEntityStatus)[keyof typeof EAccountingEntityStatus];
-
-export const EPeriodUnit = {
-  Day: 'day',
-  Week: 'week',
-  Month: 'month',
-  Quarter: 'quarter',
-  Year: 'year',
-} as const;
-export type UPeriodUnit = (typeof EPeriodUnit)[keyof typeof EPeriodUnit];
-
-export const EPeriodStatus = {
-  Pending: 'pending',
-  Open: 'open',
-  Closing: 'closing',
-  Closed: 'closed',
-} as const;
-export type UPeriodStatus = (typeof EPeriodStatus)[keyof typeof EPeriodStatus];
-
-export const EAccountingStandardCode = {
-  AASB: 'AASB',
-  ASPE: 'ASPE',
-  CAS: 'CAS',
-  CGNC: 'CGNC',
-  EAS: 'EAS',
-  HGB: 'HGB',
-  HKFRS: 'HKFRS',
-  IFRS: 'IFRS',
-  IND_AS: 'IND_AS',
-  ISRAELI_GAAP: 'ISRAELI_GAAP',
-  J_GAAP: 'J_GAAP',
-  K_IFRS: 'K_IFRS',
-  MFRS: 'MFRS',
-  NIF: 'NIF',
-  NZ_IFRS: 'NZ_IFRS',
-  OIC: 'OIC',
-  PCG: 'PCG',
-  PFRS: 'PFRS',
-  PGC: 'PGC',
-  PSAK: 'PSAK',
-  RAS: 'RAS',
-  RJ: 'RJ',
-  SCF: 'SCF',
-  SFRS: 'SFRS',
-  SWISS_GAAP_FER: 'SWISS_GAAP_FER',
-  SYSCOHADA: 'SYSCOHADA',
-  TFRS: 'TFRS',
-  THAI_FRS: 'THAI_FRS',
-  TIFRS: 'TIFRS',
-  UK_GAAP: 'UK_GAAP',
-  US_GAAP: 'US_GAAP',
-  VAS: 'VAS',
-  LOCAL_GAAP: 'LOCAL_GAAP',
-  CASH_BASIS: 'CASH_BASIS',
-} as const;
-export type UAccountingStandardCode =
-  (typeof EAccountingStandardCode)[keyof typeof EAccountingStandardCode];
 
 export const ECounterpartySortBy = {
   CreatedAt: 'createdAt',
@@ -541,10 +560,6 @@ export const EAppThemePreference = {
 export type UAppThemePreference =
   (typeof EAppThemePreference)[keyof typeof EAppThemePreference];
 
-export type TEntityId = string & {
-  __brand: 'uuid';
-};
-
 export interface IUserAppPreferences {
   theme?: UAppThemePreference;
   appUsageMode: UAppUsageModePreference;
@@ -720,6 +735,63 @@ export interface IGetAccountCounterpartyParticipationQuery {
   /** @format double */
   limit?: number;
   search?: string;
+}
+
+export interface IAssetLiabilityAccountParticipationDto {
+  accountId: string;
+  accountName: string;
+  code: string;
+  type: 'asset' | 'liability';
+  subType: string;
+  status: ULedgerAccountStatus;
+  /** Current signed functional balance of this posting account. */
+  amount: IMoneyDto;
+  /**
+   * Percentage of all root balances of the same type before filtering or
+   * pagination, rounded to two decimals; null when that total is zero.
+   * @format double
+   */
+  sharePercentage: number | null;
+}
+
+export interface IPaginatedResponseIAssetLiabilityAccountParticipationDto {
+  data: IAssetLiabilityAccountParticipationDto[];
+  meta: IPaginationResponseMeta;
+}
+
+export interface IGetAssetLiabilityAccountParticipationQuery {
+  /** @format double */
+  page?: number;
+  /** @format double */
+  limit?: number;
+  search?: string;
+  /** Omit for both asset and liability posting accounts. */
+  type?: 'asset' | 'liability';
+}
+
+export interface IAssetLiabilitySectionDto {
+  /** Cumulative balance through period.to, inclusive. */
+  total: IMoneyDto;
+  /** Cumulative balance through comparisonPeriod.to, inclusive. */
+  previousTotal: IMoneyDto;
+  /** Total less previous total. */
+  change: IMoneyDto;
+  /**
+   * Change divided by the absolute previous total; null when it is zero.
+   * @format double
+   */
+  percentageChange: number | null;
+}
+
+export interface IAssetLiabilitySummaryDto {
+  currencyCode: string;
+  period: IDateRangeDto;
+  /** Immediately preceding equal-length period, with inclusive dates. */
+  comparisonPeriod: IDateRangeDto;
+  assets: IAssetLiabilitySectionDto;
+  liabilities: IAssetLiabilitySectionDto;
+  /** Assets less liabilities: the dashboard's total balance. */
+  netAssets: IAssetLiabilitySectionDto;
 }
 
 export interface IRevenueExpenseAccountDto {
@@ -1649,62 +1721,6 @@ export interface IResetPasswordReq {
   confirmPassword: string;
 }
 
-export interface IFiscalYearDto {
-  id: string;
-  createdBy: string;
-  name: string;
-  accountingEntityId: string;
-  /** @format date-time */
-  startDate: string;
-  /** @format date-time */
-  endDate: string;
-  status: UPeriodStatus;
-  /** @format date-time */
-  closedAt: string | null;
-  /** @format date-time */
-  updatedAt: string;
-}
-
-export interface IAccountingPeriodDto {
-  id: string;
-  createdBy: string;
-  name: string;
-  accountingEntityId: string;
-  fiscalYearId: string;
-  unit: UPeriodUnit;
-  /** @format double */
-  count: number;
-  /** @format date-time */
-  startDate: string;
-  /** @format date-time */
-  endDate: string;
-  status: UPeriodStatus;
-  /** @format date-time */
-  closedAt: string | null;
-  /** @format date-time */
-  updatedAt: string;
-}
-
-export interface IAccountingContextDto {
-  id: string;
-  createdBy: string;
-  name: string;
-  description: string | null;
-  accountingEntityId: string;
-  accountingStandardCode: UAccountingStandardCode;
-  fiscalYearId: string;
-  /** Stored working-period selection, maintained independently of this read. */
-  currentAccountingPeriodId: string;
-  /** @format date-time */
-  createdAt: string;
-  /** @format date-time */
-  updatedAt: string;
-  /** @format date-time */
-  closedAt: string | null;
-  fiscalYear: IFiscalYearDto;
-  accountingPeriods: IAccountingPeriodDto[];
-}
-
 export interface IAccountingEntity {
   createdBy: TEntityId;
   id: TEntityId;
@@ -1718,6 +1734,56 @@ export interface IAccountingEntity {
   createdAt: string;
   /** @format date-time */
   updatedAt: string;
+}
+
+export interface IFiscalYear {
+  id: TEntityId;
+  createdBy: TEntityId;
+  name: string;
+  status: UFiscalYearStatus;
+  accountingEntityId: TEntityId;
+  /** @format date-time */
+  startDate: string;
+  /** @format date-time */
+  endDate: string;
+  /** @format date-time */
+  closedAt: string | null;
+  /** @format date-time */
+  updatedAt: string;
+}
+
+export interface IAccountingContext {
+  createdBy: TEntityId;
+  id: TEntityId;
+  name: string;
+  description: string | null;
+  accountingEntityId: TEntityId;
+  accountingStandardCode: UAccountingStandardCode;
+  fiscalYearId: TEntityId;
+  accountingIntervalId: TEntityId;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+  /** @format date-time */
+  closedAt: string | null;
+}
+
+export interface IReportingContext {
+  createdBy: TEntityId;
+  id: TEntityId;
+  name: string;
+  description: string | null;
+  accountingEntityId: TEntityId;
+  reportingCurrencyCode: UCurrencyCode;
+  accountingContextId: TEntityId;
+  reportingIntervalId: TEntityId;
+  /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
+  updatedAt: string;
+  /** @format date-time */
+  closedAt: string | null;
 }
 
 export interface IAccountingStandardDto {
@@ -1735,93 +1801,12 @@ export interface IJurisdictionDto {
   accountingStandards: IAccountingStandardDto;
 }
 
-export interface IReportingPeriodDto {
-  id: string;
-  createdBy: string;
-  name: string;
-  accountingEntityId: string;
-  fiscalYearId: string;
-  unit: UPeriodUnit;
-  /** @format double */
-  count: number;
-  /** @format date-time */
-  startDate: string;
-  /** @format date-time */
-  endDate: string;
-  /** @format date-time */
-  updatedAt: string;
-}
-
-export interface IReportingContextDto {
-  id: string;
-  createdBy: string;
-  name: string;
-  description: string | null;
-  accountingEntityId: string;
-  accountingStandardCode: UAccountingStandardCode;
-  accountingContextId: string;
-  reportingCurrencyCode: UCurrencyCode;
-  /** Stored working-period selection, maintained independently of this read. */
-  currentReportingPeriodId: string;
-  /** @format date-time */
-  createdAt: string;
-  /** @format date-time */
-  updatedAt: string;
-  /** @format date-time */
-  closedAt: string | null;
-  fiscalYear: IFiscalYearDto;
-  reportingPeriods: IReportingPeriodDto[];
-}
-
-/** Fiscal year creation DTO */
-export interface IFiscalYearCreationDto {
-  /** @format date-time */
-  startDate: string;
-  /** @format date-time */
-  endDate: string;
-}
-
-export interface IPeriodCreationDto {
-  unit: UPeriodUnit;
-  /**
-   * @format int32
-   * @min 1
-   * @max 550
-   */
-  count: number;
-}
-
-/** Accounting entity onboarding DTO */
+/** Standalone accounting entity creation DTO */
 export interface IAccountingEntityCreationDto {
   name: string;
   entityType: UAccountingEntityType;
   jurisdictionCode: UJurisdictionCode;
   functionalCurrencyCode: UCurrencyCode;
-}
-
-export interface IAccountingEntityDto {
-  status: UAccountingEntityStatus;
-  id: string;
-  createdBy: string;
-  ownerId: string;
-  name: string;
-  type: UAccountingEntityType;
-  functionalCurrencyCode: UCurrencyCode;
-  jurisdictionCode: UJurisdictionCode;
-  /** @format date-time */
-  createdAt: string;
-  /** @format date-time */
-  updatedAt: string;
-}
-
-export interface IAccountingEntityUpdateReq {
-  name?: string;
-  entityType?: UAccountingEntityType;
-  functionalCurrencyCode?: UCurrencyCode;
-}
-
-export interface IAccountingEntitySwitchReq {
-  accountingEntityId: string;
 }
 
 export interface IFiscalYearCreationReq {
@@ -1834,58 +1819,76 @@ export interface IFiscalYearCreationReq {
   status: UFiscalYearStatus;
 }
 
-export interface IAccountingIntervalCreationReq {
-  unit: UAccountingIntervalUnit;
-  /**
-   * Total number of periods, not the number of units per period.
-   * @format double
-   */
-  count: number;
-  periods: IPeriodMakePayload[];
-  fiscalYearId: string;
-}
-
-export interface IAccountingContextCreationReq {
-  fiscalYearId: string;
-  accountingStandardCode: UAccountingStandardCode;
-  accountingIntervalId: string;
-  name: string;
-  description: string | null;
-}
-
-export interface IReportingIntervalCreationReq {
-  unit: UReportingIntervalUnit;
-  /**
-   * Total number of periods, not the number of units per period.
-   * @format double
-   */
-  count: number;
-  periods: IPeriodMakePayload[];
-  fiscalYearId: string;
-}
-
-export interface IReportingContextCreationReq {
-  accountingContextId: string;
-  reportingIntervalId: string;
-  reportingCurrencyCode: UCurrencyCode;
-  name: string;
-  description: string | null;
-}
-
-export interface IFiscalYear {
+export interface IAccountingPeriod {
   id: TEntityId;
-  createdBy: TEntityId;
-  name: string;
-  status: UFiscalYearStatus;
+  intervalId: TEntityId;
   accountingEntityId: TEntityId;
-  /** @format date-time */
+  /** @format double */
+  ordinal: number;
+  name: string;
+  /**
+   * Inclusive start instant.
+   * @format date-time
+   */
   startDate: string;
-  /** @format date-time */
+  /**
+   * Exclusive end instant, shared with the following period's start.
+   * @format date-time
+   */
   endDate: string;
+  status: UAccountingPeriodStatus;
+  createdBy: TEntityId;
   /** @format date-time */
   closedAt: string | null;
   /** @format date-time */
+  createdAt: string;
+  /** @format date-time */
   updatedAt: string;
+}
+
+export interface IPeriod {
+  id: TEntityId;
+  intervalId: TEntityId;
+  accountingEntityId: TEntityId;
+  /** @format double */
+  ordinal: number;
+  name: string;
+  /**
+   * Inclusive start instant.
+   * @format date-time
+   */
+  startDate: string;
+  /**
+   * Exclusive end instant, shared with the following period's start.
+   * @format date-time
+   */
+  endDate: string;
+}
+
+/** From T, pick a set of properties whose keys are in the union K */
+export interface PickIIntervalExcludeKeysUnit {
+  /**
+   * Total number of periods, not the number of units per period.
+   * @format double
+   */
+  count: number;
+  periods: IPeriod[];
+  id: TEntityId;
+  accountingEntityId: TEntityId;
+  /**
+   * Inclusive start instant.
+   * @format date-time
+   */
+  startDate: string;
+  /**
+   * Exclusive end instant.
+   * @format date-time
+   */
+  endDate: string;
+  /** @format double */
+  currentPeriodOrdinal: number;
+  /** @format date-time */
+  nextPeriodStartDate: string;
 }
 
 export interface IAccountingInterval {
@@ -1920,21 +1923,51 @@ export interface IAccountingInterval {
   updatedAt: string;
 }
 
-export interface IAccountingContext {
-  createdBy: TEntityId;
-  id: TEntityId;
+export interface IPeriodMakePayload {
+  name: string;
+}
+
+export interface IAccountingIntervalCreationReq {
+  unit: UAccountingIntervalUnit;
+  /**
+   * Total number of periods, not the number of units per period.
+   * @format double
+   */
+  count: number;
+  periods: IPeriodMakePayload[];
+  fiscalYearId: string;
+}
+
+export interface IAccountingContextCreationReq {
+  fiscalYearId: string;
+  accountingStandardCode: UAccountingStandardCode;
+  accountingIntervalId: string;
   name: string;
   description: string | null;
+}
+
+export interface IReportingPeriod {
+  id: TEntityId;
+  intervalId: TEntityId;
   accountingEntityId: TEntityId;
-  accountingStandardCode: UAccountingStandardCode;
-  fiscalYearId: TEntityId;
-  accountingIntervalId: TEntityId;
+  /** @format double */
+  ordinal: number;
+  name: string;
+  /**
+   * Inclusive start instant.
+   * @format date-time
+   */
+  startDate: string;
+  /**
+   * Exclusive end instant, shared with the following period's start.
+   * @format date-time
+   */
+  endDate: string;
+  createdBy: TEntityId;
   /** @format date-time */
   createdAt: string;
   /** @format date-time */
   updatedAt: string;
-  /** @format date-time */
-  closedAt: string | null;
 }
 
 export interface IReportingInterval {
@@ -1969,117 +2002,36 @@ export interface IReportingInterval {
   updatedAt: string;
 }
 
-export interface IReportingContext {
-  createdBy: TEntityId;
-  id: TEntityId;
+export interface IReportingIntervalCreationReq {
+  unit: UReportingIntervalUnit;
+  /**
+   * Total number of periods, not the number of units per period.
+   * @format double
+   */
+  count: number;
+  periods: IPeriodMakePayload[];
+  fiscalYearId: string;
+}
+
+export interface IReportingContextCreationReq {
+  accountingContextId: string;
+  reportingIntervalId: string;
+  reportingCurrencyCode: UCurrencyCode;
   name: string;
   description: string | null;
-  accountingEntityId: TEntityId;
-  reportingCurrencyCode: UCurrencyCode;
-  accountingContextId: TEntityId;
-  reportingIntervalId: TEntityId;
-  /** @format date-time */
-  createdAt: string;
-  /** @format date-time */
-  updatedAt: string;
-  /** @format date-time */
-  closedAt: string | null;
 }
 
-export type UFiscalYearStatus =
-  (typeof EFiscalYearStatus)[keyof typeof EFiscalYearStatus];
-
-export const EFiscalYearStatus = {
-  Pending: 'pending',
-  Open: 'open',
-  Closing: 'closing',
-  Closed: 'closed',
-} as const;
-
-export type UAccountingIntervalUnit =
-  (typeof EAccountingIntervalUnit)[keyof typeof EAccountingIntervalUnit];
-
-export const EAccountingIntervalUnit = {
-  Day: 'day',
-  Week: 'week',
-  Month: 'month',
-  Quarter: 'quarter',
-  Year: 'year',
-} as const;
-
-export interface IPeriodMakePayload {
-  name: string;
+export interface IAccountingEntityUpdateReq {
+  name?: string;
+  entityType?: UAccountingEntityType;
+  functionalCurrencyCode?: UCurrencyCode;
 }
 
-export type UReportingIntervalUnit =
-  (typeof EReportingIntervalUnit)[keyof typeof EReportingIntervalUnit];
-
-export const EReportingIntervalUnit = {
-  Day: 'day',
-  Week: 'week',
-  Month: 'month',
-  Quarter: 'quarter',
-  Year: 'year',
-} as const;
-
-export interface IAccountingPeriod {
-  id: TEntityId;
-  intervalId: TEntityId;
-  accountingEntityId: TEntityId;
-  /** @format double */
-  ordinal: number;
-  name: string;
-  /**
-   * Inclusive start instant.
-   * @format date-time
-   */
-  startDate: string;
-  /**
-   * Exclusive end instant, shared with the following period's start.
-   * @format date-time
-   */
-  endDate: string;
-  status: UAccountingPeriodStatus;
-  createdBy: TEntityId;
-  /** @format date-time */
-  closedAt: string | null;
-  /** @format date-time */
-  createdAt: string;
-  /** @format date-time */
-  updatedAt: string;
+export interface IAccountingEntitySwitchReq {
+  accountingEntityId: string;
 }
 
-export type UAccountingPeriodStatus =
-  (typeof EAccountingPeriodStatus)[keyof typeof EAccountingPeriodStatus];
-
-export const EAccountingPeriodStatus = {
-  Open: 'open',
-  Closed: 'closed',
-} as const;
-
-export interface IReportingPeriod {
-  id: TEntityId;
-  intervalId: TEntityId;
-  accountingEntityId: TEntityId;
-  /** @format double */
-  ordinal: number;
-  name: string;
-  /**
-   * Inclusive start instant.
-   * @format date-time
-   */
-  startDate: string;
-  /**
-   * Exclusive end instant, shared with the following period's start.
-   * @format date-time
-   */
-  endDate: string;
-  createdBy: TEntityId;
-  /** @format date-time */
-  createdAt: string;
-  /** @format date-time */
-  updatedAt: string;
-}
+export type TEntityId = string;
 
 import type {
   AxiosInstance,
@@ -2405,6 +2357,60 @@ export class Api<
         IHttpErrorDto
       >({
         path: `/reporting/accounts/${accountId}/counterparty-participation`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Asset/liability posting accounts with current signed functional balances. Reads stored balances only; balances update asynchronously. Includes all statuses, zero balances and suspense. Shares use all root balances of the same type, including root posting accounts, before search/pagination. Control accounts are excluded from rows. Zero totals yield null shares; percentages round to two decimals. Search matches name or code; rows sort by code/ID. Omit type for both classes. No date range is applied. Amount magnitudes above 1 trillion major units return 400; missing balances return 404; unsafe numeric serialization returns 500. Defaults to page 1, limit 10.
+     *
+     * @tags Reporting
+     * @name GetAssetLiabilityAccountParticipation
+     * @request GET:/reporting/asset-liability-account-participation
+     */
+    getAssetLiabilityAccountParticipation: (
+      query?: {
+        /** @format double */
+        page?: number;
+        /** @format double */
+        limit?: number;
+        search?: string;
+        /** Omit for both asset and liability posting accounts. */
+        type?: 'asset' | 'liability';
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<
+        IPaginatedResponseIAssetLiabilityAccountParticipationDto,
+        IHttpErrorDto
+      >({
+        path: `/reporting/asset-liability-account-participation`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Cumulative assets, liabilities and net assets in the functional currency. Dates are inclusive, up to 366 days. Compares balances at period end with the end of the immediately preceding equal-length period. Includes opening balances, suspense, contra/adjunct and archived accounts. Excludes drafts, never-posted entries, voided originals and reversals. Journal lines are counted once without hierarchy rollups. Historical results can change after rectification. Percentage changes use the absolute previous balance and are null when it is zero. Amount magnitudes above 1 trillion major units return 400; unsafe numeric serialization returns 500.
+     *
+     * @tags Reporting
+     * @name GetAssetLiabilitySummary
+     * @request GET:/reporting/asset-liability-summary
+     */
+    getAssetLiabilitySummary: (
+      query: {
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        from: string;
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        to: string;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<IAssetLiabilitySummaryDto, IHttpErrorDto>({
+        path: `/reporting/asset-liability-summary`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -3623,21 +3629,6 @@ export class Api<
   };
   accounting = {
     /**
-     * @description Returns all unclosed contexts for x-accounting-entity-id, with each fiscal year and its periods.
-     *
-     * @tags Accounting
-     * @name GetAccountingContexts
-     * @request GET:/accounting/accounting-contexts
-     */
-    getAccountingContexts: (params: RequestParams = {}) =>
-      this.request<IAccountingContextDto[], IHttpErrorDto>({
-        path: `/accounting/accounting-contexts`,
-        method: 'GET',
-        format: 'json',
-        ...params,
-      }),
-
-    /**
      * @description Get user accounting entities
      *
      * @tags Accounting
@@ -3668,7 +3659,7 @@ export class Api<
       }),
 
     /**
-     * @description Create a new accounting entity
+     * @description Create only an accounting entity. Calendar and context setup is separate.
      *
      * @tags Accounting
      * @name CreateAccountingEntity
@@ -3698,7 +3689,7 @@ export class Api<
       data: IAccountingEntityUpdateReq,
       params: RequestParams = {}
     ) =>
-      this.request<IAccountingEntityDto, IHttpErrorDto>({
+      this.request<IAccountingEntity, IHttpErrorDto>({
         path: `/accounting/accounting-entity`,
         method: 'PATCH',
         body: data,
@@ -3722,6 +3713,66 @@ export class Api<
       }),
 
     /**
+     * @description Returns all fiscal years for x-accounting-entity-id.
+     *
+     * @tags Accounting
+     * @name GetFiscalYears
+     * @request GET:/accounting/fiscal-years
+     */
+    getFiscalYears: (params: RequestParams = {}) =>
+      this.request<IFiscalYear[], IHttpErrorDto>({
+        path: `/accounting/fiscal-years`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Returns one fiscal year belonging to x-accounting-entity-id.
+     *
+     * @tags Accounting
+     * @name GetFiscalYear
+     * @request GET:/accounting/fiscal-years/{id}
+     */
+    getFiscalYear: (id: string, params: RequestParams = {}) =>
+      this.request<IFiscalYear, IHttpErrorDto>({
+        path: `/accounting/fiscal-years/${id}`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Returns the fiscal year's context, including closed contexts, or null.
+     *
+     * @tags Accounting
+     * @name GetAccountingContext
+     * @request GET:/accounting/fiscal-years/{id}/accounting-context
+     */
+    getAccountingContext: (id: string, params: RequestParams = {}) =>
+      this.request<IAccountingContext | null, IHttpErrorDto>({
+        path: `/accounting/fiscal-years/${id}/accounting-context`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Returns the fiscal year's context, including closed contexts, or null.
+     *
+     * @tags Accounting
+     * @name GetReportingContext
+     * @request GET:/accounting/fiscal-years/{id}/reporting-context
+     */
+    getReportingContext: (id: string, params: RequestParams = {}) =>
+      this.request<IReportingContext | null, IHttpErrorDto>({
+        path: `/accounting/fiscal-years/${id}/reporting-context`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
      * @description Get jurisdictions
      *
      * @tags Accounting
@@ -3733,35 +3784,6 @@ export class Api<
         path: `/accounting/jurisdictions`,
         method: 'GET',
         format: 'json',
-        ...params,
-      }),
-
-    /**
-     * @description Returns all unclosed reporting contexts for x-accounting-entity-id, with each fiscal year and its reporting periods.
-     *
-     * @tags Accounting
-     * @name GetReportingContexts
-     * @request GET:/accounting/reporting-contexts
-     */
-    getReportingContexts: (params: RequestParams = {}) =>
-      this.request<IReportingContextDto[], IHttpErrorDto>({
-        path: `/accounting/reporting-contexts`,
-        method: 'GET',
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * @description Archives the selected entity, retaining all accounting records.
-     *
-     * @tags Accounting
-     * @name ArchiveAccountingEntity
-     * @request POST:/accounting/accounting-entity/archive
-     */
-    archiveAccountingEntity: (params: RequestParams = {}) =>
-      this.request<void, IHttpErrorDto>({
-        path: `/accounting/accounting-entity/archive`,
-        method: 'POST',
         ...params,
       }),
 
@@ -3862,6 +3884,20 @@ export class Api<
         body: data,
         type: EContentType.Json,
         format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Archives the selected entity, retaining all accounting records.
+     *
+     * @tags Accounting
+     * @name ArchiveAccountingEntity
+     * @request POST:/accounting/accounting-entity/archive
+     */
+    archiveAccountingEntity: (params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/accounting/accounting-entity/archive`,
+        method: 'POST',
         ...params,
       }),
 

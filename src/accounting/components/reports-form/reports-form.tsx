@@ -18,7 +18,10 @@ import {
   SelectValue,
 } from '@/shared/components/select';
 import { useFieldErrorMessage } from '@/shared/hooks/use-field-error-message';
-import { EPeriodUnit, type UPeriodUnit } from '@/shared/lib/api/Api';
+import {
+  EReportingIntervalUnit,
+  type UReportingIntervalUnit,
+} from '@/shared/lib/api/Api';
 import { useFormik } from 'formik';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -45,7 +48,7 @@ export function ReportsForm({
     maxFiscalMonths,
   });
 
-  const createPeriodName = (unit: UPeriodUnit, index: number) =>
+  const createPeriodName = (unit: UReportingIntervalUnit, index: number) =>
     t(`financial_period_${unit}_default`, { index });
 
   const formik = useFormik<IReportsFormFields>({
@@ -192,7 +195,7 @@ export function ReportsForm({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {Object.values(EPeriodUnit).map((unit) => (
+                  {Object.values(EReportingIntervalUnit).map((unit) => (
                     <SelectItem key={unit} value={unit}>
                       {t(`reports_group_${unit}_label`)}
                     </SelectItem>
