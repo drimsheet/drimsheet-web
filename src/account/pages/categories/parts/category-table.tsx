@@ -182,11 +182,7 @@ export function CategoryTable({
         </div>
       </div>
       <div aria-busy={loading}>
-        {loading && (
-          <span role="status" className="sr-only">
-            {loading_label}
-          </span>
-        )}
+        {loading && <output className="sr-only">{loading_label}</output>}
         <DataTable
           columns={columns}
           data={rows}
