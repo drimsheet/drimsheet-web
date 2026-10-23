@@ -8,10 +8,12 @@ import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
 import { cn } from '@/shared/lib/utils/cn';
+import { ChartNoAxesCombined } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import categoriesHelpers from '../helper';
 import type { CategoryChartProps } from '../types';
@@ -37,13 +39,16 @@ export function CategoryChart({
       className="max-h-[400px] min-w-0 gap-2 overflow-y-auto overscroll-contain py-0 focus-visible:outline-2 focus-visible:outline-ring"
     >
       <CardHeader className="sticky top-0 z-1 shrink-0 bg-card px-4 pt-4 pb-2">
-        <h2 className="text-base font-medium">{title}</h2>
+        <h2 className="text-sm font-medium text-muted-foreground">{title}</h2>
         {rows.length > 0 && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent className="px-4 pb-4">
         {rows.length === 0 && (
-          <Empty className="items-start p-0 pb-1 text-left">
-            <EmptyHeader className="max-w-none items-start">
+          <Empty className="px-4 py-6">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <ChartNoAxesCombined aria-hidden />
+              </EmptyMedia>
               <EmptyTitle>{empty_text}</EmptyTitle>
               <EmptyDescription>{empty_description}</EmptyDescription>
             </EmptyHeader>

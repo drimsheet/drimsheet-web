@@ -1,4 +1,3 @@
-import { Badge } from '@/shared/components/badge';
 import { DataTable, type ITableColumn } from '@/shared/components/data-table';
 import {
   Empty,
@@ -52,8 +51,7 @@ export function CategoryTable({
     return [
       {
         dataIndex: 'accountName',
-        proportion: 2,
-        minWidth: 240,
+        minWidth: 300,
         title: name_label,
         render: (_, account) => (
           <button
@@ -67,6 +65,7 @@ export function CategoryTable({
       },
       {
         dataIndex: 'type',
+        width: 140,
         title: type_label,
         render: (_, account) => {
           if (account.type === 'revenue' || account.type === 'expense') {
@@ -78,7 +77,7 @@ export function CategoryTable({
       },
       {
         dataIndex: 'amount',
-        align: 'right',
+        width: 160,
         title: balance_label,
         render: (_, account) => (
           <Money
@@ -89,7 +88,7 @@ export function CategoryTable({
       },
       {
         dataIndex: 'sharePercentage',
-        align: 'right',
+        width: 180,
         title: share_label,
         render: (_, account) => (
           <span className="tabular-nums">
@@ -102,7 +101,7 @@ export function CategoryTable({
       },
       {
         dataIndex: 'transactionCount',
-        align: 'right',
+        width: 132,
         title: transactions_label,
         render: (_, account) => (
           <span className="tabular-nums">
@@ -112,6 +111,7 @@ export function CategoryTable({
       },
       {
         dataIndex: 'status',
+        width: 112,
         title: status_label,
         render: (_, account) => (
           <StatusBadge
@@ -123,6 +123,7 @@ export function CategoryTable({
       {
         dataIndex: 'id',
         width: 72,
+        align: 'right',
         headerRender: () => <span className="sr-only">{actions_label}</span>,
         render: (_, account) => (
           <CategoryRowActions
@@ -139,17 +140,12 @@ export function CategoryTable({
   const title = t('categories_table_title');
   const description = t('categories_table_description');
   const details_text = t('categories_table_details');
-  const scope_label = t('categories_table_scope_label');
   const table_help_label = t('categories_table_help_label');
   const search_label = t('categories_search_label');
   const filter_label = t('categories_type_filter_label');
   const empty_title = t('categories_empty_title');
   const empty_description = t('categories_empty_description');
   const loading_label = t('categories_table_loading_label');
-
-  const total_text = t('categories_total_count', {
-    count: accounts?.meta.total ?? 0,
-  });
 
   const tabs = [
     { value: 'all', label: t('categories_all_label') },
@@ -160,8 +156,7 @@ export function CategoryTable({
   return (
     <section aria-label={title} className="flex min-w-0 flex-col gap-4">
       <div className="flex items-center gap-3">
-        <h2 className="text-lg font-semibold">{title}</h2>
-        <Badge variant="outline">{scope_label}</Badge>
+        <h2 className="m-0 text-lg font-semibold">{title}</h2>
         <CategoryHelp label={table_help_label}>
           <p>{description}</p>
           <p>{details_text}</p>
@@ -208,14 +203,11 @@ export function CategoryTable({
         />
       </div>
       {accounts && !loading && (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">{total_text}</p>
-          <TablePagination
-            meta={accounts.meta}
-            onPageChange={onPageChange}
-            className="mx-0 w-auto justify-end"
-          />
-        </div>
+        <TablePagination
+          meta={accounts.meta}
+          onPageChange={onPageChange}
+          className="justify-end"
+        />
       )}
     </section>
   );
