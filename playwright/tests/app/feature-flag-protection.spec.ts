@@ -1,4 +1,4 @@
-import { featureFlagKeys } from '@/shared/hooks/use-feature-flag';
+import { featureFlagKeys } from '@/shared/hooks/use-feature-flags';
 import { expect, test } from '@integration/fixtures/test';
 import {
   authenticatedUser,

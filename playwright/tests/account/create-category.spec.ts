@@ -122,7 +122,7 @@ test('creates an expense under a posting parent, preserving names after failure 
   await setup(page);
   await page.getByRole('radio', { name: 'Expenses', exact: true }).click();
   await chooseParent(page, 'Utilities');
-  await page.getByLabel('Category name', { exact: false }).fill('Internet');
+  await page.getByLabel(/^Name\s*Required$/).fill('Internet');
   await page
     .getByRole('button', { name: 'Create category', exact: true })
     .click();
@@ -193,9 +193,7 @@ test('creates an expense under a posting parent, preserving names after failure 
   await expect(
     page.getByRole('alert').filter({ hasText: 'We couldn’t save' })
   ).toBeVisible();
-  await expect(page.getByLabel('Category name', { exact: false })).toHaveValue(
-    'Internet'
-  );
+  await expect(page.getByLabel(/^Name\s*Required$/)).toHaveValue('Internet');
   await expect(
     page.getByLabel('Name for cloned posting account', { exact: false })
   ).toHaveValue('General utilities');
@@ -249,7 +247,7 @@ test('switches class, clears the old parent, and creates income under a control 
   await page
     .getByLabel('Name for cloned posting account', { exact: false })
     .fill('General utilities');
-  await page.getByLabel('Category name', { exact: false }).fill('Consulting');
+  await page.getByLabel(/^Name\s*Required$/).fill('Consulting');
   await page.getByRole('radio', { name: 'Income', exact: true }).click();
   await expect(page.getByText('No parent selected')).toBeVisible();
   await expect(
@@ -356,7 +354,7 @@ test('sends unsupported inherited behavior unchanged and keeps the form after AP
   await page.route(chartEndpoint, (route) => route.fulfill({ json: [sales] }));
   await page.getByRole('radio', { name: 'Income', exact: true }).click();
   await chooseParent(page, 'Sales');
-  await page.getByLabel('Category name', { exact: false }).fill('Online sales');
+  await page.getByLabel(/^Name\s*Required$/).fill('Online sales');
   await page
     .getByLabel('Name for cloned posting account', { exact: false })
     .fill('General sales');
@@ -381,7 +379,7 @@ test('sends unsupported inherited behavior unchanged and keeps the form after AP
       newPostingAccountName: 'General sales',
     },
   });
-  await expect(page.getByLabel('Category name', { exact: false })).toHaveValue(
+  await expect(page.getByLabel(/^Name\s*Required$/)).toHaveValue(
     'Online sales'
   );
   await expect(

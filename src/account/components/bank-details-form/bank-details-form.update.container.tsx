@@ -1,7 +1,7 @@
 import { useAccountCurrencyUpdateEligibility } from '@/account/hooks/use-account-currency-update-eligibility';
 import { useAccountOpeningBalance } from '@/account/hooks/use-account-opening-balance';
 import { useAccountUpdateExchangeRate } from '@/account/hooks/use-account-update-exchange-rate';
-import { useUpdateBankAccount } from '@/account/hooks/use-update-asset-account';
+import { useUpdateBankAccount } from '@/account/hooks/use-update-bank-account';
 import { assetAccountUpdateMapper } from '@/account/lib/mappers/asset-account-update.mapper';
 import { ledgerAccountService } from '@/account/lib/services/ledger-account.service';
 import { Button } from '@/shared/components/button';

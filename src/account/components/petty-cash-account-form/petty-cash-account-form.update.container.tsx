@@ -1,7 +1,7 @@
 import { useAccountCurrencyUpdateEligibility } from '@/account/hooks/use-account-currency-update-eligibility';
 import { useAccountOpeningBalance } from '@/account/hooks/use-account-opening-balance';
 import { useAccountUpdateExchangeRate } from '@/account/hooks/use-account-update-exchange-rate';
-import { useUpdatePettyCashAccount } from '@/account/hooks/use-update-asset-account';
+import { useUpdatePettyCashAccount } from '@/account/hooks/use-update-petty-cash-account';
 import { assetAccountUpdateMapper } from '@/account/lib/mappers/asset-account-update.mapper';
 import { Button } from '@/shared/components/button';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';

@@ -3,8 +3,20 @@ import type { IJournalEntryListDto } from '@/shared/lib/api/Api';
 import { useQuery } from '@tanstack/react-query';
 
 export function useCategoryHistory(accountId: string, enabled: boolean) {
+  const query = {
+    limit: 100,
+    orderBy: 'effectiveDate',
+    sortDirection: 'desc',
+  } as const;
+
   return useQuery({
-    queryKey: ['ledgerAccountService', 'getCategoryHistory', accountId],
+    queryKey: [
+      'ledgerAccountService',
+      'getTransactions',
+      accountId,
+      query,
+      'all-pages',
+    ],
     enabled,
     staleTime: 60_000,
     queryFn: async ({ signal }) => {
@@ -19,12 +31,7 @@ export function useCategoryHistory(accountId: string, enabled: boolean) {
 
         const response = await ledgerAccountService.getTransactions(
           accountId,
-          {
-            page,
-            limit: 100,
-            orderBy: 'effectiveDate',
-            sortDirection: 'desc',
-          },
+          { ...query, page },
           signal
         );
 

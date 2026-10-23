@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useCategorySummary } from '../hooks/use-categories';
+import { useCategorySummary } from '../hooks/use-category-summary';
 import type { CategoryOverviewProps } from '../types';
 import { CategoryChart } from './category-chart';
 import { CategorySummary } from './category-summary';

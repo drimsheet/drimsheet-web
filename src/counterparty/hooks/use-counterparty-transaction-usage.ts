@@ -3,21 +3,19 @@ import { useQueries } from '@tanstack/react-query';
 
 export function useCounterpartyTransactionUsage(id: string | undefined) {
   const queries = useQueries({
-    queries: (['posted', 'archived'] as const).map((status) => ({
-      queryKey: ['counterpartyService', 'transactionUsage', id, status],
-      queryFn: () =>
-        counterpartyService.getCounterpartyTransactions({
-          counterpartyId: id,
-          status,
-          page: 1,
-          limit: 1,
-        }),
-      enabled: Boolean(id),
-      retry: false,
-      throwOnError: true,
-      refetchOnMount: 'always' as const,
-      refetchOnWindowFocus: false,
-    })),
+    queries: (['posted', 'archived'] as const).map((status) => {
+      const query = { counterpartyId: id, status, page: 1, limit: 1 };
+
+      return {
+        queryKey: ['counterpartyService', 'getCounterpartyTransactions', query],
+        queryFn: () => counterpartyService.getCounterpartyTransactions(query),
+        enabled: Boolean(id),
+        retry: false,
+        throwOnError: true,
+        refetchOnMount: 'always' as const,
+        refetchOnWindowFocus: false,
+      };
+    }),
   });
 
   const used = queries.some((query) =>

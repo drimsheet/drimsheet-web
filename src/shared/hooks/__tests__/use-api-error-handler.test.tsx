@@ -203,7 +203,7 @@ describe('useApiErrorHandler', () => {
     expect(toast.error).toHaveBeenCalledWith('Validation error.');
   });
 
-  it('preserves validation projection and shows untranslated API messages', () => {
+  it('preserves validation projection and localizes unknown API messages', () => {
     const validationErrors = [{ field: 'name', message: 'Name is required' }];
     const setValidationError = vi.fn();
 
@@ -220,7 +220,8 @@ describe('useApiErrorHandler', () => {
     });
 
     expect(setValidationError).toHaveBeenCalledWith(validationErrors);
-    expect(toast.error).toHaveBeenCalledWith('Name is required');
+    expect(toast.error).toHaveBeenCalledWith('An error occurred');
+    expect(toast.error).not.toHaveBeenCalledWith('Name is required');
   });
 
   it('uses the localized generic toast without validation or top-level keys', () => {

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-export interface UseTableQueryParamsOptions<
+export interface IUseTableQueryParamsOptions<
   TFilterKeys extends string = string,
 > {
   defaultSortKey?: string;
@@ -12,7 +12,7 @@ export interface UseTableQueryParamsOptions<
 export function useTableQueryParams<
   TSortKey extends string = string,
   TFilterKeys extends string = string,
->(options: UseTableQueryParamsOptions<TFilterKeys> = {}) {
+>(options: IUseTableQueryParamsOptions<TFilterKeys> = {}) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const pendingSearchParams = useRef({

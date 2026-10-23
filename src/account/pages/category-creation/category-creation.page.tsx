@@ -27,12 +27,11 @@ export function CategoryCreationPage() {
       onSubmit: handleSubmit,
     });
 
+  const accountsQuery = { class: form.values.type as 'revenue' | 'expense' };
+
   const accounts = useQuery({
-    queryKey: ['categoryService', 'chartOfAccounts', form.values.type],
-    queryFn: () =>
-      categoryService.getChartOfAccounts({
-        class: form.values.type as 'revenue' | 'expense',
-      }),
+    queryKey: ['categoryService', 'getChartOfAccounts', accountsQuery],
+    queryFn: () => categoryService.getChartOfAccounts(accountsQuery),
     enabled: pickerOpen && !!form.values.type,
     retry: false,
   });

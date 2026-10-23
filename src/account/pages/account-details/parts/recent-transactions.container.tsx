@@ -1,7 +1,7 @@
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAccountTransactions } from '../hooks/use-account-details';
+import { useAccountTransactions } from '../hooks/use-account-transactions';
 import type { AccountSectionProps } from '../types';
 import { RecentTransactions } from './recent-transactions';
 import { RecentTransactionsSkeleton } from './recent-transactions-skeleton';

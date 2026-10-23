@@ -148,6 +148,12 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
 
 - Put reusable UI and API hooks here.
 - Hooks may coordinate state and side effects, but they should still remain reusable within the feature or shared scope.
+- Define only one custom hook per file, including private hooks.
+- Query keys use `['serviceName', 'methodName', ...arguments]`, matching the
+  invoked service/method and inputs identifying cached data. Append discriminators
+  only for distinct cache shapes or isolated sessions. Invalidation may use prefixes.
+- `npm run check:hooks` enforces hook counts and resolvable service/method prefixes;
+  lint, structure checks, pre-push, and CI run it automatically.
 
 ## `pages/`
 

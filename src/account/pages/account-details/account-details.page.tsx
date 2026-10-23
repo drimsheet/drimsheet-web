@@ -2,7 +2,7 @@ import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
 import { AppBody } from '@/shared/components/app';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
-import { useSubAccounts } from './hooks/use-account-details';
+import { useSubAccounts } from './hooks/use-sub-accounts';
 import { AccountActionsContainer } from './parts/account-actions.container';
 import { LedgerAccountSummary } from './parts/account-summary';
 import { AccountSummarySkeleton } from './parts/account-summary-skeleton';

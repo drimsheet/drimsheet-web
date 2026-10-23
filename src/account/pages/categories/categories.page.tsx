@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import categoriesHelpers from './helper';
-import { useCategoryAccounts } from './hooks/use-categories';
+import { useCategoryAccounts } from './hooks/use-category-accounts';
 import { CategoryArchiveConfirmation } from './parts/archive-confirmation';
 import { CategoryOverviewContainer } from './parts/category-overview.container';
 import { CategoryPeriod } from './parts/category-period';

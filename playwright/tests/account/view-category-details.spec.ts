@@ -396,14 +396,20 @@ for (const type of ['revenue', 'expense'] as const) {
     await page.goto(`/categories/${accountId}`);
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Edit category' });
-    await expect(dialog.getByLabel('Category name')).toHaveValue(category.name);
-    await dialog.getByLabel('Category name').fill('Discarded name');
+    await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
+      category.name
+    );
+    await dialog.getByLabel('Name', { exact: true }).fill('Discarded name');
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(dialog).not.toBeVisible();
     expect(updates).toEqual([]);
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
-    await expect(dialog.getByLabel('Category name')).toHaveValue(category.name);
-    await dialog.getByLabel('Category name').fill('  Updated category  ');
+    await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
+      category.name
+    );
+    await dialog
+      .getByLabel('Name', { exact: true })
+      .fill('  Updated category  ');
     await dialog.getByRole('button', { name: 'Save changes' }).click();
     await expect(dialog).not.toBeVisible();
     expect(updates).toEqual([{ name: 'Updated category' }]);
@@ -411,7 +417,7 @@ for (const type of ['revenue', 'expense'] as const) {
       page.getByRole('heading', { name: 'Updated category' })
     ).toBeVisible();
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
-    await expect(dialog.getByLabel('Category name')).toHaveValue(
+    await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
       'Updated category'
     );
   });
@@ -450,9 +456,9 @@ test('retains category edits after a failed save and allows retry', async ({
   await page.goto(`/categories/${accountId}`);
   await page.getByRole('button', { name: 'Edit', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Edit category' });
-  await dialog.getByLabel('Category name').fill('Updated category');
+  await dialog.getByLabel('Name', { exact: true }).fill('Updated category');
   await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog.getByLabel('Category name')).toBeDisabled();
+  await expect(dialog.getByLabel('Name', { exact: true })).toBeDisabled();
   await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeDisabled();
   await page.keyboard.press('Escape');
   await expect(dialog).toBeVisible();
@@ -460,7 +466,7 @@ test('retains category edits after a failed save and allows retry', async ({
   await expect(dialog.getByRole('alert')).toContainText(
     'We couldn’t save this category'
   );
-  await expect(dialog.getByLabel('Category name')).toHaveValue(
+  await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
     'Updated category'
   );
   await dialog.getByRole('button', { name: 'Save changes' }).click();

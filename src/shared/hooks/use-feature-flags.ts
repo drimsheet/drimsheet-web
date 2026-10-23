@@ -19,7 +19,3 @@ export function useFeatureFlags(requiredFlagKeys: readonly UFeatureFlagKey[]) {
 
   return requiredFlagKeys.every((flagKey) => featureFlagValues[flagKey]);
 }
-
-export function useCanAccessAlpha1() {
-  return useFeatureFlags([featureFlagKeys.accessAlpha1]);
-}

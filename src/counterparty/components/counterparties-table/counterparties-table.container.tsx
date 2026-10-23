@@ -1,8 +1,8 @@
 import { CounterpartyDeletionDialog } from '@/counterparty/dialogs/counterparty-deletion';
 import { CounterpartyUpdateDialog } from '@/counterparty/dialogs/counterparty-update';
 import { useArchiveCounterparty } from '@/counterparty/hooks/use-archive-counterparty';
+import { useCheckCounterpartyDeletionEligibility } from '@/counterparty/hooks/use-check-counterparty-deletion-eligibility';
 import { useCounterparties } from '@/counterparty/hooks/use-counterparties';
-import { useCheckCounterpartyDeletionEligibility } from '@/counterparty/hooks/use-counterparty-deletion-eligibility';
 import { counterpartyMapper } from '@/counterparty/lib/mappers/counterparty.mapper';
 import { getCounterpartyFormRole } from '@/counterparty/lib/utils/counterparty-form';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';

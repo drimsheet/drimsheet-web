@@ -1,7 +1,7 @@
 import {
   featureFlagKeys,
   type UFeatureFlagKey,
-} from '@/shared/hooks/use-feature-flag';
+} from '@/shared/hooks/use-feature-flags';
 import type { Page } from '@playwright/test';
 
 export type TLaunchDarklyFlagValues = Record<UFeatureFlagKey, boolean>;

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useBankDetails } from '../hooks/use-account-details';
+import { useBankDetails } from '../hooks/use-bank-details';
 import type { AccountSectionProps } from '../types';
 import { BankDetails } from './bank-details';
 import { BankDetailsSkeleton } from './bank-details-skeleton';

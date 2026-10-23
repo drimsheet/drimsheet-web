@@ -3,6 +3,7 @@ import { GoogleAuthButtonContainer } from '@/auth/components/google-auth-button'
 import { SignupForm } from '@/auth/components/signup-form';
 import type { ISignupFormValues } from '@/auth/components/signup-form/types';
 import { useSignupWithEmail } from '@/auth/hooks/use-signup-with-email';
+import { signupMapper } from '@/auth/lib/mappers/signup.mapper';
 import emailSentImg from '@/shared/assets/email-sent.svg';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import {
@@ -27,7 +28,7 @@ export function SignUpPage() {
 
   const handleSignup = async (values: ISignupFormValues) => {
     try {
-      await signup(values);
+      await signup(signupMapper.toRequest(values));
       setSuccess(true);
     } catch (error) {
       handleApiError(error, { showToast: true });

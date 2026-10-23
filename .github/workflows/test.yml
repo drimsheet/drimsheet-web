@@ -29,6 +29,9 @@ jobs:
       - name: Check Structure
         run: npm run check:structure
 
+      - name: Test Hook Checks
+        run: npm test -- --run scripts/check-hooks.test.js --maxWorkers=2
+
       - name: Check Stories
         run: npm run check-stories
 

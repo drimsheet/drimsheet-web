@@ -1,9 +1,9 @@
-import type { ISignupFormValues } from '@/auth/components/signup-form/types';
 import { drimsheetApi } from '@/shared/lib/api';
 import type {
   IEmailLoginReq,
   IResetPasswordReq,
   IUserProfileDto,
+  IUserSignupReq,
 } from '@/shared/lib/api/Api';
 import { storageService } from '@/shared/lib/services/storage.service';
 import { jwtDecode } from 'jwt-decode';
@@ -75,7 +75,7 @@ export const authService = {
     }
   },
 
-  async signupWithEmail(payload: ISignupFormValues) {
+  async signupWithEmail(payload: IUserSignupReq) {
     return drimsheetApi.auth.signupWithEmail(payload);
   },
 

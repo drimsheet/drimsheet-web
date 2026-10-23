@@ -3,7 +3,7 @@ import { useLaunchDarklyContextSynchronization } from '@/_app/containers/launchd
 import {
   featureFlagKeys,
   useFeatureFlags,
-} from '@/shared/hooks/use-feature-flag';
+} from '@/shared/hooks/use-feature-flags';
 import { render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -11,9 +11,9 @@ vi.mock('@/_app/containers/launchdarkly', () => ({
   useLaunchDarklyContextSynchronization: vi.fn(),
 }));
 
-vi.mock('@/shared/hooks/use-feature-flag', async (importOriginal) => {
+vi.mock('@/shared/hooks/use-feature-flags', async (importOriginal) => {
   const original =
-    await importOriginal<typeof import('@/shared/hooks/use-feature-flag')>();
+    await importOriginal<typeof import('@/shared/hooks/use-feature-flags')>();
 
   return {
     ...original,

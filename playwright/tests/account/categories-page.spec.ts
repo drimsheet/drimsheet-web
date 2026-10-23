@@ -339,7 +339,10 @@ test('renames and archives categories, then opens category details', async ({
     .getByRole('button', { name: 'Actions for Consulting services' })
     .click();
   await page.getByRole('menuitem', { name: 'Edit', exact: true }).click();
-  await page.getByRole('dialog').getByLabel('Category name').fill('Advisory');
+  await page
+    .getByRole('dialog')
+    .getByLabel('Name', { exact: true })
+    .fill('Advisory');
   await page.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
   expect(updatePayload).toEqual({ name: 'Advisory' });

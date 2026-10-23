@@ -10,7 +10,7 @@ import { useCounterpartiesRoutes } from '@/counterparty/routes/counterparties';
 import { useJournalEntriesRoutes } from '@/journal-entries/routes/journal-entries';
 import { useOnboardingRoutes } from '@/onboarding/routes/onboarding';
 import { useReportingRoutes } from '@/reporting/routes/reporting';
-import { featureFlagKeys } from '@/shared/hooks/use-feature-flag';
+import { featureFlagKeys } from '@/shared/hooks/use-feature-flags';
 import { useUserRoutes } from '@/user/routes/user';
 import { wrapUseRoutesV7 } from '@sentry/react';
 import { Outlet, useRoutes } from 'react-router-dom';

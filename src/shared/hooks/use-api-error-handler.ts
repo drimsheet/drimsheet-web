@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 export type TApiErrorKey = keyof typeof apiErrorsJson;
 
 const isApiErrorKey = (key: string): key is TApiErrorKey => {
-  return key in apiErrorsJson;
+  return Object.hasOwn(apiErrorsJson, key);
 };
 
 const getValidationToastMessages = (
@@ -25,8 +25,7 @@ const getValidationToastMessages = (
     if (isApiErrorKey(message)) {
       messages.add(i18n.t(message, { ns: 'api-errors' }));
     } else {
-      // TODO: report untranslated message
-      messages.add(message);
+      messages.add(i18n.t('an_error_occurred', { ns: 'shared' }));
     }
   });
 
