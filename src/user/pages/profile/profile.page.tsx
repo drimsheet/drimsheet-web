@@ -1,6 +1,6 @@
 import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entities';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import type { IUserPreferencesUpdateDto } from '@/shared/lib/api/Api';
@@ -61,7 +61,6 @@ export function ProfilePage() {
 
   return (
     <>
-      <AppHeader breadcrumbs={[{ label: profile_title }]} />
       <AppBody>
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-1 pb-6 sm:px-4">
           <div className="flex flex-col gap-2">

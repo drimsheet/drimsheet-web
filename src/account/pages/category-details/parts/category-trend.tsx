@@ -82,7 +82,13 @@ export function CategoryTrend({
         {hasActivity && (
           <ChartContainer
             config={{
-              amount: { label: amount_label, color: 'var(--chart-1)' },
+              amount: {
+                label: amount_label,
+                color:
+                  type === 'revenue'
+                    ? 'var(--financial-income)'
+                    : 'var(--financial-expense)',
+              },
             }}
             className="h-56 w-full"
             aria-label={title}

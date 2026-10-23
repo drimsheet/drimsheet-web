@@ -41,6 +41,7 @@ const meta = {
   component: CounterpartyShare,
   tags: ['autodocs'],
   args: {
+    type: 'revenue',
     counterparties,
     selectedId: null,
     onSelect: fn(),

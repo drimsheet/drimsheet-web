@@ -21,7 +21,7 @@ describe('FullPageLoader', () => {
   it('disables the pulse animation when reduced motion is requested', () => {
     const { container } = render(<FullPageLoader label="Loading Drimsheet" />);
 
-    expect(container.querySelector('img')).toHaveClass(
+    expect(container.querySelector('[aria-hidden="true"]')).toHaveClass(
       'motion-reduce:animate-none'
     );
   });

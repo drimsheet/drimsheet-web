@@ -112,7 +112,7 @@ export function LoginForm({
               </div>
               <Link
                 to="/auth/forgot-password"
-                className="hover:text-primary col-start-2 row-start-1 justify-self-end text-xs font-medium"
+                className="hover:text-link col-start-2 row-start-1 justify-self-end text-xs font-medium"
               >
                 {forgot_password_text}
               </Link>

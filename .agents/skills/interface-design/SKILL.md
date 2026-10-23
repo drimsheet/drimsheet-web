@@ -5,8 +5,8 @@ description: Design, build, review, or refine Drimsheet product interfaces using
 
 # Interface Design
 
-This is the self-contained design contract for Drimsheet. The theme, navigation,
-and hybrid chart system below are approved decisions. Apply them without
+This is the design contract for Drimsheet. The navigation and hybrid chart
+system and referenced color palette are approved decisions. Apply them without
 reopening color exploration on each task. New explicit user direction can revise
 this contract; incidental preview selections do not replace an explicit choice.
 
@@ -26,8 +26,8 @@ money straightforward.
   establish hierarchy before adding containers, borders, or color.
 - Keep most of the screen neutral. Butter identifies actions and selection;
   financial colors communicate the meaning of data. These are separate roles.
-- Make navigation distinct, while allowing the header and main content to read
-  as one continuous page.
+- Make sidebar navigation distinct. Each page composes its own breadcrumbs,
+  headings, and content on one continuous surface, without a global top bar.
 - Favor flat surfaces, quiet hairlines, and modest tonal steps. Avoid decorative
   gradients, dramatic shadows, oversized icons, and a card around every section.
 - Retain recognizable workflows and useful information density. Do not invent
@@ -35,60 +35,57 @@ money straightforward.
 - Consistency matters more than novelty. Reuse established patterns; adapt their
   layout to the task rather than generating a different visual identity per page.
 
-## Approved theme tokens
+## Color palette and theme roles
 
-Butter is **`#F4DB72`**. The dark main page is **Ramp charcoal `#1A1919`**.
-Keep the dark neutral surfaces free of an olive or green cast. The financial
-income green belongs in data marks, not in page backgrounds.
+Use the six-family palette in [Color palette](references/color-palette.md) for
+color selection, theme mapping, component styling, and color reviews. Read that
+reference before those tasks; it is the single source of shade values, approved
+role mappings, and contrast pairs.
 
-These values define semantic roles. When implementing, bind them to the existing
-shared theme and component tokens; do not scatter literal colors through JSX or
-create a parallel styling system. Inspect current token consumers before mapping
-roles, especially where brand, financial data, and destructive actions currently
-share a variable.
+**Status:** the user approved the shade scales and theme mappings for application
+implementation. Preserve these palette choices and the established Butter brand
+and Ramp charcoal anchors in subsequent interface work.
 
-| Role                           | Light     | Dark      |
-| ------------------------------ | --------- | --------- |
-| Page and top header            | `#FFFEFA` | `#1A1919` |
-| Sidebar                        | `#EFEEE8` | `#121111` |
-| Supporting panel               | `#F4F3ED` | `#252323` |
-| Inset input surface            | `#F8F7F2` | `#161515` |
-| Primary text                   | `#282923` | `#F1EFED` |
-| Secondary text                 | `#70716A` | `#B3B0AE` |
-| Inactive navigation text/icons | `#5F6059` | `#C3C1C0` |
-| Quiet divider/gridline         | `#E4E3DC` | `#3B3737` |
-| Secondary control border       | `#D5D5CB` | `#4A4545` |
-| Brand / primary action fill    | `#F4DB72` | `#F4DB72` |
-| Text/icon on primary action    | `#282923` | `#252323` |
-| Active navigation fill         | `#F4DB72` | `#332E24` |
-| Active navigation text/icon    | `#282923` | `#F4DB72` |
-| Financial income / money in    | `#327354` | `#86B99B` |
-| Financial expense / money out  | `#AD5B48` | `#D58F7C` |
-| Neutral comparison / reversal  | `#79736C` | `#A19C97` |
-| Chart track                    | `#EAE7DE` | `#343131` |
-| Subtle row hover               | `#F2EFE5` | `#292626` |
-
-Use Butter sparingly on the main action, active navigation, and deliberate
-selection cues. Use dark text on Butter-filled controls, not white. It is not a
-large page wash or the default color for financial chart series.
-
-Financial expense is a data role, not an error state. Keep destructive actions,
-validation errors, and financial expense independently named even if a future
-theme shares some primitives. Positive and negative changes need context: an
-expense increase is not automatically good, and every reversal is not an error.
+- Define colors as reusable primitives: Butter, neutral, green, terracotta,
+  blue, and amber, with numbered shade scales independent of components.
+- Semantic aliases such as primary, secondary, background, and financial-income
+  select palette shades for each theme. They must not introduce new hex values.
+  Primary and secondary are roles, not separate shade families.
+- Components consume the shared role pairs or an explicitly chosen palette
+  shade for a documented local role. Do not invent colors per component.
+- Use Butter sparingly for the main action and intentional selection, with
+  dark text. Secondary actions use charcoal with off-white text in light mode
+  and light neutral with charcoal text in dark mode.
+- The brand accent is Butter (primary). The CSS accent token is a neutral
+  interaction surface; do not confuse these two uses of the word accent.
+- Keep panel surfaces separate from secondary action fills, and essential
+  control borders separate from quiet decorative dividers.
+- Financial expense and destructive feedback retain independently named roles,
+  even where both select terracotta. Keep financial meaning distinct from
+  validation and operation outcomes. An expense increase is not automatically
+  good, and every reversal is not an error.
+- Inspect consumers when changing role mappings. Existing opacity modifiers,
+  foreground overrides, and gradients can invalidate otherwise accessible pairs.
 
 ## Navigation and page composition
 
+- **App layout:** provides the sidebar and main content area. Do not introduce
+  a global top bar or reserve a persistent header row above every page.
 - **Sidebar:** use its distinct surface in both themes. Do not make it the same
   color as the page. Use small monochrome icons, aligned labels, and quiet group
   captions; preserve the application's information architecture.
+- **Global controls:** place account/entity switching, the user menu, logout,
+  and any existing notification control in the sidebar. Keep them accessible
+  when the sidebar is collapsed and through its mobile navigation pattern.
 - **Active navigation:** Butter fill with dark text in light mode. In dark mode,
   use the muted warm selection fill with Butter text/icon so the navigation does
   not compete with the main action. Include a non-color indication such as
   weight and `aria-current`.
-- **Top header:** exactly the same surface as the main application page. No
-  contrasting header band, bottom border, shadow, or outline under breadcrumbs.
-  Spacing separates breadcrumbs from the page title.
+- **Page composition:** each page owns its breadcrumbs, heading, description,
+  and relevant actions, composing shared primitives for consistent typography
+  and spacing. Breadcrumbs, where useful, flow directly into the page on its
+  background, with no contrasting band, bottom border, shadow, or outline.
+  Use spacing to separate breadcrumbs from the page title.
 - **Tabs:** a quiet baseline and short active underline may remain where they
   explain a real tab group. The removed breadcrumb divider is not a ban on
   functional separators elsewhere.
@@ -98,12 +95,14 @@ expense increase is not automatically good, and every reversal is not an error.
 - **Tables:** restrained row separators, aligned amounts, and understated hover
   feedback. Keep essential actions available without hover.
 - **Responsive layout:** reflow controls and panels before shrinking text. Collapse
-  the sidebar through the existing accessible navigation pattern. Contain wide
-  table scrolling without introducing horizontal page overflow.
+  the sidebar through the existing accessible navigation pattern. Keep a visible,
+  accessible menu trigger available within the page composition when the sidebar
+  is hidden; this does not require a global top bar. Contain wide table scrolling
+  without introducing horizontal page overflow.
 
 ## Typography, spacing, and depth
 
-Retain **Figtree** for UI and headings. Use regular body text, medium labels and
+Use **Inter** for UI and headings. Use regular body text, medium labels and
 headings, and selective semibold emphasis. Hierarchy comes from size, weight,
 contrast, and space together; do not apply a marketing-style single-weight rule.
 Use tabular numerals for amounts and other aligned or changing numbers.
@@ -225,13 +224,20 @@ unless the underlying chart explicitly represents signed cash movement.
 ## Review checklist
 
 - Does the task and primary action lead without making every element compete?
-- Is the sidebar distinct while the header and page remain continuous?
+- Is the app layout free of a global top bar, with a distinct sidebar?
+- Does each page compose its own breadcrumbs, headings, and relevant actions
+  using shared primitives?
+- Are global controls in the sidebar and accessible in collapsed/mobile states?
 - Is there no divider or shadow beneath the breadcrumbs?
+- Do all colors come from the documented palette, with theme aliases selecting
+  shades rather than introducing new colors?
+- Are text and essential control boundaries contrasted against their actual
+  surfaces, including hover and focus states?
 - Is Butter intentional and sparse, with dark text on filled controls?
 - Is the dark page exactly Ramp charcoal, without a green cast?
 - Do charts retain income/expense semantics, labels, signs, patterns, and honest
   scales in both themes?
-- Do whitespace, Figtree hierarchy, aligned numbers, and quiet surfaces provide
+- Do whitespace, Inter hierarchy, aligned numbers, and quiet surfaces provide
   structure without excessive boxes, shadows, or borders?
 - Do controls and data remain usable at narrow widths and with keyboard access?
 - Are changes limited to the user's requested scope?

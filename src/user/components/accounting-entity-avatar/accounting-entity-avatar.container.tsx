@@ -1,19 +1,19 @@
 import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entities';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
-import { Button } from '@/shared/components/button';
 import { Skeleton } from '@/shared/components/skeleton';
-import { AccountingEntityAvatar } from '@/user/components/accounting-entity-avatar/accounting-entity-avatar';
+import { SidebarAccountButton } from '@/user/components/sidebar-account-button';
 import { AccountManagementDialog } from '@/user/dialogs/account-management';
+import { useProfile } from '@/user/hooks/use-profile';
 import { useTranslation } from 'react-i18next';
+import { AccountingEntityAvatar } from './accounting-entity-avatar';
 
-interface AccountingEntityAvatarContainerProps {
-  onLogoutClick: () => void;
-}
+import type { AccountingEntityAvatarContainerProps } from './types';
 
 export function AccountingEntityAvatarContainer({
   onLogoutClick,
 }: Readonly<AccountingEntityAvatarContainerProps>) {
   const { t } = useTranslation('user');
+  const { data: profile } = useProfile();
 
   const {
     data: accountingEntities = [],
@@ -32,50 +32,58 @@ export function AccountingEntityAvatarContainer({
     (hasAccountingEntities && isLoadingAccountingEntity);
 
   if (isLoading) {
+    const loading_label = t('account_management_loading_status');
+
     return (
       <Skeleton
         role="status"
-        aria-label={t('account_management_loading_status')}
-        className="size-10 rounded-full"
+        aria-label={loading_label}
+        className="h-12 w-full rounded-md group-data-[collapsible=icon]:size-8"
       />
     );
   }
 
   if (!activeEntity) {
+    const unavailable_label = t('account_management_unavailable_aria_label');
+
     return (
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-lg"
-        className="rounded-full p-0"
-        aria-label={t('account_management_unavailable_aria_label')}
+      <SidebarAccountButton
+        name={unavailable_label}
+        avatar={
+          <AccountingEntityAvatar
+            name=""
+            className="rounded-md"
+            fallbackClassName="rounded-md"
+          />
+        }
+        aria-label={unavailable_label}
         disabled
-      >
-        <AccountingEntityAvatar name="" size="lg" />
-      </Button>
+      />
     );
   }
+
+  const account_management_aria_label = t(
+    'open_account_management_aria_label',
+    { name: activeEntity.name }
+  );
 
   return (
     <AccountManagementDialog
       activeEntity={activeEntity}
       onLogoutClick={onLogoutClick}
     >
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-lg"
-        className="rounded-full p-0"
-        aria-label={t('open_account_management_aria_label', {
-          name: activeEntity.name,
-        })}
-      >
-        <AccountingEntityAvatar
-          name={activeEntity.name}
-          size="lg"
-          fallbackClassName="bg-primary text-base font-semibold text-primary-foreground"
-        />
-      </Button>
+      <SidebarAccountButton
+        name={activeEntity.name}
+        avatar={
+          <AccountingEntityAvatar
+            name={activeEntity.name}
+            className="rounded-md"
+            fallbackClassName="rounded-md bg-secondary text-secondary-foreground"
+          />
+        }
+        description={profile?.email}
+        aria-label={account_management_aria_label}
+      />
     </AccountManagementDialog>
   );
 }

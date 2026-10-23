@@ -2,19 +2,19 @@ import { AppSidebar } from '@/_app/components/app-sidebar';
 import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entities';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
 import { LogoutConfirmationDialog } from '@/auth/dialogs/logout-confirmation';
-import { AppHeaderActionsProvider } from '@/shared/components/app';
-import { Button } from '@/shared/components/button';
 import { FullPageLoader } from '@/shared/components/full-page-loader';
-import { SidebarInset, SidebarProvider } from '@/shared/components/sidebar';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/shared/components/sidebar';
 import { AccountingEntityAvatarContainer } from '@/user/components/accounting-entity-avatar';
-import { BellIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 export function AppLayout() {
   const { pathname } = useLocation();
-  const { t: tUser } = useTranslation('user');
   const { t: tShared } = useTranslation('shared');
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
 
@@ -39,36 +39,24 @@ export function AppLayout() {
     return <Navigate to="/onboarding" replace />;
   }
 
-  const notificationsAriaLabel = tUser('notifications_aria_label');
-
-  const headerActions = (
-    <>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-lg"
-        aria-label={notificationsAriaLabel}
-        title={notificationsAriaLabel}
-        disabled
-      >
-        <BellIcon />
-      </Button>
-      <AccountingEntityAvatarContainer
-        onLogoutClick={() => setShowLogoutConfirmation(true)}
-      />
-    </>
-  );
-
   return (
     <>
-      <SidebarProvider>
-        <AppSidebar currentPath={pathname} />
+      <SidebarProvider
+        style={{ '--sidebar-width': '14rem' } as React.CSSProperties}
+      >
+        <AppSidebar
+          currentPath={pathname}
+          accountControl={
+            <AccountingEntityAvatarContainer
+              onLogoutClick={() => setShowLogoutConfirmation(true)}
+            />
+          }
+        />
         <SidebarInset>
-          <AppHeaderActionsProvider actions={headerActions}>
-            <div className="flex flex-1 flex-col gap-4 p-4 pt-0 mb-8 min-w-full">
-              <Outlet />
-            </div>
-          </AppHeaderActionsProvider>
+          <div className="flex min-w-0 flex-1 flex-col gap-4 p-4 mb-8 md:p-8">
+            <SidebarTrigger className="md:hidden" />
+            <Outlet />
+          </div>
         </SidebarInset>
       </SidebarProvider>
       <LogoutConfirmationDialog

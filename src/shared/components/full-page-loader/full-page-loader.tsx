@@ -1,4 +1,4 @@
-import animatedLogoImg from '@/shared/assets/animated-drimsheet.svg';
+import { BrandLogo } from '@/shared/components/brand-logo';
 import type { FullPageLoaderProps } from './types';
 
 export function FullPageLoader({ label }: Readonly<FullPageLoaderProps>) {
@@ -8,11 +8,9 @@ export function FullPageLoader({ label }: Readonly<FullPageLoaderProps>) {
       aria-live="polite"
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-md"
     >
-      <img
-        className="animate-pulse-scale motion-reduce:animate-none"
-        width={100}
-        height={100}
-        src={animatedLogoImg}
+      <BrandLogo
+        variant="mark"
+        className="size-25 animate-pulse-scale motion-reduce:animate-none"
         alt=""
       />
       <span className="sr-only">{label}</span>

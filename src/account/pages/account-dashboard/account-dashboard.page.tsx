@@ -3,7 +3,7 @@ import { LedgerAccountsTableContainer } from '@/account/components/accounts-tabl
 import { AccountTypeSelectionDialog } from '@/account/dialogs/account-type-selection';
 import { BankAccountCreationDialog } from '@/account/dialogs/bank-account-creation';
 import { PettyCashAccountCreationDialog } from '@/account/dialogs/petty-cash-account-creation';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import {
   ELedgerAccountBehavior,
   ELedgerType,
@@ -26,7 +26,6 @@ export function AccountsDashboardPage() {
     setSelectedBehavior(behavior);
   };
 
-  const accounts_label = t('shared:accounts');
   const total_vault_balance_label = t('ledger-accounts:total_vault_balance');
 
   const accounts_count_text = t('ledger-accounts:accounts_count', {
@@ -35,8 +34,6 @@ export function AccountsDashboardPage() {
 
   return (
     <>
-      <AppHeader breadcrumbs={[{ label: accounts_label }]} />
-
       <AppBody>
         <LedgerAccountsOverview
           type={ELedgerType.Asset}

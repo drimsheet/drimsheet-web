@@ -83,6 +83,12 @@ async function signIn(page: Page) {
   await page.getByLabel('Password', { exact: true }).fill('Password1!');
   await page.getByRole('button', { name: 'Sign In' }).click();
   await expect(page).toHaveURL('/dashboard');
+  if ((page.viewportSize()?.width ?? 1280) < 768) {
+    await page
+      .getByRole('button', { name: 'Toggle Sidebar', exact: true })
+      .click();
+  }
+
   await expect(
     page.getByRole('button', {
       name: 'Open account management for Integration Entity',
@@ -242,3 +248,66 @@ test('keeps the current entity when switching fails', async ({ page }) => {
     })
   ).toBeVisible();
 });
+
+for (const theme of ['light', 'dark'] as const) {
+  for (const width of [1280, 375]) {
+    test(`keeps sidebar account controls accessible in ${theme} at ${width}px`, async ({
+      page,
+    }, testInfo) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.addInitScript(
+        (appearance) => localStorage.setItem('theme', appearance),
+        theme
+      );
+      await signIn(page);
+      await expect(page.getByRole('banner')).toHaveCount(0);
+      await expect(
+        page.getByRole('navigation', { name: 'breadcrumb' })
+      ).toHaveCount(0);
+      await expect(page.locator('body')).toHaveCSS(
+        'background-color',
+        theme === 'light' ? 'rgb(255, 254, 250)' : 'rgb(26, 25, 25)'
+      );
+
+      const trigger = page.getByRole('button', {
+        name: 'Open account management for Integration Entity',
+      });
+
+      await expect(trigger).toBeInViewport();
+      await expect(trigger).toContainText('Integration Entity');
+      await page.screenshot({
+        path: testInfo.outputPath('sidebar.png'),
+        animations: 'disabled',
+      });
+      if (width > 768) {
+        await page
+          .getByRole('button', { name: 'Toggle sidebar', exact: true })
+          .first()
+          .click();
+        await expect(trigger).toBeInViewport();
+      }
+
+      await trigger.click();
+      const menu = page.getByRole('dialog', { name: 'Account management' });
+      await expect(menu).toBeVisible();
+      await expect(
+        menu.getByRole('button', { name: 'Log out' })
+      ).toBeInViewport();
+      await expect(
+        menu.getByRole('button', { name: 'Switch to Drimsheet' })
+      ).toBeInViewport();
+      await page.screenshot({
+        path: testInfo.outputPath('account-menu.png'),
+        animations: 'disabled',
+      });
+      await page.keyboard.press('Escape');
+      await expect(menu).not.toBeVisible();
+      await expect(trigger).toBeFocused();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth
+        )
+      ).toBe(true);
+    });
+  }
+}

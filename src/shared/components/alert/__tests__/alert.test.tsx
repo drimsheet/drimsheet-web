@@ -18,25 +18,25 @@ describe('Alert', () => {
   it('renders destructive variant correctly', () => {
     render(<Destructive />);
     const alert = screen.getByRole('alert');
-    expect(alert).toHaveClass('bg-card', 'text-destructive');
+    expect(alert).toHaveClass('bg-destructive-surface', 'text-destructive');
   });
 
   it('renders success variant correctly', () => {
     render(<Success />);
     const alert = screen.getByRole('alert');
-    expect(alert).toHaveClass('bg-card', 'text-success');
+    expect(alert).toHaveClass('bg-success-surface', 'text-success');
   });
 
   it('renders info variant correctly', () => {
     render(<Info />);
     const alert = screen.getByRole('alert');
-    expect(alert).toHaveClass('bg-card', 'text-info');
+    expect(alert).toHaveClass('bg-info-surface', 'text-info');
   });
 
   it('renders warning variant correctly', () => {
     render(<Warning />);
     const alert = screen.getByRole('alert');
-    expect(alert).toHaveClass('bg-card', 'text-warning');
+    expect(alert).toHaveClass('bg-warning-surface', 'text-warning');
   });
 
   it('renders AlertTitle and AlertDescription', () => {

@@ -4,7 +4,7 @@ import { SignupForm } from '@/auth/components/signup-form';
 import type { ISignupFormValues } from '@/auth/components/signup-form/types';
 import { useSignupWithEmail } from '@/auth/hooks/use-signup-with-email';
 import emailSentImg from '@/shared/assets/email-sent.svg';
-import logoImg from '@/shared/assets/logo.svg';
+import { BrandLogo } from '@/shared/components/brand-logo';
 import {
   Card,
   CardContent,
@@ -71,9 +71,7 @@ export function SignUpPage() {
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div className="flex flex-col items-center gap-2 text-center">
           <Link to="/" className="flex flex-col items-center gap-2 font-medium">
-            <div className="flex size-8 items-center justify-center rounded-md">
-              <img src={logoImg} alt="" className="mb-6 min-w-12 rounded-sm" />
-            </div>
+            <BrandLogo alt="" className="mb-2 w-48" />
             <span className="sr-only">{drimsheet_limited}.</span>
           </Link>
           <h1 className="text-2xl font-bold tracking-tight">
@@ -91,10 +89,7 @@ export function SignUpPage() {
 
         <FieldDescription className="text-center">
           {already_have_account_text}{' '}
-          <Link
-            to="/auth/signin"
-            className="text-primary hover:text-primary/80"
-          >
+          <Link to="/auth/signin" className="text-link hover:text-link/80">
             {sign_in_link_text}
           </Link>
         </FieldDescription>

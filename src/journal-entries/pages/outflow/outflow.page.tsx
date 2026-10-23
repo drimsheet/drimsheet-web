@@ -1,5 +1,5 @@
 import { OutflowFormContainer } from '@/journal-entries/components/outflow-form';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { DocumentUpload } from '@/shared/components/document-upload';
 import { EFileType } from '@/shared/components/document-upload/types';
 import { useState } from 'react';
@@ -26,7 +26,6 @@ export function OutflowPage() {
 
   return (
     <>
-      <AppHeader />
       <AppBody>
         <div className="grid gap-20 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,28rem)]">
           <OutflowFormContainer />

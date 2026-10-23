@@ -17,6 +17,7 @@ import type { CounterpartyShareProps } from '../types';
 
 export function CounterpartyShare({
   counterparties,
+  type,
   pagination,
   loading,
   error,
@@ -126,11 +127,16 @@ export function CounterpartyShare({
                 </span>
                 {showBar && (
                   <span
-                    className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+                    className="h-1.5 w-full overflow-hidden rounded-full bg-chart-track"
                     aria-hidden="true"
                   >
                     <span
-                      className="block h-full rounded-full bg-chart-1"
+                      className={cn(
+                        'block h-full rounded-full',
+                        type === 'revenue'
+                          ? 'bg-financial-income'
+                          : 'bg-financial-expense'
+                      )}
                       style={{ width: `${share}%` }}
                     />
                   </span>

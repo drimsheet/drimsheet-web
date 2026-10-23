@@ -68,6 +68,7 @@ const meta = {
   component: CategoryChart,
   tags: ['autodocs'],
   args: {
+    type: 'revenue',
     title: 'Revenue by category',
     description: 'Net revenue and share of total revenue for this period',
     section: categorySummary.revenue,

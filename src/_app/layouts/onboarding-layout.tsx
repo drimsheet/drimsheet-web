@@ -1,6 +1,4 @@
 import { LogoutConfirmationDialog } from '@/auth/dialogs/logout-confirmation';
-import { AppHeaderActionsProvider } from '@/shared/components/app';
-import { Button } from '@/shared/components/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +8,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/components/dropdown-menu';
+import { useIsMobile } from '@/shared/components/sidebar';
 import { AccountingEntityAvatar } from '@/user/components/accounting-entity-avatar';
+import { SidebarAccountButton } from '@/user/components/sidebar-account-button';
 import { useProfile } from '@/user/hooks/use-profile';
 import { LogOutIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -19,6 +19,7 @@ import { Outlet } from 'react-router-dom';
 
 export function OnboardingLayout() {
   const { t } = useTranslation(['user', 'auth']);
+  const isMobile = useIsMobile();
 
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
 
@@ -44,26 +45,26 @@ export function OnboardingLayout() {
   const profile_label = t('user:profile_title');
   const log_out_label = t('auth:log_out_text');
 
-  const headerActions = (
+  const accountControl = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-lg"
-          className="rounded-full p-0"
+        <SidebarAccountButton
+          name={profileName || profile?.email || profile_label}
+          avatar={
+            <AccountingEntityAvatar
+              name={profileName || profile?.email || profile_label}
+              className="rounded-md"
+              fallbackClassName="rounded-md bg-secondary text-secondary-foreground"
+            />
+          }
+          description={profile?.email}
           aria-label={profile_label}
-          title={profile_label}
-        >
-          <AccountingEntityAvatar
-            name={profileName || profile?.email || ''}
-            size="lg"
-            fallbackClassName="bg-primary text-base font-semibold text-primary-foreground"
-          />
-        </Button>
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
+        side={isMobile ? 'top' : 'right'}
+        collisionPadding={16}
         className="w-64"
         onCloseAutoFocus={handleCloseAutoFocus}
       >
@@ -87,12 +88,12 @@ export function OnboardingLayout() {
   );
 
   return (
-    <AppHeaderActionsProvider actions={headerActions}>
-      <Outlet />
+    <>
+      <Outlet context={accountControl} />
       <LogoutConfirmationDialog
         open={showLogoutConfirmation}
         onOpenChange={setShowLogoutConfirmation}
       />
-    </AppHeaderActionsProvider>
+    </>
   );
 }

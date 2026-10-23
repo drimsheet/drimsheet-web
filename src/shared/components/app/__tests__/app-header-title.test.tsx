@@ -12,7 +12,7 @@ describe('AppHeaderTitle', () => {
     render(<AppHeaderTitle>Accounts Dashboard</AppHeaderTitle>);
     const title = screen.getByText('Accounts Dashboard');
     expect(title.tagName).toBe('H1');
-    expect(title).toHaveClass('text-3xl', 'text-primary', 'font-semibold');
+    expect(title).toHaveClass('text-3xl', 'text-foreground', 'font-medium');
   });
 
   it('merges custom className prop', () => {
@@ -24,8 +24,8 @@ describe('AppHeaderTitle', () => {
     const title = screen.getByText('Accounts Dashboard');
     expect(title).toHaveClass(
       'text-3xl',
-      'text-primary',
-      'font-semibold',
+      'text-foreground',
+      'font-medium',
       'my-custom-class'
     );
   });

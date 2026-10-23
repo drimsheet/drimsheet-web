@@ -56,7 +56,7 @@ export function CategoryTable({
         render: (_, account) => (
           <button
             type="button"
-            className="block min-h-8 w-full min-w-48 whitespace-normal break-words text-left underline-offset-4 hover:text-primary hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
+            className="block min-h-8 w-full min-w-48 whitespace-normal break-words text-left underline-offset-4 hover:text-link hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
             onClick={() => onViewAccount(account.accountId)}
           >
             {account.accountName}

@@ -25,6 +25,7 @@ export interface CategorySummaryProps {
 }
 
 export interface CategoryChartProps {
+  type: 'revenue' | 'expense';
   title: string;
   description: string;
   section: IRevenueExpenseSectionDto;

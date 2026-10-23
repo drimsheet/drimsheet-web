@@ -1,6 +1,8 @@
 import { AppSidebar } from '@/_app/components/app-sidebar';
 import { SidebarProvider, SidebarTrigger } from '@/shared/components/sidebar';
 import { TooltipProvider } from '@/shared/components/tooltip';
+import { AccountingEntityAvatar } from '@/user/components/accounting-entity-avatar';
+import { SidebarAccountButton } from '@/user/components/sidebar-account-button';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -8,17 +10,29 @@ const meta = {
   title: 'Shared UI/AppSidebar',
   component: AppSidebar,
   tags: ['autodocs'],
+  args: {
+    accountControl: (
+      <SidebarAccountButton
+        name="Noma Studio"
+        avatar={<AccountingEntityAvatar name="Noma Studio" />}
+        description="hello@noma.example"
+      />
+    ),
+  },
   parameters: { layout: 'fullscreen' },
   decorators: [
     (Story, context) => (
       <MemoryRouter>
         <div className={context.parameters.dark ? 'dark' : undefined}>
           <TooltipProvider>
-            <SidebarProvider defaultOpen={!context.parameters.collapsed}>
+            <SidebarProvider
+              defaultOpen={!context.parameters.collapsed}
+              style={{ '--sidebar-width': '14rem' } as React.CSSProperties}
+            >
               <div className="flex h-screen w-full bg-background text-foreground">
                 <Story />
                 <main className="flex-1 p-6">
-                  <SidebarTrigger />
+                  <SidebarTrigger className="md:hidden" />
                 </main>
               </div>
             </SidebarProvider>

@@ -80,7 +80,7 @@ export function TableFilter({
             className={cn(
               'h-7 px-2 text-muted-foreground hover:text-foreground relative group/filter-btn',
               selectedValues.length > 0 &&
-                'text-primary bg-primary/10 hover:bg-primary/20 dark:text-primary dark:bg-primary/20 dark:hover:bg-primary/30'
+                'text-selection-foreground bg-selection hover:bg-selection-hover'
             )}
             data-testid="table-filter-trigger"
           >
@@ -107,7 +107,7 @@ export function TableFilter({
               variant="ghost"
               size="xs"
               onClick={onClear}
-              className="h-6 px-1.5 text-xs text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 font-medium transition-colors"
+              className="h-6 px-1.5 text-xs text-destructive hover:bg-destructive-surface font-medium transition-colors"
             >
               {clear_label}
             </Button>
@@ -122,7 +122,7 @@ export function TableFilter({
               placeholder={search_placeholder_text}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-8 pr-7 text-xs bg-background border-input focus-visible:ring-primary/20 rounded-lg w-full"
+              className="h-8 pl-8 pr-7 text-xs bg-background border-input focus-visible:ring-ring rounded-lg w-full"
             />
             {searchQuery && (
               <button
@@ -188,7 +188,7 @@ export function TableFilter({
               variant="outline"
               size="xs"
               onClick={onClear}
-              className="flex-1 h-7 text-xs font-semibold rounded-lg border-destructive/20 text-destructive bg-background hover:bg-destructive/5 hover:border-destructive/30"
+              className="flex-1 h-7 text-xs font-semibold rounded-lg border-destructive-border text-destructive bg-background hover:bg-destructive-surface hover:border-destructive-border"
             >
               {clear_all_label}
             </Button>

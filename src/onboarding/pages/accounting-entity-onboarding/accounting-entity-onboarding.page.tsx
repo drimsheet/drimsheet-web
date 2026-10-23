@@ -23,9 +23,7 @@ import {
   reportingIntervalMapper,
   revenueAccountMapper,
 } from '@/accounting/lib/mappers/onboarding.mapper';
-import logoImg from '@/shared/assets/logo.svg';
-import { AppHeader } from '@/shared/components/app';
-import { SidebarProvider } from '@/shared/components/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/shared/components/sidebar';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useCurrencies } from '@/shared/hooks/use-currencies';
 import { useJurisdictions } from '@/shared/hooks/use-jurisdictions';
@@ -39,9 +37,10 @@ import { dateUtils } from '@/shared/lib/utils/date';
 import { useProfile } from '@/user/hooks/use-profile';
 import { useUpdatePreferences } from '@/user/hooks/use-update-preferences';
 import { useQueryClient } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import accountingEntityOnboardingHelpers from './helper';
 import { AccountingEntityStep } from './parts/accounting-entity-step';
 import { ExpenseCategoriesStep } from './parts/expense-categories-step';
@@ -52,6 +51,7 @@ import { AccountingEntityOnboardingSidebar } from './parts/sidebar';
 import type { IOnboardingProgress } from './types';
 
 export function AccountingEntityOnboardingPage() {
+  const accountControl = useOutletContext<ReactNode>();
   const { t } = useTranslation(['onboarding', 'shared']);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -316,26 +316,24 @@ export function AccountingEntityOnboardingPage() {
     void jurisdictionsQuery.refetch();
   };
 
-  const drimsheet_text = t('shared:drimsheet');
   const step_status = t('step_status', { step: currentStep, total: 5 });
 
   return (
-    <SidebarProvider className="h-dvh min-h-0 flex-col overflow-hidden">
-      <AppHeader
-        showSidebarTrigger={false}
-        className="flex min-h-16 shrink-0 items-center border-b px-4 py-2 sm:px-6"
-      >
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <img src={logoImg} alt={drimsheet_text} className="size-7 shrink-0" />
-        </div>
-      </AppHeader>
+    <SidebarProvider
+      className="h-dvh min-h-0 overflow-hidden"
+      style={{ '--sidebar-width': '14rem' } as React.CSSProperties}
+    >
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-        <AccountingEntityOnboardingSidebar currentStep={currentStep} />
+        <AccountingEntityOnboardingSidebar
+          currentStep={currentStep}
+          accountControl={accountControl}
+        />
         <main
           ref={mainRef}
           tabIndex={-1}
           className="flex min-h-0 min-w-0 flex-1 scroll-pb-36 flex-col gap-4 overflow-y-auto overscroll-contain outline-none"
         >
+          <SidebarTrigger className="mt-4 ml-6 shrink-0 md:hidden" />
           <p className="shrink-0 px-6 pt-8 text-xs text-muted-foreground sm:px-8 lg:px-10">
             {step_status}
           </p>

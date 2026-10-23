@@ -59,6 +59,7 @@ export interface CategoryTrendProps {
 }
 
 export interface CounterpartyShareProps {
+  type: 'revenue' | 'expense';
   counterparties: IAccountCounterpartyParticipationDto[];
   pagination?: IPaginationResponseMeta;
   loading: boolean;
@@ -71,7 +72,7 @@ export interface CounterpartyShareProps {
 
 export interface CounterpartyShareContainerProps extends Pick<
   CounterpartyShareProps,
-  'selectedId' | 'onSelect'
+  'selectedId' | 'onSelect' | 'type'
 > {
   accountId: string;
 }

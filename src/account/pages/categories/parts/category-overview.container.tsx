@@ -34,12 +34,14 @@ export function CategoryOverviewContainer({
             <CategoryChart
               title={revenue_title}
               description={revenue_description}
+              type="revenue"
               section={summary.data.revenue}
               onViewAccount={onViewAccount}
             />
             <CategoryChart
               title={expenses_title}
               description={expenses_description}
+              type="expense"
               section={summary.data.expenses}
               onViewAccount={onViewAccount}
             />

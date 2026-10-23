@@ -8,17 +8,19 @@ const gradientBoxVariants = cva(
     variants: {
       variant: {
         primary:
-          'text-primary-foreground bg-linear-to-br from-primary to-brand-primary',
+          'text-primary-foreground bg-linear-to-br from-primary to-primary-hover',
 
-        success: 'text-background bg-linear-to-br from-success to-info',
+        success:
+          'text-success bg-linear-to-br from-success-surface to-success-hover',
 
-        info: 'text-background bg-linear-to-br from-info to-primary',
+        info: 'text-info bg-linear-to-br from-info-surface to-info-hover',
 
-        warning: 'text-background bg-linear-to-br from-warning to-chart-3',
+        warning:
+          'text-warning bg-linear-to-br from-warning-surface to-warning-hover',
 
-        danger: 'text-background bg-linear-to-br from-error to-destructive',
+        danger: 'text-error bg-linear-to-br from-error-surface to-error-hover',
 
-        grey: 'text-secondary-foreground bg-linear-to-br from-muted to-secondary',
+        grey: 'text-foreground bg-linear-to-br from-muted to-accent',
       },
     },
     defaultVariants: {

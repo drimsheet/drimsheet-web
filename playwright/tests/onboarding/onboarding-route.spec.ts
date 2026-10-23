@@ -120,7 +120,7 @@ for (const viewport of [
   { name: 'desktop', width: 1280, height: 800 },
   { name: 'mobile', width: 375, height: 812 },
 ]) {
-  test(`shows fixed onboarding navigation and the profile menu on ${viewport.name}`, async ({
+  test(`shows sidebar onboarding navigation and the profile menu on ${viewport.name}`, async ({
     page,
   }, testInfo) => {
     await page.setViewportSize(viewport);
@@ -131,8 +131,7 @@ for (const viewport of [
 
     await expect(page).toHaveURL('/onboarding');
     await page.reload();
-    await expect(page.getByRole('banner')).toBeVisible();
-    await expect(page.getByRole('img', { name: 'Drimsheet' })).toBeVisible();
+    await expect(page.getByRole('banner')).toHaveCount(0);
     await expect(page.getByRole('main')).toContainText('Step 1 of 5');
     await expect(
       page.getByRole('heading', {
@@ -145,13 +144,13 @@ for (const viewport of [
       name: 'Onboarding steps',
     });
 
-    await expect(
-      page.getByRole('button', { name: 'Toggle Sidebar' })
-    ).toHaveCount(0);
+    const sidebarTrigger = page.getByRole('button', { name: 'Toggle Sidebar' });
     await expect(page.getByText('After sign up')).toHaveCount(0);
 
     if (viewport.name === 'mobile') {
       await expect(navigation).not.toBeVisible();
+      await sidebarTrigger.click();
+      await expect(navigation).toBeVisible();
     } else {
       await expect(navigation).toBeVisible();
       await expect(navigation.getByRole('listitem')).toHaveText([
@@ -174,7 +173,6 @@ for (const viewport of [
 
     await expect(profileButton).toBeVisible();
     await expect(profileButton).toContainText('IU');
-    await expect(page.getByRole('textbox', { name: 'Name' })).toBeEnabled();
     await page.screenshot({
       path: testInfo.outputPath('layout.png'),
       animations: 'disabled',
@@ -189,6 +187,7 @@ for (const viewport of [
     await expect(page.getByRole('alertdialog')).toBeVisible();
     await page.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(page.getByRole('alertdialog')).not.toBeVisible();
+    if (viewport.name === 'mobile') await page.keyboard.press('Escape');
 
     await expect(
       page.getByRole('heading', {
@@ -269,9 +268,7 @@ for (const viewport of [
       const content = step.locator('[data-slot="onboarding-step-content"]');
       const main = page.getByRole('main');
       const action = step.getByRole('button', { name: continueLabel });
-      const header = page.getByRole('banner');
       const actionBounds = await action.boundingBox();
-      const headerBounds = await header.boundingBox();
 
       const maxScroll = await main.evaluate(
         (element) => element.scrollHeight - element.clientHeight
@@ -282,11 +279,7 @@ for (const viewport of [
       await expect(content).toHaveCSS('overflow-y', 'visible');
       expect(
         await main.evaluate((element) => element.getBoundingClientRect().right)
-      ).toBe(
-        await header.evaluate(
-          (element) => element.getBoundingClientRect().right
-        )
-      );
+      ).toBe(viewport.width);
       await main.evaluate((element) =>
         element.scrollTo(0, element.scrollHeight)
       );
@@ -295,7 +288,6 @@ for (const viewport of [
         .toBe(maxScroll);
       await expect(action).toBeInViewport({ ratio: 1 });
       expect(await action.boundingBox()).toEqual(actionBounds);
-      expect(await header.boundingBox()).toEqual(headerBounds);
       expect(
         await content.evaluate(
           (element) => element.getBoundingClientRect().bottom

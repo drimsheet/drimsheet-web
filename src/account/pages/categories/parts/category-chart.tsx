@@ -18,6 +18,7 @@ import type { CategoryChartProps } from '../types';
 
 export function CategoryChart({
   title,
+  type,
   description,
   section,
   onViewAccount,
@@ -72,7 +73,7 @@ export function CategoryChart({
                 </span>
                 <span
                   aria-hidden
-                  className="relative block h-1.5 w-full rounded-full bg-muted"
+                  className="relative block h-1.5 w-full rounded-full bg-chart-track"
                 >
                   <span
                     className="absolute inset-y-0 w-px bg-border"
@@ -80,8 +81,11 @@ export function CategoryChart({
                   />
                   <span
                     className={cn(
-                      'absolute inset-y-0 rounded-sm bg-primary/70',
-                      negative && 'bg-muted-foreground'
+                      'absolute inset-y-0 rounded-sm',
+                      type === 'revenue'
+                        ? 'bg-financial-income'
+                        : 'bg-financial-expense',
+                      negative && 'bg-financial-neutral'
                     )}
                     style={{ left: `${left}%`, width: `${width}%` }}
                   />

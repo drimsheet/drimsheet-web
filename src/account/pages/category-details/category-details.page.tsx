@@ -1,5 +1,5 @@
 import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { Skeleton } from '@/shared/components/skeleton';
 import type { IAccountCounterpartyParticipationDto } from '@/shared/lib/api/Api';
 import { useMemo, useState } from 'react';
@@ -84,8 +84,6 @@ export function CategoryDetailsPage() {
   if (accountQuery.isSuccess && account && !isCategory)
     return <Navigate replace to={`/accounts/${account.id}`} />;
 
-  const categories_label = t('shared:categories');
-
   const unassigned_label = t(
     'ledger-accounts:category_details_unassigned_label'
   );
@@ -99,12 +97,6 @@ export function CategoryDetailsPage() {
 
   return (
     <>
-      <AppHeader
-        breadcrumbs={[
-          { label: categories_label, to: '/categories' },
-          { label: account?.name ?? categories_label },
-        ]}
-      />
       <AppBody>
         <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col gap-8 pb-10">
           {accountQuery.isPending && (
@@ -149,6 +141,7 @@ export function CategoryDetailsPage() {
                   />
                 )}
                 <CounterpartyShareContainer
+                  type={account.type === 'revenue' ? 'revenue' : 'expense'}
                   key={accountId}
                   accountId={accountId}
                   selectedId={selectedId}

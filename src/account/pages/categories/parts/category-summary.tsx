@@ -15,13 +15,13 @@ export function CategorySummary({ summary }: Readonly<CategorySummaryProps>) {
     {
       title: t('categories_revenue_label'),
       icon: ArrowUpRight,
-      iconColor: 'text-success',
+      iconColor: 'text-financial-income',
       section: summary.revenue,
     },
     {
       title: t('categories_expenses_label'),
       icon: ArrowDownLeft,
-      iconColor: 'text-destructive',
+      iconColor: 'text-financial-expense',
       section: summary.expenses,
     },
   ];

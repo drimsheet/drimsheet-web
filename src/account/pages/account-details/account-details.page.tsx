@@ -1,5 +1,5 @@
 import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
 import { useSubAccounts } from './hooks/use-account-details';
@@ -28,7 +28,6 @@ export function AccountDetailsPage() {
     !account.isControlAccount &&
     (account.behavior === 'bank' || account.behavior === 'petty_cash');
 
-  const accounts_label = t('shared:accounts');
   const error_title = t('ledger-accounts:details_account_error_title');
 
   if (
@@ -41,12 +40,6 @@ export function AccountDetailsPage() {
 
   return (
     <>
-      <AppHeader
-        breadcrumbs={[
-          { label: accounts_label, to: '/accounts' },
-          { label: account?.name ?? accounts_label },
-        ]}
-      />
       <AppBody>
         <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col gap-10 pb-10">
           {accountQuery.isPending && (

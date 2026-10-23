@@ -43,10 +43,13 @@ export function TransactionsChart({
   const hasActivity = moneyIn !== 0 || moneyOut !== 0;
 
   const config = {
-    moneyIn: { label: t('details_money_in_label'), color: 'var(--success)' },
+    moneyIn: {
+      label: t('details_money_in_label'),
+      color: 'var(--financial-income)',
+    },
     moneyOut: {
       label: t('details_money_out_label'),
-      color: 'var(--destructive)',
+      color: 'var(--financial-expense)',
     },
   } satisfies TChartConfig;
 
@@ -68,7 +71,7 @@ export function TransactionsChart({
       <dl className="flex flex-wrap gap-x-12 gap-y-5">
         <div className="flex flex-col gap-2">
           <dt className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span aria-hidden className="size-3 bg-success" />
+            <span aria-hidden className="size-3 bg-financial-income" />
             {total_in_label}
           </dt>
           <dd>
@@ -88,7 +91,7 @@ export function TransactionsChart({
                   height="5"
                   patternUnits="userSpaceOnUse"
                 >
-                  <rect width="5" height="5" fill="var(--destructive)" />
+                  <rect width="5" height="5" fill="var(--financial-expense)" />
                   <path
                     d="M0 5L5 0"
                     stroke="var(--background)"

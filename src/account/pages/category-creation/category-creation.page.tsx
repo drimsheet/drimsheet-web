@@ -1,5 +1,5 @@
 import { categoryService } from '@/account/lib/services/category.service';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFormik, type FormikProps } from 'formik';
 import { useState } from 'react';
@@ -110,17 +110,10 @@ export function CategoryCreationPage() {
   };
 
   const title = t('category_creation_title');
-  const categories_label = t('categories_table_breadcrumb');
   const description = t('category_creation_description');
 
   return (
     <>
-      <AppHeader
-        breadcrumbs={[
-          { label: categories_label, to: '/categories' },
-          { label: title },
-        ]}
-      />
       <AppBody>
         <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-8 pb-10">
           <div className="flex flex-col gap-2">

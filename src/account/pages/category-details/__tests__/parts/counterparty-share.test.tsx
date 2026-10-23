@@ -19,6 +19,7 @@ function props(
   overrides: Partial<CounterpartyShareProps> = {}
 ): CounterpartyShareProps {
   return {
+    type: 'revenue',
     counterparties: [row],
     loading: false,
     error: false,

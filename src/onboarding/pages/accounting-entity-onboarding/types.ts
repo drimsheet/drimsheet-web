@@ -34,6 +34,7 @@ export interface FinancialYearStepProps extends Pick<
 
 export interface AccountingEntityOnboardingSidebarProps {
   currentStep?: number;
+  accountControl?: ReactNode;
 }
 
 export interface ReportsStepProps extends Pick<

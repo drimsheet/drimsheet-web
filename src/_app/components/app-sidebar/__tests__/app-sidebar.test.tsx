@@ -28,7 +28,7 @@ describe('AppSidebar', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Drimsheet')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Drimsheet' })).toBeInTheDocument();
     expect(screen.getByText('Beta')).toBeInTheDocument();
 
     expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute(

@@ -1,7 +1,7 @@
 import { useAccountingContexts } from '@/accounting/hooks/use-accounting-contexts';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
 import { useReportingContexts } from '@/accounting/hooks/use-reporting-contexts';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { useTranslation } from 'react-i18next';
 import { AccountingContextDetails } from './parts/accounting-context-details';
 import { EntityDetails } from './parts/entity-details';
@@ -27,7 +27,6 @@ export function LegalEntityPage() {
 
   return (
     <>
-      <AppHeader breadcrumbs={[{ label: page_title }]} />
       <AppBody>
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-1 pb-6 sm:px-4">
           <div className="flex flex-col gap-2">

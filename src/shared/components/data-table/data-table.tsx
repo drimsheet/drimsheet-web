@@ -108,12 +108,12 @@ export function TableCheckbox({
       type="button"
       onClick={onClick}
       className={cn(
-        'flex size-4 mx-auto items-center justify-center rounded border transition-all duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+        'flex size-4 mx-auto items-center justify-center rounded border transition-all duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring',
         checked &&
           'border-primary bg-primary text-primary-foreground scale-100 shadow-xs',
         !checked &&
           indeterminate &&
-          'border-primary bg-primary/20 text-primary scale-100',
+          'border-input bg-primary text-primary-foreground scale-100',
         !checked &&
           !indeterminate &&
           'border-input hover:border-muted-foreground bg-background scale-95'
@@ -121,7 +121,9 @@ export function TableCheckbox({
       aria-label={ariaLabel}
     >
       {checked && <Check className="size-2.5 stroke-[3]" />}
-      {indeterminate && <div className="size-1.5 bg-primary rounded-xs" />}
+      {indeterminate && (
+        <div className="size-1.5 bg-primary-foreground rounded-xs" />
+      )}
     </button>
   );
 }
@@ -172,18 +174,18 @@ interface SortIconProps {
 function SortIcon({ direction }: Readonly<SortIconProps>) {
   if (direction === 'asc') {
     return (
-      <ArrowUp className="size-3.5 text-primary stroke-[2.5] animate-in slide-in-from-bottom-1 duration-150" />
+      <ArrowUp className="size-3.5 text-link stroke-[2.5] animate-in slide-in-from-bottom-1 duration-150" />
     );
   }
 
   if (direction === 'desc') {
     return (
-      <ArrowDown className="size-3.5 text-primary stroke-[2.5] animate-in slide-in-from-top-1 duration-150" />
+      <ArrowDown className="size-3.5 text-link stroke-[2.5] animate-in slide-in-from-top-1 duration-150" />
     );
   }
 
   return (
-    <ArrowUpDown className="size-3 text-muted-foreground/45 group-hover:text-muted-foreground transition-all duration-150" />
+    <ArrowUpDown className="size-3 text-muted-foreground group-hover:text-muted-foreground transition-all duration-150" />
   );
 }
 
@@ -200,7 +202,7 @@ function WithTooltip({ tooltip, children }: Readonly<WithTooltipProps>) {
       <TooltipTrigger asChild>
         <span className="cursor-help border-b border-dashed border-muted-foreground/40 pb-0.5 inline-flex items-center gap-1 group/tooltip">
           {children}
-          <HelpCircle className="size-3 text-muted-foreground/75 group-hover/tooltip:text-muted-foreground transition-colors" />
+          <HelpCircle className="size-3 text-muted-foreground group-hover/tooltip:text-muted-foreground transition-colors" />
         </span>
       </TooltipTrigger>
       <TooltipContent className="max-w-xs text-xs">{tooltip}</TooltipContent>
@@ -393,8 +395,9 @@ export function DataTableRow<T extends IDataWithId>({
       data-state={isSelected ? 'selected' : undefined}
       className={cn(
         'group/row border-b border-border/50 transition-colors hover:bg-muted/15',
-        'odd:bg-muted/5 even:bg-background',
-        isSelected && 'bg-primary/5 hover:bg-primary/10 border-primary/20'
+        isSelected
+          ? 'bg-selection hover:bg-selection-hover border-border'
+          : 'odd:bg-muted/5 even:bg-background'
       )}
     >
       {selectable && (
@@ -513,7 +516,7 @@ export function DataTableActiveFilters<T extends IDataWithId>({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 px-4 py-2.5 border-b border-border/60 bg-muted/10">
-      <span className="text-xs font-semibold text-muted-foreground/80 mr-1 select-none">
+      <span className="text-xs font-semibold text-muted-foreground mr-1 select-none">
         {active_filters_label}
       </span>
       {activeChips.map((chip) => {
@@ -526,16 +529,16 @@ export function DataTableActiveFilters<T extends IDataWithId>({
           <Badge
             key={`${chip.columnKey}-${chip.value}`}
             variant="secondary"
-            className="pl-2.5 pr-1.5 h-6 text-xs gap-1 border border-border/50 bg-secondary/40 hover:bg-secondary/60 text-foreground transition-all duration-200"
+            className="pl-2.5 pr-1.5 h-6 text-xs gap-1 border border-border bg-accent text-accent-foreground transition-all duration-200"
           >
-            <span className="text-muted-foreground/80 font-medium">
+            <span className="text-muted-foreground font-medium">
               {chip.columnTitle}:
             </span>
             <span className="font-semibold">{chip.label}</span>
             <button
               type="button"
               onClick={() => handleRemoveChip(chip.columnKey, chip.value)}
-              className="flex items-center justify-center rounded-full size-3.5 hover:bg-muted-foreground/20 text-muted-foreground/80 hover:text-foreground transition-all ml-0.5 outline-none focus-visible:ring-1 focus-visible:ring-primary cursor-pointer"
+              className="flex items-center justify-center rounded-full size-3.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-all ml-0.5 outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
               aria-label={remove_filter_text}
             >
               <X className="size-2.5 stroke-[2.5]" />
@@ -547,7 +550,7 @@ export function DataTableActiveFilters<T extends IDataWithId>({
         variant="ghost"
         size="xs"
         onClick={handleClearAllFilters}
-        className="h-6 px-2 text-xs font-medium text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-all rounded-md cursor-pointer ml-auto"
+        className="h-6 px-2 text-xs font-medium text-destructive hover:bg-destructive-surface transition-all rounded-md cursor-pointer ml-auto"
       >
         {clear_all_text}
       </Button>

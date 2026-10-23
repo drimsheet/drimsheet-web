@@ -1,6 +1,6 @@
 import { CategoryEditorDialog } from '@/account/dialogs/category-editor';
 import { categoryService } from '@/account/lib/services/category.service';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
@@ -97,7 +97,6 @@ export function CategoriesPage() {
 
   return (
     <>
-      <AppHeader breadcrumbs={[{ label: title }]} />
       <AppBody>
         <div className="flex min-w-0 flex-col gap-8 pb-8">
           <div className="flex flex-wrap items-center justify-between gap-4">

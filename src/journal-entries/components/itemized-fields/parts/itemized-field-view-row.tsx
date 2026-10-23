@@ -50,7 +50,7 @@ export function ItemizedFieldViewRow({
     <div className="flex items-center gap-2 rounded-md bg-muted/40 p-3">
       <button
         aria-label={item_view_aria_label}
-        className="flex min-w-0 flex-1 items-center justify-between gap-4 rounded-sm text-left outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:text-foreground disabled:opacity-70"
+        className="flex min-w-0 flex-1 items-center justify-between gap-4 rounded-sm text-left outline-none transition-colors hover:text-link focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:text-foreground disabled:opacity-70"
         disabled={interactionDisabled}
         onClick={() => onEdit(item.id)}
         type="button"

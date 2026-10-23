@@ -410,11 +410,6 @@ for (const type of ['revenue', 'expense'] as const) {
     await expect(
       page.getByRole('heading', { name: 'Updated category' })
     ).toBeVisible();
-    await expect(
-      page
-        .getByRole('navigation')
-        .getByText('Updated category', { exact: true })
-    ).toBeVisible();
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
     await expect(dialog.getByLabel('Category name')).toHaveValue(
       'Updated category'

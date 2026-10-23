@@ -136,7 +136,7 @@ export function TransactionsTable({
 
           return (
             <ItemMedia
-              className="size-8 rounded-full bg-info/10"
+              className="size-8 rounded-full bg-info-surface"
               role="img"
               aria-label={transferLabel}
               title={transferLabel}

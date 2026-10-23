@@ -8,7 +8,7 @@ import { JournalEntryNotFound } from '@/journal-entries/components/journal-entry
 import { OutflowFormContainer } from '@/journal-entries/components/outflow-form';
 import { useJournalEntry } from '@/journal-entries/hooks/use-journal-entry';
 import { journalEntryRouteMapper } from '@/journal-entries/lib/mappers/journal-entry-route.mapper';
-import { AppBody, AppHeader } from '@/shared/components/app';
+import { AppBody } from '@/shared/components/app';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 export function EditTransactionPage() {
@@ -31,7 +31,6 @@ export function EditTransactionPage() {
   if (isPending) {
     return (
       <>
-        <AppHeader />
         <AppBody>
           {type === 'transfer' ? (
             <CashTransferFormSkeleton />
@@ -46,7 +45,6 @@ export function EditTransactionPage() {
   if (isError) {
     return (
       <>
-        <AppHeader />
         <AppBody>
           <JournalEntryNotFound onBack={handleBack} />
         </AppBody>
@@ -73,7 +71,6 @@ export function EditTransactionPage() {
 
   return (
     <>
-      <AppHeader />
       <AppBody>
         {canonicalType === 'inflow' && (
           <InflowFormContainer journalEntry={journalEntry} />

@@ -47,7 +47,7 @@ export function LedgerAccountsOverview({
       <div className="flex items-center gap-4">
         <LedgerTypeIcon type={type} />
         <div className="flex flex-col gap-0.5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {ledgerTypeLabel}
           </span>
           <span className="text-base font-semibold text-foreground font-heading leading-tight">
