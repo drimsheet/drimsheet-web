@@ -7,7 +7,6 @@ import {
 import { Money } from '@/shared/components/money';
 import { Skeleton } from '@/shared/components/skeleton';
 import { currencyService } from '@/shared/lib/services/currency.service';
-import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Bar,
@@ -24,7 +23,6 @@ export function TransactionsChart({
   cashFlow,
 }: Readonly<TransactionsChartProps>) {
   const { t, i18n } = useTranslation('ledger-accounts');
-  const patternId = useId().replace(/:/g, '');
 
   const locale =
     i18n.resolvedLanguage === 'en' ? 'en-GB' : i18n.resolvedLanguage;
@@ -85,28 +83,7 @@ export function TransactionsChart({
         </div>
         <div className="flex flex-col gap-2">
           <dt className="flex items-center gap-2 text-sm text-muted-foreground">
-            <svg aria-hidden className="size-3">
-              <defs>
-                <pattern
-                  id={`${patternId}-legend`}
-                  width="5"
-                  height="5"
-                  patternUnits="userSpaceOnUse"
-                >
-                  <rect width="5" height="5" fill="var(--financial-expense)" />
-                  <path
-                    d="M0 5L5 0"
-                    stroke="var(--background)"
-                    strokeWidth="1.5"
-                  />
-                </pattern>
-              </defs>
-              <rect
-                width="100%"
-                height="100%"
-                fill={`url(#${patternId}-legend)`}
-              />
-            </svg>
+            <span aria-hidden className="size-3 bg-financial-expense" />
             {total_out_label}
           </dt>
           <dd>
@@ -130,17 +107,6 @@ export function TransactionsChart({
             data={data}
             margin={{ top: 8, left: 0, right: 8, bottom: 0 }}
           >
-            <defs>
-              <pattern
-                id={patternId}
-                width="6"
-                height="6"
-                patternUnits="userSpaceOnUse"
-              >
-                <rect width="6" height="6" fill="var(--color-moneyOut)" />
-                <path d="M0 6L6 0" stroke="var(--background)" strokeWidth="2" />
-              </pattern>
-            </defs>
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="label"
@@ -190,7 +156,7 @@ export function TransactionsChart({
             />
             <Bar
               dataKey="moneyOut"
-              fill={`url(#${patternId})`}
+              fill="var(--color-moneyOut)"
               maxBarSize={40}
               isAnimationActive={false}
             />

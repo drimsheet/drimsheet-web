@@ -42,6 +42,30 @@
   --color-green-900: #153527;
   --color-green-950: #102b20;
 
+  --color-moss-50: #f4f6ef;
+  --color-moss-100: #edf1e7;
+  --color-moss-200: #d3ddc6;
+  --color-moss-300: #acbd97;
+  --color-moss-400: #91a47b;
+  --color-moss-500: #788d61;
+  --color-moss-600: #5f704b;
+  --color-moss-700: #4c5b3c;
+  --color-moss-800: #3b482f;
+  --color-moss-900: #2d3724;
+  --color-moss-950: #222a1b;
+
+  --color-clay-50: #faf3f0;
+  --color-clay-100: #f3e4de;
+  --color-clay-200: #e4c5ba;
+  --color-clay-300: #d5a092;
+  --color-clay-400: #c28b7d;
+  --color-clay-500: #b17668;
+  --color-clay-600: #a36558;
+  --color-clay-700: #825044;
+  --color-clay-800: #623b33;
+  --color-clay-900: #442823;
+  --color-clay-950: #35201b;
+
   --color-terracotta-50: #fcf3ef;
   --color-terracotta-100: #f5dfd7;
   --color-terracotta-200: #e6b7a9;
@@ -121,10 +145,10 @@
   --sidebar-accent: var(--color-butter-400);
   --sidebar-accent-foreground: var(--color-neutral-900);
   --link: var(--color-butter-800);
-  --financial-income: var(--color-green-600);
-  --financial-income-surface: var(--color-green-50);
-  --financial-expense: var(--color-terracotta-600);
-  --financial-expense-surface: var(--color-terracotta-50);
+  --financial-income: var(--color-moss-600);
+  --financial-income-surface: var(--color-moss-50);
+  --financial-expense: var(--color-clay-600);
+  --financial-expense-surface: var(--color-clay-50);
   --financial-neutral: var(--color-neutral-500);
   --chart-track: var(--color-neutral-200);
   --selection: var(--color-butter-50);
@@ -268,10 +292,10 @@
   --sidebar-accent: var(--color-butter-950);
   --sidebar-accent-foreground: var(--color-butter-400);
   --link: var(--color-butter-400);
-  --financial-income: var(--color-green-300);
-  --financial-income-surface: var(--color-green-950);
-  --financial-expense: var(--color-terracotta-300);
-  --financial-expense-surface: var(--color-terracotta-950);
+  --financial-income: var(--color-moss-300);
+  --financial-income-surface: var(--color-moss-950);
+  --financial-expense: var(--color-clay-300);
+  --financial-expense-surface: var(--color-clay-950);
   --financial-neutral: var(--color-neutral-400);
   --chart-track: var(--color-neutral-800);
   --selection: var(--color-butter-950);
