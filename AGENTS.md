@@ -12,6 +12,7 @@ Before making changes, follow the rules in:
 - `.agents/rules/testing-rules.md` when creating or updating tests
 - `.agents/rules/i18n-rules.md` when working with translations
 - `.agents/rules/shadcn-rules.md` when working with shadcn-generated code
+- `.agents/rules/commit-message-rules.md` before committing or writing PR titles
 
 ## Working Principles
 
