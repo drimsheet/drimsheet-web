@@ -8,7 +8,7 @@ import { Label } from '@/shared/components/label';
 import { Trash2 } from 'lucide-react';
 import { useId, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { AccountDeleteConfirmationProps } from '../types';
+import type { AccountDeleteConfirmationProps } from './types';
 
 export function AccountDeleteConfirmation({
   accountName,

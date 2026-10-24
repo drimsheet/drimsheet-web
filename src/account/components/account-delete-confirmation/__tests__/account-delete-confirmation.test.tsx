@@ -1,4 +1,4 @@
-import { AccountDeleteConfirmation } from '@/account/pages/account-details/parts/account-delete-confirmation';
+import { AccountDeleteConfirmation } from '@/account/components/account-delete-confirmation';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';

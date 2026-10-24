@@ -1,9 +1,5 @@
+import type { IAccountDashboardMoney } from '@/account/lib/types/account-dashboard.types';
 import currencies from '@/shared/configs/currencies.json';
-import type {
-  IAssetLiabilityAccountParticipationDto,
-  IDateRangeDto,
-  IMoneyDto,
-} from '@/shared/lib/api/Api';
 import {
   addDays,
   differenceInCalendarDays,
@@ -11,29 +7,32 @@ import {
   parseISO,
   subMonths,
 } from 'date-fns';
-import type { IAccountTableRow, IBalancePoint, UBalancePeriod } from './types';
+import type {
+  BalanceTrendProps,
+  IAccountBalanceChange,
+  UBalancePeriod,
+} from './types';
 
-function periodQuery(period: UBalancePeriod, now: Date): IDateRangeDto {
+function periodQuery(period: UBalancePeriod, now: Date) {
   const months = { '1M': 1, '6M': 6, '1Y': 12 }[period];
+  const candidate = subMonths(now, months);
 
-  // The report compares period.to with the day before period.from.
+  const from =
+    differenceInCalendarDays(now, candidate) > 365
+      ? addDays(candidate, 1)
+      : candidate;
+
   return {
-    from: format(addDays(subMonths(now, months), 1), 'yyyy-MM-dd'),
+    from: format(from, 'yyyy-MM-dd'),
     to: format(now, 'yyyy-MM-dd'),
   };
 }
 
-function historyDates(period: IDateRangeDto) {
-  const start = addDays(parseISO(period.from), -1);
-  const days = differenceInCalendarDays(parseISO(period.to), start);
-
-  // Five real intermediate snapshots; endpoints come from the summary.
-  return Array.from({ length: 5 }, (_, index) =>
-    format(addDays(start, Math.round((days * (index + 1)) / 6)), 'yyyy-MM-dd')
-  );
+function bucketDays(period: UBalancePeriod) {
+  return { '1M': 5, '6M': 30, '1Y': 61 }[period];
 }
 
-function toMajorUnits(money: IMoneyDto) {
+function toMajorUnits(money: IAccountDashboardMoney) {
   const currency = currencies.find(
     ({ code }) => code.toLowerCase() === money.currencyCode.toLowerCase()
   );
@@ -41,17 +40,6 @@ function toMajorUnits(money: IMoneyDto) {
   return money.isMinorUnit
     ? money.amount / 10 ** (currency?.minorUnit ?? 0)
     : money.amount;
-}
-
-function tableRows(
-  accounts: IAssetLiabilityAccountParticipationDto[]
-): IAccountTableRow[] {
-  return accounts.map((account) => ({ ...account, id: account.accountId }));
-}
-
-function shareWidth(share: number | null) {
-  // Contra balances and zero denominators must not become misleading bars.
-  return share !== null && share >= 0 && share <= 100 ? share : null;
 }
 
 function formatPercentage(value: number | null, locale: string) {
@@ -71,7 +59,7 @@ function formatDate(value: string, locale: string) {
   }).format(parseISO(value));
 }
 
-function chartData(points: IBalancePoint[], locale: string) {
+function chartData(points: BalanceTrendProps['points'], locale: string) {
   return points.map((point) => ({
     date: point.date,
     label: new Intl.DateTimeFormat(locale, {
@@ -83,15 +71,57 @@ function chartData(points: IBalancePoint[], locale: string) {
   }));
 }
 
+function balanceChange(
+  points: BalanceTrendProps['points']
+): IAccountBalanceChange | undefined {
+  const firstPoint = points[0];
+  const lastPoint = points.at(-1);
+
+  if (points.length < 2 || !firstPoint || !lastPoint) return undefined;
+
+  if (firstPoint.amount.currencyCode !== lastPoint.amount.currencyCode)
+    return undefined;
+
+  const firstAmount = toMajorUnits(firstPoint.amount);
+  const lastAmount = toMajorUnits(lastPoint.amount);
+  const change = lastAmount - firstAmount;
+
+  return {
+    amount: {
+      amount: change,
+      currencyCode: lastPoint.amount.currencyCode,
+      isMinorUnit: false,
+    },
+    percentageChange:
+      firstAmount === 0 ? null : (change / Math.abs(firstAmount)) * 100,
+    date: firstPoint.date,
+  };
+}
+
+function currencyLogo(currencyCode: string) {
+  return currencies.find(
+    ({ code }) => code.toLowerCase() === currencyCode.toLowerCase()
+  )?.logo;
+}
+
+function growthDirection(change: number) {
+  if (change === 0) return 'neutral';
+
+  if (change < 0) return 'down';
+
+  return 'up';
+}
+
 const accountDashboardHelpers = Object.freeze({
   periodQuery,
-  historyDates,
+  bucketDays,
   toMajorUnits,
-  tableRows,
-  shareWidth,
   formatPercentage,
   formatDate,
   chartData,
+  balanceChange,
+  currencyLogo,
+  growthDirection,
 });
 
 export default accountDashboardHelpers;

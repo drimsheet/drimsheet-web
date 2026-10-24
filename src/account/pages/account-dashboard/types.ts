@@ -1,60 +1,51 @@
 import type {
-  IAssetLiabilityAccountParticipationDto,
-  IAssetLiabilitySummaryDto,
-  IMoneyDto,
-  IPaginatedResponseIAssetLiabilityAccountParticipationDto,
-} from '@/shared/lib/api/Api';
+  IAccountDashboardAccounts,
+  IAccountDashboardBalancePoint,
+  IAccountDashboardHistory,
+  IAccountDashboardMoney,
+  IAccountDashboardRow,
+  IAccountDashboardSummary,
+} from '@/account/lib/types/account-dashboard.types';
+import type { ReactNode } from 'react';
 
-export type UAccountTypeFilter = 'all' | 'asset' | 'liability';
+export type UAccountBehaviorFilter = 'all' | 'bank' | 'petty_cash';
 export type UBalancePeriod = '1M' | '6M' | '1Y';
 
-export interface IAccountTableRow extends IAssetLiabilityAccountParticipationDto {
-  id: string;
-}
-
-export interface IBalancePoint {
+export interface IAccountBalanceChange {
+  amount: IAccountDashboardMoney;
+  percentageChange: number | null;
   date: string;
-  amount: IMoneyDto;
 }
 
 export interface AccountsSummaryProps {
-  summary: IAssetLiabilitySummaryDto;
-}
-
-export interface AccountBreakdownProps {
-  type: 'asset' | 'liability';
-  accounts: IAssetLiabilityAccountParticipationDto[];
-  loading: boolean;
-  error: boolean;
-  hasMore: boolean;
-  loadingMore: boolean;
-  onLoadMore: () => void;
-  onViewAccount: (id: string) => void;
+  summary: IAccountDashboardSummary;
+  change?: IAccountBalanceChange;
 }
 
 export interface AccountsTableProps {
-  accounts?: IPaginatedResponseIAssetLiabilityAccountParticipationDto;
+  accounts?: IAccountDashboardAccounts;
   loading: boolean;
   error: boolean;
   search: string;
-  type: UAccountTypeFilter;
+  type: UAccountBehaviorFilter;
   onSearchChange: (search: string) => void;
   onTypeChange: (type: string) => void;
   onPageChange: (page: number) => void;
   onAddAccount: () => void;
   onViewAccount: (id: string) => void;
+  renderRowActions?: (account: TAccountTableRow) => ReactNode;
 }
 
 export interface BalanceTrendProps {
-  points: IBalancePoint[];
+  points: IAccountDashboardBalancePoint[];
 }
 
-export interface BalanceHistoryContainerProps {
+export interface BalanceHistoryProps {
   period: UBalancePeriod;
   onPeriodChange: (period: UBalancePeriod) => void;
-  summary?: IAssetLiabilitySummaryDto;
-  enabled: boolean;
-  summaryError: boolean;
+  history?: IAccountDashboardHistory;
+  loading: boolean;
+  error: boolean;
 }
 
 export interface DashboardErrorProps {
@@ -63,4 +54,18 @@ export interface DashboardErrorProps {
 
 export interface AccountPageEmptyStateProps {
   onAddAccount: () => void;
+}
+
+export type TAccountTableRow = IAccountDashboardRow;
+
+export interface AccountRowActionsProps {
+  account: TAccountTableRow;
+  busy?: boolean;
+  checking?: boolean;
+  eligibilityFailed?: boolean;
+  canDelete?: boolean;
+  onOpenChange: (open: boolean) => void;
+  onEdit: () => void;
+  onArchive: () => Promise<void>;
+  onDelete: () => void;
 }

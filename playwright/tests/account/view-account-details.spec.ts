@@ -642,18 +642,7 @@ test('confirms deletion, blocks duplicate submissions and returns to the refresh
   await setup(page, { children: false });
   const dashboard = await registerAccountDashboardRoutes(page);
 
-  dashboard.rows = [
-    {
-      accountId: account.id,
-      accountName: account.name,
-      code: account.code,
-      type: 'asset',
-      subType: account.subType,
-      status: account.status,
-      amount: account.functionalBalance,
-      sharePercentage: 100,
-    },
-  ];
+  dashboard.rows = [account];
 
   const requests: { method: string; body: string | null }[] = [];
   let finishDelete: () => void = () => undefined;
@@ -716,7 +705,7 @@ test('confirms deletion, blocks duplicate submissions and returns to the refresh
   await page.keyboard.press('Escape');
   await expect(dialog).toBeVisible();
   await expect.poll(() => requests).toEqual([{ method: 'DELETE', body: null }]);
-  dashboard.queries.length = 0;
+  dashboard.accountQueries.length = 0;
   finishDelete();
   await expect(page).toHaveURL('/accounts');
   await expect(dialog).not.toBeVisible();
@@ -725,7 +714,9 @@ test('confirms deletion, blocks duplicate submissions and returns to the refresh
     page.getByText('No accounts yet', { exact: true })
   ).toBeVisible();
   await expect
-    .poll(() => dashboard.queries.some((query) => query.get('limit') === '10'))
+    .poll(() =>
+      dashboard.accountQueries.some((query) => query.get('limit') === '10')
+    )
     .toBe(true);
   await expect(
     page.getByRole('cell', { name: account.name, exact: true })

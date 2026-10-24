@@ -1,14 +1,18 @@
 import { AccountTypeSelectionDialog } from '@/account/dialogs/account-type-selection';
 import { PettyCashAccountCreationDialog } from '@/account/dialogs/petty-cash-account-creation';
+import { useDashboardAccounts } from '@/account/hooks/use-dashboard-accounts';
+import { useDashboardBalanceHistory } from '@/account/hooks/use-dashboard-balance-history';
+import { useDashboardSummary } from '@/account/hooks/use-dashboard-summary';
 import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
 import { PageSection } from '@/shared/components/page-section';
 import { PageTitle } from '@/shared/components/page-title';
-import { Separator } from '@/shared/components/separator';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
 import {
   ELedgerAccountBehavior,
+  ELedgerAccountSubType,
+  ELedgerType,
   type ULedgerAccountBehavior,
 } from '@/shared/lib/api/Api';
 import { Plus } from 'lucide-react';
@@ -16,19 +20,16 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import dashboardHelpers from './helper';
-import { useAccountBreakdown } from './hooks/use-account-breakdown';
-import { useDashboardAccounts } from './hooks/use-dashboard-accounts';
-import { useDashboardSummary } from './hooks/use-dashboard-summary';
-import { AccountBreakdown } from './parts/account-breakdown';
 import { AccountPageEmptyState } from './parts/account-page-empty-state';
+import { AccountRowActionsContainer } from './parts/account-row-actions.container';
 import {
   AccountsSummary,
   AccountsSummarySkeleton,
 } from './parts/account-summary';
 import { AccountsTable } from './parts/accounts-table';
-import { BalanceHistoryContainer } from './parts/balance-history.container';
+import { BalanceHistory } from './parts/balance-history';
 import { DashboardError } from './parts/section-error';
-import type { UAccountTypeFilter, UBalancePeriod } from './types';
+import type { UAccountBehaviorFilter, UBalancePeriod } from './types';
 
 export function AccountsDashboardPage() {
   const { t } = useTranslation(['ledger-accounts', 'shared']);
@@ -46,38 +47,44 @@ export function AccountsDashboardPage() {
   const search = useDebounce(table.searchQuery, 300);
   const filter = table.filters.type?.[0];
 
-  const type: UAccountTypeFilter =
-    filter === 'asset' || filter === 'liability' ? filter : 'all';
+  const type: UAccountBehaviorFilter =
+    filter === 'bank' || filter === 'petty_cash' ? filter : 'all';
 
   const accounts = useDashboardAccounts({
     page: Math.max(1, table.page),
     limit: 10,
     search: search || undefined,
-    type: type === 'all' ? undefined : type,
+    type: ELedgerType.Asset,
+    subType: ELedgerAccountSubType.CashAndCashEquivalent,
+    behavior: type === 'all' ? undefined : type,
+    isControlAccount: false,
   });
 
-  const summary = useDashboardSummary(
-    dashboardHelpers.periodQuery(period, now)
-  );
+  const summary = useDashboardSummary();
 
-  const assets = useAccountBreakdown('asset');
-  const liabilities = useAccountBreakdown('liability');
+  const history = useDashboardBalanceHistory({
+    ...dashboardHelpers.periodQuery(period, now),
+    bucketDays: dashboardHelpers.bucketDays(period),
+    subTypes: [ELedgerAccountSubType.CashAndCashEquivalent],
+  });
+
+  const change = history.data
+    ? dashboardHelpers.balanceChange(history.data.points)
+    : undefined;
 
   const noAccounts =
-    assets.isSuccess &&
-    liabilities.isSuccess &&
-    assets.data.pages[0].meta.total === 0 &&
-    liabilities.data.pages[0].meta.total === 0;
+    accounts.isSuccess &&
+    accounts.data.meta.total === 0 &&
+    type === 'all' &&
+    !table.searchQuery;
 
   const pageError =
     accounts.isError &&
     summary.isError &&
-    assets.isError &&
-    liabilities.isError &&
+    history.isError &&
     !accounts.data &&
     !summary.data &&
-    !assets.data &&
-    !liabilities.data;
+    !history.data;
 
   const handleAccountTypeSelected = (behavior: ULedgerAccountBehavior) => {
     setShowAccountTypeSelection(false);
@@ -137,37 +144,16 @@ export function AccountsDashboardPage() {
               {summary.isError && (
                 <DashboardError title={summary_error_title} />
               )}
-              {summary.isSuccess && <AccountsSummary summary={summary.data} />}
-              <Separator />
-              <BalanceHistoryContainer
+              {summary.isSuccess && (
+                <AccountsSummary summary={summary.data} change={change} />
+              )}
+              <BalanceHistory
                 period={period}
                 onPeriodChange={setPeriod}
-                summary={summary.data}
-                summaryError={summary.isError}
-                enabled={!noAccounts}
+                history={history.data}
+                loading={history.isPending}
+                error={history.isError}
               />
-              <div className="grid min-w-0 items-stretch gap-5 lg:grid-cols-2">
-                {(
-                  [
-                    { type: 'asset', query: assets },
-                    { type: 'liability', query: liabilities },
-                  ] as const
-                ).map(({ type: accountType, query }) => (
-                  <AccountBreakdown
-                    key={accountType}
-                    type={accountType}
-                    accounts={
-                      query.data?.pages.flatMap((page) => page.data) ?? []
-                    }
-                    loading={query.isPending}
-                    error={query.isError}
-                    hasMore={query.hasNextPage}
-                    loadingMore={query.isFetching}
-                    onLoadMore={() => void query.fetchNextPage()}
-                    onViewAccount={handleViewAccount}
-                  />
-                ))}
-              </div>
             </PageSection>
             <AccountsTable
               accounts={accounts.data}
@@ -180,6 +166,9 @@ export function AccountsDashboardPage() {
               onPageChange={table.handlePageChange}
               onAddAccount={handleAddAccount}
               onViewAccount={handleViewAccount}
+              renderRowActions={(account) => (
+                <AccountRowActionsContainer account={account} />
+              )}
             />
           </>
         )}

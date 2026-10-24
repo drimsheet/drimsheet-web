@@ -15,8 +15,11 @@ import { Tabs } from '@/shared/components/tabs';
 import { Search } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import dashboardHelpers from '../helper';
-import type { AccountsTableProps, IAccountTableRow } from '../types';
+import type {
+  AccountsTableProps,
+  TAccountTableRow,
+  UAccountBehaviorFilter,
+} from '../types';
 import { DashboardError } from './section-error';
 
 export function AccountsTable({
@@ -30,18 +33,14 @@ export function AccountsTable({
   onPageChange,
   onAddAccount,
   onViewAccount,
+  renderRowActions,
 }: Readonly<AccountsTableProps>) {
   const { t } = useTranslation('ledger-accounts');
 
-  const rows = useMemo(
-    () => dashboardHelpers.tableRows(accounts?.data ?? []),
-    [accounts?.data]
-  );
-
-  const columns = useMemo<ITableColumn<IAccountTableRow>[]>(
+  const columns = useMemo<ITableColumn<TAccountTableRow>[]>(
     () => [
       {
-        dataIndex: 'accountName',
+        dataIndex: 'name',
         title: t('dashboard_name_label'),
         minWidth: 200,
         proportion: 3,
@@ -49,26 +48,26 @@ export function AccountsTable({
           <Button
             variant="link"
             className="h-auto min-h-9 max-w-full justify-start whitespace-normal break-words px-0 text-left focus-visible:underline"
-            onClick={() => onViewAccount(row.accountId)}
+            onClick={() => onViewAccount(row.id)}
           >
-            {row.accountName}
+            {row.name}
           </Button>
         ),
       },
       {
-        dataIndex: 'type',
+        dataIndex: 'behavior',
         title: t('dashboard_type_label'),
-        minWidth: 100,
-        render: (_, row) => t(`dashboard_type_${row.type}`),
+        minWidth: 120,
+        render: (_, row) => t(`dashboard_type_${row.behavior}`),
       },
       {
-        dataIndex: 'amount',
+        dataIndex: 'balance',
         title: t('dashboard_table_balance_label'),
         align: 'right',
         minWidth: 160,
         proportion: 2,
         render: (_, row) => (
-          <Money value={row.amount} className="tabular-nums" />
+          <Money value={row.balance} className="tabular-nums" />
         ),
       },
       {
@@ -77,13 +76,19 @@ export function AccountsTable({
         minWidth: 112,
         render: (_, row) => (
           <StatusBadge
-            variant="neutral"
+            variant={row.status === 'active' ? 'success' : 'neutral'}
             label={t(`dashboard_status_${row.status}`)}
           />
         ),
       },
+      {
+        dataIndex: 'id',
+        title: '',
+        width: 64,
+        render: (_, row) => renderRowActions?.(row),
+      },
     ],
-    [t, onViewAccount]
+    [t, onViewAccount, renderRowActions]
   );
 
   const title = t('dashboard_table_title');
@@ -94,26 +99,33 @@ export function AccountsTable({
   const empty_title = t('dashboard_no_results_title');
   const empty_description = t('dashboard_no_results_description');
   const clear_label = t('dashboard_clear_search_label');
-
-  const no_type_title = t(
-    type === 'liability'
-      ? 'dashboard_no_liability_title'
-      : 'dashboard_no_asset_title'
-  );
-
-  const no_type_description = t(
-    type === 'liability'
-      ? 'dashboard_no_liability_description'
-      : 'dashboard_no_asset_description'
-  );
-
   const add_label = t('add_account');
+
+  const empty_by_type: Record<
+    UAccountBehaviorFilter,
+    { title: string; description: string }
+  > = {
+    all: {
+      title: t('dashboard_empty_title'),
+      description: t('dashboard_empty_description'),
+    },
+    bank: {
+      title: t('dashboard_no_bank_title'),
+      description: t('dashboard_no_bank_description'),
+    },
+    petty_cash: {
+      title: t('dashboard_no_petty_cash_title'),
+      description: t('dashboard_no_petty_cash_description'),
+    },
+  };
 
   const tabs = [
     { value: 'all', label: t('dashboard_all_tab') },
-    { value: 'asset', label: t('dashboard_asset_tab') },
-    { value: 'liability', label: t('dashboard_liabilities_tab') },
+    { value: 'bank', label: t('dashboard_bank_tab') },
+    { value: 'petty_cash', label: t('dashboard_petty_cash_tab') },
   ];
+
+  const type_empty_state = empty_by_type[type];
 
   return (
     <PageSection title={title}>
@@ -140,7 +152,7 @@ export function AccountsTable({
       {!error && (
         <DataTable
           columns={columns}
-          data={rows}
+          data={accounts?.data ?? []}
           loading={loading}
           aria-label={title}
           pagination={
@@ -154,9 +166,11 @@ export function AccountsTable({
                 <EmptyMedia variant="icon">
                   <Search aria-hidden />
                 </EmptyMedia>
-                <EmptyTitle>{search ? empty_title : no_type_title}</EmptyTitle>
+                <EmptyTitle>
+                  {search ? empty_title : type_empty_state.title}
+                </EmptyTitle>
                 <EmptyDescription>
-                  {search ? empty_description : no_type_description}
+                  {search ? empty_description : type_empty_state.description}
                 </EmptyDescription>
               </EmptyHeader>
               {search && (
@@ -164,9 +178,7 @@ export function AccountsTable({
                   {clear_label}
                 </Button>
               )}
-              {!search && type !== 'liability' && (
-                <Button onClick={onAddAccount}>{add_label}</Button>
-              )}
+              {!search && <Button onClick={onAddAccount}>{add_label}</Button>}
             </Empty>
           }
         />

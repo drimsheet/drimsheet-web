@@ -1,4 +1,4 @@
-import { AccountDeleteConfirmation } from '@/account/pages/account-details/parts/account-delete-confirmation';
+import { AccountDeleteConfirmation } from '@/account/components/account-delete-confirmation';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { fn } from 'storybook/test';

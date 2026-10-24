@@ -2,38 +2,40 @@ import { drimsheetApi } from '@/shared/lib/api';
 import {
   ELedgerAccountSubType,
   ELedgerType,
-  type IDateRangeDto,
   type IGetAccountCashFlowQuery,
   type IGetAccountCounterpartyParticipationQuery,
-  type IGetAssetLiabilityAccountParticipationQuery,
+  type IGetBalancesBySubTypeQuery,
   type IGetJournalEntriesQuery,
   type IGetLedgerAccountsQuery,
+  type IGetLedgerBalancesByCurrencyQuery,
   type IGetPermittedPostingAccountsQuery,
   type IHeaderAccountNameAliasesReq,
 } from '@/shared/lib/api/Api';
 
-async function getAssetLiabilityAccounts(
-  query: IGetAssetLiabilityAccountParticipationQuery,
+async function getBalancesBySubType(
+  query: IGetBalancesBySubTypeQuery,
+  signal?: AbortSignal
+) {
+  return (await drimsheetApi.reporting.getBalancesBySubType(query, { signal }))
+    .data;
+}
+
+async function getLedgerBalancesByCurrency(
+  query: IGetLedgerBalancesByCurrencyQuery,
   signal?: AbortSignal
 ) {
   return (
-    await drimsheetApi.reporting.getAssetLiabilityAccountParticipation(query, {
-      signal,
-    })
+    await drimsheetApi.reporting.getLedgerBalancesByCurrency(query, { signal })
   ).data;
 }
 
-async function getAssetLiabilitySummary(
-  query: IDateRangeDto,
+async function getLedgerAccounts(
+  query: IGetLedgerAccountsQuery,
   signal?: AbortSignal
 ) {
-  return (
-    await drimsheetApi.reporting.getAssetLiabilitySummary(query, { signal })
-  ).data;
-}
-
-async function getLedgerAccounts(query: IGetLedgerAccountsQuery) {
-  const response = await drimsheetApi.ledger.getLedgerAccounts(query);
+  const response = await drimsheetApi.ledger.getLedgerAccounts(query, {
+    signal,
+  });
 
   return response.data;
 }
@@ -142,8 +144,8 @@ async function setupHeaderAccounts(payload: IHeaderAccountNameAliasesReq) {
 }
 
 export const ledgerAccountService = Object.freeze({
-  getAssetLiabilityAccounts,
-  getAssetLiabilitySummary,
+  getBalancesBySubType,
+  getLedgerBalancesByCurrency,
   setupHeaderAccounts,
   getAccountCounterpartyParticipation,
   getLedgerAccounts,

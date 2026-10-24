@@ -1,3 +1,4 @@
+import { AccountDeleteConfirmation } from '@/account/components/account-delete-confirmation';
 import { AccountUpdateDialog } from '@/account/dialogs/account-update';
 import { useArchiveLedgerAccount } from '@/account/hooks/use-archive-ledger-account';
 import { useDeleteLedgerAccount } from '@/account/hooks/use-delete-ledger-account';
@@ -9,7 +10,6 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import type { AccountActionsContainerProps } from '../types';
 import { AccountActions } from './account-actions';
-import { AccountDeleteConfirmation } from './account-delete-confirmation';
 
 export function AccountActionsContainer({
   account,
