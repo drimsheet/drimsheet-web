@@ -130,6 +130,13 @@
   --selection: var(--color-butter-50);
   --selection-hover: var(--color-butter-100);
   --selection-foreground: var(--color-neutral-900);
+  /* Compact lozenge fills reuse the approved palette in each theme. */
+  --lozenge-neutral: var(--color-neutral-100);
+  --lozenge-neutral-foreground: var(--color-neutral-700);
+  --lozenge-success: var(--color-green-100);
+  --lozenge-info: var(--color-blue-100);
+  --lozenge-warning: var(--color-amber-100);
+  --lozenge-error: var(--color-terracotta-100);
   --success: var(--color-green-700);
   --success-surface: var(--color-green-50);
   --success-hover: var(--color-green-100);
@@ -270,6 +277,13 @@
   --selection: var(--color-butter-950);
   --selection-hover: var(--color-neutral-800);
   --selection-foreground: var(--color-butter-400);
+  /* Compact lozenge fills reuse the approved palette in each theme. */
+  --lozenge-neutral: var(--color-neutral-800);
+  --lozenge-neutral-foreground: var(--color-neutral-300);
+  --lozenge-success: var(--color-green-900);
+  --lozenge-info: var(--color-blue-900);
+  --lozenge-warning: var(--color-amber-900);
+  --lozenge-error: var(--color-terracotta-900);
   --success: var(--color-green-300);
   --success-surface: var(--color-green-950);
   --success-hover: var(--color-green-900);
@@ -304,6 +318,13 @@
 }
 
 @theme inline {
+  --color-lozenge-neutral: var(--lozenge-neutral);
+  --color-lozenge-neutral-foreground: var(--lozenge-neutral-foreground);
+  --color-lozenge-success: var(--lozenge-success);
+  --color-lozenge-info: var(--lozenge-info);
+  --color-lozenge-warning: var(--lozenge-warning);
+  --color-lozenge-error: var(--lozenge-error);
+
   --color-destructive-border: var(--destructive-border);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive-hover: var(--destructive-hover);

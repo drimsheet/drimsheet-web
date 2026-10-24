@@ -8,8 +8,10 @@ import {
   InputGroupInput,
 } from '@/shared/components/input-group';
 import { cn } from '@/shared/lib/utils/cn';
+import type { VariantProps } from 'class-variance-authority';
 import { CheckIcon, ChevronDownIcon, XIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { comboboxChipVariants } from './combobox-chip-variants';
 
 const Combobox = ComboboxPrimitive.Root;
 
@@ -284,21 +286,20 @@ function ComboboxChips({
 
 function ComboboxChip({
   className,
+  variant = 'neutral',
   children,
   showRemove = true,
   ...props
 }: Readonly<
-  ComboboxPrimitive.Chip.Props & {
-    showRemove?: boolean;
-  }
+  ComboboxPrimitive.Chip.Props &
+    VariantProps<typeof comboboxChipVariants> & {
+      showRemove?: boolean;
+    }
 >) {
   return (
     <ComboboxPrimitive.Chip
       data-slot="combobox-chip"
-      className={cn(
-        'flex h-[calc(--spacing(5.5))] w-fit items-center justify-center gap-1 rounded-sm bg-muted px-1.5 text-xs font-medium whitespace-nowrap text-foreground has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0',
-        className
-      )}
+      className={cn(comboboxChipVariants({ variant }), className)}
       {...props}
     >
       {children}

@@ -1,4 +1,5 @@
 import { Badge } from '@/shared/components/badge';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { useTranslation } from 'react-i18next';
 import helpers from '../helper';
 import type { PeriodSummaryProps } from '../types';
@@ -32,16 +33,10 @@ export function PeriodSummary({
           </Badge>
         </div>
         {status_label && (
-          <Badge
-            variant="ghost"
-            className={
-              status === 'open'
-                ? 'shrink-0 bg-success-surface text-success'
-                : 'shrink-0'
-            }
-          >
-            {status_label}
-          </Badge>
+          <StatusBadge
+            variant={status === 'open' ? 'success' : 'neutral'}
+            label={status_label}
+          />
         )}
       </div>
       <div className="flex items-baseline justify-between gap-3 text-xs text-muted-foreground">

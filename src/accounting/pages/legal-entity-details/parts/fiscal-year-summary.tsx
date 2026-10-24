@@ -1,4 +1,3 @@
-import { Badge } from '@/shared/components/badge';
 import { Button } from '@/shared/components/button';
 import {
   DropdownMenu,
@@ -8,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/components/dropdown-menu';
 import { Skeleton } from '@/shared/components/skeleton';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import helpers from '../helper';
@@ -57,16 +57,10 @@ export function FiscalYearSummary({
         </DropdownMenu>
       </div>
       <div className="ml-auto flex flex-col items-end gap-2">
-        <Badge
-          variant="ghost"
-          className={
-            selected.status === 'open'
-              ? 'bg-success-surface text-success'
-              : undefined
-          }
-        >
-          {status_label}
-        </Badge>
+        <StatusBadge
+          variant={selected.status === 'open' ? 'success' : 'neutral'}
+          label={status_label}
+        />
         <span className="text-right text-xs text-muted-foreground tabular-nums">
           {range_text}
         </span>

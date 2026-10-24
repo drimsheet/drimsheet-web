@@ -1,7 +1,7 @@
-import { Badge } from '@/shared/components/badge';
 import { PageSection } from '@/shared/components/page-section';
 import { PageTitle } from '@/shared/components/page-title';
 import { Skeleton } from '@/shared/components/skeleton';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { useTranslation } from 'react-i18next';
 import helpers from '../helper';
 import type { EntitySummaryProps } from '../types';
@@ -36,16 +36,10 @@ export function EntitySummary({
         </div>
         <div className="col-start-2 row-start-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
           <span>{type_label}</span>
-          <Badge
-            variant="ghost"
-            className={
-              entity.status === 'active'
-                ? 'bg-success-surface text-success'
-                : undefined
-            }
-          >
-            {status_label}
-          </Badge>
+          <StatusBadge
+            variant={entity.status === 'active' ? 'success' : 'neutral'}
+            label={status_label}
+          />
         </div>
       </div>
       <div className="flex flex-col gap-4 lg:ml-21">

@@ -3,8 +3,17 @@ import { composeStories } from '@storybook/react';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-const { Success, Info, Warning, Error, Neutral, Primary, WithoutDot } =
-  composeStories(stories);
+const {
+  Success,
+  Info,
+  Warning,
+  Error,
+  Neutral,
+  Primary,
+  Secondary,
+  WithoutDot,
+  WithDot,
+} = composeStories(stories);
 
 describe('StatusBadge', () => {
   it('renders correctly with label text', () => {
@@ -12,19 +21,19 @@ describe('StatusBadge', () => {
     expect(screen.getByText('Success')).toBeInTheDocument();
   });
 
-  it('renders default neutral variant with a dot indicator', () => {
+  it('omits the dot indicator by default', () => {
     render(<Neutral />);
-    const badge = screen.getByText('Neutral');
+    expect(screen.getByText('Neutral')).toBeInTheDocument();
+    expect(screen.queryByTestId('status-badge-dot')).not.toBeInTheDocument();
+  });
 
-    expect(badge).toHaveClass(
-      'bg-muted',
-      'text-muted-foreground',
-      'border-border'
+  it('supports an explicitly requested decorative dot', () => {
+    render(<WithDot />);
+    expect(screen.getByText('Active')).toBeInTheDocument();
+    expect(screen.getByTestId('status-badge-dot')).toHaveAttribute(
+      'aria-hidden',
+      'true'
     );
-
-    const dot = screen.getByTestId('status-badge-dot');
-    expect(dot).toBeInTheDocument();
-    expect(dot).toHaveClass('h-1.5', 'w-1.5', 'rounded-full', 'bg-current');
   });
 
   it('renders all variants with correct classes', () => {
@@ -32,51 +41,51 @@ describe('StatusBadge', () => {
       {
         Component: Success,
         name: 'Success',
-        bg: 'bg-success-surface',
+        bg: 'bg-lozenge-success',
         text: 'text-success',
-        border: 'border-success-border',
       },
       {
         Component: Info,
         name: 'Info',
-        bg: 'bg-info-surface',
+        bg: 'bg-lozenge-info',
         text: 'text-info',
-        border: 'border-info-border',
       },
       {
         Component: Warning,
         name: 'Warning',
-        bg: 'bg-warning-surface',
+        bg: 'bg-lozenge-warning',
         text: 'text-warning',
-        border: 'border-warning-border',
       },
       {
         Component: Error,
         name: 'Error',
-        bg: 'bg-error-surface',
+        bg: 'bg-lozenge-error',
         text: 'text-error',
-        border: 'border-error-border',
       },
       {
         Component: Neutral,
         name: 'Neutral',
-        bg: 'bg-muted',
-        text: 'text-muted-foreground',
-        border: 'border-border',
+        bg: 'bg-lozenge-neutral',
+        text: 'text-lozenge-neutral-foreground',
       },
       {
         Component: Primary,
         name: 'Primary',
-        bg: 'bg-selection',
-        text: 'text-selection-foreground',
-        border: 'border-primary',
+        bg: 'bg-primary',
+        text: 'text-primary-foreground',
+      },
+      {
+        Component: Secondary,
+        name: 'Secondary',
+        bg: 'bg-secondary',
+        text: 'text-secondary-foreground',
       },
     ] as const;
 
-    for (const { Component, name, bg, text, border } of variants) {
+    for (const { Component, name, bg, text } of variants) {
       const { rerender } = render(<Component />);
       const badge = screen.getByText(name);
-      expect(badge).toHaveClass(bg, text, border);
+      expect(badge).toHaveClass(bg, text);
       rerender(<></>); // clean up between iterations
     }
   });
