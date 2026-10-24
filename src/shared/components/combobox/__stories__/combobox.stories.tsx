@@ -35,6 +35,66 @@ export const Default: Story = {
   ),
 };
 
+export const Selected: Story = {
+  render: () => (
+    <div className="w-64">
+      <Combobox
+        items={['Software', 'Office supplies', 'Travel']}
+        defaultValue="Software"
+      >
+        <ComboboxInput aria-label="Category" placeholder="Select category..." />
+        <ComboboxContent>
+          <ComboboxList>
+            {(item: string) => (
+              <ComboboxItem key={item} value={item}>
+                {item}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    </div>
+  ),
+};
+
+export const DisabledSelection: Story = {
+  render: () => (
+    <Combobox disabled defaultValue="Software">
+      <ComboboxInput aria-label="Category" />
+    </Combobox>
+  ),
+};
+
+export const NarrowDarkSelection: Story = {
+  render: () => (
+    <div className="dark w-72 bg-background p-4 text-foreground">
+      <Combobox
+        items={['Software', 'Office supplies', 'Travel']}
+        defaultValue="Software"
+      >
+        <ComboboxInput aria-label="Category" placeholder="Select category..." />
+        <ComboboxContent className="dark">
+          <ComboboxList>
+            {(item: string) => (
+              <ComboboxItem key={item} value={item}>
+                {item}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    </div>
+  ),
+};
+
+export const ReadOnlySelection: Story = {
+  render: () => (
+    <Combobox readOnly defaultValue="Software">
+      <ComboboxInput aria-label="Category" />
+    </Combobox>
+  ),
+};
+
 export const MultipleChips: Story = {
   render: () => (
     <div className="grid w-full max-w-2xl gap-4 sm:grid-cols-2">

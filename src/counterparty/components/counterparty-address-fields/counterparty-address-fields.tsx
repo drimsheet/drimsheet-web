@@ -94,7 +94,6 @@ export function CounterpartyAddressFields({
         <CountryComboBox
           id={`${namePrefix}-country`}
           disabled={disabled}
-          clearable={showPostalCode && !countryRequired}
           label={country_label}
           value={values.countryCode ?? ''}
           jurisdictions={jurisdictions}

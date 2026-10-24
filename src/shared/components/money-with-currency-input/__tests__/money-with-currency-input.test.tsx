@@ -155,6 +155,39 @@ describe('MoneyWithCurrencyInput', () => {
     expect(screen.getByLabelText('Amount')).toHaveValue('1,234.56');
   });
 
+  it('clears currency without changing the amount and keeps the picker open', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+
+    render(<WithAmount onChange={onChange} />);
+
+    await user.click(screen.getByRole('combobox', { name: 'Currency: USD' }));
+
+    const input = await screen.findByRole('combobox', {
+      name: 'Search currency',
+    });
+
+    await user.type(input, 'ngn');
+    await user.click(screen.getByRole('button', { name: 'Clear selection' }));
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      amount: 30000,
+      currencyCode: '',
+      isMinorUnit: false,
+    });
+    expect(input).toHaveValue('');
+    expect(input).toHaveFocus();
+    expect(screen.getByRole('listbox')).toBeVisible();
+
+    await user.click(screen.getByRole('option', { name: /Nigerian Naira/i }));
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      amount: 30000,
+      currencyCode: 'NGN',
+      isMinorUnit: false,
+    });
+  });
+
   it('shows an empty state when no currency matches the story search', async () => {
     const user = userEvent.setup();
     render(<Default />);

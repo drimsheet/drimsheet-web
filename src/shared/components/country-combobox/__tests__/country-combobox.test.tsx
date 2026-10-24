@@ -171,19 +171,19 @@ describe('CountryComboBox', () => {
     expect(await screen.findByText('No countries found.')).toBeInTheDocument();
   });
 
-  it('calls onChange with empty string when an optional selection is cleared', async () => {
+  it('allows clearing by default and emits an empty country code', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
       <CountryComboBox
         label="Country"
         value="US"
-        clearable
         onChange={onChange}
         jurisdictions={dummyJurisdictions}
       />
     );
 
+    await user.click(screen.getByRole('combobox', { name: 'Country' }));
     await user.click(screen.getByRole('button', { name: 'Clear selection' }));
     expect(onChange).toHaveBeenCalledWith('');
   });

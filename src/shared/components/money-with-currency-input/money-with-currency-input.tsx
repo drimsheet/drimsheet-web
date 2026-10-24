@@ -129,11 +129,27 @@ const MoneyWithCurrencyInput = forwardRef<
       isMinorUnit: value?.isMinorUnit ?? false,
     };
 
+    const handleCurrencyValueChange = (
+      currency: CurrencyOption | null,
+      eventDetails: { reason: string }
+    ) => {
+      onChange?.({
+        ...currentMoneyValue,
+        currencyCode: currency?.code ?? '',
+      });
+      setSearchValue('');
+
+      if (eventDetails.reason !== 'clear-press') {
+        setOpen(false);
+      }
+    };
+
     const currencies_empty_text = t('currencies_empty_text');
 
     return (
       <Combobox
         items={filteredCurrencies}
+        disabled={disabled || currencyDisabled}
         autoHighlight
         inputValue={searchValue}
         open={open}
@@ -145,14 +161,7 @@ const MoneyWithCurrencyInput = forwardRef<
           setOpen(open);
           if (open) setSearchValue('');
         }}
-        onValueChange={(currency: CurrencyOption | null) => {
-          onChange?.({
-            ...currentMoneyValue,
-            currencyCode: currency?.code ?? '',
-          });
-          setSearchValue('');
-          setOpen(false);
-        }}
+        onValueChange={handleCurrencyValueChange}
       >
         <div
           ref={controlRef}

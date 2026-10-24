@@ -9,7 +9,7 @@ import {
 } from '@/shared/components/input-group';
 import { cn } from '@/shared/lib/utils/cn';
 import type { VariantProps } from 'class-variance-authority';
-import { CheckIcon, ChevronDownIcon, XIcon } from 'lucide-react';
+import { CheckIcon, ChevronDownIcon, CircleXIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { comboboxChipVariants } from './combobox-chip-variants';
 
@@ -63,6 +63,7 @@ function ComboboxClear({
     <ComboboxPrimitive.Clear
       aria-label={resolvedAriaLabel}
       data-slot="combobox-clear"
+      tabIndex={0}
       render={
         <InputGroupButton
           aria-label={resolvedAriaLabel}
@@ -70,10 +71,13 @@ function ComboboxClear({
           size="icon-xs"
         />
       }
-      className={cn(className)}
+      className={cn(
+        'hidden rounded-full text-muted-foreground group-focus-within/input-group:flex data-popup-open:flex disabled:invisible group-has-[[readonly]]/input-group:invisible',
+        className
+      )}
       {...props}
     >
-      <XIcon className="pointer-events-none" />
+      <CircleXIcon className="pointer-events-none" />
     </ComboboxPrimitive.Clear>
   );
 }
@@ -83,7 +87,7 @@ function ComboboxInput({
   children,
   disabled = false,
   showTrigger = true,
-  showClear = false,
+  showClear = true,
   ...props
 }: Readonly<
   ComboboxPrimitive.Input.Props & {
@@ -97,10 +101,13 @@ function ComboboxInput({
   return (
     <InputGroup className={cn('w-auto', className)}>
       <ComboboxPrimitive.Input
-        render={<InputGroupInput disabled={disabled} />}
+        disabled={disabled}
+        render={<InputGroupInput />}
         {...props}
       />
-      <InputGroupAddon align="inline-end">
+      {/* Keep input actions accessible while the popup hides surrounding content. */}
+      <InputGroupAddon align="inline-end" aria-live="off">
+        {showClear && !disabled && !props.readOnly && <ComboboxClear />}
         {showTrigger && (
           <InputGroupButton
             aria-label={open_options_aria_label}
@@ -108,13 +115,12 @@ function ComboboxInput({
             variant="ghost"
             asChild
             data-slot="input-group-button"
-            className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent"
+            className="data-pressed:bg-transparent"
             disabled={disabled}
           >
             <ComboboxTrigger />
           </InputGroupButton>
         )}
-        {showClear && <ComboboxClear disabled={disabled} />}
       </InputGroupAddon>
       {children}
     </InputGroup>
@@ -309,7 +315,7 @@ function ComboboxChip({
           className="-ml-1 opacity-50 hover:opacity-100"
           data-slot="combobox-chip-remove"
         >
-          <XIcon className="pointer-events-none" />
+          <CircleXIcon className="pointer-events-none size-4" />
         </ComboboxPrimitive.ChipRemove>
       )}
     </ComboboxPrimitive.Chip>

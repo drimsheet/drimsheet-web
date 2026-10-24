@@ -147,9 +147,15 @@ describe('FreeSoloCombobox', () => {
       />
     );
 
+    const input = screen.getByRole('combobox', { name: 'Payer' });
+
+    await user.click(input);
     await user.click(screen.getByRole('button', { name: 'Clear selection' }));
 
     expect(onValueChange).toHaveBeenLastCalledWith(null);
+    expect(input).toHaveValue('');
+    expect(input).toHaveFocus();
+    expect(await screen.findAllByRole('option')).toHaveLength(2);
   });
 
   it('disables interaction', () => {
