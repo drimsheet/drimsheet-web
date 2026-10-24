@@ -49,8 +49,9 @@ const currencies = [
 async function fillCreationForm(page: Page) {
   await page.getByRole('button', { name: 'Add a new legal entity' }).click();
   const dialog = page.getByRole('dialog', { name: 'Add a new legal entity' });
-  await dialog.getByRole('combobox', { name: 'Who is this for?' }).click();
-  await page.getByRole('option', { name: 'Company', exact: true }).click();
+  await dialog
+    .getByRole('radio', { name: 'Private company', exact: true })
+    .click();
   await dialog.getByLabel('Name', { exact: true }).fill('New Studio Ltd');
   await dialog
     .getByRole('combobox', { name: 'Country of residence' })

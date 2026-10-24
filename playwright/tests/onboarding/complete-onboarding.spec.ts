@@ -150,8 +150,7 @@ async function prepare(
     throw new Error(`Unexpected onboarding write: ${request.method()} ${path}`);
   });
   await page.goto('/auth/signup/complete?token=onboarding-test-token');
-  await page.getByRole('combobox', { name: 'Who is this for?' }).click();
-  await page.getByRole('option', { name: 'Individual', exact: true }).click();
+  await page.getByRole('radio', { name: 'Individual', exact: true }).click();
   await page.getByRole('combobox', { name: 'Country of residence' }).click();
   await page.getByRole('option', { name: /Nigeria/ }).click();
   await page

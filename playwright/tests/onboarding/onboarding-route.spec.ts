@@ -211,8 +211,7 @@ test('preserves onboarding drafts across steps and updates linked report dates',
   await expect(
     page.getByRole('textbox', { name: 'Name', exact: true })
   ).toBeEnabled();
-  await page.getByRole('combobox', { name: 'Who is this for?' }).click();
-  await page.getByRole('option', { name: 'Individual', exact: true }).click();
+  await page.getByRole('radio', { name: 'Individual', exact: true }).click();
   await page
     .getByRole('textbox', { name: 'Name', exact: true })
     .fill('Ada Okafor');
@@ -536,8 +535,7 @@ test('keeps mobile onboarding actions visible and long period lists keyboard-scr
     'Create a Legal Entity',
     'Continue to financial year'
   );
-  await page.getByRole('combobox', { name: 'Who is this for?' }).click();
-  await page.getByRole('option', { name: 'Individual', exact: true }).click();
+  await page.getByRole('radio', { name: 'Individual', exact: true }).click();
   await page.getByRole('combobox', { name: 'Country of residence' }).click();
   await page.getByRole('option', { name: /Nigeria/ }).click();
   await page
@@ -604,12 +602,11 @@ test('waits for profile data before allowing the individual selection', async ({
   await page.goto(verificationUrl);
   await expect(page.getByRole('status')).toHaveText('Loading Drimsheet');
   await expect(
-    page.getByRole('combobox', { name: 'Who is this for?' })
+    page.getByRole('radiogroup', { name: 'Who is this for?' })
   ).toHaveCount(0);
   releaseProfile();
   await expect(page).toHaveURL('/onboarding');
-  await page.getByRole('combobox', { name: 'Who is this for?' }).click();
-  await page.getByRole('option', { name: 'Individual', exact: true }).click();
+  await page.getByRole('radio', { name: 'Individual', exact: true }).click();
   await expect(
     page.getByRole('textbox', { name: 'Name', exact: true })
   ).toHaveValue('Ada Okafor');
@@ -642,8 +639,7 @@ test('uses the jurisdiction financial year and allows its warning', async ({
     })
   );
   await page.goto(verificationUrl);
-  await page.getByRole('combobox', { name: 'Who is this for?' }).click();
-  await page.getByRole('option', { name: 'Individual', exact: true }).click();
+  await page.getByRole('radio', { name: 'Individual', exact: true }).click();
   await page.getByRole('combobox', { name: 'Country of residence' }).click();
   await page.getByRole('option', { name: /Australia/ }).click();
   await page
@@ -714,8 +710,7 @@ test('defaults reports from the legal entity and fiscal year and advances withou
     await route.fallback();
   });
   await page.goto(verificationUrl);
-  await page.getByRole('combobox', { name: 'Who is this for?' }).click();
-  await page.getByRole('option', { name: 'Individual', exact: true }).click();
+  await page.getByRole('radio', { name: 'Individual', exact: true }).click();
   await page.getByRole('combobox', { name: 'Country of residence' }).click();
   await page.getByRole('option', { name: /Nigeria/ }).click();
   await page
