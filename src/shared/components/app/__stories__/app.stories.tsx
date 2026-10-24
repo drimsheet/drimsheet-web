@@ -1,8 +1,7 @@
-import { AppSidebar } from '@/_app/components/app-sidebar';
 import { AppBody } from '@/shared/components/app';
+import { Badge } from '@/shared/components/badge';
+import { Button } from '@/shared/components/button';
 import { PageSection } from '@/shared/components/page-section';
-import { PageTitle } from '@/shared/components/page-title';
-import { SidebarProvider } from '@/shared/components/sidebar';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -13,36 +12,60 @@ const meta = {
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <SidebarProvider>
-          <div className="flex min-h-screen w-full bg-background font-sans text-foreground">
-            <AppSidebar currentPath="/dashboard" />
-            <div className="flex-1 flex flex-col min-w-0">
-              <main className="flex-1 p-6">
-                <Story />
-              </main>
-            </div>
-          </div>
-        </SidebarProvider>
+        <main className="bg-background p-4 text-foreground md:px-8 md:py-6">
+          <Story />
+        </main>
       </MemoryRouter>
     ),
   ],
+  args: {
+    title: 'Accounts',
+    children: <PageSection>Account balances and recent activity.</PageSection>,
+  },
 } satisfies Meta<typeof AppBody>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  render: () => (
-    <AppBody>
-      <div className="flex flex-col">
-        <PageTitle>Application Shell</PageTitle>
-        <PageSection>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Welcome to the main application interface! This story showcases the
-            full app layout, including the Sidebar and Page Body.
-          </p>
-        </PageSection>
-      </div>
-    </AppBody>
-  ),
+export const Default: Story = {};
+
+export const WithSlots: Story = {
+  args: {
+    titleSlot: (
+      <>
+        Accounts <Badge>Archived</Badge>
+      </>
+    ),
+    breadcrumbs: {
+      label: 'Dashboard',
+      link: '/dashboard',
+      next: { label: 'Accounts' },
+    },
+    actionsSlot: <Button>Create account</Button>,
+  },
 };
+
+export const LongTitle: Story = {
+  args: {
+    title:
+      'Operating accounts for international subsidiaries and regional offices',
+    actionsSlot: <Button>Create account</Button>,
+  },
+};
+
+export const BreadcrumbsOnly: Story = {
+  args: {
+    title: undefined,
+    breadcrumbs: {
+      label: 'Accounts',
+      link: '/accounts',
+      next: { label: 'Operating account' },
+    },
+  },
+};
+
+export const ActionsOnly: Story = {
+  args: { title: undefined, actionsSlot: <Button>Create account</Button> },
+};
+
+export const ContentOnly: Story = { args: { title: undefined } };

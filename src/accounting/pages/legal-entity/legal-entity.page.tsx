@@ -5,7 +5,6 @@ import { Alert, AlertDescription } from '@/shared/components/alert';
 import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
 import { PageSection } from '@/shared/components/page-section';
-import { PageTitle } from '@/shared/components/page-title';
 import { Plus } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -35,23 +34,22 @@ export function LegalEntityPage() {
   const refresh_error = t('legal_entities_refresh_error');
 
   return (
-    <AppBody>
+    <AppBody
+      title={title}
+      actionsSlot={
+        <Button
+          ref={addButtonRef}
+          type="button"
+          size="lg"
+          onClick={() => setShowCreation(true)}
+        >
+          <Plus data-icon="inline-start" aria-hidden />
+          {add_label}
+        </Button>
+      }
+    >
       <div className="flex min-w-0 flex-col">
-        <header className="flex flex-wrap items-center justify-between gap-6">
-          <div className="flex min-w-0 flex-col gap-2.5">
-            <PageTitle className="m-0">{title}</PageTitle>
-            <p className="m-0 text-sm text-muted-foreground">{description}</p>
-          </div>
-          <Button
-            ref={addButtonRef}
-            type="button"
-            size="lg"
-            onClick={() => setShowCreation(true)}
-          >
-            <Plus data-icon="inline-start" aria-hidden />
-            {add_label}
-          </Button>
-        </header>
+        <p className="mt-2 text-sm text-muted-foreground">{description}</p>
         <PageSection
           aria-label={section_title}
           title={entities.data ? section_count : section_title}

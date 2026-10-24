@@ -1,4 +1,4 @@
-import { PageTitle } from '@/shared/components/page-title';
+import { AppBody } from '@/shared/components/app';
 import { Tabs, type ITabItem } from '@/shared/components/tabs';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -19,8 +19,7 @@ export function TransactionLayout() {
   const tabs_aria_label = t('tabs_aria_label');
 
   return (
-    <div className="flex flex-col">
-      <PageTitle>{page_title}</PageTitle>
+    <AppBody title={page_title}>
       <div className="mt-7">
         <Tabs
           items={items}
@@ -30,6 +29,6 @@ export function TransactionLayout() {
         />
       </div>
       <Outlet />
-    </div>
+    </AppBody>
   );
 }

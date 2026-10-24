@@ -6,7 +6,6 @@ import { useDashboardSummary } from '@/account/hooks/use-dashboard-summary';
 import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
 import { PageSection } from '@/shared/components/page-section';
-import { PageTitle } from '@/shared/components/page-title';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
 import {
@@ -116,17 +115,18 @@ export function AccountsDashboardPage() {
   );
 
   return (
-    <AppBody>
+    <AppBody
+      title={title}
+      actionsSlot={
+        !noAccounts && (
+          <Button size="lg" onClick={handleAddAccount}>
+            <Plus data-icon="inline-start" />
+            {add_label}
+          </Button>
+        )
+      }
+    >
       <div className="flex min-w-0 flex-col">
-        <header className="flex flex-wrap items-center justify-between gap-4">
-          <PageTitle>{title}</PageTitle>
-          {!noAccounts && (
-            <Button size="lg" onClick={handleAddAccount}>
-              <Plus data-icon="inline-start" />
-              {add_label}
-            </Button>
-          )}
-        </header>
         {pageError && (
           <PageSection>
             <DashboardError title={page_error_title} />

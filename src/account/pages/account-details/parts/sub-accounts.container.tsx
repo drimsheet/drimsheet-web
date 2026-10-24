@@ -1,6 +1,6 @@
+import { useSubAccounts } from '@/account/hooks/use-sub-accounts';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useSubAccounts } from '../hooks/use-sub-accounts';
 import type { AccountSectionProps } from '../types';
 import { SectionError } from './section-error';
 import { SubAccounts, SubAccountsSkeleton } from './sub-accounts';

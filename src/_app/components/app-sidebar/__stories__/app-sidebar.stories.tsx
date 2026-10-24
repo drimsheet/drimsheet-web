@@ -1,5 +1,13 @@
 import { AppSidebar } from '@/_app/components/app-sidebar';
-import { SidebarProvider, SidebarTrigger } from '@/shared/components/sidebar';
+import { AppBody } from '@/shared/components/app';
+import { Badge } from '@/shared/components/badge';
+import { Button } from '@/shared/components/button';
+import { PageSection } from '@/shared/components/page-section';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/shared/components/sidebar';
 import { TooltipProvider } from '@/shared/components/tooltip';
 import { AccountingEntityAvatar } from '@/user/components/accounting-entity-avatar';
 import { SidebarAccountButton } from '@/user/components/sidebar-account-button';
@@ -31,9 +39,23 @@ const meta = {
             >
               <div className="flex h-screen w-full bg-background text-foreground">
                 <Story />
-                <main className="flex-1 p-6">
-                  <SidebarTrigger className="md:hidden" />
-                </main>
+                <SidebarInset>
+                  <div className="mb-8 flex min-w-0 flex-1 flex-col gap-4 p-4 md:px-8 md:py-6">
+                    <SidebarTrigger className="md:hidden" />
+                    <AppBody
+                      titleSlot={
+                        <>
+                          Accounts <Badge variant="secondary">Archived</Badge>
+                        </>
+                      }
+                      actionsSlot={<Button>Create account</Button>}
+                    >
+                      <PageSection title="Overview">
+                        Account balances and recent activity.
+                      </PageSection>
+                    </AppBody>
+                  </div>
+                </SidebarInset>
               </div>
             </SidebarProvider>
           </TooltipProvider>

@@ -1,9 +1,9 @@
 import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
+import { useSubAccounts } from '@/account/hooks/use-sub-accounts';
 import { AppBody } from '@/shared/components/app';
 import { PageSection } from '@/shared/components/page-section';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
-import { useSubAccounts } from './hooks/use-sub-accounts';
 import { AccountActionsContainer } from './parts/account-actions.container';
 import {
   LedgerAccountSummary,

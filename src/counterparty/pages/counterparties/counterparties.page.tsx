@@ -4,7 +4,6 @@ import { CounterpartyCreationDialog } from '@/counterparty/dialogs/counterparty-
 import { CounterpartyRoleSelectionDialog } from '@/counterparty/dialogs/counterparty-role-selection';
 import { AppBody } from '@/shared/components/app';
 import { PageSection } from '@/shared/components/page-section';
-import { PageTitle } from '@/shared/components/page-title';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -24,8 +23,7 @@ export function CounterpartiesPage() {
 
   return (
     <>
-      <AppBody>
-        <PageTitle>{page_title}</PageTitle>
+      <AppBody title={page_title}>
         <PageSection>
           <CounterpartiesTableContainer
             onAddCounterparty={() => setShowRoleSelection(true)}

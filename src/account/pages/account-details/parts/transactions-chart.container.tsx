@@ -1,8 +1,8 @@
+import { useAccountCashFlow } from '@/account/hooks/use-account-cash-flow';
 import { PageSection } from '@/shared/components/page-section';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import accountDetailsHelpers from '../helper';
-import { useAccountCashFlow } from '../hooks/use-account-cash-flow';
 import type { AccountSectionProps } from '../types';
 import { CashFlowPeriod } from './cash-flow-period';
 import { SectionError } from './section-error';

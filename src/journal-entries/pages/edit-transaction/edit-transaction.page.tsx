@@ -10,7 +10,6 @@ import { useJournalEntry } from '@/journal-entries/hooks/use-journal-entry';
 import { journalEntryRouteMapper } from '@/journal-entries/lib/mappers/journal-entry-route.mapper';
 import { AppBody } from '@/shared/components/app';
 import { PageSection } from '@/shared/components/page-section';
-import { PageTitle } from '@/shared/components/page-title';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
@@ -36,8 +35,7 @@ export function EditTransactionPage() {
   if (isPending) {
     return (
       <>
-        <AppBody>
-          <PageTitle>{page_title}</PageTitle>
+        <AppBody title={page_title}>
           <PageSection>
             {type === 'transfer' ? (
               <CashTransferFormSkeleton />
@@ -81,8 +79,7 @@ export function EditTransactionPage() {
 
   return (
     <>
-      <AppBody>
-        <PageTitle>{page_title}</PageTitle>
+      <AppBody title={page_title}>
         <PageSection>
           {canonicalType === 'inflow' && (
             <InflowFormContainer journalEntry={journalEntry} />

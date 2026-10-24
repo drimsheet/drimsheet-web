@@ -110,7 +110,7 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="app-sidebar-header px-4 py-6 group-data-[collapsible=icon]:px-2">
-        <div className="flex items-center gap-2">
+        <div className="flex min-h-10 items-center gap-2">
           <SidebarTrigger
             aria-label={toggle_sidebar_label}
             className="shrink-0"

@@ -1,7 +1,6 @@
 import { categoryService } from '@/account/lib/services/category.service';
 import { AppBody } from '@/shared/components/app';
 import { PageSection } from '@/shared/components/page-section';
-import { PageTitle } from '@/shared/components/page-title';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFormik, type FormikProps } from 'formik';
 import { useState } from 'react';
@@ -115,10 +114,9 @@ export function CategoryCreationPage() {
 
   return (
     <>
-      <AppBody>
-        <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col">
-          <div className="flex flex-col gap-2">
-            <PageTitle>{title}</PageTitle>
+      <AppBody title={title}>
+        <div className="flex w-full min-w-0 max-w-3xl flex-col">
+          <div className="mt-2 flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
           <PageSection>
