@@ -43,7 +43,6 @@ function toPettyCashValues(
     exchangeRate: openingBalance?.exchangeRate
       ? { value: openingBalance.exchangeRate.rate, inverted: false }
       : null,
-    isSubAccount: false,
   };
 }
 

@@ -1,6 +1,5 @@
 import { OpeningBalanceFields } from '@/account/components/opening-balance-fields';
 import { Button } from '@/shared/components/button';
-import { Checkbox } from '@/shared/components/checkbox';
 import { CurrencySelect } from '@/shared/components/currency-select';
 import {
   Field,
@@ -26,7 +25,6 @@ const defaultInitialValues: IPettyCashAccountFormValues = {
   openingBalance: '',
   openingDate: '',
   exchangeRate: null,
-  isSubAccount: false,
 };
 
 export function PettyCashAccountForm({
@@ -99,7 +97,6 @@ export function PettyCashAccountForm({
 
   const account_name_label = t('account_display_name');
   const currency_label = t('currency_label');
-  const create_as_sub_account_label = t('create_as_sub_account_label');
 
   const submit_label = t(
     mode === 'update' ? 'save_changes_label' : 'create_account_text'
@@ -187,24 +184,6 @@ export function PettyCashAccountForm({
             openingDate={formik.values.openingDate}
             openingDateError={getErrorMessage('openingDate')}
           />
-
-          {mode === 'create' && (
-            <Field orientation="horizontal">
-              <Checkbox
-                aria-label={create_as_sub_account_label}
-                checked={formik.values.isSubAccount}
-                disabled={disabled || loading}
-                id="isSubAccount"
-                name="isSubAccount"
-                onCheckedChange={(checked) => {
-                  void formik.setFieldValue('isSubAccount', checked === true);
-                }}
-              />
-              <Label htmlFor="isSubAccount">
-                {create_as_sub_account_label}
-              </Label>
-            </Field>
-          )}
 
           <Field orientation="horizontal" className="justify-end">
             {onCancel && (

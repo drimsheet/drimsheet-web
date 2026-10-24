@@ -82,7 +82,6 @@ export function createPettyCashAccountFormValidation(
           ? true
           : exchangeRate.value > 0
       ),
-    isSubAccount: yup.boolean().required(),
   });
 }
 

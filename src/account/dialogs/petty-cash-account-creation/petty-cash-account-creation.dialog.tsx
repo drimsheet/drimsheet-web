@@ -99,10 +99,12 @@ export function PettyCashAccountCreationDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-md">
+      <DialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{create_petty_cash_account_title}</DialogTitle>
-          <DialogDescription className="sr-only">
+          <DialogTitle className="text-xl leading-tight">
+            {create_petty_cash_account_title}
+          </DialogTitle>
+          <DialogDescription>
             {create_petty_cash_account_description}
           </DialogDescription>
         </DialogHeader>
@@ -116,6 +118,7 @@ export function PettyCashAccountCreationDialog({
           }}
           loading={isCreating}
           officialExchangeRate={officialExchangeRate}
+          onCancel={handleClose}
           onExchangeRateContextChange={setExchangeRateContext}
           onSubmit={handleSubmit}
         />

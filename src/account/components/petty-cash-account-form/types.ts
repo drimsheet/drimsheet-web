@@ -13,7 +13,6 @@ export interface IPettyCashAccountFormValues {
   openingBalance: number | '';
   openingDate: string;
   exchangeRate: ICurrencyExchangeRateInputValue | null;
-  isSubAccount: boolean;
 }
 
 export interface PettyCashAccountFormProps {

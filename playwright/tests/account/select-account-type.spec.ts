@@ -118,6 +118,9 @@ test.describe('Account Type Selection Flow', () => {
     });
 
     await expect(pettyCashDialog).toBeVisible();
+    await expect(pettyCashDialog).toHaveAccessibleDescription(
+      'Track small, routine purchases paid from cash on hand.'
+    );
 
     let attempts = 0;
     let capturedRequestBody: IPettyCashAccountCreationReq | null = null;
@@ -206,15 +209,10 @@ test.describe('Account Type Selection Flow', () => {
         amount: {
           amount: 100,
           currencyCode: 'USD',
-          isMinorUnit: false,
         },
         date: expect.stringMatching(/^\d{4}-\d{2}-15$/),
         exchangeRate: {
-          baseCurrencyCode: 'USD',
-          targetCurrencyCode: 'NGN',
           rate: 1500,
-          type: 'market',
-          source: 'manual',
         },
       },
     });

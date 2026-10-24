@@ -26,7 +26,6 @@ const validValues = {
   openingBalance: 100,
   openingDate: '2026-07-01',
   exchangeRate: null,
-  isSubAccount: false,
 };
 
 describe('petty cash account form validation', () => {

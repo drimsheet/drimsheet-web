@@ -42,5 +42,9 @@ Before making changes, follow the rules in:
 - For UI component tasks, follow `.agents/skills/create-ui-components/SKILL.md`.
 - For shadcn tasks, use `.agents/skills/add-shadcn-ui/SKILL.md` and `.agents/workflow/shadcn-ui.md`.
 - For test selection and placement, follow `.agents/workflow/testing.md`.
+- Write Playwright tests only for genuine browser integration behavior. If a
+  component, container, hook, mapper, service, or validation test can
+  adequately cover the behavior, test it at that lower layer and do not
+  duplicate it in Playwright.
 - For Playwright browser integration tasks, follow
   `.agents/skills/write-playwright-integration-tests/SKILL.md`.
