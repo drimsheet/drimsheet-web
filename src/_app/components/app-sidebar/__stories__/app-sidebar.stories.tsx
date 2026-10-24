@@ -43,12 +43,27 @@ const meta = {
                   <div className="mb-8 flex min-w-0 flex-1 flex-col gap-4 p-4 md:px-8 md:py-6">
                     <SidebarTrigger className="md:hidden" />
                     <AppBody
-                      titleSlot={
-                        <>
-                          Accounts <Badge variant="secondary">Archived</Badge>
-                        </>
+                      breadcrumbs={
+                        context.parameters.breadcrumbsOnly
+                          ? {
+                              label: 'Accounts',
+                              link: '/accounts',
+                              next: { label: 'First Bank Dom' },
+                            }
+                          : undefined
                       }
-                      actionsSlot={<Button>Create account</Button>}
+                      titleSlot={
+                        !context.parameters.breadcrumbsOnly && (
+                          <>
+                            Accounts <Badge variant="secondary">Archived</Badge>
+                          </>
+                        )
+                      }
+                      actionsSlot={
+                        !context.parameters.breadcrumbsOnly && (
+                          <Button>Create account</Button>
+                        )
+                      }
                     >
                       <PageSection title="Overview">
                         Account balances and recent activity.
@@ -90,4 +105,9 @@ export const Dark: Story = {
 export const DarkCollapsed: Story = {
   args: { currentPath: '/transactions' },
   parameters: { dark: true, collapsed: true },
+};
+
+export const BreadcrumbsOnly: Story = {
+  args: { currentPath: '/accounts' },
+  parameters: { breadcrumbsOnly: true },
 };

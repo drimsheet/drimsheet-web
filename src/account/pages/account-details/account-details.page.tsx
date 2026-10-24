@@ -31,6 +31,7 @@ export function AccountDetailsPage() {
     !account.isControlAccount &&
     (account.behavior === 'bank' || account.behavior === 'petty_cash');
 
+  const accounts_label = t('shared:accounts');
   const error_title = t('ledger-accounts:details_account_error_title');
 
   if (
@@ -43,53 +44,64 @@ export function AccountDetailsPage() {
 
   return (
     <>
-      <AppBody>
-        <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col">
-          {accountQuery.isPending && (
-            <>
-              <LedgerAccountSummarySkeleton />
-              <BankDetailsSkeleton />
-              <SubAccountsSkeleton />
-              <PageSection>
-                <TransactionsChartSkeleton />
-              </PageSection>
-              <RecentTransactionsSkeleton />
-            </>
-          )}
-          {accountQuery.isError && <SectionError title={error_title} />}
-          {accountQuery.isSuccess && account && (
-            <>
-              <LedgerAccountSummary
-                account={account}
-                hasSubAccounts={!!subAccounts.data?.length}
-                actions={
-                  <AccountActionsContainer key={account.id} account={account} />
-                }
-              />
-              {account.behavior === 'bank' && (
-                <BankDetailsContainer
-                  key={`bank-${account.id}`}
+      <div className="mx-auto w-full min-w-0 max-w-5xl">
+        <AppBody
+          breadcrumbs={{
+            label: accounts_label,
+            link: '/accounts',
+            next: account ? { label: account.name } : undefined,
+          }}
+        >
+          <div className="mt-8 flex min-w-0 flex-col md:mt-12">
+            {accountQuery.isPending && (
+              <>
+                <LedgerAccountSummarySkeleton />
+                <BankDetailsSkeleton />
+                <SubAccountsSkeleton />
+                <PageSection>
+                  <TransactionsChartSkeleton />
+                </PageSection>
+                <RecentTransactionsSkeleton />
+              </>
+            )}
+            {accountQuery.isError && <SectionError title={error_title} />}
+            {accountQuery.isSuccess && account && (
+              <>
+                <LedgerAccountSummary
+                  account={account}
+                  hasSubAccounts={!!subAccounts.data?.length}
+                  actions={
+                    <AccountActionsContainer
+                      key={account.id}
+                      account={account}
+                    />
+                  }
+                />
+                {account.behavior === 'bank' && (
+                  <BankDetailsContainer
+                    key={`bank-${account.id}`}
+                    accountId={account.id}
+                  />
+                )}
+                <SubAccountsContainer
+                  key={`children-${account.id}`}
                   accountId={account.id}
                 />
-              )}
-              <SubAccountsContainer
-                key={`children-${account.id}`}
-                accountId={account.id}
-              />
-              {canShowCashFlow && (
-                <TransactionsChartContainer
-                  key={`chart-${account.id}`}
+                {canShowCashFlow && (
+                  <TransactionsChartContainer
+                    key={`chart-${account.id}`}
+                    accountId={account.id}
+                  />
+                )}
+                <RecentTransactionsContainer
+                  key={`transactions-${account.id}`}
                   accountId={account.id}
                 />
-              )}
-              <RecentTransactionsContainer
-                key={`transactions-${account.id}`}
-                accountId={account.id}
-              />
-            </>
-          )}
-        </div>
-      </AppBody>
+              </>
+            )}
+          </div>
+        </AppBody>
+      </div>
     </>
   );
 }
