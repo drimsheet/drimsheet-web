@@ -6,6 +6,7 @@ export { BankDetailsFormSkeleton } from './skeleton';
 export type {
   BankDetailsFormContainerProps,
   BankDetailsFormProps,
+  BankDetailsFormSkeletonProps,
   BankDetailsFormUpdateContainerProps,
   IBankDetailsFormValues,
 } from './types';

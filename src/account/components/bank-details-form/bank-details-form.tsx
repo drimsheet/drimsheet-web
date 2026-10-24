@@ -1,7 +1,5 @@
 import { OpeningBalanceFields } from '@/account/components/opening-balance-fields';
-import { Alert, AlertDescription } from '@/shared/components/alert';
 import { Button } from '@/shared/components/button';
-import { Checkbox } from '@/shared/components/checkbox';
 import { CurrencySelect } from '@/shared/components/currency-select';
 import {
   Field,
@@ -12,9 +10,11 @@ import {
 import { Input } from '@/shared/components/input';
 import { Label } from '@/shared/components/label';
 import { useFieldErrorMessage } from '@/shared/hooks/use-field-error-message';
+import { cn } from '@/shared/lib/utils/cn';
 import { useFormik } from 'formik';
-import { Info } from 'lucide-react';
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BankDetailsHelp } from './parts/bank-details-help';
 import { BankSelection } from './parts/bank-selection';
 import type { BankDetailsFormProps, IBankDetailsFormValues } from './types';
 import { useBankDetailsFormValidation } from './validation';
@@ -30,7 +30,6 @@ const defaultInitialValues: IBankDetailsFormValues = {
   openingBalance: '',
   openingDate: '',
   exchangeRate: null,
-  isSubAccount: false,
 };
 
 export function BankDetailsForm({
@@ -52,6 +51,8 @@ export function BankDetailsForm({
   onSubmit,
 }: Readonly<BankDetailsFormProps>) {
   const { t } = useTranslation<'ledger-accounts'>('ledger-accounts');
+  const accountDetailsHeadingId = useId();
+  const bankAccountDetailsHeadingId = useId();
 
   const validationSchema = useBankDetailsFormValidation(
     accountingCurrencyCode,
@@ -117,8 +118,15 @@ export function BankDetailsForm({
   const currency_label = t('currency_label');
   const bank_account_number_label = t('bank_account_number_label');
   const bank_account_name_label = t('bank_account_name_label');
+  const account_details_section_title = t('account_details_section_title');
+
+  const bank_account_details_section_title = t(
+    'bank_account_details_section_title'
+  );
+
+  const bank_details_info_trigger_label = t('bank_details_info_trigger_label');
+
   const bank_details_info_alert = t('bank_details_info_alert');
-  const create_as_sub_account_label = t('create_as_sub_account_label');
 
   const submit_label = t(
     mode === 'update' ? 'save_changes_label' : 'create_account_text'
@@ -131,157 +139,159 @@ export function BankDetailsForm({
   );
 
   return (
-    <form
-      className="w-full max-w-2xl"
-      noValidate
-      onSubmit={formik.handleSubmit}
-    >
+    <form className="w-full" noValidate onSubmit={formik.handleSubmit}>
       <FieldSet disabled={disabled || loading}>
-        <FieldGroup className="gap-5">
-          {/* Row 1: Currency (left, 2/5) & Account name (right, 3/5) */}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-[2fr_3fr]">
-            {mode === 'update' && !canUpdateCurrency ? (
-              <Field>
-                <Label htmlFor="account-currency">{currency_label}</Label>
+        <FieldGroup className={cn('gap-8', mode === 'create' && 'md:gap-12')}>
+          <section
+            aria-labelledby={accountDetailsHeadingId}
+            className="flex flex-col gap-5"
+          >
+            <h2
+              id={accountDetailsHeadingId}
+              className="m-0 text-xs font-medium uppercase tracking-[0.07em] text-muted-foreground"
+            >
+              {account_details_section_title}
+            </h2>
+
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <Field data-invalid={Boolean(getErrorMessage('name').length)}>
+                <Label htmlFor="name">{account_name_label}</Label>
                 <Input
-                  id="account-currency"
-                  value={formik.values.currencyCode}
-                  readOnly
+                  aria-invalid={Boolean(getErrorMessage('name').length)}
+                  id="name"
+                  name="name"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  value={formik.values.name}
                 />
+                <FieldError errors={getErrorMessage('name')} />
               </Field>
-            ) : (
-              <CurrencySelect
-                currencies={currencies}
-                displayCode
-                error={getErrorMessage('currencyCode')}
-                label={currency_label}
-                onChange={handleCurrencyChange}
-                value={formik.values.currencyCode}
+
+              {mode === 'update' && !canUpdateCurrency ? (
+                <Field>
+                  <Label htmlFor="account-currency">{currency_label}</Label>
+                  <Input
+                    id="account-currency"
+                    value={formik.values.currencyCode}
+                    readOnly
+                  />
+                </Field>
+              ) : (
+                <CurrencySelect
+                  currencies={currencies}
+                  displayCode
+                  error={getErrorMessage('currencyCode')}
+                  label={currency_label}
+                  onChange={handleCurrencyChange}
+                  value={formik.values.currencyCode}
+                />
+              )}
+            </div>
+
+            <OpeningBalanceFields
+              skipOpeningBalanceLabel={
+                mode === 'update'
+                  ? leave_opening_balance_unset_label
+                  : undefined
+              }
+              showSkipOpeningBalance={
+                mode !== 'update' || !hasExistingOpeningBalance
+              }
+              accountingCurrencyCode={accountingCurrencyCode}
+              createWithoutOpeningBalance={
+                formik.values.createWithoutOpeningBalance
+              }
+              currencyCode={formik.values.currencyCode}
+              disabled={
+                disabled ||
+                loading ||
+                (mode === 'update' && hasExistingOpeningBalance)
+              }
+              exchangeRate={formik.values.exchangeRate}
+              exchangeRateError={getErrorMessage('exchangeRate')}
+              officialExchangeRate={officialExchangeRate}
+              onCreateWithoutOpeningBalanceChange={
+                handleCreateWithoutOpeningBalanceChange
+              }
+              onExchangeRateChange={(value) =>
+                formik.setFieldValue('exchangeRate', value)
+              }
+              onOpeningBalanceChange={formik.handleChange}
+              onOpeningDateChange={handleOpeningDateChange}
+              openingBalance={formik.values.openingBalance}
+              openingBalanceError={getErrorMessage('openingBalance')}
+              openingDate={formik.values.openingDate}
+              openingDateError={getErrorMessage('openingDate')}
+            />
+          </section>
+
+          <section
+            aria-labelledby={bankAccountDetailsHeadingId}
+            className="flex flex-col gap-5"
+          >
+            <div className="flex flex-col gap-1">
+              <h2
+                id={bankAccountDetailsHeadingId}
+                className="m-0 text-xs font-medium uppercase tracking-[0.07em] text-muted-foreground"
+              >
+                {bank_account_details_section_title}
+              </h2>
+              <BankDetailsHelp
+                description={bank_details_info_alert}
+                triggerLabel={bank_details_info_trigger_label}
               />
-            )}
+            </div>
 
-            <Field data-invalid={Boolean(getErrorMessage('name').length)}>
-              <Label htmlFor="name">{account_name_label}</Label>
-              <Input
-                aria-invalid={Boolean(getErrorMessage('name').length)}
-                id="name"
-                name="name"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.name}
-              />
-              <FieldError errors={getErrorMessage('name')} />
-            </Field>
-          </div>
+            <BankSelection
+              bankLocation={formik.values.bankLocation}
+              bankLocations={bankLocations}
+              bankName={formik.values.bankName}
+              bankNameError={getErrorMessage('bankName')}
+              banks={banks}
+              disabled={disabled || loading}
+              isBanksLoading={isBanksLoading}
+              locationError={getErrorMessage('bankLocation')}
+              onBankNameChange={handleBankNameChange}
+              onLocationChange={handleLocationChange}
+            />
 
-          {/* Row 2: Bank location (left, using CountryComboBox) & Bank name (right) */}
-          <BankSelection
-            bankLocation={formik.values.bankLocation}
-            bankLocations={bankLocations}
-            bankName={formik.values.bankName}
-            bankNameError={getErrorMessage('bankName')}
-            banks={banks}
-            disabled={disabled || loading}
-            isBanksLoading={isBanksLoading}
-            locationError={getErrorMessage('bankLocation')}
-            onBankNameChange={handleBankNameChange}
-            onLocationChange={handleLocationChange}
-          />
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <Field
+                data-invalid={Boolean(getErrorMessage('accountNumber').length)}
+              >
+                <Label htmlFor="accountNumber">
+                  {bank_account_number_label}
+                </Label>
+                <Input
+                  aria-invalid={Boolean(
+                    getErrorMessage('accountNumber').length
+                  )}
+                  id="accountNumber"
+                  name="accountNumber"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  value={formik.values.accountNumber}
+                />
+                <FieldError errors={getErrorMessage('accountNumber')} />
+              </Field>
 
-          {/* Row 3: Bank account number (left) & Bank account name (right) */}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-[2fr_3fr]">
-            <Field
-              data-invalid={Boolean(getErrorMessage('accountNumber').length)}
-            >
-              <Label htmlFor="accountNumber">{bank_account_number_label}</Label>
-              <Input
-                aria-invalid={Boolean(getErrorMessage('accountNumber').length)}
-                id="accountNumber"
-                name="accountNumber"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.accountNumber}
-              />
-              <FieldError errors={getErrorMessage('accountNumber')} />
-            </Field>
+              <Field
+                data-invalid={Boolean(getErrorMessage('accountName').length)}
+              >
+                <Label htmlFor="accountName">{bank_account_name_label}</Label>
+                <Input
+                  aria-invalid={Boolean(getErrorMessage('accountName').length)}
+                  id="accountName"
+                  name="accountName"
+                  onBlur={formik.handleBlur}
+                  onChange={formik.handleChange}
+                  value={formik.values.accountName}
+                />
+                <FieldError errors={getErrorMessage('accountName')} />
+              </Field>
+            </div>
+          </section>
 
-            <Field
-              data-invalid={Boolean(getErrorMessage('accountName').length)}
-            >
-              <Label htmlFor="accountName">{bank_account_name_label}</Label>
-              <Input
-                aria-invalid={Boolean(getErrorMessage('accountName').length)}
-                id="accountName"
-                name="accountName"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.accountName}
-              />
-              <FieldError errors={getErrorMessage('accountName')} />
-            </Field>
-          </div>
-
-          {/* Info Alert explaining bank details collection */}
-          <Alert variant="info" className="bg-muted/40 mb-3">
-            <Info className="size-4 text-muted-foreground" />
-            <AlertDescription>{bank_details_info_alert}</AlertDescription>
-          </Alert>
-
-          {/* Opening balance fields: checkbox, 2-col opening balance/date, exchange rate */}
-          <OpeningBalanceFields
-            skipOpeningBalanceLabel={
-              mode === 'update' ? leave_opening_balance_unset_label : undefined
-            }
-            showSkipOpeningBalance={
-              mode !== 'update' || !hasExistingOpeningBalance
-            }
-            accountingCurrencyCode={accountingCurrencyCode}
-            createWithoutOpeningBalance={
-              formik.values.createWithoutOpeningBalance
-            }
-            currencyCode={formik.values.currencyCode}
-            disabled={
-              disabled ||
-              loading ||
-              (mode === 'update' && hasExistingOpeningBalance)
-            }
-            exchangeRate={formik.values.exchangeRate}
-            exchangeRateError={getErrorMessage('exchangeRate')}
-            officialExchangeRate={officialExchangeRate}
-            onCreateWithoutOpeningBalanceChange={
-              handleCreateWithoutOpeningBalanceChange
-            }
-            onExchangeRateChange={(v) =>
-              formik.setFieldValue('exchangeRate', v)
-            }
-            onOpeningBalanceChange={formik.handleChange}
-            onOpeningDateChange={handleOpeningDateChange}
-            openingBalance={formik.values.openingBalance}
-            openingBalanceError={getErrorMessage('openingBalance')}
-            openingDate={formik.values.openingDate}
-            openingDateError={getErrorMessage('openingDate')}
-          />
-
-          {/* Sub account checkbox */}
-          {mode === 'create' && (
-            <Field orientation="horizontal">
-              <Checkbox
-                aria-label={create_as_sub_account_label}
-                checked={formik.values.isSubAccount}
-                disabled={disabled || loading}
-                id="isSubAccount"
-                name="isSubAccount"
-                onCheckedChange={(checked) => {
-                  void formik.setFieldValue('isSubAccount', checked === true);
-                }}
-              />
-              <Label htmlFor="isSubAccount">
-                {create_as_sub_account_label}
-              </Label>
-            </Field>
-          )}
-
-          {/* Submit button */}
           <Field orientation="horizontal" className="justify-end">
             {onCancel && (
               <Button

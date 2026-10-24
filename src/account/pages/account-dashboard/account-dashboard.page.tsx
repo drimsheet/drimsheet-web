@@ -1,5 +1,4 @@
 import { AccountTypeSelectionDialog } from '@/account/dialogs/account-type-selection';
-import { BankAccountCreationDialog } from '@/account/dialogs/bank-account-creation';
 import { PettyCashAccountCreationDialog } from '@/account/dialogs/petty-cash-account-creation';
 import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
@@ -82,6 +81,12 @@ export function AccountsDashboardPage() {
 
   const handleAccountTypeSelected = (behavior: ULedgerAccountBehavior) => {
     setShowAccountTypeSelection(false);
+    if (behavior === ELedgerAccountBehavior.Bank) {
+      navigate('/accounts/new/bank');
+
+      return;
+    }
+
     setSelectedBehavior(behavior);
   };
 
@@ -185,10 +190,6 @@ export function AccountsDashboardPage() {
         />
         <PettyCashAccountCreationDialog
           open={selectedBehavior === ELedgerAccountBehavior.PettyCash}
-          onClose={() => setSelectedBehavior(null)}
-        />
-        <BankAccountCreationDialog
-          open={selectedBehavior === ELedgerAccountBehavior.Bank}
           onClose={() => setSelectedBehavior(null)}
         />
       </div>

@@ -24,7 +24,6 @@ const bankFormValues: IBankDetailsFormValues = {
   openingBalance: 5000,
   openingDate: '2026-07-01',
   exchangeRate: null,
-  isSubAccount: false,
 };
 
 describe('assetAccountMapper', () => {

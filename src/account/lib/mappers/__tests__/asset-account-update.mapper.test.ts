@@ -78,7 +78,6 @@ describe('assetAccountUpdateMapper', () => {
       openingBalance: 25.5,
       openingDate: '2026-10-01',
       exchangeRate: { value: 1500, inverted: false },
-      isSubAccount: false,
     });
   });
 

@@ -87,7 +87,7 @@ export function BankSelection({
   const no_banks_found = t('no_banks_found');
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-[2fr_3fr]">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
       <CountryComboBox
         error={locationError}
         jurisdictions={jurisdictions}
@@ -156,10 +156,7 @@ export function BankSelectionSkeleton() {
   const loading_label = t('loading_banks');
 
   return (
-    <div
-      aria-busy="true"
-      className="grid grid-cols-1 gap-5 sm:grid-cols-[2fr_3fr]"
-    >
+    <div aria-busy="true" className="grid grid-cols-1 gap-5 sm:grid-cols-2">
       <output className="sr-only" aria-label={loading_label} aria-busy="true">
         {loading_label}
       </output>

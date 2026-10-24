@@ -1,29 +1,26 @@
 import {
   BankDetailsFormContainer,
+  BankDetailsFormSkeleton,
   type IBankDetailsFormValues,
 } from '@/account/components/bank-details-form';
 import { useCreateBankAccount } from '@/account/hooks/use-create-bank-account';
 import { assetAccountMapper } from '@/account/lib/mappers/asset-account.mapper';
 import type { IOpeningBalanceExchangeRateContext } from '@/account/lib/types/opening-balance-exchange-rate.types';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/components/dialog';
+import { Alert, AlertDescription } from '@/shared/components/alert';
+import { AppBody } from '@/shared/components/app';
 import { DocumentUpload } from '@/shared/components/document-upload';
 import { EFileType } from '@/shared/components/document-upload/types';
-import { Separator } from '@/shared/components/separator';
+import { PageSection } from '@/shared/components/page-section';
+import { PageTitle } from '@/shared/components/page-title';
 import countries from '@/shared/configs/countries.json' with { type: 'json' };
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useCurrencies } from '@/shared/hooks/use-currencies';
 import { useExchangeRates } from '@/shared/hooks/use-exchange-rates';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import type { BankAccountCreationDialogProps } from './types';
 
 const defaultExchangeRateContext: IOpeningBalanceExchangeRateContext = {
   currencyCode: '',
@@ -31,11 +28,9 @@ const defaultExchangeRateContext: IOpeningBalanceExchangeRateContext = {
   createWithoutOpeningBalance: false,
 };
 
-export function BankAccountCreationDialog({
-  open,
-  onClose,
-}: Readonly<BankAccountCreationDialogProps>) {
+export function BankAccountCreationPage() {
   const { t } = useTranslation(['ledger-accounts', 'shared']);
+  const navigate = useNavigate();
   const handleApiError = useApiErrorHandler();
 
   const [statementFiles, setStatementFiles] = useState<File[]>([]);
@@ -43,11 +38,17 @@ export function BankAccountCreationDialog({
   const [exchangeRateContext, setExchangeRateContext] =
     useState<IOpeningBalanceExchangeRateContext>(defaultExchangeRateContext);
 
-  const { data: currencies = [], isPending: isCurrenciesPending } =
-    useCurrencies();
+  const {
+    data: currencies = [],
+    isPending: isCurrenciesPending,
+    isError: isCurrenciesError,
+  } = useCurrencies();
 
-  const { data: accountingEntity, isPending: isAccountingEntityPending } =
-    useAccountingEntity();
+  const {
+    data: accountingEntity,
+    isPending: isAccountingEntityPending,
+    isError: isAccountingEntityError,
+  } = useAccountingEntity();
 
   const accountingCurrencyCode = accountingEntity?.functionalCurrencyCode ?? '';
   const initialJurisdiction = accountingEntity?.jurisdictionCode ?? '';
@@ -64,20 +65,12 @@ export function BankAccountCreationDialog({
   const { mutateAsync: createBankAccount, isPending: isCreating } =
     useCreateBankAccount();
 
-  const formDisabled =
-    isCurrenciesPending || isAccountingEntityPending || !accountingCurrencyCode;
+  const isFormLoading = isCurrenciesPending || isAccountingEntityPending;
 
-  const handleClose = () => {
-    setStatementFiles([]);
-    setExchangeRateContext(defaultExchangeRateContext);
-    onClose();
-  };
-
-  const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      handleClose();
-    }
-  };
+  const hasFormError =
+    isCurrenciesError ||
+    isAccountingEntityError ||
+    (!isFormLoading && !accountingCurrencyCode);
 
   const handleSubmit = async (values: IBankDetailsFormValues) => {
     try {
@@ -89,7 +82,7 @@ export function BankAccountCreationDialog({
 
       await createBankAccount(request);
       toast.success(t('ledger-accounts:bank_account_created_success_text'));
-      handleClose();
+      navigate('/accounts', { replace: true });
     } catch (error) {
       handleApiError(error, { showToast: true });
     }
@@ -97,9 +90,7 @@ export function BankAccountCreationDialog({
 
   const create_bank_account_title = t('ledger-accounts:create_bank_account');
 
-  const create_bank_account_description = t(
-    'ledger-accounts:create_bank_account_description'
-  );
+  const form_error_text = t('ledger-accounts:details_load_error_text');
 
   const upload_bank_statement_title = t(
     'ledger-accounts:upload_bank_statement_title'
@@ -114,53 +105,54 @@ export function BankAccountCreationDialog({
   );
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>{create_bank_account_title}</DialogTitle>
-          <DialogDescription className="sr-only">
-            {create_bank_account_description}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-[1fr_auto_1fr] md:items-start">
-          <div className="order-2 min-w-0 md:order-1">
-            <BankDetailsFormContainer
-              key={initialJurisdiction}
-              accountingCurrencyCode={accountingCurrencyCode}
-              bankLocations={countries}
-              currencies={currencies}
-              disabled={formDisabled}
-              initialBankLocation={initialJurisdiction}
-              initialValues={{
-                currencyCode: accountingCurrencyCode,
-                bankLocation: initialJurisdiction,
-              }}
-              loading={isCreating}
-              officialExchangeRate={officialExchangeRate}
-              onExchangeRateContextChange={setExchangeRateContext}
-              onSubmit={handleSubmit}
-            />
-          </div>
-
-          <Separator
-            orientation="vertical"
-            className="hidden h-full md:order-2 md:block"
-          />
-
-          <div className="order-1 min-w-0 md:order-3">
+    <AppBody>
+      <div className="flex min-w-0 flex-col gap-8 md:gap-12">
+        <PageTitle>{create_bank_account_title}</PageTitle>
+        <div className="grid min-w-0 grid-cols-1 items-start gap-8 md:gap-12 lg:grid-cols-2">
+          <PageSection
+            aria-label={upload_bank_statement_title}
+            // Align with the inputs after the section heading, section gap,
+            // field label, and label-to-control gap.
+            className="gap-5 p-0 lg:col-start-2 lg:row-start-1 lg:mt-[calc(--spacing(4)+--spacing(5)+0.875rem+--spacing(3))]"
+          >
             <DocumentUpload
               accept={[EFileType.Pdf]}
               actionText={upload_bank_statement_action}
               allowMultiple={false}
+              className="min-h-80 bg-muted text-muted-foreground [&>div]:border-0"
               description={upload_bank_statement_description}
               onUpload={setStatementFiles}
               title={upload_bank_statement_title}
               value={statementFiles}
             />
+          </PageSection>
+          <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+            {hasFormError && (
+              <Alert variant="destructive">
+                <AlertDescription>{form_error_text}</AlertDescription>
+              </Alert>
+            )}
+            {!hasFormError && isFormLoading && <BankDetailsFormSkeleton />}
+            {!hasFormError && !isFormLoading && (
+              <BankDetailsFormContainer
+                key={initialJurisdiction}
+                accountingCurrencyCode={accountingCurrencyCode}
+                bankLocations={countries}
+                currencies={currencies}
+                initialBankLocation={initialJurisdiction}
+                initialValues={{
+                  currencyCode: accountingCurrencyCode,
+                  bankLocation: initialJurisdiction,
+                }}
+                loading={isCreating}
+                officialExchangeRate={officialExchangeRate}
+                onExchangeRateContextChange={setExchangeRateContext}
+                onSubmit={handleSubmit}
+              />
+            )}
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </AppBody>
   );
 }

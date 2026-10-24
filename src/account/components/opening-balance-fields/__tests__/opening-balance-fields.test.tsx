@@ -29,11 +29,20 @@ describe('OpeningBalanceFields', () => {
   it('renders inputs and checkbox with accessible labels', () => {
     render(<OpeningBalanceFields {...defaultProps} />);
 
+    const openingBalance = screen.getByLabelText('Opening balance');
+    const openingDate = screen.getByLabelText('Opening date');
+
+    const skipOpeningBalance = screen.getByLabelText(
+      'Create without an opening balance'
+    );
+
+    expect(openingBalance).toBeInTheDocument();
+    expect(openingDate).toBeInTheDocument();
+    expect(skipOpeningBalance).toBeInTheDocument();
     expect(
-      screen.getByLabelText('Create without an opening balance')
-    ).toBeInTheDocument();
-    expect(screen.getByLabelText('Opening balance')).toBeInTheDocument();
-    expect(screen.getByLabelText('Opening date')).toBeInTheDocument();
+      openingDate.compareDocumentPosition(skipOpeningBalance) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(screen.queryByLabelText('Exchange rate')).not.toBeInTheDocument();
   });
 

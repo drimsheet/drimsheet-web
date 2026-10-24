@@ -162,7 +162,6 @@ describe('BankDetailsFormContainer', () => {
         openingBalance: '',
         openingDate: '',
         exchangeRate: null,
-        isSubAccount: false,
       })
     );
   });

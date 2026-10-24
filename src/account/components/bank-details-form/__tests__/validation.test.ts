@@ -30,7 +30,6 @@ const validValues = {
   openingBalance: 1000,
   openingDate: '2026-07-01',
   exchangeRate: null,
-  isSubAccount: false,
 };
 
 const officialExchangeRate = { rate: 1500 } as IExchangeRate;
@@ -48,7 +47,6 @@ describe('createBankDetailsFormValidation', () => {
       createWithoutOpeningBalance: false,
       openingBalance: 1000,
       openingDate: '2026-07-01',
-      isSubAccount: false,
     });
   });
 

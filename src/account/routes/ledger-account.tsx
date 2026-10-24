@@ -1,5 +1,6 @@
 import { AccountsDashboardPage } from '@/account/pages/account-dashboard';
 import { AccountDetailsPage } from '@/account/pages/account-details';
+import { BankAccountCreationPage } from '@/account/pages/bank-account-creation';
 import type { TModuleRoutes } from '@/shared/lib/types/routes.types';
 
 export const useLedgerAccountRoutes: TModuleRoutes = (basePath) => {
@@ -13,6 +14,10 @@ export const useLedgerAccountRoutes: TModuleRoutes = (basePath) => {
       {
         path: ':accountId',
         element: <AccountDetailsPage />,
+      },
+      {
+        path: 'new/bank',
+        element: <BankAccountCreationPage />,
       },
     ],
   };

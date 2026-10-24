@@ -86,7 +86,6 @@ export function createBankDetailsFormValidation(
           ? true
           : exchangeRate.value > 0
       ),
-    isSubAccount: yup.boolean().required(),
   });
 }
 

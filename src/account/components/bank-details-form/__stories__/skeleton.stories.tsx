@@ -17,3 +17,9 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Loading: Story = {};
+export const Update: Story = {
+  args: { mode: 'update', showCancel: true, showSkipOpeningBalance: false },
+};
+export const UpdateWithForeignOpeningBalance: Story = {
+  args: { mode: 'update', showCancel: true, showExchangeRate: true },
+};

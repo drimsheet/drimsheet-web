@@ -111,6 +111,15 @@ export function BankDetailsFormUpdateContainer({
 
   const opening_balance_error_text = t('update_opening_balance_error_text');
 
+  const skeletonProps = {
+    mode: 'update' as const,
+    showCancel: true,
+    showSkipOpeningBalance: opening.openingBalance === null,
+    showExchangeRate:
+      opening.openingBalance === null &&
+      baseline.balance.currencyCode !== baseline.functionalBalance.currencyCode,
+  };
+
   if (opening.isError)
     return (
       <div role="alert">
@@ -118,7 +127,8 @@ export function BankDetailsFormUpdateContainer({
       </div>
     );
 
-  if (opening.openingBalance === undefined) return <BankDetailsFormSkeleton />;
+  if (opening.openingBalance === undefined)
+    return <BankDetailsFormSkeleton {...skeletonProps} />;
 
   if (!bank && read.isError)
     return (
@@ -127,7 +137,7 @@ export function BankDetailsFormUpdateContainer({
       </div>
     );
 
-  if (!bank) return <BankDetailsFormSkeleton />;
+  if (!bank) return <BankDetailsFormSkeleton {...skeletonProps} />;
 
   if (currencyEligibility.isError)
     return (
@@ -137,7 +147,7 @@ export function BankDetailsFormUpdateContainer({
     );
 
   if (currencyEligibility.isPending || !currencyEligibility.isFetchedAfterMount)
-    return <BankDetailsFormSkeleton />;
+    return <BankDetailsFormSkeleton {...skeletonProps} />;
 
   if (canUpdateCurrency && currencies.isError)
     return (
@@ -147,7 +157,7 @@ export function BankDetailsFormUpdateContainer({
     );
 
   if (canUpdateCurrency && currencies.isPending)
-    return <BankDetailsFormSkeleton />;
+    return <BankDetailsFormSkeleton {...skeletonProps} />;
 
   return (
     <BankDetailsFormContainer
