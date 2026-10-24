@@ -37,7 +37,6 @@ export function DataTable<T extends IDataWithId>({
   headerHeight = 42,
   headerFontSize = 11,
   bodyFontSize = 14,
-  uppercaseHeaders = true,
   emptyStateNode,
   loadingStateNode,
   loading = false,
@@ -151,12 +150,7 @@ export function DataTable<T extends IDataWithId>({
               />
             ))}
           </colgroup>
-          <TableHeader
-            className={cn(
-              'bg-muted',
-              uppercaseHeaders && 'uppercase tracking-[0.07em]'
-            )}
-          >
+          <TableHeader className="bg-muted uppercase tracking-[0.07em]">
             <TableRow className="border-border hover:bg-transparent">
               {selectable && (
                 <TableHead

@@ -34,7 +34,7 @@ import { describe, expect, it, vi } from 'vitest';
 describe('SubAccounts', () => {
   it('omits the section when there are no children', () => {
     render(<SubAccounts accounts={[]} onOpenAccount={vi.fn()} />);
-    expect(screen.queryByRole('region')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading')).not.toBeInTheDocument();
   });
   it('shows each account currency and requests navigation to the chosen account', async () => {
     const onOpenAccount = vi.fn();

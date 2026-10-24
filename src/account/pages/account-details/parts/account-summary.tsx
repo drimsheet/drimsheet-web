@@ -1,105 +1,52 @@
 import { Money } from '@/shared/components/money';
-import { PageSection } from '@/shared/components/page-section';
-import { PageTitle } from '@/shared/components/page-title';
 import { Skeleton } from '@/shared/components/skeleton';
-import { StatusBadge } from '@/shared/components/status-badge';
-import { cn } from '@/shared/lib/utils/cn';
 import { useTranslation } from 'react-i18next';
-
 import type { LedgerAccountSummaryProps } from '../types';
-import { AccountBehaviorLabel } from './account-behavior-label';
 
 export function LedgerAccountSummary({
   account,
   hasSubAccounts = false,
-  actions,
-  className,
-  ...props
 }: Readonly<LedgerAccountSummaryProps>) {
-  const { t, i18n } = useTranslation(['ledger-accounts', 'shared']);
+  const { t } = useTranslation('ledger-accounts');
 
   const shouldShowFunctionalBalance =
     account.balance.currencyCode.toLowerCase() !==
     account.functionalBalance.currencyCode.toLowerCase();
 
-  const dateLocale =
-    i18n.resolvedLanguage === 'en' ? 'en-GB' : i18n.resolvedLanguage;
+  const balance_label = t('account_summary_balance_label');
 
-  const createdDate = new Intl.DateTimeFormat(dateLocale, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(account.createdAt));
-
-  const status_label = t(`shared:${account.status}`);
-
-  const created_text = t('ledger-accounts:account_summary_created_text', {
-    date: createdDate,
-  });
-
-  const balance_label = t('ledger-accounts:account_summary_balance_label');
-
-  const excludes_children_text = t(
-    'ledger-accounts:details_excludes_children_text'
-  );
+  const excludes_children_text = t('details_excludes_children_text');
 
   const functional_balance_label = t(
-    'ledger-accounts:account_summary_functional_balance_label'
+    'account_summary_functional_balance_label'
   );
 
   return (
-    <div className={cn('flex min-w-0 flex-col', className)} {...props}>
-      <div className="flex min-w-0 flex-col gap-4">
-        <AccountBehaviorLabel behavior={account.behavior} />
-        <div className="flex min-w-0 flex-wrap items-start justify-between gap-4">
-          <PageTitle className="min-w-0 flex-1 wrap-anywhere">
-            {account.name}
-          </PageTitle>
-          {actions}
-        </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <StatusBadge
-            variant="neutral"
-            label={status_label}
-            className="rounded-sm border-0"
+    <dl className="flex min-w-0 flex-col gap-2">
+      <dt className="text-sm text-muted-foreground">{balance_label}</dt>
+      <dd>
+        <Money
+          value={account.balance}
+          localCode={account.functionalBalance.currencyCode}
+          className="font-heading text-4xl font-medium tracking-tight tabular-nums wrap-anywhere"
+        />
+      </dd>
+      {shouldShowFunctionalBalance && (
+        <dd className="flex min-w-0 items-baseline gap-1 text-sm text-muted-foreground tabular-nums">
+          <span className="sr-only">{functional_balance_label}</span>
+          <span aria-hidden="true">≈</span>
+          <Money
+            value={account.functionalBalance}
+            className="min-w-0 wrap-anywhere"
           />
-          <time
-            dateTime={account.createdAt}
-            className="text-sm text-muted-foreground"
-          >
-            {created_text}
-          </time>
-        </div>
-      </div>
-
-      <PageSection>
-        <dl className="flex min-w-0 flex-col gap-3">
-          <dt className="text-sm">{balance_label}</dt>
-          <dd className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-2">
-            <Money
-              value={account.balance}
-              localCode={account.functionalBalance.currencyCode}
-              className="font-heading text-4xl font-medium tracking-tight tabular-nums wrap-anywhere sm:text-5xl"
-            />
-            {shouldShowFunctionalBalance && (
-              <span className="flex min-w-0 items-baseline gap-1 text-sm text-muted-foreground tabular-nums">
-                <span className="sr-only">{functional_balance_label}</span>
-                <span aria-hidden="true">≈</span>
-                <Money
-                  value={account.functionalBalance}
-                  className="min-w-0 wrap-anywhere"
-                />
-              </span>
-            )}
-          </dd>
-          {hasSubAccounts && (
-            <dd className="text-sm text-muted-foreground">
-              {excludes_children_text}
-            </dd>
-          )}
-        </dl>
-      </PageSection>
-    </div>
+        </dd>
+      )}
+      {hasSubAccounts && (
+        <dd className="text-sm text-muted-foreground">
+          {excludes_children_text}
+        </dd>
+      )}
+    </dl>
   );
 }
 
@@ -108,27 +55,13 @@ export function LedgerAccountSummarySkeleton() {
   const loading_label = t('details_loading_account_summary');
 
   return (
-    <div aria-busy="true" className="flex min-w-0 flex-col">
-      <output className="sr-only" aria-label={loading_label} aria-busy="true">
+    <div aria-busy="true" className="flex min-w-0 flex-col gap-2">
+      <output className="sr-only" aria-label={loading_label}>
         {loading_label}
       </output>
-      <div className="flex min-w-0 flex-col gap-4">
-        <Skeleton className="h-5 w-28" />
-        <div className="flex min-w-0 flex-wrap items-start justify-between gap-4">
-          <Skeleton className="h-9 min-w-0 flex-1 max-w-80" />
-          <Skeleton className="h-9 w-24" />
-        </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <Skeleton className="h-5 w-16" />
-          <Skeleton className="h-5 w-40" />
-        </div>
-      </div>
-      <PageSection>
-        <div className="flex min-w-0 flex-col gap-3">
-          <Skeleton className="h-5 w-28" />
-          <Skeleton className="h-10 w-56 max-w-full sm:h-12" />
-        </div>
-      </PageSection>
+      <Skeleton className="h-5 w-28" />
+      <Skeleton className="h-10 w-56 max-w-full" />
+      <Skeleton className="h-4 w-32" />
     </div>
   );
 }

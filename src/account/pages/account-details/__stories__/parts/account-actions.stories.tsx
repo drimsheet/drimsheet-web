@@ -1,4 +1,7 @@
-import { AccountActions } from '@/account/pages/account-details/parts/account-actions';
+import {
+  AccountActions,
+  AccountActionsSkeleton,
+} from '@/account/pages/account-details/parts/account-actions';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
@@ -26,3 +29,5 @@ export const CheckingDeletion: TStory = {
 export const DeletionCheckFailed: TStory = {
   args: { deleteEligibilityFailed: true },
 };
+
+export const Skeleton: TStory = { render: () => <AccountActionsSkeleton /> };

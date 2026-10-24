@@ -1,8 +1,28 @@
-import { PageSection } from '@/shared/components/page-section';
+import {
+  PageSection,
+  PageSectionTitle,
+} from '@/shared/components/page-section';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 describe('PageSection', () => {
+  it('allows a page heading before a composed section title without duplicating headings', () => {
+    render(
+      <PageSection aria-labelledby="overview">
+        <h1>Main account</h1>
+        <PageSectionTitle id="overview">Overview</PageSectionTitle>
+        <p>Account balances</p>
+      </PageSection>
+    );
+    const section = screen.getByRole('region', { name: 'Overview' });
+    const headings = within(section).getAllByRole('heading');
+    expect(headings).toHaveLength(2);
+    expect(headings[0]).toHaveAccessibleName('Main account');
+    expect(headings[0].tagName).toBe('H1');
+    expect(headings[1]).toHaveAccessibleName('Overview');
+    expect(headings[1].tagName).toBe('H2');
+  });
+
   it('names the section with its level-two heading', () => {
     render(
       <PageSection title="Overview">

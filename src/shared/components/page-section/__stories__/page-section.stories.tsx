@@ -1,4 +1,7 @@
-import { PageSection } from '@/shared/components/page-section';
+import {
+  PageSection,
+  PageSectionTitle,
+} from '@/shared/components/page-section';
 import { PageTitle } from '@/shared/components/page-title';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -17,6 +20,19 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 export const WithoutTitle: Story = { args: { title: undefined } };
+export const ComposedTitle: Story = {
+  render: () => (
+    <PageSection aria-labelledby="composed-overview" className="gap-6 py-0">
+      <div className="order-2">
+        <PageTitle>Main account</PageTitle>
+      </div>
+      <PageSectionTitle id="composed-overview" className="order-1">
+        Overview
+      </PageSectionTitle>
+      <p className="order-3">Balances and recent account activity.</p>
+    </PageSection>
+  ),
+};
 export const PageComposition: Story = {
   render: () => (
     <div className="max-w-3xl">

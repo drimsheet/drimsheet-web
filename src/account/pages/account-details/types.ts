@@ -5,12 +5,15 @@ import type {
   ILedgerAccountDto,
   IPaginationResponseMeta,
 } from '@/shared/lib/api/Api';
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps } from 'react';
 
-export interface LedgerAccountSummaryProps extends ComponentProps<'div'> {
-  account: ILedgerAccountDto;
+export interface LedgerAccountSummaryProps {
+  account: Pick<ILedgerAccountDto, 'balance' | 'functionalBalance'>;
   hasSubAccounts?: boolean;
-  actions?: ReactNode;
+}
+
+export interface AccountHeaderProps {
+  account: Pick<ILedgerAccountDto, 'name' | 'status'>;
 }
 
 export interface AccountActionsProps {
@@ -61,6 +64,7 @@ export interface CashFlowPeriodProps {
 }
 
 export interface RecentTransactionsProps {
+  accountId: string;
   transactions: IJournalEntryListDto[];
   pagination?: IPaginationResponseMeta;
   search: string;
@@ -77,3 +81,8 @@ export interface RecentTransactionsProps {
 export interface SectionErrorProps {
   title: string;
 }
+
+export type TransactionsChartRangeProps = Pick<
+  IAccountCashFlowDto,
+  'period' | 'currencyCode'
+>;

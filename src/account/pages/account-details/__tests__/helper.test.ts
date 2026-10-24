@@ -118,3 +118,57 @@ describe('accountDetailsHelpers', () => {
     ]);
   });
 });
+
+it('retains the selected date range for zero activity without adding nonzero values', () => {
+  const data = accountDetailsHelpers.chartData(
+    {
+      ...cashFlow,
+      buckets: [],
+      totalMoneyIn: { ...cashFlow.totalMoneyIn, amount: 0 },
+      totalMoneyOut: { ...cashFlow.totalMoneyOut, amount: 0 },
+    },
+    'en-GB'
+  );
+
+  expect(data).toEqual([
+    {
+      label: '1 Oct',
+      range: '1 October 2026 – 7 October 2026',
+      moneyIn: 0,
+      moneyOut: 0,
+    },
+    {
+      label: '8 Oct',
+      range: '8 October 2026 – 12 October 2026',
+      moneyIn: 0,
+      moneyOut: 0,
+    },
+  ]);
+});
+it('does not fabricate zero buckets when nonzero totals have no bucket data', () => {
+  expect(
+    accountDetailsHelpers.chartData({ ...cashFlow, buckets: [] }, 'en-GB')
+  ).toEqual([]);
+});
+
+it('retains signed buckets when period totals cancel out', () => {
+  const data = accountDetailsHelpers.chartData(
+    {
+      ...cashFlow,
+      totalMoneyIn: { ...cashFlow.totalMoneyIn, amount: 0 },
+      totalMoneyOut: { ...cashFlow.totalMoneyOut, amount: 0 },
+      buckets: cashFlow.buckets.map((bucket, index) => ({
+        ...bucket,
+        moneyIn: {
+          amount: index === 0 ? 100 : -100,
+          currencyCode: 'NGN',
+          isMinorUnit: false,
+        },
+        moneyOut: { amount: 0, currencyCode: 'NGN', isMinorUnit: false },
+      })),
+    },
+    'en-GB'
+  );
+
+  expect(data.map(({ moneyIn }) => moneyIn)).toEqual([100, -100]);
+});

@@ -159,5 +159,18 @@
   "delete_entry_confirmation_keyword": "delete",
   "delete_entry_archive_instead_text": "Archive instead",
   "category_filter_description": "Showing transactions for the selected category, across all dates.",
-  "clear_category_filter_label": "Show all transactions"
+  "clear_category_filter_label": "Show all transactions",
+  "transactions_table_transaction_label": "Transaction",
+  "transactions_table_source_expense": "Expense",
+  "transactions_table_source_opening_balance": "Opening balance",
+  "transactions_table_source_sale": "Sale",
+  "transactions_table_source_purchase": "Purchase",
+  "transactions_table_source_credit_note": "Credit note",
+  "transactions_table_source_debit_note": "Debit note",
+  "transactions_table_source_transfer": "Transfer",
+  "transactions_table_source_payment": "Payment",
+  "transactions_table_source_receipt": "Receipt",
+  "transactions_table_source_adjustment": "Adjustment",
+  "transactions_table_source_reversal": "Reversal",
+  "transactions_table_amount_unavailable": "Unavailable"
 }

@@ -234,7 +234,7 @@ describe('transactionsTableHelpers', () => {
     );
   });
 
-  it('omits source types outside the supported transaction flows', () => {
+  it('retains entries without a supported details drawer', () => {
     const entry = createEntry(EJournalEntrySourceType.Adjustment, [
       createLine({
         id: 'line-1',
@@ -245,8 +245,93 @@ describe('transactionsTableHelpers', () => {
       }),
     ]);
 
-    expect(createRows([entry])).toEqual([]);
+    expect(createRows([entry])).toEqual([
+      expect.objectContaining({
+        id: entry.id,
+        direction: EJournalEntrySourceType.Adjustment,
+        accountName: 'Main checking',
+        amount: createMoney(10_000),
+        canOpenDetails: false,
+      }),
+    ]);
     expect(transactionsTableHelpers.createDetails(entry)).toBeUndefined();
+  });
+
+  it('uses the viewed account currency and amount for incoming transfers and opening balances', () => {
+    const lines = [
+      createLine({
+        id: 'source',
+        accountId: 'cash-usd',
+        counterpartyId: null,
+        sequenceOrder: 1,
+        amount: createMoney(100, 'USD'),
+      }),
+      createLine({
+        id: 'destination',
+        accountId: 'cash-main',
+        counterpartyId: null,
+        sequenceOrder: 2,
+        amount: createMoney(159_000),
+      }),
+    ];
+
+    const entries = [
+      createEntry(EJournalEntrySourceType.Transfer, lines),
+      createEntry(EJournalEntrySourceType.OpeningBalance, lines),
+    ];
+
+    expect(
+      transactionsTableHelpers.createRows({ entries, accountId: 'cash-main' })
+    ).toEqual([
+      expect.objectContaining({
+        id: 'entry-transfer',
+        accountName: 'Main checking',
+        amount: createMoney(159_000),
+        canOpenDetails: true,
+      }),
+      expect.objectContaining({
+        id: 'entry-opening_balance',
+        accountName: 'Main checking',
+        amount: createMoney(159_000),
+        canOpenDetails: false,
+      }),
+    ]);
+  });
+
+  it('keeps incomplete entries visible without inventing an amount or opening unsupported details', () => {
+    const entry = createEntry(EJournalEntrySourceType.Receipt, []);
+
+    expect(
+      transactionsTableHelpers.createRows({
+        entries: [entry],
+        accountId: 'cash-main',
+      })
+    ).toEqual([
+      expect.objectContaining({
+        id: entry.id,
+        amount: null,
+        canOpenDetails: false,
+      }),
+    ]);
+  });
+
+  it('does not show another account amount when the viewed account line is missing', () => {
+    const entry = createEntry(EJournalEntrySourceType.Adjustment, [
+      createLine({
+        id: 'line',
+        accountId: 'cash-usd',
+        counterpartyId: null,
+        sequenceOrder: 1,
+        amount: createMoney(100, 'USD'),
+      }),
+    ]);
+
+    expect(
+      transactionsTableHelpers.createRows({
+        entries: [entry],
+        accountId: 'cash-main',
+      })[0].amount
+    ).toBeNull();
   });
 
   it('creates ordered outflow details from the payment lines', () => {

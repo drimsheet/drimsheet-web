@@ -1,5 +1,4 @@
 import { useAccountCashFlow } from '@/account/hooks/use-account-cash-flow';
-import { PageSection } from '@/shared/components/page-section';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import accountDetailsHelpers from '../helper';
@@ -10,6 +9,10 @@ import {
   TransactionsChart,
   TransactionsChartSkeleton,
 } from './transactions-chart';
+import {
+  TransactionsChartRange,
+  TransactionsChartRangeSkeleton,
+} from './transactions-chart-range';
 
 export function TransactionsChartContainer({
   accountId,
@@ -32,17 +35,26 @@ export function TransactionsChartContainer({
   const title = t('details_cash_flow_title');
 
   return (
-    <PageSection title={title}>
-      <div className="flex flex-wrap justify-end">
-        <CashFlowPeriod
-          period={period}
-          periods={periods}
-          onPeriodChange={setPeriod}
-        />
+    <div className="flex min-w-0 flex-col gap-5">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-4">
+        {flow.isPending && <TransactionsChartRangeSkeleton />}
+        {flow.isSuccess && (
+          <TransactionsChartRange
+            period={flow.data.period}
+            currencyCode={flow.data.currencyCode}
+          />
+        )}
+        <div className="ml-auto w-full sm:w-auto">
+          <CashFlowPeriod
+            period={period}
+            periods={periods}
+            onPeriodChange={setPeriod}
+          />
+        </div>
       </div>
       {flow.isPending && <TransactionsChartSkeleton />}
       {flow.isError && <SectionError title={title} />}
       {flow.isSuccess && <TransactionsChart cashFlow={flow.data} />}
-    </PageSection>
+    </div>
   );
 }

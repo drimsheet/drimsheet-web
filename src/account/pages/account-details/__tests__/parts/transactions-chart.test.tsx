@@ -62,7 +62,7 @@ describe('TransactionsChart', () => {
     expect(screen.getByText(/₦1,200,000/)).toBeInTheDocument();
     expect(screen.getByText(/₦780,000/)).toBeInTheDocument();
   });
-  it('renders an explicit zero activity state', () => {
+  it('renders the zero chart without an empty-state message', () => {
     render(
       <TransactionsChart
         cashFlow={{
@@ -74,7 +74,10 @@ describe('TransactionsChart', () => {
       />
     );
     expect(
-      screen.getByText('No money moved during this period.')
+      screen.queryByText('No money moved during this period.')
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: 'Money in and money out by date' })
     ).toBeInTheDocument();
   });
 });

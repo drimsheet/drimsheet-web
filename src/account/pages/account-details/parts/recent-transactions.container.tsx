@@ -53,6 +53,7 @@ export function RecentTransactionsContainer({
 
   return (
     <RecentTransactions
+      accountId={accountId}
       transactions={transactions.data.data}
       pagination={transactions.data.meta}
       search={search}

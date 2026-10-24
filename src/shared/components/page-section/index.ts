@@ -1,2 +1,2 @@
-export { PageSection } from './page-section';
-export type { PageSectionProps } from './types';
+export { PageSection, PageSectionTitle } from './page-section';
+export type { PageSectionProps, PageSectionTitleProps } from './types';

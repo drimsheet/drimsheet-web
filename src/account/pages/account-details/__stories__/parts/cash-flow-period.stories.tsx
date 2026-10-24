@@ -1,4 +1,7 @@
-import { CashFlowPeriod } from '@/account/pages/account-details/parts/cash-flow-period';
+import {
+  CashFlowPeriod,
+  CashFlowPeriodSkeleton,
+} from '@/account/pages/account-details/parts/cash-flow-period';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
@@ -18,3 +21,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const Skeleton: Story = { render: () => <CashFlowPeriodSkeleton /> };

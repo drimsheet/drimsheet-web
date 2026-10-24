@@ -93,8 +93,9 @@ const meta = {
   component: RecentTransactions,
   tags: ['autodocs'],
   args: {
+    accountId: account.id,
     transactions: [transaction],
-    pagination: { page: 1, limit: 5, total: 6, totalPages: 2 },
+    pagination: { page: 1, limit: 5, total: 1, totalPages: 1 },
     search: '',
     empty: false,
     sortDirection: 'desc',
@@ -107,9 +108,56 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
-export const Empty: Story = { args: { transactions: [], empty: true } };
+export const Empty: Story = {
+  args: { transactions: [], empty: true, pagination: undefined },
+};
 export const NoSearchResults: Story = {
   args: { transactions: [], search: 'Unmatched', pagination: undefined },
 };
 
 export const Skeleton: Story = { render: () => <RecentTransactionsSkeleton /> };
+
+export const OpeningBalance: Story = {
+  args: {
+    transactions: [
+      transaction,
+      {
+        ...transaction,
+        id: 'opening-balance',
+        sourceType: 'opening_balance',
+        memo: 'Initial account balance',
+      },
+    ],
+    pagination: { page: 1, limit: 5, total: 2, totalPages: 1 },
+  },
+};
+export const Narrow: Story = {
+  decorators: [
+    (Story) => (
+      <div className="w-80 max-w-full">
+        <Story />
+      </div>
+    ),
+  ],
+};
+
+export const Dark: Story = {
+  ...OpeningBalance,
+  decorators: [
+    (Story) => (
+      <div className="dark bg-background p-4 text-foreground">
+        <Story />
+      </div>
+    ),
+  ],
+};
+export const DarkNarrow: Story = {
+  ...OpeningBalance,
+  decorators: [
+    (Story) => (
+      <div className="dark w-80 max-w-full bg-background p-4 text-foreground">
+        <Story />
+      </div>
+    ),
+  ],
+};

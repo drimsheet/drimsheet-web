@@ -1,23 +1,9 @@
+import { Button } from '@/shared/components/button';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
-import type { ITransactionsTableRow } from '@/journal-entries/components/transactions-table/types';
 import { EJournalEntrySourceType } from '@/shared/lib/api/Api';
-
-type TTransactionSummaryRow = Pick<
-  ITransactionsTableRow,
-  | 'additionalCategoryCount'
-  | 'additionalCounterpartyCount'
-  | 'destinationAccountName'
-  | 'direction'
-  | 'firstCategoryName'
-  | 'firstCounterpartyName'
-  | 'sourceAccountName'
->;
-
-interface TransactionSummaryProps {
-  row: TTransactionSummaryRow;
-}
+import type { TTransactionSummaryRow, TransactionSummaryProps } from '../types';
 
 function getTitle(
   row: TTransactionSummaryRow,
@@ -65,14 +51,27 @@ function getDescription(
   });
 }
 
-export function TransactionSummary({ row }: Readonly<TransactionSummaryProps>) {
+export function TransactionSummary({
+  row,
+  onOpen,
+}: Readonly<TransactionSummaryProps>) {
   const { t } = useTranslation('journal-entries');
   const title = getTitle(row, t);
   const description = getDescription(row, t);
 
   return (
-    <div className="flex flex-col gap-1">
-      <span>{title}</span>
+    <div className="flex min-w-0 flex-col gap-1 wrap-anywhere">
+      {onOpen ? (
+        <Button
+          variant="link"
+          className="h-auto max-w-full justify-start p-0 whitespace-normal text-left"
+          onClick={onOpen}
+        >
+          {title}
+        </Button>
+      ) : (
+        <span>{title}</span>
+      )}
       {description && (
         <span className="text-xs text-muted-foreground font-medium">
           {description}

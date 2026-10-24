@@ -9,6 +9,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/shared/components/dropdown-menu';
+import { Skeleton } from '@/shared/components/skeleton';
 import { Archive, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -126,6 +127,21 @@ export function AccountActions({
       >
         {confirmation_description}
       </ConfirmationDialog>
+    </div>
+  );
+}
+
+export function AccountActionsSkeleton() {
+  const { t } = useTranslation('ledger-accounts');
+  const loading_label = t('details_loading_account_actions');
+
+  return (
+    <div aria-busy="true" className="flex shrink-0 items-center gap-2">
+      <output className="sr-only" aria-label={loading_label}>
+        {loading_label}
+      </output>
+      <Skeleton className="h-9 w-12" />
+      <Skeleton className="size-9" />
     </div>
   );
 }

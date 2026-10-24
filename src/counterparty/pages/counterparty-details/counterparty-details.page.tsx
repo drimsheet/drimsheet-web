@@ -11,6 +11,7 @@ import { getCounterpartyFormRole } from '@/counterparty/lib/utils/counterparty-f
 import { TransactionsTable } from '@/journal-entries/components/transactions-table';
 import { AppBody } from '@/shared/components/app';
 import { Button } from '@/shared/components/button';
+import { SearchField } from '@/shared/components/search-field';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import {
   EJournalEntrySortBy,
@@ -32,7 +33,7 @@ export function CounterpartyDetailsPage() {
   const { counterpartyId } = useParams();
   const navigate = useNavigate();
   const [, setSearchParams] = useSearchParams();
-  const { t } = useTranslation(['counterparty', 'shared']);
+  const { t } = useTranslation(['counterparty', 'shared', 'journal-entries']);
   const [search, setSearch] = useState('');
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
@@ -129,6 +130,10 @@ export function CounterpartyDetailsPage() {
 
   const view_transactions_label = t('view_transactions_label');
 
+  const search_placeholder = t(
+    'journal-entries:transactions_table_search_placeholder'
+  );
+
   const hasNoTransactions =
     transactions.isSuccess &&
     !transactions.isPlaceholderData &&
@@ -173,19 +178,26 @@ export function CounterpartyDetailsPage() {
               counterpartyName={counterparty.name}
               empty={hasNoTransactions}
             >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="w-full max-w-sm">
+                  <SearchField
+                    type="search"
+                    aria-label={search_placeholder}
+                    placeholder={search_placeholder}
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                  />
+                </div>
+                <Button variant="link" asChild className="px-0">
+                  <Link to={transactionsHref}>
+                    {view_transactions_label}
+                    <ArrowRight data-icon="inline-end" aria-hidden="true" />
+                  </Link>
+                </Button>
+              </div>
               <TransactionsTable
-                actionButton={
-                  <Button variant="link" asChild className="px-0">
-                    <Link to={transactionsHref}>
-                      {view_transactions_label}
-                      <ArrowRight data-icon="inline-end" aria-hidden="true" />
-                    </Link>
-                  </Button>
-                }
                 data={transactions.data?.data ?? []}
                 loading={transactions.isPending}
-                searchValue={search}
-                onSearchChange={setSearch}
                 currentSortDirection={sortDirection}
                 onSortChange={handleSortChange}
               />

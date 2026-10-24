@@ -3,6 +3,7 @@ import { useArchiveJournalEntry } from '@/journal-entries/hooks/use-archive-jour
 import { useDeleteJournalEntry } from '@/journal-entries/hooks/use-delete-journal-entry';
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
 import { journalEntryRouteMapper } from '@/journal-entries/lib/mappers/journal-entry-route.mapper';
+import { SearchField } from '@/shared/components/search-field';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
@@ -13,6 +14,7 @@ import {
   type IJournalEntryListDto,
 } from '@/shared/lib/api/Api';
 import { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { TransactionsTableContainerProps } from '../types';
 
@@ -21,6 +23,7 @@ const TRANSACTIONS_PAGE_SIZE = 10;
 export function TransactionsTableContainer({
   actionButton,
 }: Readonly<TransactionsTableContainerProps>) {
+  const { t } = useTranslation('journal-entries');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const accountId = searchParams.get('accountId') || undefined;
@@ -96,21 +99,37 @@ export function TransactionsTableContainer({
     }
   };
 
+  const search_placeholder = t('transactions_table_search_placeholder');
+
   return (
-    <TransactionsTable
-      actionButton={actionButton}
-      data={journalEntries?.data ?? []}
-      loading={isPending}
-      archiving={archiving}
-      onArchiveTransaction={handleArchiveTransaction}
-      onDeleteTransaction={handleDeleteTransaction}
-      pagination={journalEntries?.meta}
-      onEditTransaction={handleEditTransaction}
-      onPageChange={tableQuery.handlePageChange}
-      onSortChange={handleSortChange}
-      currentSortDirection={tableQuery.sortDirection}
-      searchValue={tableQuery.searchQuery}
-      onSearchChange={tableQuery.handleSearchChange}
-    />
+    <div className="flex min-w-0 w-full flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="w-full max-w-sm">
+          <SearchField
+            type="search"
+            aria-label={search_placeholder}
+            placeholder={search_placeholder}
+            value={tableQuery.searchQuery}
+            onChange={(event) =>
+              tableQuery.handleSearchChange(event.target.value)
+            }
+          />
+        </div>
+        {actionButton}
+      </div>
+      <TransactionsTable
+        accountId={accountId}
+        data={journalEntries?.data ?? []}
+        loading={isPending}
+        archiving={archiving}
+        onArchiveTransaction={handleArchiveTransaction}
+        onDeleteTransaction={handleDeleteTransaction}
+        pagination={journalEntries?.meta}
+        onEditTransaction={handleEditTransaction}
+        onPageChange={tableQuery.handlePageChange}
+        onSortChange={handleSortChange}
+        currentSortDirection={tableQuery.sortDirection}
+      />
+    </div>
   );
 }

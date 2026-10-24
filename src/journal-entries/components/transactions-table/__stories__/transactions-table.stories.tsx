@@ -203,8 +203,6 @@ const meta = {
   ],
   args: {
     data: [paymentEntry, receiptEntry, sameCurrencyTransferEntry],
-    searchValue: '',
-    onSearchChange: () => undefined,
     onSortChange: () => undefined,
   },
 } satisfies Meta<typeof TransactionsTable>;
@@ -245,4 +243,16 @@ export const EmptyState: Story = {
     data: [],
     loading: false,
   },
+};
+
+export const AccountDetails: Story = { args: { accountId: 'cash-main' } };
+export const AccountDetailsNarrow: Story = {
+  args: { accountId: 'cash-main' },
+  decorators: [
+    (Story) => (
+      <div className="w-80 max-w-full">
+        <Story />
+      </div>
+    ),
+  ],
 };

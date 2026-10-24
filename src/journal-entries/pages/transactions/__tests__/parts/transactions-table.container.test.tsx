@@ -86,7 +86,9 @@ function LocationPathname() {
 function renderContainer(initialEntry = '/transactions') {
   return render(
     <MemoryRouter initialEntries={[initialEntry]}>
-      <TransactionsTableContainer />
+      <TransactionsTableContainer
+        actionButton={<button type="button">New transaction</button>}
+      />
       <LocationSearch />
       <LocationPathname />
     </MemoryRouter>
@@ -123,6 +125,9 @@ describe('TransactionsTableContainer', () => {
       orderBy: 'effectiveDate',
       sortDirection: 'desc',
     });
+    expect(
+      screen.getByRole('button', { name: 'New transaction' })
+    ).toBeInTheDocument();
     expect(screen.getByText('Main checking')).toBeInTheDocument();
     expect(screen.getByText('Payment to Osahon Oboite')).toBeInTheDocument();
     expect(screen.getByText('Gift')).toBeInTheDocument();

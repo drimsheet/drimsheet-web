@@ -189,6 +189,8 @@
   "details_balance_effect_decrease": "Money out",
   "details_balance_effect_noop": "No balance change",
   "details_account_error_title": "Account unavailable",
+  "details_loading_account_header": "Loading account header",
+  "details_loading_account_actions": "Loading account actions",
   "details_loading_account_summary": "Loading account summary",
   "details_loading_bank_details": "Loading bank details",
   "details_loading_sub_accounts": "Loading sub accounts",
@@ -403,5 +405,7 @@
   "dashboard_loading_summary": "Loading account balances",
   "dashboard_loading_history": "Loading balance history",
   "dashboard_loading_table": "Loading accounts",
-  "dashboard_status_draft": "Draft"
+  "dashboard_status_draft": "Draft",
+  "details_overview_title": "Overview",
+  "details_transactions_empty_description": "Transactions for this account will appear here."
 }

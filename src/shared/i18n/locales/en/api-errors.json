@@ -431,7 +431,7 @@
   "period_error_ordinal_invalid": "Invalid period order.",
   "period_error_periods_invalid": "Invalid periods.",
   "period_error_unit_invalid": "Invalid period unit.",
-  "app_error_reporting_behaviors_invalid": "",
-  "app_error_reporting_sub_types_invalid": "",
-  "app_error_reporting_types_invalid": ""
+  "app_error_reporting_behaviors_invalid": "Invalid account behavior.",
+  "app_error_reporting_sub_types_invalid": "Invalid account sub type.",
+  "app_error_reporting_types_invalid": "Invalid account type."
 }

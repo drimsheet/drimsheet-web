@@ -33,28 +33,9 @@ describe('LedgerAccountSummary', () => {
   it('shows account details and formats the balance from minor units', () => {
     render(<LedgerAccountSummary account={account} />);
 
-    expect(
-      screen.getByRole('heading', { name: account.name })
-    ).toBeInTheDocument();
-    expect(screen.getByText('Bank account')).toBeInTheDocument();
-    expect(screen.getByText('Created 14 January 2026')).toHaveAttribute(
-      'datetime',
-      account.createdAt
-    );
     expect(screen.getByText('Current balance')).toBeInTheDocument();
     expect(screen.getByText(/₦2,450,000/)).toBeInTheDocument();
   });
-
-  it.each(['active', 'archived', 'draft'] as const)(
-    'labels the %s status',
-    (status) => {
-      render(<LedgerAccountSummary account={{ ...account, status }} />);
-
-      expect(
-        screen.getByText(new RegExp(`^${status}$`, 'i'))
-      ).toBeInTheDocument();
-    }
-  );
 
   it('shows an approximate functional balance for a foreign currency account', () => {
     render(
