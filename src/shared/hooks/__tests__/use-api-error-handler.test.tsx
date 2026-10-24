@@ -183,7 +183,12 @@ describe('useApiErrorHandler', () => {
     expect(toast.error).toHaveBeenNthCalledWith(1, 'Email is required.');
     expect(toast.error).toHaveBeenNthCalledWith(2, 'Invalid password.');
     expect(toast.error).not.toHaveBeenCalledWith('Validation error.');
-    expect(setValidationError).toHaveBeenCalledWith(validationErrors);
+    expect(setValidationError).toHaveBeenCalledWith([
+      { field: 'email', message: 'Email is required.' },
+      { field: 'password', message: 'Invalid password.' },
+      { field: 'passwordConfirmation', message: 'Invalid password.' },
+      { field: 'firstName', message: 'An error occurred' },
+    ]);
   });
 
   it('uses a localized top-level error when validation messages are unusable', () => {
@@ -219,7 +224,9 @@ describe('useApiErrorHandler', () => {
       result.current(error, { showToast: true, setValidationError });
     });
 
-    expect(setValidationError).toHaveBeenCalledWith(validationErrors);
+    expect(setValidationError).toHaveBeenCalledWith([
+      { field: 'name', message: 'An error occurred' },
+    ]);
     expect(toast.error).toHaveBeenCalledWith('An error occurred');
     expect(toast.error).not.toHaveBeenCalledWith('Name is required');
   });

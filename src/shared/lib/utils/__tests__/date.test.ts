@@ -134,11 +134,9 @@ describe('date utils', () => {
       expect(dateUtils.formatWithJurisdiction(date)).toBe('15 Jan 2026');
     });
 
-    it('returns "Invalid Date" for invalid date', () => {
+    it('returns null for invalid date', () => {
       const invalidDate = new Date('invalid');
-      expect(dateUtils.formatWithJurisdiction(invalidDate)).toBe(
-        'Invalid Date'
-      );
+      expect(dateUtils.formatWithJurisdiction(invalidDate)).toBeNull();
     });
   });
 
