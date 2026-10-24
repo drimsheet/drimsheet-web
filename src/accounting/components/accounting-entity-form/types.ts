@@ -20,3 +20,12 @@ export interface AccountingEntityFormProps {
   disabled?: boolean;
   onSubmit?: (values: IAccountingEntityFormValues) => void | Promise<void>;
 }
+
+export interface EntityTypeCardsProps {
+  id: string;
+  value: IAccountingEntityFormValues['entityType'];
+  disabled?: boolean;
+  errors: { message?: string }[];
+  onChange: (value: UAccountingEntityType) => void;
+  onBlur: () => void;
+}

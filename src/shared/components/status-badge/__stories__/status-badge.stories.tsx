@@ -11,7 +11,15 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['success', 'info', 'warning', 'error', 'neutral', 'primary'],
+      options: [
+        'success',
+        'info',
+        'warning',
+        'error',
+        'neutral',
+        'primary',
+        'secondary',
+      ],
     },
     showDot: {
       control: 'boolean',
@@ -26,7 +34,6 @@ export const Success: Story = {
   args: {
     label: 'Success',
     variant: 'success',
-    showDot: true,
   },
 };
 
@@ -34,7 +41,6 @@ export const Info: Story = {
   args: {
     label: 'Info',
     variant: 'info',
-    showDot: true,
   },
 };
 
@@ -42,7 +48,6 @@ export const Warning: Story = {
   args: {
     label: 'Warning',
     variant: 'warning',
-    showDot: true,
   },
 };
 
@@ -50,7 +55,6 @@ export const Error: Story = {
   args: {
     label: 'Error',
     variant: 'error',
-    showDot: true,
   },
 };
 
@@ -58,7 +62,6 @@ export const Neutral: Story = {
   args: {
     label: 'Neutral',
     variant: 'neutral',
-    showDot: true,
   },
 };
 
@@ -66,8 +69,11 @@ export const Primary: Story = {
   args: {
     label: 'Primary',
     variant: 'primary',
-    showDot: true,
   },
+};
+
+export const Secondary: Story = {
+  args: { label: 'Secondary', variant: 'secondary' },
 };
 
 export const WithoutDot: Story = {
@@ -76,4 +82,30 @@ export const WithoutDot: Story = {
     variant: 'primary',
     showDot: false,
   },
+};
+
+export const WithDot: Story = {
+  args: { label: 'Active', variant: 'success', showDot: true },
+};
+
+export const BothThemes: Story = {
+  args: { label: 'Active' },
+  render: () => (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {['light', 'dark'].map((theme) => (
+        <div key={theme} className={theme}>
+          <div className="flex flex-wrap items-center gap-3 rounded-md bg-background p-6 text-foreground">
+            <StatusBadge variant="success" label="Active" />
+            <StatusBadge variant="neutral" label="Draft" />
+            <StatusBadge variant="neutral" label="Archived" />
+            <StatusBadge variant="info" label="Info" />
+            <StatusBadge variant="warning" label="Warning" />
+            <StatusBadge variant="error" label="Error" />
+            <StatusBadge variant="primary" label="Primary" />
+            <StatusBadge variant="secondary" label="Secondary" />
+          </div>
+        </div>
+      ))}
+    </div>
+  ),
 };

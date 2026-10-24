@@ -14,6 +14,7 @@ import uiCurrencies from '@/shared/configs/currencies.json' with { type: 'json' 
 import { type ICurrencyDto, type IMoneyDto } from '@/shared/lib/api/Api';
 import { cn } from '@/shared/lib/utils/cn';
 import { forwardRef, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { MoneyWithCurrencyInputProps } from './types';
 
 interface CurrencyOption extends ICurrencyDto {
@@ -83,6 +84,7 @@ const MoneyWithCurrencyInput = forwardRef<
     },
     ref
   ) => {
+    const { t } = useTranslation('shared');
     const controlRef = useRef<HTMLDivElement>(null);
     const [open, setOpen] = useState(false);
     const [searchValue, setSearchValue] = useState('');
@@ -127,9 +129,27 @@ const MoneyWithCurrencyInput = forwardRef<
       isMinorUnit: value?.isMinorUnit ?? false,
     };
 
+    const handleCurrencyValueChange = (
+      currency: CurrencyOption | null,
+      eventDetails: { reason: string }
+    ) => {
+      onChange?.({
+        ...currentMoneyValue,
+        currencyCode: currency?.code ?? '',
+      });
+      setSearchValue('');
+
+      if (eventDetails.reason !== 'clear-press') {
+        setOpen(false);
+      }
+    };
+
+    const currencies_empty_text = t('currencies_empty_text');
+
     return (
       <Combobox
         items={filteredCurrencies}
+        disabled={disabled || currencyDisabled}
         autoHighlight
         inputValue={searchValue}
         open={open}
@@ -141,14 +161,7 @@ const MoneyWithCurrencyInput = forwardRef<
           setOpen(open);
           if (open) setSearchValue('');
         }}
-        onValueChange={(currency: CurrencyOption | null) => {
-          onChange?.({
-            ...currentMoneyValue,
-            currencyCode: currency?.code ?? '',
-          });
-          setSearchValue('');
-          setOpen(false);
-        }}
+        onValueChange={handleCurrencyValueChange}
       >
         <div
           ref={controlRef}
@@ -211,7 +224,7 @@ const MoneyWithCurrencyInput = forwardRef<
             showClear
             showTrigger={false}
           />
-          <ComboboxEmpty>No currencies found.</ComboboxEmpty>
+          <ComboboxEmpty>{currencies_empty_text}</ComboboxEmpty>
           <ComboboxList>
             {filteredCurrencies.map((currency) => (
               <ComboboxItem key={currency.code} value={currency}>

@@ -9,14 +9,6 @@ import {
 } from '@/shared/components/field';
 import { Input } from '@/shared/components/input';
 import { Label } from '@/shared/components/label';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/select';
 import { useFieldErrorMessage } from '@/shared/hooks/use-field-error-message';
 import {
   EAccountingEntityType,
@@ -27,6 +19,7 @@ import { TriangleAlert } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import accountingEntityFormHelpers from './helper';
+import { EntityTypeCards } from './parts/entity-type-cards';
 import type {
   AccountingEntityFormProps,
   IAccountingEntityFormValues,
@@ -115,11 +108,6 @@ export function AccountingEntityForm({
     }));
   };
 
-  const type_label = t('entity_type_label');
-  const type_placeholder = t('entity_type_placeholder');
-  const individual_label = t('entity_type_individual_label');
-  const sole_trader_label = t('entity_type_sole_trader_label');
-  const company_label = t('entity_type_company_label');
   const name_label = t('entity_name_label');
   const name_placeholder = t('entity_name_placeholder');
   const country_label = t('entity_country_label');
@@ -134,40 +122,14 @@ export function AccountingEntityForm({
     <form id={id} onSubmit={formik.handleSubmit} noValidate>
       <FieldSet disabled={isDisabled}>
         <FieldGroup className="gap-5">
-          <Field data-invalid={typeErrors.length > 0}>
-            <Label htmlFor={`${fieldId}-type`}>{type_label}</Label>
-            <Select
-              value={formik.values.entityType}
-              disabled={isDisabled}
-              onValueChange={handleTypeChange}
-            >
-              <SelectTrigger
-                id={`${fieldId}-type`}
-                className="w-full"
-                aria-invalid={typeErrors.length > 0}
-                aria-describedby={
-                  typeErrors.length ? `${fieldId}-type-error` : undefined
-                }
-                onBlur={() => formik.setFieldTouched('entityType', true)}
-              >
-                <SelectValue placeholder={type_placeholder} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value={EAccountingEntityType.Individual}>
-                    {individual_label}
-                  </SelectItem>
-                  <SelectItem value={EAccountingEntityType.SoleTrader}>
-                    {sole_trader_label}
-                  </SelectItem>
-                  <SelectItem value={EAccountingEntityType.PrivateCompany}>
-                    {company_label}
-                  </SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <FieldError id={`${fieldId}-type-error`} errors={typeErrors} />
-          </Field>
+          <EntityTypeCards
+            id={`${fieldId}-type`}
+            value={formik.values.entityType}
+            disabled={isDisabled}
+            errors={typeErrors}
+            onChange={handleTypeChange}
+            onBlur={() => void formik.setFieldTouched('entityType', true)}
+          />
           <Field data-invalid={nameErrors.length > 0}>
             <Label htmlFor={`${fieldId}-name`}>{name_label}</Label>
             <Input

@@ -47,7 +47,10 @@ function formatDateForApi(date: Date | string | number): string {
   return dayjs(date).format(formatOptions.apiDate);
 }
 
-function formatWithJurisdiction(date: Date, countryCode?: string): string {
+function formatWithJurisdiction(
+  date: Date,
+  countryCode?: string
+): string | null {
   let locale = DEFAULT_LOCALE;
   if (countryCode) {
     const country = countries.find((c) => c.code === countryCode);
@@ -57,7 +60,7 @@ function formatWithJurisdiction(date: Date, countryCode?: string): string {
   }
 
   if (!dayjs(date).isValid()) {
-    return 'Invalid Date';
+    return null;
   }
 
   try {

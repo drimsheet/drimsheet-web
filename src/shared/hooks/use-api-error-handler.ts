@@ -12,6 +12,11 @@ const isApiErrorKey = (key: string): key is TApiErrorKey => {
   return Object.hasOwn(apiErrorsJson, key);
 };
 
+const translateValidationMessage = (message: string) =>
+  isApiErrorKey(message)
+    ? i18n.t(message, { ns: 'api-errors' })
+    : i18n.t('an_error_occurred', { ns: 'shared' });
+
 const getValidationToastMessages = (
   validationErrors: IApiValidationError[]
 ) => {
@@ -22,11 +27,7 @@ const getValidationToastMessages = (
       return undefined;
     }
 
-    if (isApiErrorKey(message)) {
-      messages.add(i18n.t(message, { ns: 'api-errors' }));
-    } else {
-      messages.add(i18n.t('an_error_occurred', { ns: 'shared' }));
-    }
+    messages.add(translateValidationMessage(message));
   });
 
   return [...messages];
@@ -107,7 +108,12 @@ export function useApiErrorHandler() {
         }
       }
 
-      options?.setValidationError?.(error.validationErrors ?? []);
+      options?.setValidationError?.(
+        (error.validationErrors ?? []).map(({ field, message }) => ({
+          field,
+          message: translateValidationMessage(message),
+        }))
+      );
 
       return error;
     },

@@ -9,7 +9,15 @@ export function AccountingEntityFormSkeleton() {
     <div aria-busy="true" className="w-full">
       <output className="sr-only">{loading_status}</output>
       <div aria-hidden className="flex flex-col gap-5">
-        {['type', 'name', 'country', 'currency'].map((field) => (
+        <div className="@container/entity-types flex flex-col gap-3">
+          <Skeleton className="h-4 w-32" />
+          <div className="grid w-full gap-3 @min-[36rem]/entity-types:grid-cols-3">
+            {[0, 1, 2].map((option) => (
+              <Skeleton key={option} className="h-40 w-full rounded-md" />
+            ))}
+          </div>
+        </div>
+        {['name', 'country', 'currency'].map((field) => (
           <div key={field} className="flex flex-col gap-3">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-9 w-full" />

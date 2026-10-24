@@ -220,10 +220,19 @@ test('combines server search, filters, sorting and pagination without losing que
       exact: true,
     });
 
+    const statusFilter = page.getByRole('dialog', {
+      name: 'Filter by Status',
+      exact: true,
+    });
+
     await trigger.click();
-    await page.getByRole('checkbox', { name: 'Active', exact: true }).check();
+    await statusFilter
+      .getByRole('checkbox', { name: 'Active', exact: true })
+      .check();
     expect(new URL(page.url()).searchParams.get('status')).toBeNull();
-    await page.getByRole('button', { name: 'Apply', exact: true }).click();
+    await statusFilter
+      .getByRole('button', { name: 'Apply', exact: true })
+      .click();
     await expect(names.first()).toHaveText('Extra Vendor 7');
     await expect
       .poll(() => lastQuery)
@@ -243,33 +252,51 @@ test('combines server search, filters, sorting and pagination without losing que
       exact: true,
     });
 
-    await expect(activeTrigger).toBeFocused();
     await activeTrigger.click();
-    await page.getByRole('checkbox', { name: 'Archived', exact: true }).check();
+    await statusFilter
+      .getByRole('checkbox', { name: 'Archived', exact: true })
+      .check();
     await page.keyboard.press('Escape');
-    await expect(activeTrigger).toBeFocused();
+    await expect(statusFilter).not.toBeVisible();
     await activeTrigger.click();
     await expect(
-      page.getByRole('checkbox', { name: 'Archived', exact: true })
+      statusFilter.getByRole('checkbox', { name: 'Archived', exact: true })
     ).not.toBeChecked();
     await page.keyboard.press('Escape');
+    await expect(statusFilter).not.toBeVisible();
+
+    const typeFilter = page.getByRole('dialog', {
+      name: 'Filter by Type',
+      exact: true,
+    });
+
     await page
       .getByTestId('column-header-type')
       .getByTestId('table-filter-trigger')
       .click();
-    await page
+    await typeFilter
       .getByRole('checkbox', { name: 'Individual', exact: true })
       .check();
-    await page.getByRole('button', { name: 'Apply', exact: true }).click();
+    await typeFilter
+      .getByRole('button', { name: 'Apply', exact: true })
+      .click();
     await expect(names).toHaveText(['Charlie Employer', 'Bob Contractor']);
+
+    const rolesFilter = page.getByRole('dialog', {
+      name: 'Filter by Roles',
+      exact: true,
+    });
+
     await page
       .getByTestId('column-header-roles')
       .getByTestId('table-filter-trigger')
       .click();
-    await page
+    await rolesFilter
       .getByRole('checkbox', { name: 'Contractor', exact: true })
       .check();
-    await page.getByRole('button', { name: 'Apply', exact: true }).click();
+    await rolesFilter
+      .getByRole('button', { name: 'Apply', exact: true })
+      .click();
     await expect(names).toHaveText(['Bob Contractor']);
   });
   await test.step('Search combines with existing filters and clearing restores results', async () => {
@@ -296,7 +323,10 @@ test('combines server search, filters, sorting and pagination without losing que
     await page
       .getByRole('button', { name: 'Filter by Status, 1 active', exact: true })
       .click();
-    await page.getByRole('button', { name: 'Clear', exact: true }).click();
+    await page
+      .getByRole('dialog', { name: 'Filter by Status', exact: true })
+      .getByRole('button', { name: 'Clear', exact: true })
+      .click();
     await expect
       .poll(() => lastQuery)
       .toEqual({

@@ -26,7 +26,7 @@ export function CountryComboBox({
   id = 'country-select',
   disabled = false,
   description,
-  clearable = false,
+  clearable = true,
   value,
   jurisdictions,
   onChange,

@@ -55,7 +55,7 @@ describe('AccountingEntityForm', () => {
       screen.getByRole('textbox', { name: 'Name' })
     ).toHaveAccessibleDescription('Enter a person or business name.');
     expect(
-      screen.getByRole('combobox', { name: 'Who is this for?' })
+      screen.getByRole('radiogroup', { name: 'Who is this for?' })
     ).toHaveAccessibleDescription('Select who these records are for.');
     expect(
       screen.getByRole('combobox', { name: 'Country of residence' })
@@ -81,10 +81,7 @@ describe('AccountingEntityForm', () => {
         </button>
       </>
     );
-    await user.click(
-      screen.getByRole('combobox', { name: 'Who is this for?' })
-    );
-    await user.click(await screen.findByRole('option', { name: 'Individual' }));
+    await user.click(await screen.findByRole('radio', { name: 'Individual' }));
     await user.type(
       screen.getByRole('textbox', { name: 'Name' }),
       'Ada Okafor'
@@ -117,8 +114,40 @@ describe('AccountingEntityForm', () => {
       <AccountingEntityForm currencies={[]} jurisdictions={[]} disabled />
     );
     expect(screen.getByRole('textbox', { name: 'Name' })).toBeDisabled();
+    for (const radio of screen.getAllByRole('radio'))
+      expect(radio).toBeDisabled();
     for (const field of screen.getAllByRole('combobox'))
       expect(field).toBeDisabled();
+  });
+
+  it('selects cards through their descriptions and changes the exclusive choice with the keyboard', async () => {
+    const user = userEvent.setup();
+    render(
+      <AccountingEntityForm
+        currencies={currencies}
+        jurisdictions={jurisdictions}
+      />
+    );
+    const individual = screen.getByRole('radio', { name: 'Individual' });
+    const soleTrader = screen.getByRole('radio', { name: 'Sole trader' });
+    const company = screen.getByRole('radio', { name: 'Private company' });
+
+    expect(individual).not.toBeChecked();
+    expect(soleTrader).not.toBeChecked();
+    expect(company).not.toBeChecked();
+    expect(individual).toHaveAccessibleDescription('Your personal finances.');
+    await user.click(screen.getByText('Business as an individual.'));
+    expect(soleTrader).toBeChecked();
+    expect(soleTrader).toHaveFocus();
+    await user.keyboard('{ArrowRight>}');
+    await waitFor(() => expect(company).toBeChecked());
+    await user.keyboard('{/ArrowRight}');
+    expect(company).toHaveFocus();
+    expect(soleTrader).not.toBeChecked();
+    await user.keyboard('{ArrowRight>}');
+    await waitFor(() => expect(individual).toBeChecked());
+    await user.keyboard('{/ArrowRight}');
+    expect(company).not.toBeChecked();
   });
 });
 
@@ -131,8 +160,7 @@ it('prefills the individual name from the profile and lets the user edit it', as
       individualName="Ada Okafor"
     />
   );
-  await user.click(screen.getByRole('combobox', { name: 'Who is this for?' }));
-  await user.click(screen.getByRole('option', { name: 'Individual' }));
+  await user.click(screen.getByRole('radio', { name: 'Individual' }));
   const name = screen.getByRole('textbox', { name: 'Name' });
   expect(name).toHaveValue('Ada Okafor');
   await user.clear(name);
@@ -140,7 +168,7 @@ it('prefills the individual name from the profile and lets the user edit it', as
   expect(name).toHaveValue('Ada Personal');
 });
 
-it.each(['Sole proprietorship', 'Company'])(
+it.each(['Sole trader', 'Private company'])(
   'does not prefill a profile name for %s',
   async (entityType) => {
     const user = userEvent.setup();
@@ -151,10 +179,7 @@ it.each(['Sole proprietorship', 'Company'])(
         individualName="Ada Okafor"
       />
     );
-    await user.click(
-      screen.getByRole('combobox', { name: 'Who is this for?' })
-    );
-    await user.click(screen.getByRole('option', { name: entityType }));
+    await user.click(screen.getByRole('radio', { name: entityType }));
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('');
   }
 );
