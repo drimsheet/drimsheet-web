@@ -21,30 +21,6 @@ describe('account dashboard reporting', () => {
     expect(helpers.bucketDays('6M')).toBe(30);
     expect(helpers.bucketDays('1Y')).toBe(61);
   });
-  it('keeps major and minor unit money on the same chart scale, including negatives', () => {
-    expect(
-      helpers.toMajorUnits({
-        amount: 123456,
-        currencyCode: 'NGN',
-        isMinorUnit: true,
-      })
-    ).toBe(1234.56);
-    expect(
-      helpers.toMajorUnits({
-        amount: -1234,
-        currencyCode: 'JPY',
-        isMinorUnit: true,
-      })
-    ).toBe(-1234);
-    expect(
-      helpers.toMajorUnits({
-        amount: 1234,
-        currencyCode: 'NGN',
-        isMinorUnit: false,
-      })
-    ).toBe(1234);
-  });
-
   it('calculates balance growth from the first and last chart buckets', () => {
     const points = [
       {
@@ -142,10 +118,5 @@ describe('account dashboard reporting', () => {
         },
       ])
     ).toMatchObject({ percentageChange: null });
-  });
-
-  it('resolves configured currency logos', () => {
-    expect(helpers.currencyLogo('ngn')).toBe('https://flagcdn.com/w320/ng.png');
-    expect(helpers.currencyLogo('unknown')).toBeUndefined();
   });
 });

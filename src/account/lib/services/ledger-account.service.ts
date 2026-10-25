@@ -4,30 +4,11 @@ import {
   ELedgerType,
   type IGetAccountCashFlowQuery,
   type IGetAccountCounterpartyParticipationQuery,
-  type IGetBalancesBySubTypeQuery,
   type IGetJournalEntriesQuery,
   type IGetLedgerAccountsQuery,
-  type IGetLedgerBalancesByCurrencyQuery,
   type IGetPermittedPostingAccountsQuery,
   type IHeaderAccountNameAliasesReq,
 } from '@/shared/lib/api/Api';
-
-async function getBalancesBySubType(
-  query: IGetBalancesBySubTypeQuery,
-  signal?: AbortSignal
-) {
-  return (await drimsheetApi.reporting.getBalancesBySubType(query, { signal }))
-    .data;
-}
-
-async function getLedgerBalancesByCurrency(
-  query: IGetLedgerBalancesByCurrencyQuery,
-  signal?: AbortSignal
-) {
-  return (
-    await drimsheetApi.reporting.getLedgerBalancesByCurrency(query, { signal })
-  ).data;
-}
 
 async function getLedgerAccounts(
   query: IGetLedgerAccountsQuery,
@@ -144,8 +125,6 @@ async function setupHeaderAccounts(payload: IHeaderAccountNameAliasesReq) {
 }
 
 export const ledgerAccountService = Object.freeze({
-  getBalancesBySubType,
-  getLedgerBalancesByCurrency,
   setupHeaderAccounts,
   getAccountCounterpartyParticipation,
   getLedgerAccounts,

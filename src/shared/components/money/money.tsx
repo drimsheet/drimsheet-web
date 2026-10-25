@@ -1,42 +1,18 @@
-import uiCurrencies from '@/shared/configs/currencies.json' with { type: 'json' };
-import type { IMoneyDto } from '@/shared/lib/api/Api';
 import { currencyService } from '@/shared/lib/services/currency.service';
-import type { ComponentProps } from 'react';
-
-interface MoneyProps extends ComponentProps<'span'> {
-  value: IMoneyDto;
-  localCode?: string;
-  hide?: boolean;
-  hideZeroMinorUnit?: boolean;
-}
-
-const getMoneyDisplayAmount = (value: IMoneyDto): number => {
-  const { amount, isMinorUnit, currencyCode } = value;
-
-  const uiCurrency = uiCurrencies.find(
-    (currency) =>
-      currency.code.toLocaleLowerCase() === currencyCode.toLocaleLowerCase()
-  );
-
-  if (!uiCurrency) {
-    // TODO: throw or report (decide later)
-    return amount;
-  }
-
-  if (isMinorUnit) {
-    return +(amount / 10 ** uiCurrency.minorUnit);
-  } else {
-    return amount;
-  }
-};
+import { toMajorUnits } from '@/shared/lib/utils/money';
+import { useTranslation } from 'react-i18next';
+import type { MoneyProps } from './types';
 
 export function Money({
   value,
   localCode,
   hide,
   hideZeroMinorUnit = true,
+  isConverted = false,
   ...props
 }: Readonly<MoneyProps>) {
+  const { t } = useTranslation('shared');
+
   const locale = currencyService.getJurisdictionLocale(
     localCode || value.currencyCode
   );
@@ -45,7 +21,19 @@ export function Money({
     style: 'currency',
     currency: value.currencyCode,
     trailingZeroDisplay: hideZeroMinorUnit ? 'stripIfInteger' : 'auto',
-  }).format(getMoneyDisplayAmount(value));
+  }).format(toMajorUnits(value));
 
-  return <span {...props}>{hide ? '******' : formatted}</span>;
+  const approximately_label = t('money_approximately_label');
+
+  return (
+    <span {...props}>
+      {isConverted && (
+        <>
+          <span aria-hidden="true">≈</span>
+          <span className="sr-only">{approximately_label} </span>
+        </>
+      )}
+      {hide ? '******' : formatted}
+    </span>
+  );
 }

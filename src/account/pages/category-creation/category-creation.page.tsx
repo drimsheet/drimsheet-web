@@ -1,6 +1,6 @@
 import { categoryService } from '@/account/lib/services/category.service';
 import { AppBody } from '@/shared/components/app';
-import { PageSection } from '@/shared/components/page-section';
+import { AppSection } from '@/shared/components/app-section';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFormik, type FormikProps } from 'formik';
 import { useState } from 'react';
@@ -66,6 +66,9 @@ export function CategoryCreationPage() {
         queryClient.invalidateQueries({ queryKey: ['categoryService'] }),
         queryClient.invalidateQueries({ queryKey: ['ledgerAccountService'] }),
         queryClient.invalidateQueries({
+          queryKey: ['reportingService'],
+        }),
+        queryClient.invalidateQueries({
           queryKey: ['accountingBootstrapService'],
         }),
       ]);
@@ -119,7 +122,7 @@ export function CategoryCreationPage() {
           <div className="mt-2 flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
-          <PageSection>
+          <AppSection>
             <CategoryCreationForm
               form={form}
               parent={parent}
@@ -133,7 +136,7 @@ export function CategoryCreationPage() {
               onPickerOpenChange={setPickerOpen}
               onCancel={() => navigate('/categories')}
             />
-          </PageSection>
+          </AppSection>
         </div>
       </AppBody>
     </>

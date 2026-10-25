@@ -1,8 +1,8 @@
 import { Alert, AlertDescription } from '@/shared/components/alert';
+import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
 import { Empty, EmptyHeader, EmptyTitle } from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
-import { PageSection } from '@/shared/components/page-section';
 import { Skeleton } from '@/shared/components/skeleton';
 import { cn } from '@/shared/lib/utils/cn';
 import { useTranslation } from 'react-i18next';
@@ -49,7 +49,7 @@ export function CounterpartyShare({
   if (loading) return <CounterpartyShareSkeleton />;
 
   return (
-    <PageSection
+    <AppSection
       title={title}
       className="min-w-0"
       role="region"
@@ -156,7 +156,7 @@ export function CounterpartyShare({
           </div>
         )}
       </div>
-    </PageSection>
+    </AppSection>
   );
 }
 
@@ -171,7 +171,7 @@ export function CounterpartyShareSkeleton() {
   );
 
   return (
-    <PageSection
+    <AppSection
       title={category_details_share_title}
       className="min-w-0"
       role="region"
@@ -198,6 +198,6 @@ export function CounterpartyShareSkeleton() {
           </div>
         ))}
       </div>
-    </PageSection>
+    </AppSection>
   );
 }

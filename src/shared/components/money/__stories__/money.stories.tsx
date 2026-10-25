@@ -51,3 +51,10 @@ export const WithZeroMinorUnit: Story = {
     hideZeroMinorUnit: false,
   },
 };
+
+export const Converted: Story = {
+  args: {
+    value: { amount: 87450000, currencyCode: 'NGN', isMinorUnit: false },
+    isConverted: true,
+  },
+};

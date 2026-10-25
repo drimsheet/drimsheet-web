@@ -9,7 +9,7 @@ import { OutflowFormContainer } from '@/journal-entries/components/outflow-form'
 import { useJournalEntry } from '@/journal-entries/hooks/use-journal-entry';
 import { journalEntryRouteMapper } from '@/journal-entries/lib/mappers/journal-entry-route.mapper';
 import { AppBody } from '@/shared/components/app';
-import { PageSection } from '@/shared/components/page-section';
+import { AppSection } from '@/shared/components/app-section';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
@@ -36,13 +36,13 @@ export function EditTransactionPage() {
     return (
       <>
         <AppBody title={page_title}>
-          <PageSection>
+          <AppSection>
             {type === 'transfer' ? (
               <CashTransferFormSkeleton />
             ) : (
               <CashTransactionFormSkeleton />
             )}
-          </PageSection>
+          </AppSection>
         </AppBody>
       </>
     );
@@ -52,9 +52,9 @@ export function EditTransactionPage() {
     return (
       <>
         <AppBody>
-          <PageSection>
+          <AppSection>
             <JournalEntryNotFound onBack={handleBack} />
-          </PageSection>
+          </AppSection>
         </AppBody>
       </>
     );
@@ -80,7 +80,7 @@ export function EditTransactionPage() {
   return (
     <>
       <AppBody title={page_title}>
-        <PageSection>
+        <AppSection>
           {canonicalType === 'inflow' && (
             <InflowFormContainer journalEntry={journalEntry} />
           )}
@@ -90,7 +90,7 @@ export function EditTransactionPage() {
           {canonicalType === 'transfer' && (
             <CashTransferFormContainer journalEntry={journalEntry} />
           )}
-        </PageSection>
+        </AppSection>
       </AppBody>
     </>
   );

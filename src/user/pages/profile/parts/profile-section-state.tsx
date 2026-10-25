@@ -1,5 +1,5 @@
 import { Alert, AlertDescription, AlertTitle } from '@/shared/components/alert';
-import { PageSection } from '@/shared/components/page-section';
+import { AppSection } from '@/shared/components/app-section';
 import { useTranslation } from 'react-i18next';
 import type { ProfileSectionStateProps } from '../types';
 
@@ -10,11 +10,11 @@ export function ProfileSectionState({
   const error_text = t('profile_section_error_text', { section: label });
 
   return (
-    <PageSection>
+    <AppSection>
       <Alert variant="destructive" className="self-start">
         <AlertTitle>{label}</AlertTitle>
         <AlertDescription>{error_text}</AlertDescription>
       </Alert>
-    </PageSection>
+    </AppSection>
   );
 }

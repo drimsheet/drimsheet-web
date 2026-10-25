@@ -14,6 +14,21 @@ Make imports predictable so the agent can change one part of the app without cau
 - `src/<feature>/routes/` may import pages only.
 - `src/shared/` must not import from any feature folder.
 
+### Account dashboard reporting composition exception
+
+`src/account/pages/account-dashboard/` may import
+`useLedgerBalancesByCurrency` from `@/reporting/hooks/use-ledger-balances-by-currency`.
+It may also import `useBalancesBySubType` from
+`@/reporting/hooks/use-balances-by-sub-type`.
+The dashboard supplies each query and selector; the reporting hooks and service
+remain feature-owned and must not import account-specific mappers.
+The dashboard may also compose `TotalBalance` and `BalancesByCurrency` through
+their public `@/reporting/components/total-balance` and
+`@/reporting/components/balances-by-currency` APIs. These reporting components
+must not import account-owned types, helpers, or translations.
+It may also compose the BalanceTrend component family through
+`@/reporting/components/balance-trend`, with the same ownership restrictions.
+
 ### Counterparty detail composition exception
 
 `src/counterparty/pages/counterparty-details/counterparty-details.page.tsx` may import the public

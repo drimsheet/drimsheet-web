@@ -107,6 +107,11 @@ pages/<page>/
 
 - Export only the page component through `index.ts`, using an explicit named
   re-export from `./<page>.page`. Consumers import the page directory.
+- Page entries compose `AppBody` with direct `AppSection` children, each
+  containing components or private parts. Content components and parts must
+  not own section wrappers. Page entries must not define CSS;
+  follow the page composition and styling boundaries in the `pages/` section
+  of `file-responsibility-rules.md`.
 - Keep private UI in `parts/`, including error views and containers. Define and
   export a part's skeleton in the same file as the part it represents; do not
   create a standalone page-owned skeleton file. Compose reusable component

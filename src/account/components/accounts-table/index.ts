@@ -1,3 +1,8 @@
-export { LedgerAccountsTable } from './accounts-table';
-export { LedgerAccountsTableContainer } from './accounts-table.container';
-export type { LedgerAccountsTableProps } from './types';
+export { AccountsTable } from './accounts-table';
+export type {
+  AccountsTableProps,
+  IAccountsTableData,
+  IAccountsTablePagination,
+  IAccountsTableRow,
+  UAccountBehaviorFilter,
+} from './types';

@@ -1,6 +1,6 @@
 import { AppBody } from '@/shared/components/app';
+import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
-import { PageSection } from '@/shared/components/page-section';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -25,7 +25,7 @@ export function TransactionsPage() {
   return (
     <>
       <AppBody title={page_title}>
-        <PageSection>
+        <AppSection>
           {searchParams.has('accountId') && (
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-sm text-muted-foreground">
@@ -46,7 +46,7 @@ export function TransactionsPage() {
               </Button>
             }
           />
-        </PageSection>
+        </AppSection>
       </AppBody>
     </>
   );

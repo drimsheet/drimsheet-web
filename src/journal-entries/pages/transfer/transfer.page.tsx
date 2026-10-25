@@ -1,8 +1,8 @@
 import { CashTransferFormContainer } from '@/journal-entries/components/cash-transfer-form';
 import { AppBody } from '@/shared/components/app';
+import { AppSection } from '@/shared/components/app-section';
 import { DocumentUpload } from '@/shared/components/document-upload';
 import { EFileType } from '@/shared/components/document-upload/types';
-import { PageSection } from '@/shared/components/page-section';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -27,7 +27,7 @@ export function TransferPage() {
   return (
     <>
       <AppBody>
-        <PageSection className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,28rem)] lg:gap-20">
+        <AppSection className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,28rem)] lg:gap-20">
           <CashTransferFormContainer />
           <DocumentUpload
             title={upload_title}
@@ -38,7 +38,7 @@ export function TransferPage() {
             allowMultiple
             accept={ALLOWED_DOC_UPLOAD}
           />
-        </PageSection>
+        </AppSection>
       </AppBody>
     </>
   );

@@ -2,8 +2,8 @@ import { CategoryEditorDialog } from '@/account/dialogs/category-editor';
 import { useCategoryAccounts } from '@/account/hooks/use-category-accounts';
 import { categoryService } from '@/account/lib/services/category.service';
 import { AppBody } from '@/shared/components/app';
+import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
-import { PageSection } from '@/shared/components/page-section';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
 import type { IRevenueExpenseAccountDto } from '@/shared/lib/api/Api';
@@ -108,7 +108,7 @@ export function CategoriesPage() {
         }
       >
         <div className="flex min-w-0 flex-col">
-          <PageSection title={overview_title}>
+          <AppSection title={overview_title}>
             <div className="flex flex-wrap justify-end">
               <CategoryPeriod
                 period={period}
@@ -120,7 +120,7 @@ export function CategoriesPage() {
               query={categoriesHelpers.periodQuery(period, now)}
               onViewAccount={handleViewAccount}
             />
-          </PageSection>
+          </AppSection>
           {accounts.isError && <CategorySectionError title={table_title} />}
           <CategoryTable
             accounts={accounts.data}

@@ -166,6 +166,27 @@ test('shows loading then a recoverable page error without invented balances', as
   await expect(
     page.getByRole('alert').filter({ hasText: 'Couldn’t load your accounts' })
   ).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Overview' })).toHaveCount(0);
+  await expect(page.getByRole('table')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Add account', exact: true }).click();
+  const selectionDialog = page.getByRole('dialog');
+  await selectionDialog.getByRole('radio', { name: /petty cash/i }).click();
+  await selectionDialog.getByRole('button', { name: /continue/i }).click();
+  await expect(
+    page.getByRole('heading', { name: /create petty cash account/i })
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Add account', exact: true }).click();
+  await selectionDialog.getByRole('radio', { name: /bank/i }).click();
+  await selectionDialog.getByRole('button', { name: /continue/i }).click();
+  await expect(page).toHaveURL('/accounts/new/bank');
+  await page.goto('/accounts');
+  await expect(
+    page.getByRole('alert').filter({ hasText: 'Couldn’t load your accounts' })
+  ).toBeVisible();
 
   state.summaryError = false;
   state.historyError = false;
@@ -236,8 +257,20 @@ test('distinguishes no accounts, zero balances, absent behaviors and search with
   ).toBeVisible();
   await expect(page.getByRole('region', { name: 'Overview' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Add first account' }).click();
-  await expect(page.getByRole('dialog')).toBeVisible();
+  const selectionDialog = page.getByRole('dialog');
+  await expect(selectionDialog).toBeVisible();
+  await selectionDialog.getByRole('radio', { name: /petty cash/i }).click();
+  await selectionDialog.getByRole('button', { name: /continue/i }).click();
+  await expect(
+    page.getByRole('heading', { name: /create petty cash account/i })
+  ).toBeVisible();
   await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Add first account' }).click();
+  await selectionDialog.getByRole('radio', { name: /bank/i }).click();
+  await selectionDialog.getByRole('button', { name: /continue/i }).click();
+  await expect(page).toHaveURL('/accounts/new/bank');
 
   state.rows = [
     {
@@ -247,7 +280,7 @@ test('distinguishes no accounts, zero balances, absent behaviors and search with
     },
   ];
   state.zero = true;
-  await page.reload();
+  await page.goto('/accounts');
 
   await expect(
     page.getByText('No balance activity yet', { exact: true })

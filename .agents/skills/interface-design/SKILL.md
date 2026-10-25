@@ -120,7 +120,7 @@ that avoids repeating context already established by the page title.
   Reset heading margins to preserve consistent section spacing.
 - **Title-only headers:** page section headers must contain only the section
   title, never actions, buttons, links, filters, period selectors, help controls,
-  badges, or other adornments. `PageSection` must not expose action or adornment
+  badges, or other adornments. `AppSection` must not expose action or adornment
   slots; do not embed controls in its `title` prop to bypass this rule.
 - Place section-specific controls and supporting information in the section's
   content area, alongside the relevant form, chart, or table controls. Place

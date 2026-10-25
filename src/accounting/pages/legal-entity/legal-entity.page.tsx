@@ -3,8 +3,8 @@ import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entitie
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
 import { Alert, AlertDescription } from '@/shared/components/alert';
 import { AppBody } from '@/shared/components/app';
+import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
-import { PageSection } from '@/shared/components/page-section';
 import { Plus } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -50,7 +50,7 @@ export function LegalEntityPage() {
     >
       <div className="flex min-w-0 flex-col">
         <p className="mt-2 text-sm text-muted-foreground">{description}</p>
-        <PageSection
+        <AppSection
           aria-label={section_title}
           title={entities.data ? section_count : section_title}
         >
@@ -73,7 +73,7 @@ export function LegalEntityPage() {
               }
             />
           )}
-        </PageSection>
+        </AppSection>
       </div>
       {showCreation && (
         <AccountingEntityCreationDialog

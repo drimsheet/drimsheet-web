@@ -1,3 +1,4 @@
+import { AppSection } from '@/shared/components/app-section';
 import { DataTable, type ITableColumn } from '@/shared/components/data-table';
 import {
   Empty,
@@ -7,7 +8,6 @@ import {
   EmptyTitle,
 } from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
-import { PageSection } from '@/shared/components/page-section';
 import { SearchField } from '@/shared/components/search-field';
 import { StatusBadge } from '@/shared/components/status-badge';
 import { TablePagination } from '@/shared/components/table-pagination';
@@ -155,7 +155,7 @@ export function CategoryTable({
   ];
 
   return (
-    <PageSection title={title}>
+    <AppSection title={title}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <Tabs
@@ -201,6 +201,6 @@ export function CategoryTable({
       {accounts && !loading && (
         <TablePagination meta={accounts.meta} onPageChange={onPageChange} />
       )}
-    </PageSection>
+    </AppSection>
   );
 }

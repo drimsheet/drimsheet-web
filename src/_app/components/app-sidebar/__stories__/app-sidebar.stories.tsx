@@ -1,8 +1,8 @@
 import { AppSidebar } from '@/_app/components/app-sidebar';
 import { AppBody } from '@/shared/components/app';
+import { AppSection } from '@/shared/components/app-section';
 import { Badge } from '@/shared/components/badge';
 import { Button } from '@/shared/components/button';
-import { PageSection } from '@/shared/components/page-section';
 import {
   SidebarInset,
   SidebarProvider,
@@ -65,9 +65,9 @@ const meta = {
                         )
                       }
                     >
-                      <PageSection title="Overview">
+                      <AppSection title="Overview">
                         Account balances and recent activity.
-                      </PageSection>
+                      </AppSection>
                     </AppBody>
                   </div>
                 </SidebarInset>

@@ -1,6 +1,6 @@
+import { AppSection } from '@/shared/components/app-section';
 import { Badge } from '@/shared/components/badge';
 import { Money } from '@/shared/components/money';
-import { PageSection } from '@/shared/components/page-section';
 import { PageTitle } from '@/shared/components/page-title';
 import { Separator } from '@/shared/components/separator';
 import { Skeleton } from '@/shared/components/skeleton';
@@ -40,7 +40,7 @@ export function CategorySummary({
         </div>
         {actions}
       </header>
-      <PageSection>
+      <AppSection>
         <dl className="flex flex-wrap items-start gap-x-12 gap-y-6">
           <div className="flex min-w-0 flex-col gap-2">
             <dt className="text-sm text-muted-foreground">{balance_label}</dt>
@@ -53,7 +53,7 @@ export function CategorySummary({
           </div>
           <CategoryTransactionCount transactionCount={transactionCount} />
         </dl>
-      </PageSection>
+      </AppSection>
       <Separator />
     </div>
   );
@@ -78,7 +78,7 @@ export function CategorySummarySkeleton() {
         </div>
         <Skeleton className="h-9 w-24" />
       </header>
-      <PageSection>
+      <AppSection>
         <dl className="flex flex-wrap items-start gap-x-12 gap-y-6">
           <div className="flex min-w-0 flex-col gap-2">
             <Skeleton className="h-5 w-28" />
@@ -86,7 +86,7 @@ export function CategorySummarySkeleton() {
           </div>
           <CategoryTransactionCountSkeleton />
         </dl>
-      </PageSection>
+      </AppSection>
       <Separator />
     </div>
   );

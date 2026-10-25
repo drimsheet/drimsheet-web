@@ -9,9 +9,9 @@ import type { IOpeningBalanceExchangeRateContext } from '@/account/lib/types/ope
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
 import { Alert, AlertDescription } from '@/shared/components/alert';
 import { AppBody } from '@/shared/components/app';
+import { AppSection } from '@/shared/components/app-section';
 import { DocumentUpload } from '@/shared/components/document-upload';
 import { EFileType } from '@/shared/components/document-upload/types';
-import { PageSection } from '@/shared/components/page-section';
 import countries from '@/shared/configs/countries.json' with { type: 'json' };
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useCurrencies } from '@/shared/hooks/use-currencies';
@@ -107,7 +107,7 @@ export function BankAccountCreationPage() {
     <AppBody title={create_bank_account_title}>
       <div className="mt-7 flex min-w-0 flex-col gap-8 md:gap-12">
         <div className="grid min-w-0 grid-cols-1 items-start gap-8 md:gap-12 lg:grid-cols-2">
-          <PageSection
+          <AppSection
             aria-label={upload_bank_statement_title}
             // Align with the inputs after the section heading, section gap,
             // field label, and label-to-control gap.
@@ -123,7 +123,7 @@ export function BankAccountCreationPage() {
               title={upload_bank_statement_title}
               value={statementFiles}
             />
-          </PageSection>
+          </AppSection>
           <div className="min-w-0 lg:col-start-1 lg:row-start-1">
             {hasFormError && (
               <Alert variant="destructive">

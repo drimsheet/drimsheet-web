@@ -3,12 +3,12 @@ import { useEntityDetails } from '@/accounting/hooks/use-entity-details';
 import { useFiscalYearContext } from '@/accounting/hooks/use-fiscal-year-context';
 import { useFiscalYears } from '@/accounting/hooks/use-fiscal-years';
 import { AppBody } from '@/shared/components/app';
+import { AppSection } from '@/shared/components/app-section';
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
 } from '@/shared/components/empty';
-import { PageSection } from '@/shared/components/page-section';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -67,7 +67,7 @@ export function LegalEntityDetailsPage() {
                 />
               }
             />
-            <PageSection title={context_title} className="gap-6 py-0">
+            <AppSection title={context_title} className="gap-6 py-0">
               {years.isPending && <FiscalYearSummarySkeleton />}
               {years.isError && <SectionError />}
               {years.data?.length === 0 && (
@@ -91,7 +91,7 @@ export function LegalEntityDetailsPage() {
                   )}
                 </>
               )}
-            </PageSection>
+            </AppSection>
           </>
         )}
       </div>

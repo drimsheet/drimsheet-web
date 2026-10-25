@@ -1,12 +1,8 @@
 import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
 import { useSubAccounts } from '@/account/hooks/use-sub-accounts';
 import { AppBody } from '@/shared/components/app';
-import {
-  PageSection,
-  PageSectionTitle,
-} from '@/shared/components/page-section';
+import { AppSection } from '@/shared/components/app-section';
 import { cn } from '@/shared/lib/utils/cn';
-import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
 import { AccountActionsSkeleton } from './parts/account-actions';
@@ -31,7 +27,6 @@ import { TransactionsChartContainer } from './parts/transactions-chart.container
 export function AccountDetailsPage() {
   const { t } = useTranslation(['ledger-accounts', 'shared']);
   const { accountId = '' } = useParams();
-  const overviewId = useId();
   const accountQuery = useLedgerAccount(accountId);
   const subAccounts = useSubAccounts(accountId);
   const account = accountQuery.data;
@@ -67,12 +62,8 @@ export function AccountDetailsPage() {
       <div className="mt-8 flex min-w-0 flex-col gap-8 md:mt-12 md:gap-12">
         {accountQuery.isError && <SectionError title={error_title} />}
         {(accountQuery.isPending || accountQuery.isSuccess) && (
-          <PageSection
-            aria-labelledby={overviewId}
-            className="@container gap-6 py-0"
-          >
-            {/* Reading order starts with the page title; Overview stays above it visually. */}
-            <div className="order-2 flex min-w-0 flex-wrap items-start justify-between gap-4">
+          <AppSection title={overview_title} className="@container gap-6 py-0">
+            <div className="flex min-w-0 flex-wrap items-start justify-between gap-4">
               <div className="min-w-0 flex-1 basis-full @xl:basis-0">
                 {accountQuery.isPending && <AccountHeaderSkeleton />}
                 {accountQuery.isSuccess && account && (
@@ -84,10 +75,7 @@ export function AccountDetailsPage() {
                 <AccountActionsContainer key={account.id} account={account} />
               )}
             </div>
-            <PageSectionTitle id={overviewId} className="order-1">
-              {overview_title}
-            </PageSectionTitle>
-            <div className="order-3 mt-2 flex min-w-0 flex-col gap-8">
+            <div className="mt-2 flex min-w-0 flex-col gap-8">
               <div
                 className={cn(
                   'grid min-w-0 gap-8',
@@ -139,7 +127,7 @@ export function AccountDetailsPage() {
                 )}
               </div>
             </div>
-          </PageSection>
+          </AppSection>
         )}
         {accountQuery.isPending && <RecentTransactionsSkeleton />}
         {accountQuery.isSuccess && account && (

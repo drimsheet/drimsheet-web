@@ -1,4 +1,5 @@
 import { Alert, AlertDescription } from '@/shared/components/alert';
+import { AppSection } from '@/shared/components/app-section';
 import {
   Field,
   FieldContent,
@@ -9,7 +10,6 @@ import {
   FieldSet,
   FieldTitle,
 } from '@/shared/components/field';
-import { PageSection } from '@/shared/components/page-section';
 import { RadioGroup, RadioGroupItem } from '@/shared/components/radio-group';
 import { Separator } from '@/shared/components/separator';
 import { Skeleton } from '@/shared/components/skeleton';
@@ -68,7 +68,7 @@ export function ProfilePreferences({
   else if (isSaved) save_status = t('profile_preferences_saved_text');
 
   return (
-    <PageSection
+    <AppSection
       title={preferences_title}
       className="h-full min-w-0"
       role="region"
@@ -149,7 +149,7 @@ export function ProfilePreferences({
         {isSaved && <Check className="size-3.5 text-success" aria-hidden />}
         <output className="text-xs text-muted-foreground">{save_status}</output>
       </div>
-    </PageSection>
+    </AppSection>
   );
 }
 
@@ -162,7 +162,7 @@ export function ProfilePreferencesSkeleton() {
   });
 
   return (
-    <PageSection
+    <AppSection
       aria-busy="true"
       title={loading_label}
       className="h-full min-w-0"
@@ -209,6 +209,6 @@ export function ProfilePreferencesSkeleton() {
         </div>
       </div>
       <Skeleton className="mt-auto h-4 w-40" />
-    </PageSection>
+    </AppSection>
   );
 }

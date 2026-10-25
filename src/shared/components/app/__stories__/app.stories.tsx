@@ -1,7 +1,7 @@
 import { AppBody } from '@/shared/components/app';
+import { AppSection } from '@/shared/components/app-section';
 import { Badge } from '@/shared/components/badge';
 import { Button } from '@/shared/components/button';
-import { PageSection } from '@/shared/components/page-section';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -20,7 +20,7 @@ const meta = {
   ],
   args: {
     title: 'Accounts',
-    children: <PageSection>Account balances and recent activity.</PageSection>,
+    children: <AppSection>Account balances and recent activity.</AppSection>,
   },
 } satisfies Meta<typeof AppBody>;
 

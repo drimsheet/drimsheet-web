@@ -1,14 +1,11 @@
+import type { IAccountsTableRow } from '@/account/components/accounts-table';
 import type {
-  IAccountDashboardAccounts,
-  IAccountDashboardBalancePoint,
   IAccountDashboardHistory,
   IAccountDashboardMoney,
-  IAccountDashboardRow,
   IAccountDashboardSummary,
 } from '@/account/lib/types/account-dashboard.types';
-import type { ReactNode } from 'react';
+import type { UTransitionState } from '@/shared/components/with-transition-state';
 
-export type UAccountBehaviorFilter = 'all' | 'bank' | 'petty_cash';
 export type UBalancePeriod = '1M' | '6M' | '1Y';
 
 export interface IAccountBalanceChange {
@@ -22,22 +19,12 @@ export interface AccountsSummaryProps {
   change?: IAccountBalanceChange;
 }
 
-export interface AccountsTableProps {
-  accounts?: IAccountDashboardAccounts;
-  loading: boolean;
-  error: boolean;
-  search: string;
-  type: UAccountBehaviorFilter;
-  onSearchChange: (search: string) => void;
-  onTypeChange: (type: string) => void;
-  onPageChange: (page: number) => void;
-  onAddAccount: () => void;
-  onViewAccount: (id: string) => void;
-  renderRowActions?: (account: TAccountTableRow) => ReactNode;
-}
-
-export interface BalanceTrendProps {
-  points: IAccountDashboardBalancePoint[];
+export interface AccountsSummaryWithStateProps extends Pick<
+  AccountsSummaryProps,
+  'change'
+> {
+  state?: UTransitionState;
+  summary?: IAccountDashboardSummary | null;
 }
 
 export interface BalanceHistoryProps {
@@ -52,14 +39,12 @@ export interface DashboardErrorProps {
   title: string;
 }
 
-export interface AccountPageEmptyStateProps {
-  onAddAccount: () => void;
+export interface EmptyAccountDashboardProps {
+  onAdd: () => void;
 }
 
-export type TAccountTableRow = IAccountDashboardRow;
-
-export interface AccountRowActionsProps {
-  account: TAccountTableRow;
+export interface AccountDetailsActionsProps {
+  account: IAccountsTableRow;
   busy?: boolean;
   checking?: boolean;
   eligibilityFailed?: boolean;

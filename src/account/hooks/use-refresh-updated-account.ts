@@ -6,12 +6,18 @@ export function useRefreshUpdatedAccount() {
 
   return async (account: ILedgerAccountDto) => {
     await client.cancelQueries({ queryKey: ['ledgerAccountService'] });
+    await client.cancelQueries({
+      queryKey: ['reportingService'],
+    });
     client.setQueryData(
       ['ledgerAccountService', 'getLedgerAccount', account.id],
       account
     );
     await Promise.all([
       client.invalidateQueries({ queryKey: ['ledgerAccountService'] }),
+      client.invalidateQueries({
+        queryKey: ['reportingService'],
+      }),
       client.invalidateQueries({ queryKey: ['journalEntryService'] }),
       client.invalidateQueries({ queryKey: ['accountingBootstrapService'] }),
     ]);

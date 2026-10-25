@@ -1,9 +1,11 @@
 import type {
-  IAccountDashboardAccounts,
+  IAccountsTableData,
+  IAccountsTableRow,
+} from '@/account/components/accounts-table';
+import type {
   IAccountDashboardHistory,
   IAccountDashboardMoney,
   IAccountDashboardSummary,
-  UAccountDashboardBehavior,
 } from '@/account/lib/types/account-dashboard.types';
 import type {
   IBalancesBySubTypeDto,
@@ -23,7 +25,7 @@ function toMoney(value: IMoneyDto): IAccountDashboardMoney {
 
 function toBehavior(
   behavior: ULedgerAccountBehavior
-): UAccountDashboardBehavior {
+): IAccountsTableRow['behavior'] {
   if (behavior === 'bank') return 'bank';
 
   if (behavior === 'petty_cash') return 'petty_cash';
@@ -85,7 +87,7 @@ function toHistory(response: IBalancesBySubTypeDto): IAccountDashboardHistory {
 
 function toAccounts(
   response: IPaginatedResponseILedgerAccountDto
-): IAccountDashboardAccounts {
+): IAccountsTableData {
   return {
     data: response.data.map((account) => ({
       id: account.id,

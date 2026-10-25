@@ -1,6 +1,8 @@
 import {
   AccountsSummary,
+  AccountsSummaryError,
   AccountsSummarySkeleton,
+  AccountsSummaryWithState,
 } from '@/account/pages/account-dashboard/parts/account-summary';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -42,3 +44,16 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const WithoutGrowth: Story = { args: { change: undefined } };
 export const Skeleton: Story = { render: () => <AccountsSummarySkeleton /> };
+export const Error: Story = { render: () => <AccountsSummaryError /> };
+export const Stateful: Story = {
+  render: (args) => <AccountsSummaryWithState {...args} />,
+};
+export const StatefulLoading: Story = {
+  render: () => <AccountsSummaryWithState state="loading" />,
+};
+export const StatefulError: Story = {
+  render: () => <AccountsSummaryWithState state="error" />,
+};
+export const MissingData: Story = {
+  render: () => <AccountsSummaryWithState />,
+};

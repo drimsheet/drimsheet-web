@@ -1,3 +1,4 @@
+import { AppSection } from '@/shared/components/app-section';
 import {
   Empty,
   EmptyDescription,
@@ -5,7 +6,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/shared/components/empty';
-import { PageSection } from '@/shared/components/page-section';
 import { ReceiptText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { RecentTransactionsProps } from '../types';
@@ -24,7 +24,7 @@ export function RecentTransactions({
   });
 
   return (
-    <PageSection title={title}>
+    <AppSection title={title}>
       {empty && (
         <Empty className="bg-muted/20 px-6 py-10">
           <EmptyHeader>
@@ -39,6 +39,6 @@ export function RecentTransactions({
         </Empty>
       )}
       {!empty && children}
-    </PageSection>
+    </AppSection>
   );
 }

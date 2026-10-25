@@ -266,6 +266,10 @@ export function AccountingEntityOnboardingPage() {
       refetchType: 'none',
     });
     void queryClient.invalidateQueries({
+      queryKey: ['reportingService'],
+      refetchType: 'none',
+    });
+    void queryClient.invalidateQueries({
       queryKey: ['categoryService'],
       refetchType: 'none',
     });

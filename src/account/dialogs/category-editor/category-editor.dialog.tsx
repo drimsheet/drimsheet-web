@@ -44,6 +44,9 @@ export function CategoryEditorDialog({
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['categoryService'] }),
         queryClient.invalidateQueries({ queryKey: ['ledgerAccountService'] }),
+        queryClient.invalidateQueries({
+          queryKey: ['reportingService'],
+        }),
       ]);
       onClose();
     } catch {

@@ -281,8 +281,8 @@ test('loads account sections, changes the cash-flow period, pages transactions, 
     page.getByRole('main').getByRole('heading', { level: 2 })
   ).toHaveText(['Overview', 'Recent transactions']);
   await expect(page.getByRole('main').getByRole('heading')).toHaveText([
-    account.name,
     'Overview',
+    account.name,
     'Sub-accounts (1)',
     'Recent transactions',
   ]);

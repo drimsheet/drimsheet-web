@@ -1,4 +1,4 @@
-import { PageSection } from '@/shared/components/page-section';
+import { AppSection } from '@/shared/components/app-section';
 import { PageTitle } from '@/shared/components/page-title';
 import { Skeleton } from '@/shared/components/skeleton';
 import { StatusBadge } from '@/shared/components/status-badge';
@@ -22,7 +22,7 @@ export function EntitySummary({
   const updated_label = t('details_updated_label');
 
   return (
-    <PageSection title={title} className="gap-6 py-0">
+    <AppSection title={title} className="gap-6 py-0">
       <div className="grid min-w-0 grid-cols-[3rem_minmax(0,1fr)] items-center gap-x-4 gap-y-2 lg:grid-cols-[4rem_minmax(0,1fr)_auto] lg:gap-x-5">
         <div
           aria-hidden
@@ -76,7 +76,7 @@ export function EntitySummary({
           </span>
         </div>
       </div>
-    </PageSection>
+    </AppSection>
   );
 }
 
@@ -87,7 +87,7 @@ export function EntitySummarySkeleton() {
   const details_entity_title = t('details_entity_title');
 
   return (
-    <PageSection
+    <AppSection
       aria-busy="true"
       title={details_entity_title}
       className="gap-6 py-0"
@@ -115,6 +115,6 @@ export function EntitySummarySkeleton() {
           <Skeleton className="h-4 w-40" />
         </div>
       </div>
-    </PageSection>
+    </AppSection>
   );
 }

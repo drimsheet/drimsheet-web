@@ -1,6 +1,6 @@
+import { AppSection } from '@/shared/components/app-section';
 import { Avatar, AvatarFallback } from '@/shared/components/avatar';
 import { Badge } from '@/shared/components/badge';
-import { PageSection } from '@/shared/components/page-section';
 import { Separator } from '@/shared/components/separator';
 import { Skeleton } from '@/shared/components/skeleton';
 import { BadgeCheck, Mail } from 'lucide-react';
@@ -53,7 +53,7 @@ export function ProfileDetails({
   ];
 
   return (
-    <PageSection
+    <AppSection
       title={details_title}
       className="h-full min-w-0"
       role="region"
@@ -95,7 +95,7 @@ export function ProfileDetails({
         </dl>
         {editAction && <div className="self-start">{editAction}</div>}
       </div>
-    </PageSection>
+    </AppSection>
   );
 }
 
@@ -108,7 +108,7 @@ export function ProfileDetailsSkeleton() {
   });
 
   return (
-    <PageSection
+    <AppSection
       aria-busy="true"
       title={loading_label}
       className="h-full min-w-0"
@@ -143,6 +143,6 @@ export function ProfileDetailsSkeleton() {
         </div>
         <Skeleton className="h-8 w-28" />
       </div>
-    </PageSection>
+    </AppSection>
   );
 }

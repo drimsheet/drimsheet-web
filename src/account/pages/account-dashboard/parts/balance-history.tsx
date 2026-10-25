@@ -1,9 +1,8 @@
+import { BalanceTrendWithState } from '@/reporting/components/balance-trend';
 import { Tabs } from '@/shared/components/tabs';
 import { useTranslation } from 'react-i18next';
 import dashboardHelpers from '../helper';
 import type { BalanceHistoryProps } from '../types';
-import { BalanceTrend, BalanceTrendSkeleton } from './balance-trend';
-import { DashboardError } from './section-error';
 
 export function BalanceHistory({
   period,
@@ -14,6 +13,7 @@ export function BalanceHistory({
 }: Readonly<BalanceHistoryProps>) {
   const { t, i18n } = useTranslation('ledger-accounts');
   const locale = i18n.resolvedLanguage ?? 'en';
+  const settledState = error ? 'error' : 'success';
 
   const handlePeriodChange = (value: string) => {
     if (value === '1M' || value === '6M' || value === '1Y')
@@ -21,8 +21,21 @@ export function BalanceHistory({
   };
 
   const title = t('dashboard_history_title');
+
+  const labels = {
+    chartLabel: t('dashboard_history_title'),
+    balanceLabel: t('dashboard_balance_label'),
+    dateLabel: t('dashboard_date_label'),
+    dataLabel: t('dashboard_chart_data_label'),
+    emptyTitle: t('dashboard_history_empty_title'),
+    inactiveTitle: t('dashboard_activity_empty_title'),
+    emptyDescription: t('dashboard_history_empty_description'),
+    loadingLabel: t('dashboard_loading_history'),
+    errorTitle: t('dashboard_history_error_title'),
+    errorDescription: t('dashboard_error_description'),
+  };
+
   const period_label = t('dashboard_period_label');
-  const error_title = t('dashboard_history_error_title');
 
   const range_text = history
     ? t('dashboard_period_range', {
@@ -49,9 +62,11 @@ export function BalanceHistory({
           items={['1M', '6M', '1Y'].map((value) => ({ value, label: value }))}
         />
       </div>
-      {loading && <BalanceTrendSkeleton />}
-      {!loading && error && <DashboardError title={error_title} />}
-      {!loading && !error && <BalanceTrend points={history?.points ?? []} />}
+      <BalanceTrendWithState
+        labels={labels}
+        state={loading ? 'loading' : settledState}
+        points={history?.points}
+      />
     </div>
   );
 }

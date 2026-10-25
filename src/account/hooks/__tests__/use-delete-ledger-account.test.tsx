@@ -22,6 +22,8 @@ function setup() {
   ].map((method) => ['ledgerAccountService', method, 'account-1']);
 
   const refreshedKeys = [
+    ['reportingService', 'getLedgerBalancesByCurrency'],
+    ['reportingService', 'getBalancesBySubType'],
     ['ledgerAccountService', 'getLedgerAccounts', { page: 1 }],
     ['ledgerAccountService', 'getPermittedPostingAccounts', {}],
     ['ledgerAccountService', 'getSubAccounts', 'parent-1'],
