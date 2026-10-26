@@ -1,4 +1,5 @@
 import { Skeleton } from '@/shared/components/skeleton';
+
 export function BalancesByCurrencySkeleton() {
   return (
     <>

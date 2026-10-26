@@ -1,6 +1,6 @@
 import { Alert, AlertDescription, AlertTitle } from '@/shared/components/alert';
 import { TriangleAlert } from 'lucide-react';
-import type { AccountsTableErrorProps } from '../types';
+import type { AccountsTableErrorProps } from './types';
 
 export function AccountsTableError({
   title,

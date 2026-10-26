@@ -1,4 +1,7 @@
-import { BalanceTrendSkeleton } from '@/reporting/components/balance-trend';
+import {
+  BalanceTrendError,
+  BalanceTrendSkeleton,
+} from '@/reporting/components/balance-trend';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
@@ -10,3 +13,14 @@ const meta = {
 
 export default meta;
 export const Default: StoryObj<typeof meta> = {};
+
+export const Error = {
+  render: () => (
+    <BalanceTrendError
+      {...{
+        title: 'Couldn’t load balance history',
+        description: 'Refresh the page to try again.',
+      }}
+    />
+  ),
+};

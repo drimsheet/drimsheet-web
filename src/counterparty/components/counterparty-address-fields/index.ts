@@ -1,5 +1,5 @@
 export { CounterpartyAddressFields } from './counterparty-address-fields';
-export { CounterpartyAddressFieldsSkeleton } from './skeleton';
+export { CounterpartyAddressFieldsSkeleton } from './state';
 
 export type {
   CounterpartyAddressFieldsProps,

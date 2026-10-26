@@ -1,5 +1,5 @@
 export { DataTable } from './data-table';
-export { DataTableSkeleton } from './skeleton';
+export { DataTableSkeleton } from './state';
 export type {
   DataTableSkeletonProps,
   IDataWithId,

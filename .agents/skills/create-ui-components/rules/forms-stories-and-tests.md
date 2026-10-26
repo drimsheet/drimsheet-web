@@ -8,17 +8,17 @@ Every form component must keep its types outside the component file:
 <form-name>/
   <form-name>.tsx
   <form-name>.container.tsx
-  skeleton.tsx
+  state.tsx
   helper.ts
   parts/
     <part-name>.tsx
   __tests__/
     <form-name>.test.tsx
-    skeleton.test.tsx
+    state.test.tsx
     helper.test.ts
   __stories__/
     <form-name>.stories.tsx
-    skeleton.stories.tsx
+    state.stories.tsx
     parts/
       <part-name>.stories.tsx
   types.ts
@@ -49,8 +49,8 @@ Every form component must keep its types outside the component file:
 - Apply the loading UI and skeleton ownership rules in
   `.agents/rules/file-responsibility-rules.md`: use loading buttons for submits
   and form/field component skeletons while data is loading. A form with its own
-  directory exports `<FormName>Skeleton` from `skeleton.tsx` through `index.ts`;
-  a form under `parts/` defines and exports its skeleton in the form's own file.
+  directory exports `<FormName>Skeleton` from `state.tsx` through `index.ts`;
+  a form under `parts/` exports its existing states from the form's own file.
 
 ## Stories
 

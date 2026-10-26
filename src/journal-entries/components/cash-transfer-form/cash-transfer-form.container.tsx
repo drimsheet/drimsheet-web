@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CashTransferForm } from './cash-transfer-form';
-import { CashTransferFormSkeleton } from './skeleton';
+import { CashTransferFormSkeleton } from './state';
 import type {
   ICashTransferCurrencyContext,
   ICashTransferFormValues,

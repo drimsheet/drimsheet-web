@@ -9,9 +9,11 @@ const roots = [];
 const component = 'src/feature/components/panel';
 const part = 'src/feature/pages/details/parts/summary.tsx';
 const primitive = "import { Skeleton } from '@/shared/components/skeleton';";
-const inline = `${primitive}
-export function Summary() { return <section />; }
-export function SummarySkeleton() { return <Skeleton />; }`;
+const privatePart = {
+  [part]: `${primitive}
+    export function Summary() { return <section />; }
+    export function SummarySkeleton() { return <Skeleton />; }`,
+};
 
 function fixture(extra = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'skeleton-check-'));
@@ -23,10 +25,10 @@ function fixture(extra = {}) {
       "export { Skeleton } from './skeleton';",
     [`${component}/panel.tsx`]:
       'export function Panel() { return <section />; }',
-    [`${component}/skeleton.tsx`]: `${primitive}
+    [`${component}/state.tsx`]: `${primitive}
       export function PanelSkeleton() { return <Skeleton />; }`,
     [`${component}/index.ts`]:
-      "export { Panel } from './panel'; export { PanelSkeleton } from './skeleton';",
+      "export { Panel } from './panel'; export { PanelSkeleton } from './state';",
     ...extra,
   };
   for (const [file, text] of Object.entries(files)) {
@@ -55,17 +57,40 @@ afterEach(() => {
 });
 
 describe('skeleton ownership', () => {
-  it('accepts public skeletons, inline parts, local composition and barrel consumers', () => {
+  it('rejects a separate private state module', () => {
+    expectRule(
+      {
+        [part]: 'export function Summary() { return <section/>; }',
+        'src/feature/pages/details/parts/state.tsx': `${primitive} export function SummarySkeleton() { return <Skeleton/>; }`,
+      },
+      'skeleton-part-file'
+    );
+  });
+
+  it('allows an error-only state module without inventing a skeleton', () => {
     expect(
       checkSkeletons(
         fixture({
-          [part]: inline,
+          [`${component}/state.tsx`]:
+            'export function PanelError() { return <p role="alert"/>; }',
+          [`${component}/index.ts`]:
+            "export { Panel } from './panel'; export { PanelError } from './state';",
+        })
+      )
+    ).toEqual([]);
+  });
+
+  it('accepts public state modules and collocated private states, local composition and barrel consumers', () => {
+    expect(
+      checkSkeletons(
+        fixture({
+          ...privatePart,
           'src/feature/pages/details/details.page.tsx': `
         import { SummarySkeleton } from './parts/summary';
         import { PanelSkeleton as Placeholder } from '@/feature/components/panel';
         export function DetailsPage() { return <><SummarySkeleton /><Placeholder /></>; }`,
           [`${component}/panel.container.tsx`]:
-            "import { PanelSkeleton } from './skeleton'; export const PanelContainer = () => <PanelSkeleton />;",
+            "import { PanelSkeleton } from './state'; export const PanelContainer = () => <PanelSkeleton />;",
           [`${component}/parts/row.tsx`]: `${primitive} export const Row = () => <div/>; const RowSkeleton = () => <Skeleton/>; export {RowSkeleton};`,
           [`${component}/__stories__/fixture.tsx`]: `${primitive} export const Example = () => <Skeleton />;`,
           'src/feature/pages/details/__tests__/fixture.tsx': `${primitive} function GenericSkeleton() { return <Skeleton/>; }`,
@@ -88,7 +113,7 @@ describe('skeleton ownership', () => {
   ])('accepts component declaration forms: %s', (source) => {
     expect(
       checkSkeletons(
-        fixture({ [`${component}/skeleton.tsx`]: primitive + source })
+        fixture({ [`${component}/state.tsx`]: primitive + source })
       )
     ).toEqual([]);
   });
@@ -123,7 +148,7 @@ describe('skeleton ownership', () => {
     (filename) => {
       expectRule(
         {
-          [`${component}/skeleton.tsx`]: null,
+          [`${component}/state.tsx`]: null,
           [`${component}/${filename}`]: `${primitive} export function PanelSkeleton() { return <Skeleton/>; }`,
         },
         'skeleton-file'
@@ -174,16 +199,13 @@ describe('skeleton ownership', () => {
     );
   });
 
-  it('rejects an empty or anonymous skeleton module', () => {
-    expectRule(
-      { [`${component}/skeleton.tsx`]: 'export {};' },
-      'skeleton-component'
-    );
+  it('requires the public skeleton to be defined in the state module', () => {
+    expectRule({ [`${component}/state.tsx`]: 'export {};' }, 'skeleton-export');
     expectRule(
       {
-        [`${component}/skeleton.tsx`]: `${primitive} export default () => <Skeleton/>;`,
+        [`${component}/state.tsx`]: `${primitive} export default () => <Skeleton/>;`,
       },
-      'skeleton-component'
+      'skeleton-export'
     );
   });
 });
@@ -191,11 +213,11 @@ describe('skeleton ownership', () => {
 describe('skeleton exports and boundaries', () => {
   it.each([
     '',
-    "export * from './skeleton';",
-    "export type { PanelSkeleton } from './skeleton';",
-    "export { type PanelSkeleton } from './skeleton';",
-    "export { PanelSkeleton as Loading } from './skeleton';",
-    "import { PanelSkeleton } from './skeleton'; export { PanelSkeleton };",
+    "export * from './state';",
+    "export type { PanelSkeleton } from './state';",
+    "export { type PanelSkeleton } from './state';",
+    "export { PanelSkeleton as Loading } from './state';",
+    "import { PanelSkeleton } from './state'; export { PanelSkeleton };",
     "export { PanelSkeleton } from './other';",
   ])(
     'requires an explicit runtime re-export from the owning barrel (%#)',
@@ -214,7 +236,7 @@ describe('skeleton exports and boundaries', () => {
     'requires the declared skeleton to be a named value export (%#)',
     (source) => {
       expectRule(
-        { [`${component}/skeleton.tsx`]: primitive + source },
+        { [`${component}/state.tsx`]: primitive + source },
         'skeleton-export'
       );
     }
@@ -228,7 +250,7 @@ describe('skeleton exports and boundaries', () => {
     "export type { SummarySkeleton } from './parts/summary';",
   ])('rejects private skeleton re-exports (%#)', (barrel) => {
     expectRule(
-      { [part]: inline, 'src/feature/pages/details/index.ts': barrel },
+      { ...privatePart, 'src/feature/pages/details/index.ts': barrel },
       'skeleton-private'
     );
   });
@@ -236,7 +258,7 @@ describe('skeleton exports and boundaries', () => {
   it('rejects a private barrel and an indirect namespace leak', () => {
     expectRule(
       {
-        [part]: inline,
+        ...privatePart,
         'src/feature/pages/details/parts/index.ts':
           "export * from './summary';",
         'src/feature/pages/details/index.ts': "export * as UI from './parts';",
@@ -246,10 +268,10 @@ describe('skeleton exports and boundaries', () => {
   });
 
   it.each([
-    "import { PanelSkeleton as Loading } from '@/feature/components/panel/skeleton';",
-    "import * as UI from '../../components/panel/skeleton';",
-    "const UI = import('@/feature/components/panel/skeleton');",
-    "const UI = require('@/feature/components/panel/skeleton');",
+    "import { PanelSkeleton as Loading } from '@/feature/components/panel/state';",
+    "import * as UI from '../../components/panel/state';",
+    "const UI = import('@/feature/components/panel/state');",
+    "const UI = require('@/feature/components/panel/state');",
   ])('rejects external deep imports (%#)', (source) => {
     expectRule(
       { 'src/feature/pages/other/other.page.tsx': source },
@@ -260,7 +282,7 @@ describe('skeleton exports and boundaries', () => {
   it('rejects cross-owner private imports', () => {
     expectRule(
       {
-        [part]: inline,
+        ...privatePart,
         'src/feature/pages/other/other.page.tsx':
           "import * as UI from '../details/parts/summary';",
       },
@@ -335,7 +357,7 @@ describe('skeleton loading announcements', () => {
     expect(
       checkSkeletons(
         fixture({
-          [`${component}/skeleton.tsx`]: skeleton(jsx),
+          [`${component}/state.tsx`]: skeleton(jsx),
         })
       )
     ).toEqual([]);
@@ -363,7 +385,7 @@ describe('skeleton loading announcements', () => {
     '<output className="sr-only"><Card>{label}</Card></output>',
   ])('rejects visible, structural or non-native announcements (%#)', (jsx) => {
     expectRule(
-      { [`${component}/skeleton.tsx`]: skeleton(jsx) },
+      { [`${component}/state.tsx`]: skeleton(jsx) },
       'skeleton-announcement'
     );
   });
@@ -380,7 +402,8 @@ describe('skeleton loading announcements', () => {
     expect(
       checkSkeletons(
         fixture({
-          [part]: `${inline}
+          ...privatePart,
+          [part]: `${privatePart[part]}
         export const SaveFeedback = () => <output className="text-xs">{saved}</output>;`,
         })
       )

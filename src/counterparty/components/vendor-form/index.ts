@@ -2,7 +2,7 @@ export type { IVendorFormValues, VendorFormProps } from './types';
 export { useVendorFormValidation } from './validation';
 export { VendorForm } from './vendor-form';
 
-export { VendorFormSkeleton } from './skeleton';
+export { VendorFormSkeleton } from './state';
 export type { VendorFormSkeletonProps } from './types';
 
 export type {

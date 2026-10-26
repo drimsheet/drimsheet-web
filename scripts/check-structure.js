@@ -192,16 +192,22 @@ function validateComponentHelpers(
 
 function validateComponentSkeletonNames(componentPath, relative) {
   const componentName = path.basename(componentPath);
+  if (componentName === 'skeleton') {
+    return [];
+  }
   const candidates = [
     {
-      expected: path.join(componentPath, 'skeleton.tsx'),
+      expected: path.join(componentPath, 'state.tsx'),
       legacy: [
+        path.join(componentPath, 'skeleton.tsx'),
+        path.join(componentPath, 'error.tsx'),
+        path.join(componentPath, 'states.tsx'),
         path.join(componentPath, `${componentName}-skeleton.tsx`),
         path.join(componentPath, `${componentName}.skeleton.tsx`),
       ],
     },
     {
-      expected: path.join(componentPath, '__tests__', 'skeleton.test.tsx'),
+      expected: path.join(componentPath, '__tests__', 'state.test.tsx'),
       legacy: [
         path.join(
           componentPath,
@@ -216,7 +222,7 @@ function validateComponentSkeletonNames(componentPath, relative) {
       ],
     },
     {
-      expected: path.join(componentPath, '__stories__', 'skeleton.stories.tsx'),
+      expected: path.join(componentPath, '__stories__', 'state.stories.tsx'),
       legacy: [
         path.join(
           componentPath,

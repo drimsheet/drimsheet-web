@@ -1,4 +1,5 @@
 import { Skeleton } from '@/shared/components/skeleton';
+
 export function TotalBalanceSkeleton() {
   return (
     <div className="flex min-w-0 flex-col gap-2">

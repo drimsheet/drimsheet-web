@@ -1,7 +1,7 @@
 import { CurrencyLogo } from '@/shared/components/currency-logo';
 import { Money } from '@/shared/components/money';
 import currencies from '@/shared/configs/currencies.json';
-import { CashflowByCurrencyError } from './error';
+import { CashflowByCurrencyError } from './state';
 import type { CashflowByCurrencyProps } from './types';
 import { hasMatchingCurrencies } from './validation';
 

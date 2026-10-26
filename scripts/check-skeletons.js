@@ -292,11 +292,11 @@ export function checkSkeletons(root = process.cwd()) {
         `Export ${name} by its own name; a default, renamed, or type-only export is insufficient.`
       );
     }
-    if (!owner?.part && path.basename(source.fileName) !== 'skeleton.tsx') {
+    if (!owner?.part && path.basename(source.fileName) !== 'state.tsx') {
       report(
         node,
         'skeleton-file',
-        `Move ${name} to its component's skeleton.tsx.`
+        `Move ${name} to its component's state.tsx.`
       );
     }
     if (owner?.part) {
@@ -331,7 +331,7 @@ export function checkSkeletons(root = process.cwd()) {
       report(
         node,
         'skeleton-barrel',
-        `Explicitly re-export ${name} from ./skeleton in this component's index.ts.`
+        `Explicitly re-export ${name} from ./state in this component's index.ts.`
       );
     }
   }
@@ -503,14 +503,15 @@ export function checkSkeletons(root = process.cwd()) {
     );
     const filename = path.basename(source.fileName);
     if (
-      /(?:^|[.-])skeleton(?:[.-]|$)/i.test(filename) &&
+      (/(?:^|[.-])skeleton(?:[.-]|$)/i.test(filename) ||
+        (owner?.part && filename === 'state.tsx')) &&
       source.fileName !== primitivePath
     ) {
       if (owner?.part) {
         report(
           source,
           'skeleton-part-file',
-          'Define part skeletons in the represented part file; separate skeleton files are forbidden.'
+          'Define private part skeletons in the represented component file; separate skeleton files are forbidden.'
         );
       } else if (localSkeletons.length === 0) {
         report(

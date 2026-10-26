@@ -1,4 +1,4 @@
-import { AccountsTableError } from '@/account/components/accounts-table/parts/accounts-table-error';
+import { AccountsTableError } from '@/account/components/accounts-table';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {

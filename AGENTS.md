@@ -22,8 +22,8 @@ Before making changes, follow the rules in:
 - Use the shared button's `loading` prop for pending actions and component
   skeletons for loading content. Never substitute manual loading text or
   hand-inserted button spinners. Every skeleton must represent a component:
-  export it from that component's barrel, or define and export it in the same
-  file as its `*/parts/*` component. Follow the loading UI and skeleton rules in
+  define existing skeletons and errors in `state.tsx` and export public states
+  from the component barrel. Private part states belong in the same file as their component. Follow the loading UI and skeleton rules in
   `.agents/rules/file-responsibility-rules.md`.
 - Map form values directly to generated DTOs through explicit, validation-free
   mappers.

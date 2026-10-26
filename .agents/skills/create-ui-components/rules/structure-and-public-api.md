@@ -33,19 +33,19 @@ Create only applicable files, using this shape:
 components/<component-name>/
   <component-name>.tsx
   <component-name>.container.tsx
-  skeleton.tsx
+  state.tsx
   helper.ts
   parts/
     <part-name>.tsx
   __tests__/
     <component-name>.test.tsx
-    skeleton.test.tsx
+    state.test.tsx
     helper.test.ts
     parts/
       <part-name>.test.tsx
   __stories__/
     <component-name>.stories.tsx
-    skeleton.stories.tsx
+    state.stories.tsx
     parts/
       <part-name>.stories.tsx
   types.ts
@@ -67,11 +67,10 @@ Requirements:
 - `validation.ts`: required when the component owns validation.
 - `<component-name>.container.tsx`: required when the UI needs side effects or
   orchestration.
-- `skeleton.tsx`: required when this component needs a loading placeholder.
+- `state.tsx`: required when this component needs a loading placeholder.
   It must mirror the component and export `<ComponentName>Skeleton` through
-  the component's `index.ts`. Use matching `skeleton.stories.tsx` and, when
-  warranted, `skeleton.test.tsx` support names. For a `parts/` component, define
-  and export its skeleton in that component's own `.tsx` file instead.
+  the component's `index.ts`. Use matching `state.stories.tsx` and, when
+  warranted, `state.test.tsx` support names. For private parts, define states in the same `.tsx` file as the component instead.
 - `parts/`: optional and reserved for extracted UI subcomponents used only by
   the owning component.
 - `helper.ts`: required when the component owns deterministic non-UI helpers;
@@ -106,9 +105,9 @@ Private parts follow these ownership rules:
 - A part that needs an owner-level type imports it relatively, such as
   `../types`, rather than through the owner's public alias.
 - Do not export parts from the owner's `index.ts`.
-- A part's skeleton is defined and exported in the same file as that part,
-  remains owner-private, and is covered by the part's mirrored support files.
-  Do not create separate skeleton files under `parts/`.
+- A part's existing skeleton, error states, and `WithState` wrapper live in
+  the same `.tsx` file as the component, remain owner-private, and use that
+  part's mirrored stories and tests. Do not create `parts/state.tsx`.
 - Name parts for their UI role. Ordinal names are acceptable only when order is
   the actual role, such as steps in a fixed wizard.
 - Promote a part to its own `components/<component-name>/` directory when it

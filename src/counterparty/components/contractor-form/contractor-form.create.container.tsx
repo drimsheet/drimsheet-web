@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ContractorForm } from './contractor-form';
-import { ContractorFormSkeleton } from './skeleton';
+import { ContractorFormSkeleton } from './state';
 import type {
   ContractorFormCreateContainerProps,
   IContractorFormValues,

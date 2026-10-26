@@ -1,4 +1,8 @@
-import { CashflowByCurrencyWithState } from '@/reporting/components/cashflow-by-currency';
+import {
+  CashflowByCurrencyError,
+  CashflowByCurrencySkeleton,
+  CashflowByCurrencyWithState,
+} from '@/reporting/components/cashflow-by-currency';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
@@ -18,3 +22,8 @@ export const Success: Story = {};
 export const Loading: Story = { args: { state: 'loading' } };
 export const Error: Story = { args: { state: 'error' } };
 export const MissingData: Story = { args: { in: null } };
+
+export const Skeleton = {
+  render: () => <CashflowByCurrencySkeleton aria-label="Loading cash flow" />,
+};
+export const ErrorView = { render: () => <CashflowByCurrencyError /> };

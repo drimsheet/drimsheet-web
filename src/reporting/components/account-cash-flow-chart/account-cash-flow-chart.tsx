@@ -5,7 +5,6 @@ import {
   type TChartConfig,
 } from '@/shared/components/chart';
 import { Money } from '@/shared/components/money';
-import { WithTransitionState } from '@/shared/components/with-transition-state';
 import { currencyService } from '@/shared/lib/services/currency.service';
 import { toMajorUnits } from '@/shared/lib/utils/money';
 import { useTranslation } from 'react-i18next';
@@ -17,13 +16,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { AccountCashFlowChartError } from './error';
 import accountCashFlowChartHelpers from './helper';
-import { AccountCashFlowChartSkeleton } from './skeleton';
-import type {
-  AccountCashFlowChartProps,
-  AccountCashFlowChartWithStateProps,
-} from './types';
+import type { AccountCashFlowChartProps } from './types';
 
 export function AccountCashFlowChart({
   cashFlow,
@@ -173,39 +167,5 @@ export function AccountCashFlowChart({
         </p>
       </div>
     </div>
-  );
-}
-
-export function AccountCashFlowChartWithState({
-  state = 'success',
-  labels,
-  cashFlow,
-}: Readonly<AccountCashFlowChartWithStateProps>) {
-  const error = (
-    <AccountCashFlowChartError
-      title={labels.errorTitle}
-      description={labels.errorDescription}
-    />
-  );
-
-  return (
-    <WithTransitionState
-      state={state}
-      data={{ cashFlow }}
-      loading={
-        <AccountCashFlowChartSkeleton aria-label={labels.loadingLabel} />
-      }
-      error={error}
-    >
-      {(data) => {
-        if (data.cashFlow == null) {
-          return error;
-        }
-
-        return (
-          <AccountCashFlowChart cashFlow={data.cashFlow} labels={labels} />
-        );
-      }}
-    </WithTransitionState>
   );
 }

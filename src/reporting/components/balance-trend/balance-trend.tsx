@@ -12,7 +12,6 @@ import {
   EmptyTitle,
 } from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
-import { WithTransitionState } from '@/shared/components/with-transition-state';
 import { currencyService } from '@/shared/lib/services/currency.service';
 import { ChartNoAxesCombined } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -24,10 +23,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { BalanceTrendError } from './error';
 import balanceTrendHelpers from './helper';
-import { BalanceTrendSkeleton } from './skeleton';
-import type { BalanceTrendProps, BalanceTrendWithStateProps } from './types';
+import type { BalanceTrendProps } from './types';
 
 export function BalanceTrend({ points, labels }: Readonly<BalanceTrendProps>) {
   const { i18n } = useTranslation();
@@ -156,38 +153,5 @@ export function BalanceTrend({ points, labels }: Readonly<BalanceTrendProps>) {
         </dl>
       </details>
     </div>
-  );
-}
-
-export function BalanceTrendWithState({
-  state = 'success',
-  labels,
-  points,
-}: Readonly<BalanceTrendWithStateProps>) {
-  return (
-    <WithTransitionState
-      state={state}
-      data={{ points }}
-      loading={<BalanceTrendSkeleton label={labels.loadingLabel} />}
-      error={
-        <BalanceTrendError
-          title={labels.errorTitle}
-          description={labels.errorDescription}
-        />
-      }
-    >
-      {(data) => {
-        if (data.points == null) {
-          return (
-            <BalanceTrendError
-              title={labels.errorTitle}
-              description={labels.errorDescription}
-            />
-          );
-        }
-
-        return <BalanceTrend points={data.points} labels={labels} />;
-      }}
-    </WithTransitionState>
   );
 }

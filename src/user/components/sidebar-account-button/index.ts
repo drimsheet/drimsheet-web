@@ -1,4 +1,4 @@
 export { SidebarAccountButton } from './sidebar-account-button';
-export { SidebarAccountButtonSkeleton } from './skeleton';
+export { SidebarAccountButtonSkeleton } from './state';
 
 export type { SidebarAccountButtonProps } from './types';

@@ -16,7 +16,7 @@ import {
 } from '@/shared/lib/api/Api';
 import transactionsTableHelpers from './helper';
 import { TransactionSummary } from './parts/transaction-summary';
-import { TransactionsTableSkeleton } from './skeleton';
+import { TransactionsTableSkeleton } from './state';
 import type { ITransactionsTableRow, TransactionsTableProps } from './types';
 
 export function TransactionsTable({

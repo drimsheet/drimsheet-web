@@ -1,4 +1,4 @@
-import * as stories from '@/shared/components/dropdown-menu/__stories__/skeleton.stories';
+import * as stories from '@/shared/components/dropdown-menu/__stories__/state.stories';
 import { composeStories } from '@storybook/react';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';

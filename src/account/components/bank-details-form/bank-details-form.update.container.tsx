@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { BankDetailsFormContainer } from './bank-details-form.container';
-import { BankDetailsFormSkeleton } from './skeleton';
+import { BankDetailsFormSkeleton } from './state';
 import type {
   BankDetailsFormUpdateContainerProps,
   IBankDetailsFormValues,

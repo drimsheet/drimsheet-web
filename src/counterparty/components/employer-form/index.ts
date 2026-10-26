@@ -2,7 +2,7 @@ export { EmployerForm } from './employer-form';
 export type { EmployerFormProps, IEmployerFormValues } from './types';
 export { useEmployerFormValidation } from './validation';
 
-export { EmployerFormSkeleton } from './skeleton';
+export { EmployerFormSkeleton } from './state';
 export type { EmployerFormSkeletonProps } from './types';
 
 export { EmployerFormCreateContainer } from './employer-form.create.container';

@@ -1,5 +1,9 @@
-import { SubAccountsSkeleton } from '@/account/pages/account-details/parts/sub-accounts';
+import {
+  SubAccounts,
+  SubAccountsSkeleton,
+} from '@/account/pages/account-details/parts/sub-accounts';
 import type { ILedgerAccountDto, TEntityId } from '@/shared/lib/api/Api';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const account: ILedgerAccountDto = {
   id: 'account-1' as TEntityId,
@@ -26,9 +30,6 @@ const account: ILedgerAccountDto = {
     isMinorUnit: false,
   },
 };
-
-import { SubAccounts } from '@/account/pages/account-details/parts/sub-accounts';
-import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
   title: 'Ledger Accounts/AccountDetails/SubAccounts',
