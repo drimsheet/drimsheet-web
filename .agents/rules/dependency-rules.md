@@ -72,6 +72,14 @@ feature hooks.
 
 ## Page Ownership Boundaries
 
+### Transactions overview data access exception
+
+`src/journal-entries/pages/transactions/` may call `ledgerReportingService`
+from `@/reporting/lib/services/ledger-reporting.service` and `accountingService`
+from `@/accounting/lib/services/accounting.service` for overview balances,
+currency activity, and the current fiscal year. Transport stays in those
+owning services; overview composition and presentation stay page-private.
+
 - A page directory is an orchestration owner. Its parts, hooks, helpers, types,
   tests, and stories inherit page dependency permissions.
 - Only files inside that page directory may import private implementations,

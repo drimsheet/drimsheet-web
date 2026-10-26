@@ -856,6 +856,8 @@ export interface ILedgerTotalDebitsAndCreditsByCurrencyDto {
   period: IDateRangeDto;
   /** Original-currency totals, sorted by currency code; empty without activity. */
   totalsByCurrency: {
+    /** Normal-side total minus opposite-side total for the requested type. */
+    delta: IMoneyDto;
     totalCredits: IMoneyDto;
     totalDebits: IMoneyDto;
   }[];
@@ -945,6 +947,14 @@ export interface IRevenueExpenseSummaryDto {
      */
     transactionCount: number;
   };
+}
+
+export interface ITotalBalanceByTypeDto {
+  totalFunctionalBalance: IMoneyDto;
+}
+
+export interface IGetTotalBalanceByTypeQuery {
+  type: ULedgerType;
 }
 
 export interface ILedgerAccountDto {
@@ -2682,6 +2692,27 @@ export class Api<
     ) =>
       this.request<IRevenueExpenseSummaryDto, IHttpErrorDto>({
         path: `/reporting/ledger/revenue-expense-summary`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Returns the current sum of top-level account balances for one type in functional currency. Empty totals are zero. Balances update asynchronously; no date filter or FX conversion applies.
+     *
+     * @tags Reporting, Ledger Reporting
+     * @name GetTotalBalanceByType
+     * @request GET:/reporting/ledger/total-balance-by-type
+     */
+    getTotalBalanceByType: (
+      query: {
+        type: ULedgerType;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<ITotalBalanceByTypeDto, IHttpErrorDto>({
+        path: `/reporting/ledger/total-balance-by-type`,
         method: 'GET',
         query: query,
         format: 'json',

@@ -10,6 +10,7 @@ import type {
   IGetBalancesByTypeQuery,
   IGetLedgerTotalDebitsAndCreditsByCurrencyQuery,
   IGetRevenueExpenseAccountsQuery,
+  IGetTotalBalanceByTypeQuery,
 } from '@/shared/lib/api/Api';
 
 async function getAccountCashFlow(
@@ -112,6 +113,14 @@ async function getRevenueExpenseSummary(
 }
 
 export const ledgerReportingService = Object.freeze({
+  async getTotalBalanceByType(
+    query: IGetTotalBalanceByTypeQuery,
+    signal?: AbortSignal
+  ) {
+    return (
+      await drimsheetApi.reporting.getTotalBalanceByType(query, { signal })
+    ).data;
+  },
   getAccountCashFlow,
   getAccountCounterpartyParticipation,
   getAssetAndLiabilityBalancesByCurrency,

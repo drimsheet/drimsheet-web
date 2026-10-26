@@ -173,5 +173,10 @@
   "transactions_table_amount_unavailable": "Unavailable",
   "all_transactions": "All transactions",
   "overview": "Overview",
+  "overview_currencies_title": "Transactions by currency",
+  "overview_empty_text": "No transaction activity in the current fiscal year.",
+  "overview_loading_status": "Loading transaction overview",
+  "overview_error_title": "Couldn’t load transaction overview",
+  "overview_error_description": "Refresh your browser to try again.",
   "add_transaction": "Add transaction"
 }
