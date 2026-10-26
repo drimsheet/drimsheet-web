@@ -11,7 +11,7 @@ export function useCreatePettyCashAccount() {
         queryKey: ['ledgerAccountService'],
       });
       queryClient.invalidateQueries({
-        queryKey: ['reportingService'],
+        queryKey: ['ledgerReportingService'],
       });
     },
   });

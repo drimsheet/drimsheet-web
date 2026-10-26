@@ -12,7 +12,7 @@ export function useDeleteLedgerAccount() {
         queryKey: ['journalEntryService', 'getJournalEntries'],
       });
       await queryClient.cancelQueries({
-        queryKey: ['reportingService'],
+        queryKey: ['ledgerReportingService'],
       });
       queryClient.removeQueries({
         queryKey: ['ledgerAccountService'],
@@ -20,7 +20,8 @@ export function useDeleteLedgerAccount() {
       });
 
       queryClient.removeQueries({
-        queryKey: ['reportingService', 'getAccountCashFlow', id],
+        queryKey: ['ledgerReportingService'],
+        predicate: (query) => query.queryKey[2] === id,
       });
 
       queryClient.removeQueries({
@@ -35,7 +36,7 @@ export function useDeleteLedgerAccount() {
       // stale without refetching the deleted account before navigation.
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: ['reportingService'],
+          queryKey: ['ledgerReportingService'],
           refetchType: 'none',
         }),
         queryClient.invalidateQueries({

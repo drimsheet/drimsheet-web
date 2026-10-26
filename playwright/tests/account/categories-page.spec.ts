@@ -9,8 +9,10 @@ import {
 } from '@integration/mocks/authenticated-app';
 import type { Page } from '@playwright/test';
 
-const accountsEndpoint = '**/api/v1/reporting/revenue-expense-accounts?*';
-const summaryEndpoint = '**/api/v1/reporting/revenue-expense-summary?*';
+const accountsEndpoint =
+  '**/api/v1/reporting/ledger/revenue-expense-accounts?*';
+
+const summaryEndpoint = '**/api/v1/reporting/ledger/revenue-expense-summary?*';
 const money = { amount: 800000, currencyCode: 'NGN', isMinorUnit: false };
 
 const account: IRevenueExpenseAccountDto = {
@@ -417,7 +419,7 @@ test('renames and archives categories, then opens category details', async ({
   ).toBeVisible();
   const requests: URLSearchParams[] = [];
   await page.route(
-    `**/api/v1/reporting/accounts/${account.accountId}/counterparty-participation?*`,
+    `**/api/v1/reporting/ledger/accounts/${account.accountId}/counterparty-participation?*`,
     (route) =>
       route.fulfill({
         json: {

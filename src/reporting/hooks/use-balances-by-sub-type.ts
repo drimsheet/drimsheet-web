@@ -1,4 +1,4 @@
-import { reportingService } from '@/reporting/lib/services/reporting.service';
+import { ledgerReportingService } from '@/reporting/lib/services/ledger-reporting.service';
 import type {
   IBalancesBySubTypeDto,
   IGetBalancesBySubTypeQuery,
@@ -12,9 +12,9 @@ export function useBalancesBySubType<TData = IBalancesBySubTypeDto>(
   }
 ) {
   return useQuery({
-    queryKey: ['reportingService', 'getBalancesBySubType', query],
+    queryKey: ['ledgerReportingService', 'getBalancesBySubType', query],
     queryFn: ({ signal }) =>
-      reportingService.getBalancesBySubType(query, signal),
+      ledgerReportingService.getBalancesBySubType(query, signal),
     select: options?.select,
   });
 }

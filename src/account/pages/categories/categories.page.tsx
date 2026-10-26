@@ -86,7 +86,10 @@ export function CategoriesPage() {
 
     try {
       await archive.mutateAsync(archiveAccount.accountId);
-      await queryClient.invalidateQueries({ queryKey: ['categoryService'] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['categoryService'] }),
+        queryClient.invalidateQueries({ queryKey: ['ledgerReportingService'] }),
+      ]);
       setArchiveAccount(null);
     } catch {
       // The confirmation retains the account and displays its translated error.

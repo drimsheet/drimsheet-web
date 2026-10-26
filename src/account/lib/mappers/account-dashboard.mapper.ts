@@ -8,8 +8,8 @@ import type {
   IAccountDashboardSummary,
 } from '@/account/lib/types/account-dashboard.types';
 import type {
+  IAssetAndLiabilityBalancesByCurrencyDto,
   IBalancesBySubTypeDto,
-  ILedgerBalancesByCurrencyDto,
   IMoneyDto,
   IPaginatedResponseILedgerAccountDto,
   ULedgerAccountBehavior,
@@ -42,7 +42,7 @@ function toBehavior(
 }
 
 function toSummary(
-  response: ILedgerBalancesByCurrencyDto
+  response: IAssetAndLiabilityBalancesByCurrencyDto
 ): IAccountDashboardSummary {
   const functionalCurrencyCode =
     response.totalFunctionalBalance.currencyCode.toLowerCase();

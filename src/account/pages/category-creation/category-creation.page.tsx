@@ -67,7 +67,7 @@ export function CategoryCreationPage() {
         queryClient.invalidateQueries({ queryKey: ['categoryService'] }),
         queryClient.invalidateQueries({ queryKey: ['ledgerAccountService'] }),
         queryClient.invalidateQueries({
-          queryKey: ['reportingService'],
+          queryKey: ['ledgerReportingService'],
         }),
         queryClient.invalidateQueries({
           queryKey: ['accountingBootstrapService'],

@@ -737,6 +737,20 @@ export interface IGetAccountCounterpartyParticipationQuery {
   search?: string;
 }
 
+export interface IAssetAndLiabilityBalancesByCurrencyDto {
+  /** Sum of the currency groups' recorded functional balances. */
+  totalFunctionalBalance: IMoneyDto;
+  /** Current posting-account balances, ordered by currency code. */
+  balancesByCurrency: {
+    functionalBalance: IMoneyDto;
+    balance: IMoneyDto;
+  }[];
+}
+
+export interface IGetAssetAndLiabilityBalancesByCurrencyQuery {
+  type: 'asset' | 'liability';
+}
+
 export interface IBalancesByAccountDto {
   period: IDateRangeDto;
   buckets: {
@@ -837,18 +851,24 @@ export interface IGetBalancesByTypeQuery {
   types: ULedgerType[];
 }
 
-export interface ILedgerBalancesByCurrencyDto {
-  /** Sum of the currency groups' recorded functional balances. */
-  totalFunctionalBalance: IMoneyDto;
-  /** Current posting-account balances, ordered by currency code. */
-  balancesByCurrency: {
-    functionalBalance: IMoneyDto;
-    balance: IMoneyDto;
+export interface ILedgerTotalDebitsAndCreditsByCurrencyDto {
+  fiscalYearId: string;
+  period: IDateRangeDto;
+  /** Original-currency totals, sorted by currency code; empty without activity. */
+  totalsByCurrency: {
+    totalCredits: IMoneyDto;
+    totalDebits: IMoneyDto;
   }[];
 }
 
-export interface IGetLedgerBalancesByCurrencyQuery {
-  type: 'asset' | 'liability';
+export interface IGetLedgerTotalDebitsAndCreditsByCurrencyQuery {
+  fiscalYearId: string;
+  /** Equity accounts are not supported by this report. */
+  type: 'asset' | 'liability' | 'revenue' | 'expense';
+  /** Inclusive YYYY-MM-DD date; defaults to the fiscal year's start. */
+  startDate?: string;
+  /** Inclusive YYYY-MM-DD date; defaults to min(today UTC, fiscal year end). */
+  endDate?: string;
 }
 
 export interface IRevenueExpenseAccountDto {
@@ -1019,6 +1039,35 @@ export interface IGetChartOfAccountsQuery {
   omitHeaderAccounts?: boolean;
   /** Case-insensitive partial name search. Returns topmost matches with all descendants. Empty search returns the full tree. Omitted headers cannot match. */
   search?: string;
+}
+
+/** From T, pick a set of properties whose keys are in the union K */
+export interface PickILedgerAccountBalanceExcludeKeysAmountOrFunctionalAmount {
+  /** @format date-time */
+  createdAt: string;
+  createdBy: TEntityId;
+  ledgerAccountId: TEntityId;
+  accountingEntityId: TEntityId;
+  accountMaterializedPath: string;
+  /** @format double */
+  version: number;
+  /** @format date-time */
+  updatedAt: string;
+}
+
+export interface ILedgerAccountBalanceDto {
+  /** @format date-time */
+  createdAt: string;
+  createdBy: TEntityId;
+  ledgerAccountId: TEntityId;
+  accountingEntityId: TEntityId;
+  accountMaterializedPath: string;
+  /** @format double */
+  version: number;
+  /** @format date-time */
+  updatedAt: string;
+  amount: IMoneyDto;
+  functionalAmount: IMoneyDto;
 }
 
 export interface IGetPermittedPostingAccountsQuery {
@@ -1874,8 +1923,8 @@ export interface IPeriod {
 
 /** From T, pick a set of properties whose keys are in the union K */
 export interface PickIIntervalExcludeKeysUnit {
-  id: TEntityId;
   accountingEntityId: TEntityId;
+  id: TEntityId;
   /**
    * Total number of periods, not the number of units per period.
    * @format double
@@ -1899,8 +1948,8 @@ export interface PickIIntervalExcludeKeysUnit {
 }
 
 export interface IAccountingInterval {
-  id: TEntityId;
   accountingEntityId: TEntityId;
+  id: TEntityId;
   /**
    * Total number of periods, not the number of units per period.
    * @format double
@@ -1972,8 +2021,8 @@ export interface IReportingPeriod {
 }
 
 export interface IReportingInterval {
-  id: TEntityId;
   accountingEntityId: TEntityId;
+  id: TEntityId;
   /**
    * Total number of periods, not the number of units per period.
    * @format double
@@ -2362,11 +2411,11 @@ export class Api<
   };
   reporting = {
     /**
-     * @description Money in/out for a bank or petty-cash posting account, in its own currency. Dates are inclusive; periods longer than 366 days return 400. Buckets start at from and include zero-activity intervals. Corrected originals, reversals, drafts, never-posted entries and opening balances are excluded. Historical results can change after rectification. Either gross total above 1 trillion major currency units returns 400. Unsafe numeric serialization returns 500.
+     * @description Returns daily money in and out for a bank or petty-cash posting account in its own currency. Dates are inclusive, up to 366 days; empty days return zero flows. Opening balances and reversed activity are excluded.
      *
-     * @tags Reporting
+     * @tags Reporting, Ledger Reporting
      * @name GetAccountCashFlow
-     * @request GET:/reporting/accounts/{accountId}/cash-flow
+     * @request GET:/reporting/ledger/accounts/{accountId}/cash-flow
      */
     getAccountCashFlow: (
       accountId: string,
@@ -2384,7 +2433,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<IAccountCashFlowDto, IHttpErrorDto>({
-        path: `/reporting/accounts/${accountId}/cash-flow`,
+        path: `/reporting/ledger/accounts/${accountId}/cash-flow`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2392,11 +2441,11 @@ export class Api<
       }),
 
     /**
-     * @description Counterparty contributions to the current balance of a posting or control account, including descendants. Reads journals through only the requested account's adjustments, excluding drafts, never-posted entries, voided originals and reversals. Archived records and opening balances remain included. Amounts use account currency, falling back to functional currency. Shares use the stored account balance before search/pagination, rounded to two decimals; zero balances yield null. Balances update asynchronously. Counterparty-less transfers have isSelf=true and search by entity name; other unattributed lines have isSelf=false. Counterparties sort by name/ID, followed by self and unattributed rows. Defaults to page 1, limit 10. Amount magnitudes above 1 trillion major units return 400; missing accounts or balances return 404; unsafe numeric serialization returns 500.
+     * @description Returns counterparty contributions to an account balance, including descendants. Shares use the full account balance before filtering and pagination; zero balances yield null shares. Self-transfers and unattributed activity remain separate.
      *
-     * @tags Reporting
+     * @tags Reporting, Ledger Reporting
      * @name GetAccountCounterpartyParticipation
-     * @request GET:/reporting/accounts/{accountId}/counterparty-participation
+     * @request GET:/reporting/ledger/accounts/{accountId}/counterparty-participation
      */
     getAccountCounterpartyParticipation: (
       accountId: string,
@@ -2413,7 +2462,7 @@ export class Api<
         IPaginatedResponseIAccountCounterpartyParticipationDto,
         IHttpErrorDto
       >({
-        path: `/reporting/accounts/${accountId}/counterparty-participation`,
+        path: `/reporting/ledger/accounts/${accountId}/counterparty-participation`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2421,11 +2470,32 @@ export class Api<
       }),
 
     /**
-     * @description Closing balances in functional currency, grouped by accounts and closing date. Inclusive periods up to 366 days; bucketDays is anchored at from. Includes opening balances and archived history; carries balances across empty buckets. Reads corrected journals directly, excluding drafts, voided originals and reversals. Classification groups select their topmost matching accounts and include each root's full subtree, using the root's normal balance. Explicit IDs support posting and control accounts as independent series. Selected roots without activity return zero; absent roots produce no series. Account IDs must belong to the current entity. Amounts above 1 trillion major units return 400; unsafe numeric serialization returns 500.
+     * @description Returns current asset or liability posting balances grouped by currency, with recorded functional balances and a combined functional total. Accounts without a fixed currency use functional currency. Stored balances update asynchronously; no date filter or FX repricing applies.
      *
-     * @tags Reporting
+     * @tags Reporting, Ledger Reporting
+     * @name GetAssetAndLiabilityBalancesByCurrency
+     * @request GET:/reporting/ledger/asset-and-liability-balances-by-currency
+     */
+    getAssetAndLiabilityBalancesByCurrency: (
+      query: {
+        type: 'asset' | 'liability';
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<IAssetAndLiabilityBalancesByCurrencyDto, IHttpErrorDto>({
+        path: `/reporting/ledger/asset-and-liability-balances-by-currency`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Returns closing-balance series for selected accounts and their descendants in functional currency. Each account forms an independent series. Dates are inclusive, up to 366 days; balances carry across empty buckets.
+     *
+     * @tags Reporting, Ledger Reporting
      * @name GetBalancesByAccount
-     * @request GET:/reporting/balances/accounts
+     * @request GET:/reporting/ledger/balances-by-account
      */
     getBalancesByAccount: (
       query: {
@@ -2443,7 +2513,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<IBalancesByAccountDto, IHttpErrorDto>({
-        path: `/reporting/balances/accounts`,
+        path: `/reporting/ledger/balances-by-account`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2451,11 +2521,11 @@ export class Api<
       }),
 
     /**
-     * @description Closing balances in functional currency, grouped by behaviors and closing date. Inclusive periods up to 366 days; bucketDays is anchored at from. Includes opening balances and archived history; carries balances across empty buckets. Reads corrected journals directly, excluding drafts, voided originals and reversals. Classification groups select their topmost matching accounts and include each root's full subtree, using the root's normal balance. Explicit IDs support posting and control accounts as independent series. Selected roots without activity return zero; absent roots produce no series. Account IDs must belong to the current entity. Amounts above 1 trillion major units return 400; unsafe numeric serialization returns 500.
+     * @description Returns closing-balance series grouped by account behavior in functional currency, including descendant activity. Dates are inclusive, up to 366 days; balances carry across empty buckets.
      *
-     * @tags Reporting
+     * @tags Reporting, Ledger Reporting
      * @name GetBalancesByBehavior
-     * @request GET:/reporting/balances/behaviors
+     * @request GET:/reporting/ledger/balances-by-behavior
      */
     getBalancesByBehavior: (
       query: {
@@ -2473,7 +2543,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<IBalancesByBehaviorDto, IHttpErrorDto>({
-        path: `/reporting/balances/behaviors`,
+        path: `/reporting/ledger/balances-by-behavior`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2481,11 +2551,11 @@ export class Api<
       }),
 
     /**
-     * @description Closing balances in functional currency, grouped by sub-types and closing date. Inclusive periods up to 366 days; bucketDays is anchored at from. Includes opening balances and archived history; carries balances across empty buckets. Reads corrected journals directly, excluding drafts, voided originals and reversals. Classification groups select their topmost matching accounts and include each root's full subtree, using the root's normal balance. Explicit IDs support posting and control accounts as independent series. Selected roots without activity return zero; absent roots produce no series. Account IDs must belong to the current entity. Amounts above 1 trillion major units return 400; unsafe numeric serialization returns 500.
+     * @description Returns closing-balance series grouped by account sub-type in functional currency, including descendant activity. Dates are inclusive, up to 366 days; balances carry across empty buckets.
      *
-     * @tags Reporting
+     * @tags Reporting, Ledger Reporting
      * @name GetBalancesBySubType
-     * @request GET:/reporting/balances/sub-types
+     * @request GET:/reporting/ledger/balances-by-sub-type
      */
     getBalancesBySubType: (
       query: {
@@ -2503,7 +2573,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<IBalancesBySubTypeDto, IHttpErrorDto>({
-        path: `/reporting/balances/sub-types`,
+        path: `/reporting/ledger/balances-by-sub-type`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2511,11 +2581,11 @@ export class Api<
       }),
 
     /**
-     * @description Closing balances in functional currency, grouped by types and closing date. Inclusive periods up to 366 days; bucketDays is anchored at from. Includes opening balances and archived history; carries balances across empty buckets. Reads corrected journals directly, excluding drafts, voided originals and reversals. Classification groups select their topmost matching accounts and include each root's full subtree, using the root's normal balance. Explicit IDs support posting and control accounts as independent series. Selected roots without activity return zero; absent roots produce no series. Account IDs must belong to the current entity. Amounts above 1 trillion major units return 400; unsafe numeric serialization returns 500.
+     * @description Returns closing-balance series grouped by account type in functional currency, including descendant activity. Dates are inclusive, up to 366 days; balances carry across empty buckets.
      *
-     * @tags Reporting
+     * @tags Reporting, Ledger Reporting
      * @name GetBalancesByType
-     * @request GET:/reporting/balances/types
+     * @request GET:/reporting/ledger/balances-by-type
      */
     getBalancesByType: (
       query: {
@@ -2533,7 +2603,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<IBalancesByTypeDto, IHttpErrorDto>({
-        path: `/reporting/balances/types`,
+        path: `/reporting/ledger/balances-by-type`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2541,20 +2611,26 @@ export class Api<
       }),
 
     /**
-     * @description Current asset or liability posting balances grouped by account currency, with a recorded functional balance per group and a total across groups. Type is required input and is not returned. Accounts without a fixed currency use functional currency. Includes all statuses, suspense and zero balances; excludes control rollups. Groups sort by currency code. Reads stored balances, which update asynchronously, without dates or FX repricing. Empty reports return a zero functional total and no groups. Amount magnitudes above 1 trillion major units return 400; missing balances return 404; unsafe numeric serialization returns 500. Invalid type returns 422.
+     * @description Totals debits and credits by journal-line currency for a selected fiscal year and ledger class. Equity accounts are not supported. Inclusive dates default to fiscal year start and min(today UTC, fiscal year end). Out-of-year or reversed ranges return 400. Excludes draft and voided entries; includes every source type.
      *
-     * @tags Reporting
-     * @name GetLedgerBalancesByCurrency
-     * @request GET:/reporting/ledger-balances-by-currency
+     * @tags Reporting, Ledger Reporting
+     * @name GetLedgerTotalDebitsAndCreditsByCurrency
+     * @request GET:/reporting/ledger/ledger-total-debits-and-credits-by-currency
      */
-    getLedgerBalancesByCurrency: (
+    getLedgerTotalDebitsAndCreditsByCurrency: (
       query: {
-        type: 'asset' | 'liability';
+        fiscalYearId: string;
+        /** Equity accounts are not supported by this report. */
+        type: 'asset' | 'liability' | 'revenue' | 'expense';
+        /** Inclusive YYYY-MM-DD date; defaults to the fiscal year's start. */
+        startDate?: string;
+        /** Inclusive YYYY-MM-DD date; defaults to min(today UTC, fiscal year end). */
+        endDate?: string;
       },
       params: RequestParams = {}
     ) =>
-      this.request<ILedgerBalancesByCurrencyDto, IHttpErrorDto>({
-        path: `/reporting/ledger-balances-by-currency`,
+      this.request<ILedgerTotalDebitsAndCreditsByCurrencyDto, IHttpErrorDto>({
+        path: `/reporting/ledger/ledger-total-debits-and-credits-by-currency`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2562,11 +2638,11 @@ export class Api<
       }),
 
     /**
-     * @description Revenue/expense and suspense posting accounts (isControlAccount=false) with current accumulated functional balances. Balances update asynchronously; counts read each posting account's own live journal lines in all states. All account statuses and zero balances remain visible. Shares use the summed balances of root revenue/expense headers (controlAccountId=null) of the same type before search/pagination; headers are never included as table rows; suspense and zero totals have null shares. Omit type for All. Search matches account name or code; rows sort by code then ID. No date range is applied. Amount magnitudes above 1 trillion major units return 400; missing balances or unsafe numeric serialization return 500.
+     * @description Lists revenue, expense, and suspense posting accounts with current functional balances. Shares use full revenue or expense totals before filtering and pagination; suspense and zero totals yield null shares. Balances update asynchronously; no date filter applies.
      *
-     * @tags Reporting
+     * @tags Reporting, Ledger Reporting
      * @name GetRevenueExpenseAccounts
-     * @request GET:/reporting/revenue-expense-accounts
+     * @request GET:/reporting/ledger/revenue-expense-accounts
      */
     getRevenueExpenseAccounts: (
       query?: {
@@ -2581,7 +2657,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<IPaginatedResponseIRevenueExpenseAccountDto, IHttpErrorDto>({
-        path: `/reporting/revenue-expense-accounts`,
+        path: `/reporting/ledger/revenue-expense-accounts`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2589,11 +2665,11 @@ export class Api<
       }),
 
     /**
-     * @description Revenue, expenses and suspense activity in the entity's functional currency. Dates are inclusive, up to 366 days, compared with the immediately preceding equal-length period. Revenue is credits less debits; expenses are debits less credits. Suspense counts distinct entries and sums suspense-line amounts. Drafts, never-posted entries, voided originals, reversals and opening balances are excluded. Archived account activity remains included. Historical results can change after rectification. Zero denominators produce null percentages. Amount magnitudes above 1 trillion major units return 400; unsafe numeric serialization returns 500. Returns posting-account breakdowns, not rollups.
+     * @description Summarizes revenue, expense, and suspense activity in functional currency with account breakdowns. Dates are inclusive, up to 366 days, compared with the preceding equal-length period. Opening balances and reversed activity are excluded; zero denominators yield null percentages.
      *
-     * @tags Reporting
+     * @tags Reporting, Ledger Reporting
      * @name GetRevenueExpenseSummary
-     * @request GET:/reporting/revenue-expense-summary
+     * @request GET:/reporting/ledger/revenue-expense-summary
      */
     getRevenueExpenseSummary: (
       query: {
@@ -2605,7 +2681,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<IRevenueExpenseSummaryDto, IHttpErrorDto>({
-        path: `/reporting/revenue-expense-summary`,
+        path: `/reporting/ledger/revenue-expense-summary`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2666,6 +2742,21 @@ export class Api<
         path: `/ledger/chart-of-accounts`,
         method: 'GET',
         query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Get current stored balances by ledger code in the selected entity. Balances are eventually consistent with posted journal entries.
+     *
+     * @tags Ledger
+     * @name GetLedgerAccountBalance
+     * @request GET:/ledger/code/{code}/balance
+     */
+    getLedgerAccountBalance: (code: string, params: RequestParams = {}) =>
+      this.request<ILedgerAccountBalanceDto, IHttpErrorDto>({
+        path: `/ledger/code/${code}/balance`,
+        method: 'GET',
         format: 'json',
         ...params,
       }),
@@ -3333,7 +3424,7 @@ export class Api<
       }),
 
     /**
-     * @description Posts only the associated draft opening balance, preserving the ledger account's status. Requires a draft opening-balance journal and an active posting account. No request body is required.
+     * @description Posts only the associated draft opening balance, preserving the ledger account's status. Requires a draft opening-balance journal and an active posting account.
      *
      * @tags Journal Entry
      * @name PostOpeningBalance
@@ -3347,7 +3438,7 @@ export class Api<
       }),
 
     /**
-     * @description Posts a draft payment while preserving its financial content. Revalidates accounts, counterparties, and the effective accounting period. No request body is required.
+     * @description Posts a draft payment while preserving its financial content. Revalidates accounts, counterparties, and the effective accounting period.
      *
      * @tags Journal Entry
      * @name PostPayment
@@ -3361,7 +3452,7 @@ export class Api<
       }),
 
     /**
-     * @description Posts a draft receipt while preserving its financial content. Revalidates accounts, counterparties, and the effective accounting period. No request body is required.
+     * @description Posts a draft receipt while preserving its financial content. Revalidates accounts, counterparties, and the effective accounting period.
      *
      * @tags Journal Entry
      * @name PostReceipt
@@ -3375,7 +3466,7 @@ export class Api<
       }),
 
     /**
-     * @description Posts a draft transfer while preserving its financial content. Revalidates accounts, counterparties, and the effective accounting period. No request body is required.
+     * @description Posts a draft transfer while preserving its financial content. Revalidates accounts, counterparties, and the effective accounting period.
      *
      * @tags Journal Entry
      * @name PostTransfer
@@ -3866,6 +3957,21 @@ export class Api<
     getFiscalYears: (params: RequestParams = {}) =>
       this.request<IFiscalYear[], IHttpErrorDto>({
         path: `/accounting/fiscal-years`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Returns the fiscal year containing today UTC, including both boundary dates. Reports overlaps and returns the first match by start date then ID.
+     *
+     * @tags Accounting
+     * @name GetCurrentFiscalYear
+     * @request GET:/accounting/fiscal-years/current
+     */
+    getCurrentFiscalYear: (params: RequestParams = {}) =>
+      this.request<IFiscalYear, IHttpErrorDto>({
+        path: `/accounting/fiscal-years/current`,
         method: 'GET',
         format: 'json',
         ...params,

@@ -114,7 +114,7 @@ const participation: IAccountCounterpartyParticipationDto[] = [
   },
 }));
 
-const participationUrl = `**/api/v1/reporting/accounts/${accountId}/counterparty-participation?*`;
+const participationUrl = `**/api/v1/reporting/ledger/accounts/${accountId}/counterparty-participation?*`;
 
 async function setup(page: Page, type: 'revenue' | 'expense' = 'expense') {
   await page.clock.setFixedTime(new Date('2026-10-15T12:00:00Z'));
@@ -613,11 +613,12 @@ test('checks deletion eligibility on menu open and hides stale permission while 
       suspense: { amount: { ...money, amount: 0 }, transactionCount: 0 },
     };
 
-    await page.route('**/api/v1/reporting/revenue-expense-summary?*', (route) =>
-      route.fulfill({ json: summary })
+    await page.route(
+      '**/api/v1/reporting/ledger/revenue-expense-summary?*',
+      (route) => route.fulfill({ json: summary })
     );
     await page.route(
-      '**/api/v1/reporting/revenue-expense-accounts?*',
+      '**/api/v1/reporting/ledger/revenue-expense-accounts?*',
       (route) =>
         route.fulfill({
           json: {

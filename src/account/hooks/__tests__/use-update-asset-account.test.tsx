@@ -30,9 +30,16 @@ for (const [useUpdate, method] of [
       ];
 
       const keys = [
-        ['reportingService', 'getLedgerBalancesByCurrency'],
-        ['reportingService', 'getBalancesBySubType'],
-        ['reportingService', 'getAccountCashFlow', 'account-1'],
+        ['ledgerReportingService', 'getAssetAndLiabilityBalancesByCurrency'],
+        ['ledgerReportingService', 'getBalancesBySubType'],
+        ['ledgerReportingService', 'getRevenueExpenseAccounts'],
+        ['ledgerReportingService', 'getRevenueExpenseSummary'],
+        [
+          'ledgerReportingService',
+          'getAccountCounterpartyParticipation',
+          'child-1',
+        ],
+        ['ledgerReportingService', 'getAccountCashFlow', 'account-1'],
         detailKey,
         ['ledgerAccountService', 'getBankDetails', 'account-1'],
         ['ledgerAccountService', 'getLedgerAccounts'],

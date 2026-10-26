@@ -81,7 +81,7 @@ export function AccountDetailsActionsContainer({
         type: 'active',
       });
       await queryClient.refetchQueries({
-        queryKey: ['reportingService'],
+        queryKey: ['ledgerReportingService'],
         type: 'active',
       });
     } catch (error) {

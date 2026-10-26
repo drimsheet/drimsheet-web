@@ -10,7 +10,7 @@ export function useRefreshUpdatedAccount() {
       queryKey: ['journalEntryService', 'getJournalEntries'],
     });
     await client.cancelQueries({
-      queryKey: ['reportingService'],
+      queryKey: ['ledgerReportingService'],
     });
     client.setQueryData(
       ['ledgerAccountService', 'getLedgerAccount', account.id],
@@ -19,7 +19,7 @@ export function useRefreshUpdatedAccount() {
     await Promise.all([
       client.invalidateQueries({ queryKey: ['ledgerAccountService'] }),
       client.invalidateQueries({
-        queryKey: ['reportingService'],
+        queryKey: ['ledgerReportingService'],
       }),
       client.invalidateQueries({ queryKey: ['journalEntryService'] }),
       client.invalidateQueries({ queryKey: ['accountingBootstrapService'] }),

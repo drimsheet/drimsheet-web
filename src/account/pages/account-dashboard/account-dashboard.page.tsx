@@ -6,8 +6,8 @@ import { AccountTypeSelectionDialog } from '@/account/dialogs/account-type-selec
 import { PettyCashAccountCreationDialog } from '@/account/dialogs/petty-cash-account-creation';
 import { useLedgerAccounts } from '@/account/hooks/use-ledger-accounts';
 import accountDashboardMapper from '@/account/lib/mappers/account-dashboard.mapper';
+import { useAssetAndLiabilityBalancesByCurrency } from '@/reporting/hooks/use-asset-and-liability-balances-by-currency';
 import { useBalancesBySubType } from '@/reporting/hooks/use-balances-by-sub-type';
-import { useLedgerBalancesByCurrency } from '@/reporting/hooks/use-ledger-balances-by-currency';
 import { AppBody } from '@/shared/components/app';
 import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
@@ -63,7 +63,7 @@ export function AccountsDashboardPage() {
     { select: accountDashboardMapper.toAccounts }
   );
 
-  const summary = useLedgerBalancesByCurrency(
+  const summary = useAssetAndLiabilityBalancesByCurrency(
     { type: ELedgerType.Asset },
     { select: accountDashboardMapper.toSummary }
   );

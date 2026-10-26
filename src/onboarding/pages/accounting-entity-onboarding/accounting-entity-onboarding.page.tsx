@@ -267,7 +267,7 @@ export function AccountingEntityOnboardingPage() {
       refetchType: 'none',
     });
     void queryClient.invalidateQueries({
-      queryKey: ['reportingService'],
+      queryKey: ['ledgerReportingService'],
       refetchType: 'none',
     });
     void queryClient.invalidateQueries({

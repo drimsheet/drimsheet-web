@@ -1,8 +1,8 @@
 import accountDashboardMapper from '@/account/lib/mappers/account-dashboard.mapper';
 import type {
+  IAssetAndLiabilityBalancesByCurrencyDto,
   IBalancesBySubTypeDto,
   ILedgerAccountDto,
-  ILedgerBalancesByCurrencyDto,
   IPaginatedResponseILedgerAccountDto,
 } from '@/shared/lib/api/Api';
 import { describe, expect, it } from 'vitest';
@@ -35,7 +35,7 @@ const ledgerAccount: ILedgerAccountDto = {
 
 describe('accountDashboardMapper', () => {
   it('maps and orders the functional currency first in the dashboard summary', () => {
-    const response: ILedgerBalancesByCurrencyDto = {
+    const response: IAssetAndLiabilityBalancesByCurrencyDto = {
       totalFunctionalBalance: {
         amount: 87450000,
         currencyCode: 'NGN',

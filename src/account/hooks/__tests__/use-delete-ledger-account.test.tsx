@@ -35,7 +35,16 @@ function setup() {
     ],
   ];
 
-  removedKeys.push(['reportingService', 'getAccountCashFlow', 'account-1']);
+  removedKeys.push([
+    'ledgerReportingService',
+    'getAccountCashFlow',
+    'account-1',
+  ]);
+  removedKeys.push([
+    'ledgerReportingService',
+    'getAccountCounterpartyParticipation',
+    'account-1',
+  ]);
 
   const refreshedKeys = [
     [
@@ -43,9 +52,16 @@ function setup() {
       'getJournalEntries',
       { accountId: 'child-1', page: 1 },
     ],
-    ['reportingService', 'getAccountCashFlow', 'child-1'],
-    ['reportingService', 'getLedgerBalancesByCurrency'],
-    ['reportingService', 'getBalancesBySubType'],
+    ['ledgerReportingService', 'getAccountCashFlow', 'child-1'],
+    ['ledgerReportingService', 'getAssetAndLiabilityBalancesByCurrency'],
+    ['ledgerReportingService', 'getBalancesBySubType'],
+    ['ledgerReportingService', 'getRevenueExpenseAccounts'],
+    ['ledgerReportingService', 'getRevenueExpenseSummary'],
+    [
+      'ledgerReportingService',
+      'getAccountCounterpartyParticipation',
+      'child-1',
+    ],
     ['ledgerAccountService', 'getLedgerAccounts', { page: 1 }],
     ['ledgerAccountService', 'getPermittedPostingAccounts', {}],
     ['ledgerAccountService', 'getSubAccounts', 'parent-1'],

@@ -1,7 +1,7 @@
 import type {
+  IAssetAndLiabilityBalancesByCurrencyDto,
   IBalancesBySubTypeDto,
   ILedgerAccountDto,
-  ILedgerBalancesByCurrencyDto,
 } from '@/shared/lib/api/Api';
 import type { Page } from '@playwright/test';
 import { addDays, format, parseISO } from 'date-fns';
@@ -99,7 +99,7 @@ export async function registerAccountDashboardRoutes(page: Page) {
   });
 
   await page.route(
-    '**/api/v1/reporting/ledger-balances-by-currency?*',
+    '**/api/v1/reporting/ledger/asset-and-liability-balances-by-currency?*',
     async (route) => {
       const params = new URL(route.request().url()).searchParams;
       state.summaryQueries.push(params);
@@ -114,7 +114,7 @@ export async function registerAccountDashboardRoutes(page: Page) {
 
       const amount = (value: number) => (state.zero ? 0 : value);
 
-      const json: ILedgerBalancesByCurrencyDto = {
+      const json: IAssetAndLiabilityBalancesByCurrencyDto = {
         totalFunctionalBalance: money(amount(87450000)),
         balancesByCurrency: [
           {
@@ -149,7 +149,7 @@ export async function registerAccountDashboardRoutes(page: Page) {
   );
 
   await page.route(
-    '**/api/v1/reporting/balances/sub-types?*',
+    '**/api/v1/reporting/ledger/balances-by-sub-type?*',
     async (route) => {
       const params = new URL(route.request().url()).searchParams;
       state.historyQueries.push(params);

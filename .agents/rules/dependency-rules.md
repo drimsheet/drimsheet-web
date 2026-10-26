@@ -17,7 +17,7 @@ Make imports predictable so the agent can change one part of the app without cau
 ### Account dashboard reporting composition exception
 
 `src/account/pages/account-dashboard/` may import
-`useLedgerBalancesByCurrency` from `@/reporting/hooks/use-ledger-balances-by-currency`.
+`useAssetAndLiabilityBalancesByCurrency` from `@/reporting/hooks/use-asset-and-liability-balances-by-currency`.
 It may also import `useBalancesBySubType` from
 `@/reporting/hooks/use-balances-by-sub-type`.
 The dashboard supplies each query and selector; the reporting hooks and service
@@ -36,6 +36,15 @@ It may also compose the BalanceTrend component family through
 and query; the reporting hook and service remain feature-owned.
 It may also compose `AccountCashFlowChart` and its skeleton through
 `@/reporting/components/account-cash-flow-chart`; the container stays page-private.
+
+### Account ledger reporting access exception
+
+`src/account/hooks/use-category-accounts.ts`,
+`src/account/hooks/use-category-summary.ts`, and
+`src/account/pages/category-details/` may call `ledgerReportingService` from
+`@/reporting/lib/services/ledger-reporting.service` for revenue/expense reports
+and account counterparty participation. Reporting transport stays in the
+reporting feature and must not import account-owned code.
 
 ### Account transaction data access exception
 

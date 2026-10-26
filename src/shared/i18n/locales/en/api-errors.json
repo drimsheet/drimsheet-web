@@ -33,7 +33,6 @@
   "app_error_fx_cost_basis_unsupported_account_invalid": "Account does not support cost basis tracking.",
   "app_error_fx_cost_basis_unsupported_entry_invalid": "Entry does not support cost basis tracking.",
   "app_error_ledger_account_not_found": "Ledger account not found.",
-  "app_error_ledger_balance_not_found": "Ledger balance not found.",
   "app_error_ledger_exchange_rate_required_invalid": "Exchange rate is required.",
   "app_error_ledger_sub_type_invalid": "Invalid ledger sub-type.",
   "app_error_payment_required": "Payment required.",
@@ -433,5 +432,6 @@
   "period_error_unit_invalid": "Invalid period unit.",
   "app_error_reporting_behaviors_invalid": "Invalid account behavior.",
   "app_error_reporting_sub_types_invalid": "Invalid account sub type.",
-  "app_error_reporting_types_invalid": "Invalid account type."
+  "app_error_reporting_types_invalid": "Invalid account type.",
+  "app_error_ledger_balance_missing_unexpected": ""
 }
