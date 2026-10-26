@@ -52,3 +52,22 @@ it('shows the approximation symbol only when converted', () => {
   expect(screen.queryByText('≈')).not.toBeInTheDocument();
   expect(screen.queryByText('approximately')).not.toBeInTheDocument();
 });
+
+it.each([
+  [6660000, '+₦66.6K'],
+  [-6670000, '-₦66.7K'],
+])(
+  'renders compact signed naira amounts with the symbol (%s)',
+  (amount, expected) => {
+    render(
+      <Money
+        value={{ amount, currencyCode: 'NGN', isMinorUnit: true }}
+        notation="compact"
+        signDisplay="exceptZero"
+        currencyDisplay="narrowSymbol"
+        maximumFractionDigits={1}
+      />
+    );
+    expect(screen.getByText(expected)).toBeInTheDocument();
+  }
+);

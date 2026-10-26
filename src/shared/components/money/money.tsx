@@ -10,6 +10,10 @@ export function Money({
   hideZeroMinorUnit = true,
   isConverted = false,
   approximationClassName,
+  notation,
+  signDisplay,
+  currencyDisplay,
+  maximumFractionDigits,
   ...props
 }: Readonly<MoneyProps>) {
   const { t } = useTranslation('shared');
@@ -21,6 +25,10 @@ export function Money({
   const formatted = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: value.currencyCode,
+    notation,
+    signDisplay,
+    currencyDisplay,
+    maximumFractionDigits,
     trailingZeroDisplay: hideZeroMinorUnit ? 'stripIfInteger' : 'auto',
   }).format(toMajorUnits(value));
 

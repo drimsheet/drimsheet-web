@@ -7,4 +7,8 @@ export interface MoneyProps extends ComponentProps<'span'> {
   isConverted?: boolean;
   approximationClassName?: string;
   hideZeroMinorUnit?: boolean;
+  notation?: Intl.NumberFormatOptions['notation'];
+  signDisplay?: Intl.NumberFormatOptions['signDisplay'];
+  currencyDisplay?: Intl.NumberFormatOptions['currencyDisplay'];
+  maximumFractionDigits?: number;
 }

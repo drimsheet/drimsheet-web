@@ -1,0 +1,392 @@
+[
+  {
+    "date": "2026-10-01",
+    "in": {
+      "amount": 900,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 85,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 900,
+    "expense": 85
+  },
+  {
+    "date": "2026-10-02",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-03",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-04",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 115,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 115
+  },
+  {
+    "date": "2026-10-05",
+    "in": {
+      "amount": 960,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 960,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-06",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-07",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 145,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 145
+  },
+  {
+    "date": "2026-10-08",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-09",
+    "in": {
+      "amount": 1020,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 1020,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-10",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 175,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 175
+  },
+  {
+    "date": "2026-10-11",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-12",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-13",
+    "in": {
+      "amount": 1080,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 205,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 1080,
+    "expense": 205
+  },
+  {
+    "date": "2026-10-14",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-15",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-16",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 235,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 235
+  },
+  {
+    "date": "2026-10-17",
+    "in": {
+      "amount": 1140,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 1140,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-18",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-19",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 265,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 265
+  },
+  {
+    "date": "2026-10-20",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-21",
+    "in": {
+      "amount": 1200,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 1200,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-22",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 295,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 295
+  },
+  {
+    "date": "2026-10-23",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-24",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  },
+  {
+    "date": "2026-10-25",
+    "in": {
+      "amount": 1260,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 325,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 1260,
+    "expense": 325
+  },
+  {
+    "date": "2026-10-26",
+    "in": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "out": {
+      "amount": 0,
+      "currencyCode": "USD",
+      "isMinorUnit": false
+    },
+    "revenue": 0,
+    "expense": 0
+  }
+]

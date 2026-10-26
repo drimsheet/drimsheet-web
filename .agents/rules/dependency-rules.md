@@ -77,7 +77,8 @@ feature hooks.
 `src/journal-entries/pages/transactions/` may call `ledgerReportingService`
 from `@/reporting/lib/services/ledger-reporting.service` and `accountingService`
 from `@/accounting/lib/services/accounting.service` for overview balances,
-currency activity, and the current fiscal year. Transport stays in those
+currency activity, daily activity, and the current fiscal year.
+Transport stays in those
 owning services; overview composition and presentation stay page-private.
 
 - A page directory is an orchestration owner. Its parts, hooks, helpers, types,

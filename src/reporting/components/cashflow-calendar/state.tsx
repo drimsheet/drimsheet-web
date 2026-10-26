@@ -19,7 +19,7 @@ export function CashflowCalendarError({
 }: Readonly<CashflowCalendarErrorProps>) {
   const { t } = useTranslation('shared');
   const weekCount = cashflowCalendarHelpers.weeks(date, variant).length;
-  const minHeight = `${weekCount * 6}rem`;
+  const minHeight = `${weekCount * 4.5}rem`;
   const error_text = t('an_error_occurred');
 
   return (
@@ -31,7 +31,7 @@ export function CashflowCalendarError({
             className="flex min-w-80 flex-col items-center justify-center gap-3 px-4 text-center text-sm text-destructive"
             style={{ minHeight }}
           >
-            <TriangleAlert aria-hidden="true" className="size-8 shrink-0" />
+            <TriangleAlert aria-hidden="true" className="size-7 shrink-0" />
             <p>{error_text}</p>
           </div>
         </td>
@@ -95,17 +95,17 @@ export function CashflowCalendarSkeleton({
               {week.map((day, dayIndex) => (
                 <div
                   key={dayIndex}
-                  className="flex h-24 flex-col items-center px-0.5 pb-3"
+                  className="flex h-18 flex-col items-center px-0.5 pb-2"
                 >
                   {day && (
                     <>
-                      <span className="flex size-8 items-center justify-center text-base text-muted-foreground">
+                      <span className="flex size-7 items-center justify-center text-base text-muted-foreground">
                         {day.getDate()}
                       </span>
-                      <div className="flex h-5 items-center">
+                      <div className="flex h-4 items-center">
                         <Skeleton className="h-2.5 w-9 rounded-sm" />
                       </div>
-                      <div className="flex h-5 items-center">
+                      <div className="flex h-4 items-center">
                         <Skeleton className="h-2.5 w-7 rounded-sm" />
                       </div>
                     </>

@@ -23,3 +23,31 @@ export interface TransactionsOverviewWithStateProps {
   state: UTransitionState;
   data?: TransactionsOverviewProps;
 }
+
+export interface ITransactionActivityDay {
+  date: string;
+  in: IMoneyDto;
+  out: IMoneyDto;
+  revenue: number;
+  expense: number;
+}
+
+export interface TransactionActivityChartProps {
+  days: ITransactionActivityDay[];
+  currencyCode: string;
+}
+
+export interface TransactionActivityChartWithStateProps {
+  state: UTransitionState;
+  days?: ITransactionActivityDay[];
+  currencyCode?: string;
+}
+
+export interface TransactionActivityProps {
+  date: Date;
+  today: Date;
+  onDateChange: (date: Date) => void;
+  state: UTransitionState;
+  days?: ITransactionActivityDay[];
+  currencyCode?: string;
+}

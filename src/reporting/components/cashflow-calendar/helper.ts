@@ -1,5 +1,3 @@
-import type { IMoneyDto } from '@/shared/lib/api/Api';
-import { toMajorUnits } from '@/shared/lib/utils/money';
 import {
   addDays,
   addMonths,
@@ -76,29 +74,12 @@ function dateKey(date: Date) {
   return format(date, 'yyyy-MM-dd');
 }
 
-function compactMoney(
-  money: IMoneyDto,
-  locale: string,
-  direction: 'in' | 'out'
-) {
-  const amount = toMajorUnits(money);
-
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: money.currencyCode,
-    notation: 'compact',
-    maximumFractionDigits: 1,
-    signDisplay: 'exceptZero',
-  }).format(direction === 'out' ? -amount : amount);
-}
-
 const cashflowCalendarHelpers = Object.freeze({
   periodStart,
   weeks,
   move,
   title,
   dateKey,
-  compactMoney,
 });
 
 export default cashflowCalendarHelpers;

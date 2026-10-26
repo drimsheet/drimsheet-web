@@ -513,15 +513,6 @@ export const ELedgerAccountBehavior = {
 export type ULedgerAccountBehavior =
   (typeof ELedgerAccountBehavior)[keyof typeof ELedgerAccountBehavior];
 
-export const ELedgerType = {
-  Asset: 'asset',
-  Liability: 'liability',
-  Revenue: 'revenue',
-  Expense: 'expense',
-  Equity: 'equity',
-} as const;
-export type ULedgerType = (typeof ELedgerType)[keyof typeof ELedgerType];
-
 export const ECounterpartyRole = {
   Employer: 'employer',
   Vendor: 'vendor',
@@ -544,6 +535,15 @@ export const ECounterpartyStatus = {
 } as const;
 export type UCounterpartyStatus =
   (typeof ECounterpartyStatus)[keyof typeof ECounterpartyStatus];
+
+export const ELedgerType = {
+  Asset: 'asset',
+  Liability: 'liability',
+  Revenue: 'revenue',
+  Expense: 'expense',
+  Equity: 'equity',
+} as const;
+export type ULedgerType = (typeof ELedgerType)[keyof typeof ELedgerType];
 
 export const EAppUsageModePreference = {
   PowerUser: 'power_user',
@@ -615,6 +615,52 @@ export interface IUserProfileUpdateDto {
   lastName?: string;
 }
 
+export interface IDateRangeDto {
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to: string;
+}
+
+export interface IMoneyDto {
+  /** @format double */
+  amount: number;
+  currencyCode: string;
+  isMinorUnit: boolean;
+}
+
+export interface IAccountActivityByTypesDto {
+  currencyCode: string;
+  period: IDateRangeDto;
+  buckets: {
+    activity: {
+      /** Signed movement on the type's normal side, including contra activity. */
+      delta: IMoneyDto;
+      totalCredits: IMoneyDto;
+      totalDebits: IMoneyDto;
+      type: ULedgerType;
+    }[];
+    /** Inclusive last calendar date, clipped to the requested period. */
+    to: string;
+    /** Inclusive first calendar date. */
+    from: string;
+  }[];
+}
+
+/** Inclusive calendar dates spanning at most 366 days. */
+export interface IGetAccountActivityByTypesQuery {
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to: string;
+  /**
+   * Positive calendar-day bucket size, anchored at from.
+   * @format double
+   */
+  bucketDays: number;
+  types: ULedgerType[];
+}
+
 export interface IAddressDto {
   line1: string;
   line2?: string;
@@ -650,13 +696,6 @@ export interface ICounterpartyDto {
   createdAt: string;
   /** @format date-time */
   updatedAt: string;
-}
-
-export interface IMoneyDto {
-  /** @format double */
-  amount: number;
-  currencyCode: string;
-  isMinorUnit: boolean;
 }
 
 export interface IAccountBalanceContributionsByCounterpartyDto {
@@ -697,13 +736,6 @@ export interface IGetAccountBalanceContributionsByCounterpartyQuery {
   /** @format double */
   limit?: number;
   search?: string;
-}
-
-export interface IDateRangeDto {
-  /** Inclusive calendar date in YYYY-MM-DD format. */
-  from: string;
-  /** Inclusive calendar date in YYYY-MM-DD format. */
-  to: string;
 }
 
 export interface IAccountCashFlowBucketDto {
@@ -2420,6 +2452,36 @@ export class Api<
       }),
   };
   reporting = {
+    /**
+     * @description Returns activity by type in functional currency with signed normal-side deltas. Dates are inclusive, up to 366 days; empty buckets return zeros. Opening balances and reversed activity are excluded.
+     *
+     * @tags Reporting, Ledger Reporting
+     * @name GetAccountActivityByTypes
+     * @request GET:/reporting/ledger/account-activity-by-types
+     */
+    getAccountActivityByTypes: (
+      query: {
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        from: string;
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        to: string;
+        /**
+         * Positive calendar-day bucket size, anchored at from.
+         * @format double
+         */
+        bucketDays: number;
+        types: ULedgerType[];
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<IAccountActivityByTypesDto, IHttpErrorDto>({
+        path: `/reporting/ledger/account-activity-by-types`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
     /**
      * @description Returns counterparty contributions to an account balance, including descendants. Shares use the full account balance before filtering and pagination; zero balances yield null shares. Self-transfers and unattributed activity remain separate.
      *

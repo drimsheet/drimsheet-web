@@ -20,12 +20,12 @@ export function CashflowDay({
   }).format(date);
 
   return (
-    <td className="h-24 px-0.5 pb-3 align-top" aria-label={dateLabel}>
+    <td className="h-18 px-0.5 pb-2 align-top" aria-label={dateLabel}>
       <time
         dateTime={key}
         aria-current={isToday ? 'date' : undefined}
         className={cn(
-          'mx-auto flex size-8 items-center justify-center rounded-full text-base',
+          'mx-auto flex size-7 items-center justify-center rounded-full text-base',
           isAfter(date, today) && 'text-muted-foreground',
           isToday &&
             color === 'primary' &&
@@ -38,12 +38,18 @@ export function CashflowDay({
         {date.getDate()}
       </time>
       {entry && (
-        <div className="flex flex-col text-xs font-medium tabular-nums @sm:text-sm">
-          <span className="h-5 whitespace-nowrap text-financial-income">
+        <div className="flex flex-col text-xs font-medium tabular-nums">
+          <span className="h-4 whitespace-nowrap text-financial-income">
             {entry.in.amount !== 0 && (
               <>
                 <span aria-hidden>
-                  {cashflowCalendarHelpers.compactMoney(entry.in, locale, 'in')}
+                  <Money
+                    value={entry.in}
+                    notation="compact"
+                    signDisplay="exceptZero"
+                    currencyDisplay="narrowSymbol"
+                    maximumFractionDigits={1}
+                  />
                 </span>
                 <span className="sr-only">
                   {labels.inflowLabel}: <Money value={entry.in} />
@@ -51,15 +57,21 @@ export function CashflowDay({
               </>
             )}
           </span>
-          <span className="h-5 whitespace-nowrap text-financial-expense">
+          <span className="h-4 whitespace-nowrap text-financial-expense">
             {entry.out.amount !== 0 && (
               <>
                 <span aria-hidden>
-                  {cashflowCalendarHelpers.compactMoney(
-                    entry.out,
-                    locale,
-                    'out'
-                  )}
+                  <Money
+                    value={{
+                      amount: -entry.out.amount,
+                      currencyCode: entry.out.currencyCode,
+                      isMinorUnit: entry.out.isMinorUnit,
+                    }}
+                    notation="compact"
+                    signDisplay="exceptZero"
+                    currencyDisplay="narrowSymbol"
+                    maximumFractionDigits={1}
+                  />
                 </span>
                 <span className="sr-only">
                   {labels.outflowLabel}: <Money value={entry.out} />

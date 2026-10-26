@@ -4,6 +4,7 @@ import { Button } from '@/shared/components/button';
 import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { TransactionActivityContainer } from './parts/transaction-activity.container';
 import { TransactionsOverviewContainer } from './parts/transactions-overview.container';
 
 export function TransactionsPage() {
@@ -30,6 +31,7 @@ export function TransactionsPage() {
     >
       <AppSection title={overview}>
         <TransactionsOverviewContainer />
+        <TransactionActivityContainer />
       </AppSection>
       <AppSection title={all_transactions_heading}>Table to come</AppSection>
     </AppBody>

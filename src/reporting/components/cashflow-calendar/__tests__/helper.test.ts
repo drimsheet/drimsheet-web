@@ -41,27 +41,3 @@ describe('calendar dates', () => {
     );
   });
 });
-
-it('formats compact signed amounts respecting currency minor units', () => {
-  expect(
-    helpers.compactMoney(
-      { amount: 120000, currencyCode: 'USD', isMinorUnit: true },
-      'en-US',
-      'in'
-    )
-  ).toBe('+$1.2K');
-  expect(
-    helpers.compactMoney(
-      { amount: 85, currencyCode: 'USD', isMinorUnit: false },
-      'en-US',
-      'out'
-    )
-  ).toBe('-$85');
-  expect(
-    helpers.compactMoney(
-      { amount: 1200, currencyCode: 'JPY', isMinorUnit: true },
-      'en-US',
-      'in'
-    )
-  ).toBe('+¥1.2K');
-});
