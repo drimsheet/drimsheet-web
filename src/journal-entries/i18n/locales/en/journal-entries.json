@@ -158,8 +158,6 @@
   "delete_entry_confirmation_input_label": "Type \"delete\" to confirm",
   "delete_entry_confirmation_keyword": "delete",
   "delete_entry_archive_instead_text": "Archive instead",
-  "category_filter_description": "Showing transactions for the selected category, across all dates.",
-  "clear_category_filter_label": "Show all transactions",
   "transactions_table_transaction_label": "Transaction",
   "transactions_table_source_expense": "Expense",
   "transactions_table_source_opening_balance": "Opening balance",
@@ -172,5 +170,8 @@
   "transactions_table_source_receipt": "Receipt",
   "transactions_table_source_adjustment": "Adjustment",
   "transactions_table_source_reversal": "Reversal",
-  "transactions_table_amount_unavailable": "Unavailable"
+  "transactions_table_amount_unavailable": "Unavailable",
+  "all_transactions": "All transactions",
+  "overview": "Overview",
+  "add_transaction": "Add transaction"
 }
