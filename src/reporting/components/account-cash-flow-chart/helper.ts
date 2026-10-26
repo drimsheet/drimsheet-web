@@ -28,8 +28,9 @@ function chartData(cashFlow: IAccountCashFlowDto, locale: string) {
     data.length ||
     cashFlow.totalMoneyIn.amount !== 0 ||
     cashFlow.totalMoneyOut.amount !== 0
-  )
+  ) {
     return data;
+  }
 
   const end = parseISO(cashFlow.period.to);
 

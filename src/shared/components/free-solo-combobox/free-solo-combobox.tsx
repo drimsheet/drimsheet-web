@@ -40,7 +40,9 @@ export function FreeSoloCombobox<TOption extends object>({
   const filteredOptions = useMemo(() => {
     const normalizedInputValue = inputValue.trim().toLowerCase();
 
-    if (!normalizedInputValue) return options;
+    if (!normalizedInputValue) {
+      return options;
+    }
 
     return options.filter((option) =>
       getOptionLabel(option).toLowerCase().includes(normalizedInputValue)

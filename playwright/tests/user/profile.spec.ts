@@ -40,7 +40,9 @@ test.beforeEach(async ({ page }) => {
     route.fulfill({ json: { accessToken: 'integration-test-token' } })
   );
   await page.addInitScript(() => {
-    if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'light');
+    if (!localStorage.getItem('theme')) {
+      localStorage.setItem('theme', 'light');
+    }
   });
   await page.goto('/auth/signin');
   await page.getByLabel('Email').fill(authenticatedUser.email);

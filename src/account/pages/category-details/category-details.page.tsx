@@ -42,7 +42,9 @@ export function CategoryDetailsPage() {
   const history = useCategoryHistory(accountId, isCategory);
 
   const activity = useMemo(() => {
-    if (!account || !history.data) return null;
+    if (!account || !history.data) {
+      return null;
+    }
 
     try {
       return categoryDetailsHelpers.activity(history.data, account, now);
@@ -86,8 +88,9 @@ export function CategoryDetailsPage() {
     );
   };
 
-  if (accountQuery.isSuccess && account && !isCategory)
+  if (accountQuery.isSuccess && account && !isCategory) {
     return <Navigate replace to={`/accounts/${account.id}`} />;
+  }
 
   const unassigned_label = t(
     'ledger-accounts:category_details_unassigned_label'

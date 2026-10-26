@@ -53,7 +53,9 @@ function safeLabel(value: unknown) {
 }
 
 function safeHttpMethod(value: unknown) {
-  if (typeof value !== 'string') return undefined;
+  if (typeof value !== 'string') {
+    return undefined;
+  }
 
   const method = value.toUpperCase();
 
@@ -82,13 +84,21 @@ function projectReportContext(context: IObservabilityReportContext) {
   const errorKey = safeLabel(context.errorKey);
   const statusCode = safeStatusCode(context.statusCode);
 
-  if (source) projected.source = source;
+  if (source) {
+    projected.source = source;
+  }
 
-  if (operation) projected.operation = operation;
+  if (operation) {
+    projected.operation = operation;
+  }
 
-  if (errorKey) projected.errorKey = errorKey;
+  if (errorKey) {
+    projected.errorKey = errorKey;
+  }
 
-  if (statusCode) projected.statusCode = statusCode;
+  if (statusCode) {
+    projected.statusCode = statusCode;
+  }
 
   if (isValidUUID(context.correlationId)) {
     projected.correlationId = context.correlationId;
@@ -99,12 +109,16 @@ function projectReportContext(context: IObservabilityReportContext) {
 
 function projectTraceContext(contexts: Event['contexts']): Event['contexts'] {
   const trace = contexts?.trace;
-  if (!trace || typeof trace !== 'object') return undefined;
+  if (!trace || typeof trace !== 'object') {
+    return undefined;
+  }
 
   const traceId = safeIdentifier(trace.trace_id, TRACE_ID_PATTERN);
   const spanId = safeIdentifier(trace.span_id, SPAN_ID_PATTERN);
   const parentSpanId = safeIdentifier(trace.parent_span_id, SPAN_ID_PATTERN);
-  if (!traceId || !spanId) return undefined;
+  if (!traceId || !spanId) {
+    return undefined;
+  }
 
   return {
     trace: {
@@ -123,7 +137,9 @@ function projectStacktrace(
     NonNullable<NonNullable<Event['exception']>['values']>[number]
   >['stacktrace']
 ) {
-  if (!stacktrace?.frames) return undefined;
+  if (!stacktrace?.frames) {
+    return undefined;
+  }
 
   return {
     frames: stacktrace.frames.map((frame) => ({
@@ -150,7 +166,9 @@ function projectStacktrace(
 function projectException(exception: Event['exception']): Event['exception'] {
   const values = exception?.values;
   const sourceException = values?.[values.length - 1];
-  if (!sourceException) return undefined;
+  if (!sourceException) {
+    return undefined;
+  }
 
   const type = safeLabel(sourceException.type) ?? 'UnknownError';
   const stacktrace = projectStacktrace(sourceException.stacktrace);
@@ -180,12 +198,16 @@ function projectException(exception: Event['exception']): Event['exception'] {
 }
 
 function projectDebugMeta(debugMeta: Event['debug_meta']): Event['debug_meta'] {
-  if (!Array.isArray(debugMeta?.images)) return undefined;
+  if (!Array.isArray(debugMeta?.images)) {
+    return undefined;
+  }
 
   const images = debugMeta.images.flatMap((image) => {
     const debugId = safeIdentifier(image.debug_id, DEBUG_ID_PATTERN);
     const type = safeLabel(image.type);
-    if (!debugId || !type) return [];
+    if (!debugId || !type) {
+      return [];
+    }
 
     return [
       {
@@ -202,7 +224,9 @@ function projectDebugMeta(debugMeta: Event['debug_meta']): Event['debug_meta'] {
 }
 
 function projectBreadcrumbData(data: Breadcrumb['data']) {
-  if (!data || typeof data !== 'object') return undefined;
+  if (!data || typeof data !== 'object') {
+    return undefined;
+  }
 
   const projected: Record<string, string | number> = {};
   const method = safeHttpMethod(data.method);
@@ -219,13 +243,21 @@ function projectBreadcrumbData(data: Breadcrumb['data']) {
       ? data.kind
       : undefined;
 
-  if (method) projected.method = method;
+  if (method) {
+    projected.method = method;
+  }
 
-  if (statusCode) projected.statusCode = statusCode;
+  if (statusCode) {
+    projected.statusCode = statusCode;
+  }
 
-  if (errorKey) projected.errorKey = errorKey;
+  if (errorKey) {
+    projected.errorKey = errorKey;
+  }
 
-  if (kind) projected.kind = kind;
+  if (kind) {
+    projected.kind = kind;
+  }
 
   if (isValidUUID(data.correlationId)) {
     projected.correlationId = data.correlationId;
@@ -241,7 +273,9 @@ function scrubBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb | null {
   const isHttpBreadcrumb =
     breadcrumb.type === 'http' || category === 'fetch' || category === 'xhr';
 
-  if (!isApiFailure && !isHttpBreadcrumb) return null;
+  if (!isApiFailure && !isHttpBreadcrumb) {
+    return null;
+  }
 
   const data = projectBreadcrumbData(breadcrumb.data);
 
@@ -258,7 +292,9 @@ function scrubBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb | null {
 }
 
 function projectBreadcrumbs(breadcrumbs: Event['breadcrumbs']) {
-  if (!Array.isArray(breadcrumbs)) return undefined;
+  if (!Array.isArray(breadcrumbs)) {
+    return undefined;
+  }
 
   const projected = breadcrumbs.flatMap((breadcrumb) => {
     const safeBreadcrumb = scrubBreadcrumb(breadcrumb);
@@ -305,13 +341,21 @@ function projectSpanData(data: TSentrySpan['data']) {
   const sentryOrigin = safeLabel(data?.['sentry.origin']);
   const sentryOperation = safeLabel(data?.['sentry.op']);
 
-  if (method) projected['http.request.method'] = method;
+  if (method) {
+    projected['http.request.method'] = method;
+  }
 
-  if (statusCode) projected['http.response.status_code'] = statusCode;
+  if (statusCode) {
+    projected['http.response.status_code'] = statusCode;
+  }
 
-  if (sentryOrigin) projected['sentry.origin'] = sentryOrigin;
+  if (sentryOrigin) {
+    projected['sentry.origin'] = sentryOrigin;
+  }
 
-  if (sentryOperation) projected['sentry.op'] = sentryOperation;
+  if (sentryOperation) {
+    projected['sentry.op'] = sentryOperation;
+  }
 
   return projected;
 }
@@ -320,9 +364,13 @@ function normalizeSpanDescription(
   description: string | undefined,
   operation: string | undefined
 ) {
-  if (operation?.startsWith('http')) return 'http.request';
+  if (operation?.startsWith('http')) {
+    return 'http.request';
+  }
 
-  if (operation?.startsWith('resource')) return 'resource.request';
+  if (operation?.startsWith('resource')) {
+    return 'resource.request';
+  }
 
   if (operation === 'pageload' || operation === 'navigation') {
     return description && SAFE_ROUTE_PATTERN.test(description)
@@ -471,11 +519,15 @@ let initializationAttempted = false;
 let telemetryEnabled = false;
 
 function initialize(config: IObservabilityConfig = observabilityConfig) {
-  if (initializationAttempted) return;
+  if (initializationAttempted) {
+    return;
+  }
 
   initializationAttempted = true;
 
-  if (!config.enabled || !config.dsn) return;
+  if (!config.enabled || !config.dsn) {
+    return;
+  }
 
   try {
     const client = Sentry.init({
@@ -506,7 +558,9 @@ function initialize(config: IObservabilityConfig = observabilityConfig) {
 }
 
 function report(error: Error, context: IObservabilityReportContext = {}) {
-  if (!telemetryEnabled) return;
+  if (!telemetryEnabled) {
+    return;
+  }
 
   try {
     Sentry.captureException(error, {
@@ -518,7 +572,9 @@ function report(error: Error, context: IObservabilityReportContext = {}) {
 }
 
 function addApiFailureBreadcrumb(context: IApiFailureBreadcrumbContext) {
-  if (!telemetryEnabled) return;
+  if (!telemetryEnabled) {
+    return;
+  }
 
   try {
     const statusCode = safeStatusCode(context.statusCode);
@@ -526,11 +582,17 @@ function addApiFailureBreadcrumb(context: IApiFailureBreadcrumbContext) {
     const errorKey = safeLabel(context.errorKey);
     const data: Record<string, string | number> = { kind: context.kind };
 
-    if (statusCode) data.statusCode = statusCode;
+    if (statusCode) {
+      data.statusCode = statusCode;
+    }
 
-    if (method) data.method = method;
+    if (method) {
+      data.method = method;
+    }
 
-    if (errorKey) data.errorKey = errorKey;
+    if (errorKey) {
+      data.errorKey = errorKey;
+    }
 
     if (isValidUUID(context.correlationId)) {
       data.correlationId = context.correlationId;

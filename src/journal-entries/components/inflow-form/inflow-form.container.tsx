@@ -105,7 +105,9 @@ export function InflowFormContainer({
     values: ICashTransactionFormValues,
     intent: 'submit' | 'draft'
   ) => {
-    if (submissionIntent) return;
+    if (submissionIntent) {
+      return;
+    }
 
     setSubmissionIntent(intent);
 
@@ -163,7 +165,9 @@ export function InflowFormContainer({
   const handleSaveDraft = (values: ICashTransactionFormValues) =>
     handlePersistValues(values, 'draft');
 
-  if (isFormDataPending) return <CashTransactionFormSkeleton />;
+  if (isFormDataPending) {
+    return <CashTransactionFormSkeleton />;
+  }
 
   return (
     <CashTransactionForm

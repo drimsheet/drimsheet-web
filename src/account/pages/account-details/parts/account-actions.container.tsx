@@ -52,7 +52,9 @@ export function AccountActionsContainer({
       setEditSession((current) => current + 1);
       setEditOpen(true);
     } catch (error) {
-      if (error instanceof Error) toast.error(error.message);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
     }
   };
 

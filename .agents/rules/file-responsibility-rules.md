@@ -42,7 +42,11 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
   narrowing with a local immutable value when a predicate checks optional data.
   For complex render branches, use guard returns or a focused presentation part.
 
-## Statement Spacing
+## Control Statements and Spacing
+
+- Always use braces for control-statement bodies (`if`, `else`, `for`,
+  `for...in`, `for...of`, `while`, and `do...while`), including single-line
+  guards and returns. ESLint enforces this with `curly: ['error', 'all']`.
 
 - Separate logical groups with one blank line: hooks, derived values, handlers,
   guard clauses, and returned UI. Keep related simple declarations together.

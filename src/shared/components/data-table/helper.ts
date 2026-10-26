@@ -37,7 +37,9 @@ function layout<T extends IDataWithId>(
   let flexibleMinimum = 0;
 
   const widths = columns.map((column, index) => {
-    if (fixed[index]) return fixed[index];
+    if (fixed[index]) {
+      return fixed[index];
+    }
 
     const ratio = weights[index] / totalWeight;
     const minimum = positive(column.minWidth, column.filterable ? 180 : 140);
@@ -50,9 +52,13 @@ function layout<T extends IDataWithId>(
 }
 
 function nextSort(direction: USortDirection): USortDirection {
-  if (direction === 'asc') return 'desc';
+  if (direction === 'asc') {
+    return 'desc';
+  }
 
-  if (direction === 'desc') return null;
+  if (direction === 'desc') {
+    return null;
+  }
 
   return 'asc';
 }
@@ -63,16 +69,23 @@ function filters(
   values: (string | number)[]
 ) {
   const result = { ...current };
-  if (values.length) result[key] = values;
-  else delete result[key];
+  if (values.length) {
+    result[key] = values;
+  } else {
+    delete result[key];
+  }
 
   return result;
 }
 
 function header<T extends IDataWithId>(column: ITableColumn<T>): ReactNode {
-  if (column.headerRender) return column.headerRender(column);
+  if (column.headerRender) {
+    return column.headerRender(column);
+  }
 
-  if (column.renderHeader) return column.renderHeader(column);
+  if (column.renderHeader) {
+    return column.renderHeader(column);
+  }
 
   return column.title;
 }
@@ -82,9 +95,13 @@ function cell<T extends IDataWithId>(
   row: T
 ): ReactNode {
   const value = row[column.dataIndex];
-  if (column.render) return column.render(value, row);
+  if (column.render) {
+    return column.render(value, row);
+  }
 
-  if (value === null || value === undefined) return null;
+  if (value === null || value === undefined) {
+    return null;
+  }
 
   return String(value);
 }

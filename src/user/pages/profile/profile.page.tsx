@@ -45,7 +45,9 @@ export function ProfilePage() {
   const handlePreferenceChange = (payload: IUserPreferencesUpdateDto) => {
     updatePreferences.mutate(payload, {
       onSuccess: (result) => {
-        if (!payload.theme) return;
+        if (!payload.theme) {
+          return;
+        }
 
         const theme = result.appPreferences.theme ?? 'system';
         storageService.set({ theme });

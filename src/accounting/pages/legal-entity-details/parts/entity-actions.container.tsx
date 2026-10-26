@@ -20,7 +20,9 @@ export function EntityActionsContainer({
   const handleApiError = useApiErrorHandler();
 
   const handleSwitch = async () => {
-    if (switching) return;
+    if (switching) {
+      return;
+    }
 
     setSwitching(true);
     try {

@@ -52,23 +52,29 @@ export function LegalEntityActionDialog({
       const detailKey = ['accountingService', 'getEntityDetails', entity.id];
       const listKey = ['accountingService', 'getAccountingEntities'];
       let updated: IAccountingEntity | undefined;
-      if (action === 'edit')
+      if (action === 'edit') {
         updated = await accountingService.updateEntity(
           entity.id,
           legalEntityMapper.toUpdateDto(values)
         );
+      }
 
       if (action === 'archive') {
         await accountingService.archiveEntity(entity.id);
         updated = { ...entity, status: 'archived' };
       }
 
-      if (action === 'delete') await accountingService.deleteEntity(entity.id);
+      if (action === 'delete') {
+        await accountingService.deleteEntity(entity.id);
+      }
 
       await queryClient.cancelQueries({ queryKey: listKey });
       await queryClient.cancelQueries({ queryKey: detailKey });
-      if (updated) queryClient.setQueryData(detailKey, updated);
-      else queryClient.removeQueries({ queryKey: detailKey });
+      if (updated) {
+        queryClient.setQueryData(detailKey, updated);
+      } else {
+        queryClient.removeQueries({ queryKey: detailKey });
+      }
 
       queryClient.setQueryData<IAccountingEntity[]>(listKey, (existing) =>
         existing?.flatMap((item) =>
@@ -78,11 +84,12 @@ export function LegalEntityActionDialog({
         )
       );
       void queryClient.invalidateQueries({ queryKey: listKey });
-      if (isCurrent && action === 'edit')
+      if (isCurrent && action === 'edit') {
         queryClient.setQueryData(
           ['accountingService', 'getAccountingEntity'],
           updated
         );
+      }
 
       toast.success(t(`details_${action}_success`));
       onClose();
@@ -93,7 +100,9 @@ export function LegalEntityActionDialog({
         return;
       }
 
-      if (action === 'delete') navigate('/legal-entity', { replace: true });
+      if (action === 'delete') {
+        navigate('/legal-entity', { replace: true });
+      }
     } catch (error) {
       const parsed = handleApiError(error);
       setErrorKey(
@@ -111,7 +120,9 @@ export function LegalEntityActionDialog({
   });
 
   const handleOpenChange = (open: boolean) => {
-    if (!open && !form.isSubmitting) onClose();
+    if (!open && !form.isSubmitting) {
+      onClose();
+    }
   };
 
   const title = t(`details_${action}_title`);

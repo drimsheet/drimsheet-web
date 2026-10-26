@@ -79,7 +79,9 @@ export function BankSelection({
       getBankCode(b) === bankName
   );
 
-  if (isBanksLoading && bankLocation) return <BankSelectionSkeleton />;
+  if (isBanksLoading && bankLocation) {
+    return <BankSelectionSkeleton />;
+  }
 
   const bank_location_label = t('bank_location_label');
   const bank_name_label = t('bank_name_label');

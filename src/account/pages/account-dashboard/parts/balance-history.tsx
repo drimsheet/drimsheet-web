@@ -16,8 +16,9 @@ export function BalanceHistory({
   const settledState = error ? 'error' : 'success';
 
   const handlePeriodChange = (value: string) => {
-    if (value === '1M' || value === '6M' || value === '1Y')
+    if (value === '1M' || value === '6M' || value === '1Y') {
       onPeriodChange(value);
+    }
   };
 
   const title = t('dashboard_history_title');

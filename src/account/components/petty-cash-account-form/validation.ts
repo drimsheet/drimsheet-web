@@ -21,7 +21,9 @@ const optionalNumber = (typeErrorMessage: string) =>
   yup
     .number()
     .transform((value, originalValue) => {
-      if (originalValue === null || originalValue === '') return undefined;
+      if (originalValue === null || originalValue === '') {
+        return undefined;
+      }
 
       return value;
     })

@@ -177,13 +177,14 @@ export function BalanceTrendWithState({
       }
     >
       {(data) => {
-        if (data.points == null)
+        if (data.points == null) {
           return (
             <BalanceTrendError
               title={labels.errorTitle}
               description={labels.errorDescription}
             />
           );
+        }
 
         return <BalanceTrend points={data.points} labels={labels} />;
       }}

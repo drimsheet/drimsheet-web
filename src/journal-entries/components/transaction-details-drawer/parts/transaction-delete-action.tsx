@@ -35,15 +35,21 @@ export function TransactionDeleteAction({
   const busy = pendingAction !== null;
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (busy) return;
+    if (busy) {
+      return;
+    }
 
     setOpen(nextOpen);
-    if (!nextOpen) setConfirmationText('');
+    if (!nextOpen) {
+      setConfirmationText('');
+    }
   };
 
   const handleArchive = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    if (!onArchive || busy) return;
+    if (!onArchive || busy) {
+      return;
+    }
 
     setPendingAction('archive');
     try {
@@ -57,7 +63,9 @@ export function TransactionDeleteAction({
 
   const handleDelete = async (event?: MouseEvent<HTMLButtonElement>) => {
     event?.preventDefault();
-    if (!isDeleteConfirmed || busy) return;
+    if (!isDeleteConfirmed || busy) {
+      return;
+    }
 
     setPendingAction('delete');
     try {

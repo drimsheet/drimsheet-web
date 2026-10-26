@@ -14,10 +14,11 @@ async function setup(page: Page) {
   await registerAuthenticatedAppRoutes(page);
   const state = await registerAccountDashboardRoutes(page);
 
-  for (const auth of ['login-with-email', 'refresh-access-token'])
+  for (const auth of ['login-with-email', 'refresh-access-token']) {
     await page.route(`**/api/v1/auth/${auth}`, (route) =>
       route.fulfill({ json: { accessToken: 'integration-test-token' } })
     );
+  }
 
   await page.route('**/api/v1/ledger/**', (route) =>
     route.fulfill({ status: 404, json: { message: 'Not found' } })

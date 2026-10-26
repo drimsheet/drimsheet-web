@@ -171,9 +171,12 @@ describe('ReportsForm', () => {
   });
   it('disables all form fields when requested', () => {
     render(<ReportsForm {...props} disabled />);
-    for (const input of screen.getAllByRole('textbox'))
+    for (const input of screen.getAllByRole('textbox')) {
       expect(input).toBeDisabled();
-    for (const input of screen.getAllByRole('combobox'))
+    }
+
+    for (const input of screen.getAllByRole('combobox')) {
       expect(input).toBeDisabled();
+    }
   });
 });

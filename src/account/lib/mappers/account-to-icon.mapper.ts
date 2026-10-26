@@ -213,7 +213,9 @@ function mapSubTypeToIcon(
 ) {
   const iconConfig = subTypeMaps[String(account.subType)];
 
-  if (!iconConfig) return fallback;
+  if (!iconConfig) {
+    return fallback;
+  }
 
   return iconConfig.behaviorMaps[account.behavior] ?? iconConfig.fallback;
 }

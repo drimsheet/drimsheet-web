@@ -76,7 +76,9 @@ function createPageFixture(files = {}) {
     ...files,
   };
   for (const [name, content] of Object.entries(sources)) {
-    if (content === null) continue;
+    if (content === null) {
+      continue;
+    }
     const filePath = path.join(root, name);
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, content);
@@ -577,7 +579,9 @@ function createDialogFixture(files = {}) {
     ...files,
   };
   for (const [name, content] of Object.entries(sources)) {
-    if (content === null) continue;
+    if (content === null) {
+      continue;
+    }
     const filePath = path.join(root, name);
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, content);

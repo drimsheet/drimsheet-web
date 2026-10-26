@@ -35,7 +35,9 @@ export function OnboardingLayout() {
   };
 
   const handleCloseAutoFocus = (event: Event) => {
-    if (!logoutRequestedRef.current) return;
+    if (!logoutRequestedRef.current) {
+      return;
+    }
 
     event.preventDefault();
     logoutRequestedRef.current = false;

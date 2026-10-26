@@ -68,24 +68,32 @@ export function TransactionsTable({
   );
 
   const handleDetailsOpenChange = useCallback((open: boolean) => {
-    if (!open) setSelectedTransaction(null);
+    if (!open) {
+      setSelectedTransaction(null);
+    }
   }, []);
 
   const handleSelectedTransactionEdit = useCallback(() => {
-    if (!selectedTransaction) return;
+    if (!selectedTransaction) {
+      return;
+    }
 
     onEditTransaction?.(selectedTransaction);
   }, [onEditTransaction, selectedTransaction]);
 
   const handleSelectedTransactionArchive = async () => {
-    if (!selectedTransaction || !onArchiveTransaction || archiving) return;
+    if (!selectedTransaction || !onArchiveTransaction || archiving) {
+      return;
+    }
 
     await onArchiveTransaction(selectedTransaction);
     setSelectedTransaction(null);
   };
 
   const handleSelectedTransactionDelete = async () => {
-    if (!selectedTransaction || !onDeleteTransaction) return;
+    if (!selectedTransaction || !onDeleteTransaction) {
+      return;
+    }
 
     await onDeleteTransaction(selectedTransaction);
     setSelectedTransaction(null);
@@ -110,7 +118,9 @@ export function TransactionsTable({
         width: 64,
         headerRender: () => <span className="sr-only">{directionLabel}</span>,
         render: (_, row) => {
-          if (!row.canOpenDetails) return null;
+          if (!row.canOpenDetails) {
+            return null;
+          }
 
           if (row.direction === EJournalEntrySourceType.Receipt) {
             return (
@@ -226,7 +236,9 @@ export function TransactionsTable({
     return tableColumns;
   }, [handleTransactionOpen, t]);
 
-  if (loading) return <TransactionsTableSkeleton />;
+  if (loading) {
+    return <TransactionsTableSkeleton />;
+  }
 
   return (
     <>

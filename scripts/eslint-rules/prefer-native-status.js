@@ -1,5 +1,7 @@
 function containsStatus(node) {
-  if (!node) return false;
+  if (!node) {
+    return false;
+  }
 
   switch (node.type) {
     case 'Literal':
@@ -30,14 +32,20 @@ function containsStatus(node) {
 function isLucideIcon(name, scope) {
   const namespace = name.type === 'JSXMemberExpression';
   const identifier = namespace ? name.object : name;
-  if (identifier.type !== 'JSXIdentifier') return false;
-  if (!namespace && !/^[A-Z]/.test(identifier.name)) return false;
+  if (identifier.type !== 'JSXIdentifier') {
+    return false;
+  }
+  if (!namespace && !/^[A-Z]/.test(identifier.name)) {
+    return false;
+  }
 
   // Resolve the binding so local components cannot bypass the rule by using
   // an icon's name, including shadowing an imported icon.
   for (let current = scope; current; current = current.upper) {
     const variable = current.set.get(identifier.name);
-    if (!variable) continue;
+    if (!variable) {
+      continue;
+    }
 
     return variable.defs.some(
       (definition) =>
@@ -66,11 +74,17 @@ export default {
   create(context) {
     return {
       JSXAttribute(node) {
-        if (node.name.name !== 'role' || !containsStatus(node.value)) return;
+        if (node.name.name !== 'role' || !containsStatus(node.value)) {
+          return;
+        }
 
         const name = node.parent.name;
-        if (name.type === 'JSXIdentifier' && name.name === 'svg') return;
-        if (isLucideIcon(name, context.sourceCode.getScope(node))) return;
+        if (name.type === 'JSXIdentifier' && name.name === 'svg') {
+          return;
+        }
+        if (isLucideIcon(name, context.sourceCode.getScope(node))) {
+          return;
+        }
 
         // No automatic fix: replacing a structural wrapper with output could
         // introduce invalid HTML or change layout and announcement behavior.

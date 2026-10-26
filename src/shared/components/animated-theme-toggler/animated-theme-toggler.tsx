@@ -61,7 +61,9 @@ export const AnimatedThemeToggler = forwardRef<
         onClick?.(e);
 
         const button = innerRef.current;
-        if (!button) return;
+        if (!button) {
+          return;
+        }
 
         const { top, left, width, height } = button.getBoundingClientRect();
         const x = left + width / 2;

@@ -88,7 +88,9 @@ export default class CoverageReporter implements Reporter {
         ) as V8CoverageEntry[];
 
         for (const entry of entries) {
-          if (!entry.source) continue;
+          if (!entry.source) {
+            continue;
+          }
 
           const converter = v8ToIstanbul(getSourcePath(entry.url), 0, {
             source: entry.source,

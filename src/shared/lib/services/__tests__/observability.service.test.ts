@@ -36,7 +36,9 @@ let observabilityService: TObservabilityService;
 
 function getSentryOptions() {
   const options = vi.mocked(Sentry.init).mock.calls[0]?.[0];
-  if (!options) throw new Error('Expected Sentry initialization options');
+  if (!options) {
+    throw new Error('Expected Sentry initialization options');
+  }
 
   return options;
 }
@@ -157,7 +159,9 @@ describe('observabilityService', () => {
   it('removes identity, payload, URL, arbitrary breadcrumbs, and exception text from error events', async () => {
     observabilityService.initialize(ENABLED_CONFIG);
     const beforeSend = getSentryOptions().beforeSend;
-    if (!beforeSend) throw new Error('Expected beforeSend');
+    if (!beforeSend) {
+      throw new Error('Expected beforeSend');
+    }
 
     const scrubbed = await beforeSend(
       {
@@ -355,7 +359,9 @@ describe('observabilityService', () => {
   it('drops UI breadcrumbs and projects safe API-failure breadcrumbs', () => {
     observabilityService.initialize(ENABLED_CONFIG);
     const beforeBreadcrumb = getSentryOptions().beforeBreadcrumb;
-    if (!beforeBreadcrumb) throw new Error('Expected beforeBreadcrumb');
+    if (!beforeBreadcrumb) {
+      throw new Error('Expected beforeBreadcrumb');
+    }
 
     expect(
       beforeBreadcrumb({ category: 'ui.click', message: 'private input' })

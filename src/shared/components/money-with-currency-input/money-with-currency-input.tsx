@@ -47,7 +47,9 @@ const filterCurrencies = (
   searchValue: string
 ) => {
   const normalizedSearchValue = searchValue.trim().toLowerCase();
-  if (!normalizedSearchValue) return currencies;
+  if (!normalizedSearchValue) {
+    return currencies;
+  }
 
   return currencies.filter((currency) =>
     getCurrencySearchText(currency)
@@ -159,7 +161,9 @@ const MoneyWithCurrencyInput = forwardRef<
         onInputValueChange={setSearchValue}
         onOpenChange={(open) => {
           setOpen(open);
-          if (open) setSearchValue('');
+          if (open) {
+            setSearchValue('');
+          }
         }}
         onValueChange={handleCurrencyValueChange}
       >

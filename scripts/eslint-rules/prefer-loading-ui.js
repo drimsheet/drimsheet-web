@@ -17,8 +17,9 @@ function unwrap(node) {
       'TSNonNullExpression',
       'ChainExpression',
     ].includes(node.type)
-  )
+  ) {
     node = node.expression;
+  }
   return node;
 }
 
@@ -49,8 +50,9 @@ export default {
       /(?:\/__(?:tests|stories)__\/|\.(?:test|spec|stories)\.[jt]sx?$)/.test(
         filename
       )
-    )
+    ) {
       return {};
+    }
 
     function variable(node) {
       for (
@@ -59,36 +61,48 @@ export default {
         scope = scope.upper
       ) {
         const found = scope.set.get(node.name);
-        if (found) return found;
+        if (found) {
+          return found;
+        }
       }
     }
 
     function values(node, seen = new Set()) {
       node = unwrap(node);
-      if (!node || seen.has(node)) return [];
+      if (!node || seen.has(node)) {
+        return [];
+      }
       seen = new Set(seen).add(node);
-      if (node.type === 'Literal' && typeof node.value === 'string')
+      if (node.type === 'Literal' && typeof node.value === 'string') {
         return [{ text: node.value }];
-      if (node.type === 'JSXText') return [{ text: node.value }];
-      if (node.type === 'TemplateLiteral')
+      }
+      if (node.type === 'JSXText') {
+        return [{ text: node.value }];
+      }
+      if (node.type === 'TemplateLiteral') {
         return [
           { text: node.quasis.map((part) => part.value.cooked).join('') },
           ...node.expressions.flatMap((expression) => values(expression, seen)),
         ];
-      if (node.type === 'ConditionalExpression')
+      }
+      if (node.type === 'ConditionalExpression') {
         return [
           ...values(node.consequent, seen),
           ...values(node.alternate, seen),
         ];
-      if (node.type === 'LogicalExpression')
+      }
+      if (node.type === 'LogicalExpression') {
         return [
           ...(node.operator === '&&' ? [] : values(node.left, seen)),
           ...values(node.right, seen),
         ];
-      if (node.type === 'BinaryExpression' && node.operator === '+')
+      }
+      if (node.type === 'BinaryExpression' && node.operator === '+') {
         return [...values(node.left, seen), ...values(node.right, seen)];
-      if (node.type === 'ArrayExpression')
+      }
+      if (node.type === 'ArrayExpression') {
         return node.elements.flatMap((entry) => values(entry, seen));
+      }
       if (node.type === 'Identifier') {
         const binding = variable(node);
         return (binding?.references ?? []).flatMap((reference) =>
@@ -124,11 +138,19 @@ export default {
 
     function isTranslation(node, seen = new Set()) {
       node = unwrap(node);
-      if (!node || seen.has(node)) return false;
+      if (!node || seen.has(node)) {
+        return false;
+      }
       seen.add(node);
-      if (node.type === 'MemberExpression') return node.property.name === 't';
-      if (node.type !== 'Identifier') return false;
-      if (node.name === 't') return true;
+      if (node.type === 'MemberExpression') {
+        return node.property.name === 't';
+      }
+      if (node.type !== 'Identifier') {
+        return false;
+      }
+      if (node.name === 't') {
+        return true;
+      }
       return variable(node)?.defs.some(
         ({ node: definition }) =>
           (definition.type === 'ImportSpecifier' &&
@@ -146,17 +168,24 @@ export default {
     // Resolve import aliases and local aliases without relying on their chosen name.
     function names(node, seen = new Set()) {
       node = unwrap(node);
-      if (!node || seen.has(node)) return [];
+      if (!node || seen.has(node)) {
+        return [];
+      }
       seen.add(node);
-      if (['JSXMemberExpression', 'MemberExpression'].includes(node.type))
+      if (['JSXMemberExpression', 'MemberExpression'].includes(node.type)) {
         return [node.property.name];
-      if (!['JSXIdentifier', 'Identifier'].includes(node.type)) return [];
+      }
+      if (!['JSXIdentifier', 'Identifier'].includes(node.type)) {
+        return [];
+      }
       const result = [node.name];
       for (const { node: definition } of variable(node)?.defs ?? []) {
-        if (definition.type === 'ImportSpecifier')
+        if (definition.type === 'ImportSpecifier') {
           result.push(definition.imported.name);
-        if (definition.type === 'VariableDeclarator')
+        }
+        if (definition.type === 'VariableDeclarator') {
           result.push(...names(definition.init, seen));
+        }
       }
       return result;
     }
@@ -174,8 +203,11 @@ export default {
     }
 
     function insideButton(node) {
-      for (let parent = node.parent; parent; parent = parent.parent)
-        if (parent.type === 'JSXElement' && isButton(parent)) return true;
+      for (let parent = node.parent; parent; parent = parent.parent) {
+        if (parent.type === 'JSXElement' && isButton(parent)) {
+          return true;
+        }
+      }
       return false;
     }
 
@@ -184,8 +216,9 @@ export default {
         if (
           parent.type !== 'JSXElement' ||
           parent.openingElement.name.name !== 'output'
-        )
+        ) {
           continue;
+        }
         const classes = values(attribute(parent, 'className'));
         return (
           classes.length === 1 &&
@@ -204,35 +237,42 @@ export default {
         !value.key ||
         value.text !== 'profile_preferences_saving_text' ||
         insideButton(node)
-      )
+      ) {
         return false;
+      }
       let output = false;
       for (let parent = node.parent; parent; parent = parent.parent) {
         if (
           parent.type === 'JSXElement' &&
           parent.openingElement.name.name === 'output'
-        )
+        ) {
           output = true;
+        }
         if (
           [
             'FunctionDeclaration',
             'FunctionExpression',
             'ArrowFunctionExpression',
           ].includes(parent.type)
-        )
+        ) {
           return (
             output &&
             (parent.id?.name ?? parent.parent?.id?.name) ===
               'ProfilePreferences'
           );
+        }
       }
       return false;
     }
 
     function checkText(node, expression = node, translated = false) {
-      if (announcement(node)) return;
+      if (announcement(node)) {
+        return;
+      }
       const manual = values(expression).some((value) => {
-        if (autosave(node, value)) return false;
+        if (autosave(node, value)) {
+          return false;
+        }
         return value.key || translated
           ? progressKey.test(value.text) &&
               !/(?:^|[_.:])(?:error|failed|failure)(?:$|[_.:])/i.test(
@@ -240,13 +280,19 @@ export default {
               )
           : progressText.test(value.text.trim());
       });
-      if (manual) context.report({ node, messageId: 'loadingText' });
+      if (manual) {
+        context.report({ node, messageId: 'loadingText' });
+      }
     }
 
     function loaderLabel(node) {
-      if (node.name.name !== 'label') return false;
+      if (node.name.name !== 'label') {
+        return false;
+      }
       const name = node.parent.name;
-      if (!names(name).includes('FullPageLoader')) return false;
+      if (!names(name).includes('FullPageLoader')) {
+        return false;
+      }
       const binding = name.type === 'JSXMemberExpression' ? name.object : name;
       return variable(binding)?.defs.some(
         (definition) =>
@@ -259,12 +305,15 @@ export default {
 
     function spinner(node, seen = new Set()) {
       node = unwrap(node);
-      if (!node || seen.has(node)) return false;
+      if (!node || seen.has(node)) {
+        return false;
+      }
       seen = new Set(seen).add(node);
-      if (node.type === 'Identifier')
+      if (node.type === 'Identifier') {
         return variable(node)?.references.some(
           (ref) => ref.writeExpr && spinner(ref.writeExpr, seen)
         );
+      }
       if (node.type === 'JSXElement') {
         if (
           names(node.openingElement.name).some((name) =>
@@ -272,8 +321,9 @@ export default {
               name
             )
           )
-        )
+        ) {
           return true;
+        }
         const className = unwrap(attribute(node, 'className'));
         const classes =
           className?.type === 'CallExpression'
@@ -283,41 +333,51 @@ export default {
           classes.some(({ text }) =>
             /(?:^|[\s:])animate-spin(?:\s|$)/.test(text)
           )
-        )
+        ) {
           return true;
+        }
         return node.children.some((child) => spinner(child, seen));
       }
-      if (node.type === 'JSXFragment')
+      if (node.type === 'JSXFragment') {
         return node.children.some((child) => spinner(child, seen));
-      if (node.type === 'ConditionalExpression')
+      }
+      if (node.type === 'ConditionalExpression') {
         return spinner(node.consequent, seen) || spinner(node.alternate, seen);
-      if (node.type === 'LogicalExpression')
+      }
+      if (node.type === 'LogicalExpression') {
         return (
           (node.operator !== '&&' && spinner(node.left, seen)) ||
           spinner(node.right, seen)
         );
-      if (node.type === 'ArrayExpression')
+      }
+      if (node.type === 'ArrayExpression') {
         return node.elements.some((entry) => spinner(entry, seen));
+      }
       return false;
     }
 
     return {
       JSXText: checkText,
       JSXExpressionContainer(node) {
-        if (node.parent.type !== 'JSXAttribute')
+        if (node.parent.type !== 'JSXAttribute') {
           checkText(node, node.expression);
+        }
       },
       JSXAttribute(node) {
         if (
           node.name.name === 'i18nKey' &&
           names(node.parent.name).includes('Trans')
-        )
+        ) {
           checkText(node, node.value, true);
-        if (visibleProps.test(node.name.name) && !loaderLabel(node))
+        }
+        if (visibleProps.test(node.name.name) && !loaderLabel(node)) {
           checkText(node, node.value);
+        }
       },
       JSXElement(node) {
-        if (filename.endsWith(buttonFile) || !isButton(node)) return;
+        if (filename.endsWith(buttonFile) || !isButton(node)) {
+          return;
+        }
         if (
           node.children.some((child) => spinner(child)) ||
           node.openingElement.attributes.some(
@@ -328,11 +388,12 @@ export default {
               ) &&
               spinner(prop.value)
           )
-        )
+        ) {
           context.report({
             node: node.openingElement,
             messageId: 'buttonSpinner',
           });
+        }
       },
     };
   },

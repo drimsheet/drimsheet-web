@@ -44,8 +44,12 @@ function createInitialValues(
 }
 
 function getOfficialDates(currentDate: string, jurisdictionCode?: string) {
-  if (!jurisdictionCode || !Object.hasOwn(FISCAL_YEAR_STARTS, jurisdictionCode))
+  if (
+    !jurisdictionCode ||
+    !Object.hasOwn(FISCAL_YEAR_STARTS, jurisdictionCode)
+  ) {
     return undefined;
+  }
 
   const { month, day } =
     FISCAL_YEAR_STARTS[jurisdictionCode as UJurisdictionCode];

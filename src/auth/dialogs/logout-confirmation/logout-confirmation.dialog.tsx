@@ -26,7 +26,9 @@ export function LogoutConfirmationDialog({
   const isOpen = open ?? internalOpen;
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (open === undefined) setInternalOpen(nextOpen);
+    if (open === undefined) {
+      setInternalOpen(nextOpen);
+    }
 
     onOpenChange?.(nextOpen);
   };

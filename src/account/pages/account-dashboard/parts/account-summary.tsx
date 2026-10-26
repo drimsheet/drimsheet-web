@@ -74,7 +74,9 @@ export function AccountsSummaryWithState({
       error={<AccountsSummaryError />}
     >
       {(data) => {
-        if (data.summary == null) return <AccountsSummaryError />;
+        if (data.summary == null) {
+          return <AccountsSummaryError />;
+        }
 
         return <AccountsSummary summary={data.summary} change={data.change} />;
       }}

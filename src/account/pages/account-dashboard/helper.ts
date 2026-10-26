@@ -42,10 +42,13 @@ function balanceChange(
   const firstPoint = points[0];
   const lastPoint = points.at(-1);
 
-  if (points.length < 2 || !firstPoint || !lastPoint) return undefined;
-
-  if (firstPoint.amount.currencyCode !== lastPoint.amount.currencyCode)
+  if (points.length < 2 || !firstPoint || !lastPoint) {
     return undefined;
+  }
+
+  if (firstPoint.amount.currencyCode !== lastPoint.amount.currencyCode) {
+    return undefined;
+  }
 
   const firstAmount = toMajorUnits(firstPoint.amount);
   const lastAmount = toMajorUnits(lastPoint.amount);

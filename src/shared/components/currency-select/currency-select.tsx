@@ -41,7 +41,9 @@ export function CurrencySelect({
   }, [currencies]);
 
   const mapItemToStringLabel = (item: ICurrency | null) => {
-    if (!item) return '';
+    if (!item) {
+      return '';
+    }
 
     return displayCode ? item.code : item.name;
   };

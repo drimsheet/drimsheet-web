@@ -138,7 +138,7 @@ async function setup(
     route.fulfill({ json: { openingBalance: null } })
   );
   await page.route(`${endpoint}/bank-details`, (route) => {
-    if (options.bank === false)
+    if (options.bank === false) {
       return route.fulfill({
         status: 500,
         json: {
@@ -146,6 +146,7 @@ async function setup(
           errorKey: 'ledger_error_bank_details_missing_unexpected',
         },
       });
+    }
 
     return route.fulfill({
       json: {
@@ -500,7 +501,9 @@ test('searches and sorts account transactions and opens the shared details drawe
 
   await page.route('**/api/v1/journal-entries?*', (route) => {
     const query = new URL(route.request().url()).searchParams;
-    if (query.get('sortDirection') !== 'asc') return route.fallback();
+    if (query.get('sortDirection') !== 'asc') {
+      return route.fallback();
+    }
 
     expect(query.get('accountId')).toBe(accountId);
 
@@ -543,7 +546,9 @@ test('searches and sorts account transactions and opens the shared details drawe
 
   await page.route('**/api/v1/journal-entries?*', (route) => {
     const query = new URL(route.request().url()).searchParams;
-    if (!query.get('search')) return route.fallback();
+    if (!query.get('search')) {
+      return route.fallback();
+    }
 
     expect(query.get('accountId')).toBe(accountId);
     expect(query.get('search')).toBe('Unmatched');
@@ -695,7 +700,9 @@ test('rechecks deletion permission, hides stale permission while pending, and re
 
   await page.route(endpoint + '/deletion-eligibility', async (route) => {
     checks += 1;
-    if (checks === 2) await pending;
+    if (checks === 2) {
+      await pending;
+    }
 
     if (checks === 3) {
       await route.fulfill({ status: 500, json: { name: 'UnexpectedError' } });
@@ -924,11 +931,12 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
       (route) => {
         expect(route.request().method()).toBe('PATCH');
         attempts += 1;
-        if (attempts === 1)
+        if (attempts === 1) {
           return route.fulfill({
             status: 500,
             json: { name: 'UnexpectedError' },
           });
+        }
 
         const request = route.request().postDataJSON();
         requests.push(request);
@@ -940,8 +948,9 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
             currencyCode: request.currencyCode ?? current.balance.currencyCode,
           },
         };
-        if (request.bankAccount)
+        if (request.bankAccount) {
           bankDetails = { ...bankDetails, ...request.bankAccount };
+        }
 
         return route.fulfill({ json: current });
       }
@@ -1022,8 +1031,9 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
           }
         : { name: 'Updated account' },
     ]);
-    if (behavior === 'bank')
+    if (behavior === 'bank') {
       await expect(page.getByText('New holder', { exact: true })).toBeVisible();
+    }
 
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
     await expect(dialog.getByLabel('Account display name')).toHaveValue(
@@ -1217,11 +1227,12 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
     let reads = 0;
     await page.route(`${endpoint}/opening-balance`, (route) => {
       reads += 1;
-      if (reads === 1)
+      if (reads === 1) {
         return route.fulfill({
           status: 500,
           json: { name: 'UnexpectedError' },
         });
+      }
 
       return route.fulfill({
         json: {
@@ -1299,7 +1310,9 @@ for (const behavior of ['petty_cash', 'bank'] as const) {
           return;
         }
 
-        if (!eligible) await response;
+        if (!eligible) {
+          await response;
+        }
 
         await route.fulfill({
           json: eligible

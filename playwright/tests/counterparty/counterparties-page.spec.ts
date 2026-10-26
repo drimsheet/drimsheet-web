@@ -155,10 +155,11 @@ test('combines server search, filters, sorting and pagination without losing que
           ))
     );
 
-    if (q.get('orderBy') === 'name')
+    if (q.get('orderBy') === 'name') {
       result.sort(
         (a, b) => a.name.localeCompare(b.name) * (direction === 'desc' ? -1 : 1)
       );
+    }
 
     await route.fulfill({
       json: {

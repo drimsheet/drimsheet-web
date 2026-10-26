@@ -27,7 +27,9 @@ export function CounterpartyFormCreateContainer({
   }, [isCreating, onBusyChange]);
 
   const handleSubmit = async (values: ICounterpartyFormValues) => {
-    if (isCreating) return;
+    if (isCreating) {
+      return;
+    }
 
     try {
       await createCounterparty(

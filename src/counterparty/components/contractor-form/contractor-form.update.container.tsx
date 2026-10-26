@@ -39,7 +39,9 @@ export function ContractorFormUpdateContainer({
   });
 
   const handleSubmit = (values: IContractorFormValues) => {
-    if (!baseline || state.saving) return;
+    if (!baseline || state.saving) {
+      return;
+    }
 
     void state.handleUpdate(
       counterpartyUpdateMapper.toContractorUpdateReq(
@@ -57,10 +59,14 @@ export function ContractorFormUpdateContainer({
   }, [state.saving, onBusyChange]);
 
   useEffect(() => {
-    if (baseline) onLoaded?.(baseline);
+    if (baseline) {
+      onLoaded?.(baseline);
+    }
   }, [baseline, onLoaded]);
 
-  if (!baseline || jurisdictions.isPending) return loadingFallback;
+  if (!baseline || jurisdictions.isPending) {
+    return loadingFallback;
+  }
 
   const typeRestriction = usage.used
     ? {

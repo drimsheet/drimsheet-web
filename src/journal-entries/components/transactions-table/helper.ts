@@ -60,7 +60,9 @@ function getRowCashLine(
   lines: readonly IJournalLineListDto[],
   sourceType: UTransactionsTableDirection
 ) {
-  if (sourceType === EJournalEntrySourceType.Receipt) return lines.at(-1);
+  if (sourceType === EJournalEntrySourceType.Receipt) {
+    return lines.at(-1);
+  }
 
   return lines.at(0);
 }
@@ -69,9 +71,13 @@ function getRowCategoryLines(
   lines: readonly IJournalLineListDto[],
   sourceType: UTransactionsTableDirection
 ) {
-  if (sourceType === EJournalEntrySourceType.Receipt) return lines.slice(0, -1);
+  if (sourceType === EJournalEntrySourceType.Receipt) {
+    return lines.slice(0, -1);
+  }
 
-  if (sourceType === EJournalEntrySourceType.Payment) return lines.slice(1);
+  if (sourceType === EJournalEntrySourceType.Payment) {
+    return lines.slice(1);
+  }
 
   return [];
 }
@@ -85,7 +91,9 @@ function toMoney(value: IMoneyDto): IMoneyDto {
 }
 
 function toExchangeRate(value: IExchangeRate | null): IExchangeRate | null {
-  if (!value) return null;
+  if (!value) {
+    return null;
+  }
 
   return {
     asOf: value.asOf,
@@ -144,12 +152,16 @@ function createCashDetails(
   entry: IJournalEntryListDto,
   lines: readonly IJournalLineListDto[]
 ): ICashTransactionDetails | undefined {
-  if (!isCashTransactionSourceType(entry.sourceType)) return undefined;
+  if (!isCashTransactionSourceType(entry.sourceType)) {
+    return undefined;
+  }
 
   const cashLine = getRowCashLine(lines, entry.sourceType);
   const categoryLines = getRowCategoryLines(lines, entry.sourceType);
 
-  if (!cashLine || categoryLines.length === 0) return undefined;
+  if (!cashLine || categoryLines.length === 0) {
+    return undefined;
+  }
 
   return {
     amount: toMoney(cashLine.amount),
@@ -170,12 +182,16 @@ function createTransferDetails(
   entry: IJournalEntryListDto,
   lines: readonly IJournalLineListDto[]
 ): ITransferTransactionDetails | undefined {
-  if (entry.sourceType !== EJournalEntrySourceType.Transfer) return undefined;
+  if (entry.sourceType !== EJournalEntrySourceType.Transfer) {
+    return undefined;
+  }
 
   const sourceLine = lines.at(0);
   const destinationLine = lines.at(1);
 
-  if (!sourceLine || !destinationLine) return undefined;
+  if (!sourceLine || !destinationLine) {
+    return undefined;
+  }
 
   return {
     attachments: entry.attachments.map(toAttachment),
@@ -197,7 +213,9 @@ function createTransferDetails(
 function createDetails(
   entry: IJournalEntryListDto
 ): UTransactionDetails | undefined {
-  if (!isTransactionSourceType(entry.sourceType)) return undefined;
+  if (!isTransactionSourceType(entry.sourceType)) {
+    return undefined;
+  }
 
   const lines = sortLines(entry.lines);
 
@@ -273,7 +291,9 @@ function createRow({ entry }: ICreateRowInput): ITransactionsTableRow {
 function createRows({ entries, accountId }: ICreateRowsInput) {
   return entries.map((entry) => {
     const row = createRow({ entry });
-    if (!accountId) return row;
+    if (!accountId) {
+      return row;
+    }
 
     const accountLine = entry.lines.find(
       (line) => line.account.id === accountId

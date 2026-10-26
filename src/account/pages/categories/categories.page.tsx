@@ -80,7 +80,9 @@ export function CategoriesPage() {
   };
 
   const handleArchive = async () => {
-    if (!archiveAccount) return;
+    if (!archiveAccount) {
+      return;
+    }
 
     try {
       await archive.mutateAsync(archiveAccount.accountId);

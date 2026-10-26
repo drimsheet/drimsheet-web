@@ -20,7 +20,9 @@ export function CompleteSignUpPage() {
 
   useEffect(() => {
     const handleVerifyEmail = async () => {
-      if (hasCalled.current) return;
+      if (hasCalled.current) {
+        return;
+      }
 
       hasCalled.current = true;
 

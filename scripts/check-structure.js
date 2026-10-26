@@ -263,11 +263,14 @@ function hasFrozenOwnerHelper(ownerPath) {
     !defaultExport ||
     !ts.isIdentifier(defaultExport.expression) ||
     defaultExport.expression.text !== helperName
-  )
+  ) {
     return false;
+  }
 
   return source.statements.some((statement) => {
-    if (!ts.isVariableStatement(statement)) return false;
+    if (!ts.isVariableStatement(statement)) {
+      return false;
+    }
     return statement.declarationList.declarations.some((declaration) => {
       const initializer = declaration.initializer;
       return (
@@ -353,7 +356,9 @@ function validateOrchestrationOwner(ownerPath, relative) {
     );
   }
   walk(ownerPath, (fullPath, entry) => {
-    if (!entry.isFile()) return;
+    if (!entry.isFile()) {
+      return;
+    }
     const localPath = path.relative(ownerPath, fullPath);
     const segments = localPath.split(path.sep);
     const basename = path.basename(fullPath);
@@ -396,8 +401,9 @@ function moduleReferences(sourceFile) {
       (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
       node.moduleSpecifier
     ) {
-      if (ts.isStringLiteral(node.moduleSpecifier))
+      if (ts.isStringLiteral(node.moduleSpecifier)) {
         references.push(node.moduleSpecifier.text);
+      }
     } else if (
       ts.isImportTypeNode(node) &&
       ts.isLiteralTypeNode(node.argument) &&
@@ -442,7 +448,9 @@ function validateOrchestrationImports(srcRoot, filePath, relative) {
       continue;
     }
     const targetOwner = getOrchestrationOwner(srcRoot, target);
-    if (!targetOwner) continue;
+    if (!targetOwner) {
+      continue;
+    }
     const kind =
       path.basename(path.dirname(targetOwner)) === 'dialogs'
         ? 'dialog'

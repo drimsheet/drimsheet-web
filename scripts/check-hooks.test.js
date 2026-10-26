@@ -36,8 +36,9 @@ function query(key, fn = '() => accountService.getAccounts()') {
 }
 
 afterEach(() => {
-  for (const root of roots.splice(0))
+  for (const root of roots.splice(0)) {
     fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 describe('one hook per file', () => {

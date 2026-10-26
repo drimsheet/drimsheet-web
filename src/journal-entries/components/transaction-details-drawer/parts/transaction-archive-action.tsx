@@ -20,7 +20,9 @@ export function TransactionArchiveAction({
   const busy = loading || submitting;
 
   const handleArchive = async () => {
-    if (busy || !onArchive) return;
+    if (busy || !onArchive) {
+      return;
+    }
 
     setSubmitting(true);
     try {

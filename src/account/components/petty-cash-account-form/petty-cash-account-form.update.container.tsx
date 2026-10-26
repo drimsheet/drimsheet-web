@@ -43,8 +43,9 @@ export function PettyCashAccountFormUpdateContainer({
       opening.openingBalance === undefined ||
       !currencyEligibility.isSuccess ||
       !currencyEligibility.isFetchedAfterMount
-    )
+    ) {
       return;
+    }
 
     const request = assetAccountUpdateMapper.toPettyCashUpdateReq(
       {
@@ -92,35 +93,44 @@ export function PettyCashAccountFormUpdateContainer({
 
   const opening_balance_error_text = t('update_opening_balance_error_text');
 
-  if (opening.isError)
+  if (opening.isError) {
     return (
       <div role="alert">
         <p>{opening_balance_error_text}</p>
       </div>
     );
+  }
 
-  if (opening.openingBalance === undefined)
+  if (opening.openingBalance === undefined) {
     return <PettyCashAccountFormSkeleton />;
+  }
 
-  if (currencyEligibility.isError)
+  if (currencyEligibility.isError) {
     return (
       <div role="alert">
         <p>{currency_eligibility_error_text}</p>
       </div>
     );
+  }
 
-  if (currencyEligibility.isPending || !currencyEligibility.isFetchedAfterMount)
+  if (
+    currencyEligibility.isPending ||
+    !currencyEligibility.isFetchedAfterMount
+  ) {
     return <PettyCashAccountFormSkeleton />;
+  }
 
-  if (canUpdateCurrency && currencies.isError)
+  if (canUpdateCurrency && currencies.isError) {
     return (
       <div role="alert">
         <p>{currencies_error_text}</p>
       </div>
     );
+  }
 
-  if (canUpdateCurrency && currencies.isPending)
+  if (canUpdateCurrency && currencies.isPending) {
     return <PettyCashAccountFormSkeleton />;
+  }
 
   return (
     <PettyCashAccountForm

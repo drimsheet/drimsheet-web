@@ -12,8 +12,9 @@ export function useBankDetails(accountId: string) {
         if (
           parseApiError(error).errorKey ===
           'ledger_error_bank_details_missing_unexpected'
-        )
+        ) {
           return null;
+        }
 
         throw error;
       }

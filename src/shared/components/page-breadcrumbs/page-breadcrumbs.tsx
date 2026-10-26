@@ -32,8 +32,9 @@ export function PageBreadcrumbs({
   isLoading,
 }: Readonly<PageBreadcrumbsProps>) {
   const breadcrumbs = flattenBreadcrumb(breadcrumb);
-  if (isLoading)
+  if (isLoading) {
     return <PageBreadcrumbsSkeleton itemsCount={breadcrumbs.length} />;
+  }
 
   return (
     <Breadcrumb>

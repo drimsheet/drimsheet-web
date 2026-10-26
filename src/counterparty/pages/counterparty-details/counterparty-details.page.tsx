@@ -63,7 +63,9 @@ export function CounterpartyDetailsPage() {
   );
 
   const handleEdit = () => {
-    if (!counterparty || counterparty.status === 'archived') return;
+    if (!counterparty || counterparty.status === 'archived') {
+      return;
+    }
 
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
@@ -100,9 +102,11 @@ export function CounterpartyDetailsPage() {
 
   const all_counterparties_label = t('all_counterparties_label');
 
-  if (!counterpartyId) return <Navigate replace to="/counterparties" />;
+  if (!counterpartyId) {
+    return <Navigate replace to="/counterparties" />;
+  }
 
-  if (isPending)
+  if (isPending) {
     return (
       <>
         <AppBody>
@@ -122,9 +126,12 @@ export function CounterpartyDetailsPage() {
         </AppBody>
       </>
     );
+  }
 
   // TODO: create a shared 404 component
-  if (!counterparty) return <Navigate replace to="/counterparties" />;
+  if (!counterparty) {
+    return <Navigate replace to="/counterparties" />;
+  }
 
   const transactionsHref = `/transactions?${new URLSearchParams({ counterpartyId })}`;
 

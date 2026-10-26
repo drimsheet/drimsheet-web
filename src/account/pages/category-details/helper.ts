@@ -11,7 +11,9 @@ import type { ICategoryMonth, ICategoryTransaction } from './types';
 const unassignedId = 'unassigned';
 
 function majorUnits(money: IMoneyDto) {
-  if (!money.isMinorUnit) return money.amount;
+  if (!money.isMinorUnit) {
+    return money.amount;
+  }
 
   const currency = currencies.find(
     ({ code }) => code.toUpperCase() === money.currencyCode.toUpperCase()
@@ -38,7 +40,9 @@ function activity(
   for (const entry of entries) {
     const lines = entry.lines.filter((line) => line.account.id === account.id);
 
-    if (!lines.length) continue;
+    if (!lines.length) {
+      continue;
+    }
 
     const counterparties = new Map<
       string,
@@ -97,7 +101,9 @@ function activity(
       (bucket) => bucket.month === entry.effectiveDate.slice(0, 7)
     );
 
-    if (isActivity && month) month.amount += amount;
+    if (isActivity && month) {
+      month.amount += amount;
+    }
   }
 
   return { months, transactions };
@@ -134,7 +140,9 @@ function filterTransactions(
 }
 
 function participationId(row: IAccountCounterpartyParticipationDto) {
-  if (row.counterparty) return row.counterparty.id;
+  if (row.counterparty) {
+    return row.counterparty.id;
+  }
 
   return row.isSelf ? 'self' : unassignedId;
 }

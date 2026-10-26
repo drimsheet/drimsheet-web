@@ -16,7 +16,9 @@ const meta = {
         value={val}
         onChange={(e) => {
           setVal(e.target.value);
-          if (args.onChange) args.onChange(e);
+          if (args.onChange) {
+            args.onChange(e);
+          }
         }}
       />
     );

@@ -51,13 +51,21 @@ export function RecentTransactionsContainer({
     setPage(1);
   };
 
-  if (loading) return <RecentTransactionsSkeleton />;
+  if (loading) {
+    return <RecentTransactionsSkeleton />;
+  }
 
-  if (!accountId) return null;
+  if (!accountId) {
+    return null;
+  }
 
-  if (transactions.isPending) return <RecentTransactionsSkeleton />;
+  if (transactions.isPending) {
+    return <RecentTransactionsSkeleton />;
+  }
 
-  if (transactions.isError) return <SectionError title={title} />;
+  if (transactions.isError) {
+    return <SectionError title={title} />;
+  }
 
   const empty =
     !transactions.isPlaceholderData &&

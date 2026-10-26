@@ -36,7 +36,9 @@ function normalizeEnvironment(value: string | undefined) {
 
 function normalizeDsn(value: string | undefined) {
   const dsn = value?.trim();
-  if (!dsn) return undefined;
+  if (!dsn) {
+    return undefined;
+  }
 
   try {
     const parsedDsn = new URL(dsn);
@@ -54,9 +56,13 @@ function normalizeDsn(value: string | undefined) {
 }
 
 function getTracesSampleRate(environment: UObservabilityEnvironment) {
-  if (environment === 'development' || environment === 'staging') return 1;
+  if (environment === 'development' || environment === 'staging') {
+    return 1;
+  }
 
-  if (environment === 'production') return 0.1;
+  if (environment === 'production') {
+    return 0.1;
+  }
 
   return 0;
 }

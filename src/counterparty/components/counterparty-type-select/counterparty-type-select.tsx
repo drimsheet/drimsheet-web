@@ -21,7 +21,9 @@ export function CounterpartyTypeSelect({
 }: Readonly<CounterpartyTypeSelectProps>) {
   const { t } = useTranslation(['counterparty']);
 
-  if (loading) return <CounterpartyTypeSelectSkeleton />;
+  if (loading) {
+    return <CounterpartyTypeSelectSkeleton />;
+  }
 
   const descriptionId = 'counterparty-type-description';
   const errorId = 'counterparty-type-error';

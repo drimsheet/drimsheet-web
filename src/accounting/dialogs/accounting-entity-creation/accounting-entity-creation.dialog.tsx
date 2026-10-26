@@ -55,15 +55,21 @@ export function AccountingEntityCreationDialog({
   const canShowForm = !isLoading && !hasOptionsError;
 
   const handleClose = () => {
-    if (!submitting) onClose();
+    if (!submitting) {
+      onClose();
+    }
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) handleClose();
+    if (!open) {
+      handleClose();
+    }
   };
 
   const handleSubmit = async (values: IAccountingEntityFormValues) => {
-    if (submitting) return;
+    if (submitting) {
+      return;
+    }
 
     setSubmitting(true);
 

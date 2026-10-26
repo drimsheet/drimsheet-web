@@ -19,7 +19,9 @@ function toExchangeRateValue(
   baseCurrencyCode: string,
   targetCurrencyCode: string
 ) {
-  if (!exchangeRate || baseCurrencyCode === targetCurrencyCode) return null;
+  if (!exchangeRate || baseCurrencyCode === targetCurrencyCode) {
+    return null;
+  }
 
   return {
     value: exchangeRate.rate,

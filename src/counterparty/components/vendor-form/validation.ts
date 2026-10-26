@@ -29,7 +29,9 @@ export function useVendorFormValidation() {
           'address-partial-validation',
           t('counterparty:address_invalid_text'),
           function (value) {
-            if (!value) return true;
+            if (!value) {
+              return true;
+            }
 
             const { line1, line2, city, region, postalCode, countryCode } =
               value;

@@ -15,7 +15,9 @@ const ControlledMoneyInput = (
       value={val}
       onChange={(e) => {
         setVal(e.target.value);
-        if (props.onChange) props.onChange(e);
+        if (props.onChange) {
+          props.onChange(e);
+        }
       }}
     />
   );

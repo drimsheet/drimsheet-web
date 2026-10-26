@@ -198,7 +198,9 @@ export function AccountCashFlowChartWithState({
       error={error}
     >
       {(data) => {
-        if (data.cashFlow == null) return error;
+        if (data.cashFlow == null) {
+          return error;
+        }
 
         return (
           <AccountCashFlowChart cashFlow={data.cashFlow} labels={labels} />

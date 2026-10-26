@@ -30,7 +30,9 @@ export function VendorFormCreateContainer({
   }, [isCreating, onBusyChange]);
 
   const handleSubmit = async (values: IVendorFormValues) => {
-    if (isCreating) return;
+    if (isCreating) {
+      return;
+    }
 
     try {
       await createCounterparty(counterpartyMapper.toVendorCreateReq(values));
@@ -41,7 +43,9 @@ export function VendorFormCreateContainer({
     }
   };
 
-  if (isPending) return <VendorFormSkeleton />;
+  if (isPending) {
+    return <VendorFormSkeleton />;
+  }
 
   return (
     <VendorForm

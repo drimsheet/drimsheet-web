@@ -9,7 +9,7 @@ function createGroups(
   t: TFunction<'accounting'>,
   kind: UCategoryKind
 ): ICategoryGroup[] {
-  if (kind === 'expense')
+  if (kind === 'expense') {
     return [
       { id: 'direct_costs', name: t('expense_categories_direct_costs_label') },
       {
@@ -19,6 +19,7 @@ function createGroups(
       { id: 'bank_charges', name: t('expense_categories_bank_charges_label') },
       { id: 'interest', name: t('expense_categories_interest_label') },
     ];
+  }
 
   return [
     { id: 'services', name: t('income_categories_services_label') },
@@ -33,7 +34,9 @@ function createInitialValues(
   defaultName: (name: string) => string,
   initialValues?: ICategoriesFormValues
 ): ICategoriesFormValues {
-  if (initialValues) return initialValues;
+  if (initialValues) {
+    return initialValues;
+  }
 
   return {
     categories: groups.map((group) => ({

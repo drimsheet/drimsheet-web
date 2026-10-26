@@ -67,7 +67,9 @@ export function CounterpartyRoleSelect({
   const canSubmit = Boolean(selectedValue && !disabled);
 
   const handleSelect = (optionValue: UCounterpartyRoleSelectValue) => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
 
     if (value === undefined) {
       setInternalSelected(optionValue);
@@ -75,7 +77,9 @@ export function CounterpartyRoleSelect({
   };
 
   const handleSubmit = () => {
-    if (!canSubmit || !selectedValue) return;
+    if (!canSubmit || !selectedValue) {
+      return;
+    }
 
     onSubmit(selectedValue);
   };

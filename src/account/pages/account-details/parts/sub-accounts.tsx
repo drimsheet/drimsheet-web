@@ -10,7 +10,9 @@ export function SubAccounts({
 }: Readonly<SubAccountsProps>) {
   const { t } = useTranslation(['ledger-accounts', 'shared']);
 
-  if (accounts.length === 0) return null;
+  if (accounts.length === 0) {
+    return null;
+  }
 
   const title = t('ledger-accounts:details_sub_accounts_title', {
     count: accounts.length,

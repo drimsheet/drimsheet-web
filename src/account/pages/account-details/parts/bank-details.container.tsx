@@ -12,12 +12,17 @@ export function BankDetailsContainer({
   const title = t('bank_details_title');
   const missing_text = t('details_bank_missing_text');
 
-  if (bank.isPending) return <BankDetailsSkeleton />;
+  if (bank.isPending) {
+    return <BankDetailsSkeleton />;
+  }
 
-  if (bank.isError) return <SectionError title={title} />;
+  if (bank.isError) {
+    return <SectionError title={title} />;
+  }
 
-  if (!bank.data)
+  if (!bank.data) {
     return <p className="text-sm text-muted-foreground">{missing_text}</p>;
+  }
 
   return <BankDetails bankDetails={bank.data} />;
 }

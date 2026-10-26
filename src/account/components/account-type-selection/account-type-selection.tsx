@@ -61,7 +61,9 @@ export function AccountTypeSelection({
   const canSubmit = Boolean(selectedValue && !disabled);
 
   const handleSelect = (optionValue: ULedgerAccountBehavior) => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
 
     if (value === undefined) {
       setInternalSelected(optionValue);
@@ -69,7 +71,9 @@ export function AccountTypeSelection({
   };
 
   const handleSubmit = () => {
-    if (!canSubmit || !selectedValue) return;
+    if (!canSubmit || !selectedValue) {
+      return;
+    }
 
     onSubmit?.(selectedValue);
   };

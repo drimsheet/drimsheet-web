@@ -1,5 +1,7 @@
 function formatPercentage(value: number | null, locale: string) {
-  if (value === null) return '—';
+  if (value === null) {
+    return '—';
+  }
 
   return new Intl.NumberFormat(locale, {
     style: 'percent',
@@ -8,9 +10,13 @@ function formatPercentage(value: number | null, locale: string) {
 }
 
 function growthDirection(change: number) {
-  if (change === 0) return 'neutral';
+  if (change === 0) {
+    return 'neutral';
+  }
 
-  if (change < 0) return 'down';
+  if (change < 0) {
+    return 'down';
+  }
 
   return 'up';
 }

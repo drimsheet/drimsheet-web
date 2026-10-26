@@ -77,8 +77,11 @@ export function DataTable<T extends IDataWithId>({
 
   const handleSelectRow = (id: string | number) => {
     const selection = new Set(selectedRowIds);
-    if (selection.has(id)) selection.delete(id);
-    else selection.add(id);
+    if (selection.has(id)) {
+      selection.delete(id);
+    } else {
+      selection.add(id);
+    }
 
     onRowSelectionChange?.([...selection]);
   };
@@ -86,8 +89,11 @@ export function DataTable<T extends IDataWithId>({
   const handleSelectAll = () => {
     const selection = new Set(selectedRowIds);
     for (const row of data) {
-      if (allSelected) selection.delete(row.id);
-      else selection.add(row.id);
+      if (allSelected) {
+        selection.delete(row.id);
+      } else {
+        selection.add(row.id);
+      }
     }
 
     onRowSelectionChange?.([...selection]);
@@ -102,13 +108,17 @@ export function DataTable<T extends IDataWithId>({
     column: ITableColumn<T>,
     values: (string | number)[]
   ) => {
-    if (column.onFilterChange) column.onFilterChange(values);
-    else
+    if (column.onFilterChange) {
+      column.onFilterChange(values);
+    } else {
       onFilterChange?.(
         dataTableHelpers.filters(filters, String(column.dataIndex), values)
       );
+    }
 
-    if (pagination && pagination.meta.page !== 1) pagination.onPageChange(1);
+    if (pagination && pagination.meta.page !== 1) {
+      pagination.onPageChange(1);
+    }
   };
 
   const selection_label = t(

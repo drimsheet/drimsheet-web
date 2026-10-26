@@ -155,7 +155,9 @@ export function CounterpartiesTable({
         title: created_on_label,
         sortable: true,
         render: (value) => {
-          if (!value) return '';
+          if (!value) {
+            return '';
+          }
 
           const date = new Date(String(value));
 

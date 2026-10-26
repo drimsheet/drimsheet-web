@@ -25,11 +25,12 @@ export function CategoryEditorDialog({
   const mutation = useMutation({
     retry: false,
     mutationFn: async (values: ICategoryFormValues) => {
-      if (account.type === 'revenue')
+      if (account.type === 'revenue') {
         return categoryService.updateRevenue(
           account.accountId,
           categoryMapper.toUpdate(values)
         );
+      }
 
       return categoryService.updateExpense(
         account.accountId,
@@ -58,11 +59,15 @@ export function CategoryEditorDialog({
   };
 
   const handleClose = () => {
-    if (!mutation.isPending) onClose();
+    if (!mutation.isPending) {
+      onClose();
+    }
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) handleClose();
+    if (!open) {
+      handleClose();
+    }
   };
 
   const title = t('categories_edit_title');

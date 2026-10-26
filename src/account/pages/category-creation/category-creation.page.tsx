@@ -48,10 +48,11 @@ export function CategoryCreationPage() {
     mutationFn: (values: ICategoryCreationFormValues) => {
       // Submission is only reached after the selected parent passes form validation.
       const account = parent!.account;
-      if (values.type === 'revenue')
+      if (values.type === 'revenue') {
         return categoryService.createRevenue(
           categoryCreationHelpers.toRevenue(values, account)
         );
+      }
 
       return categoryService.createExpense(
         categoryCreationHelpers.toExpense(values, account)
@@ -80,7 +81,9 @@ export function CategoryCreationPage() {
   }
 
   const handleTypeChange = (value: string) => {
-    if (value !== 'revenue' && value !== 'expense') return;
+    if (value !== 'revenue' && value !== 'expense') {
+      return;
+    }
 
     mutation.reset();
     void form.setValues(

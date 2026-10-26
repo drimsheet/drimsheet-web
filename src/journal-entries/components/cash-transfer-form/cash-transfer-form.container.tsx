@@ -102,7 +102,9 @@ export function CashTransferFormContainer({
     values: ICashTransferFormValues,
     intent: 'submit' | 'draft'
   ) => {
-    if (submissionIntent) return;
+    if (submissionIntent) {
+      return;
+    }
 
     setSubmissionIntent(intent);
 
@@ -160,7 +162,9 @@ export function CashTransferFormContainer({
   const handleSaveDraft = (values: ICashTransferFormValues) =>
     handlePersistValues(values, 'draft');
 
-  if (isFormDataPending) return <CashTransferFormSkeleton />;
+  if (isFormDataPending) {
+    return <CashTransferFormSkeleton />;
+  }
 
   return (
     <CashTransferForm

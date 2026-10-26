@@ -33,7 +33,9 @@ export function AccountActions({
   const busy = loading || submitting;
 
   const handleArchive = async () => {
-    if (busy || archiveDisabled) return;
+    if (busy || archiveDisabled) {
+      return;
+    }
 
     setSubmitting(true);
 

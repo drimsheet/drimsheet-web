@@ -49,12 +49,16 @@ export function ProfilePreferences({
 
   const handleThemeChange = (value: string) => {
     const option = themes.find((theme) => theme.value === value);
-    if (option) onChange({ theme: option.value });
+    if (option) {
+      onChange({ theme: option.value });
+    }
   };
 
   const handleModeChange = (value: string) => {
     const option = modes.find((mode) => mode.value === value);
-    if (option) onChange({ appUsageMode: option.value });
+    if (option) {
+      onChange({ appUsageMode: option.value });
+    }
   };
 
   const preferences_title = t('profile_preferences_title');
@@ -64,8 +68,11 @@ export function ProfilePreferences({
   const save_error_text = t('profile_preferences_save_error');
   let save_status = t('profile_preferences_auto_save_text');
 
-  if (isSaving) save_status = t('profile_preferences_saving_text');
-  else if (isSaved) save_status = t('profile_preferences_saved_text');
+  if (isSaving) {
+    save_status = t('profile_preferences_saving_text');
+  } else if (isSaved) {
+    save_status = t('profile_preferences_saved_text');
+  }
 
   return (
     <AppSection

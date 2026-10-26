@@ -55,10 +55,12 @@ async function setup(page: Page, options: ISetupOptions = {}) {
   let failure: IHttpErrorDto | undefined;
   let usageFailure = options.usageFailure ?? false;
   await registerAuthenticatedAppRoutes(page);
-  for (const path of ['login-with-email', 'refresh-access-token'])
+  for (const path of ['login-with-email', 'refresh-access-token']) {
     await page.route(`**/api/v1/auth/${path}`, (route) =>
       route.fulfill({ json: { accessToken: 'integration-test-token' } })
     );
+  }
+
   await page.route('**/api/v1/users/preferences', (route) =>
     route.fulfill({
       json: {
@@ -126,7 +128,9 @@ async function setup(page: Page, options: ISetupOptions = {}) {
   await page.route('**/api/v1/journal-entries?*', async (route) => {
     const query = new URL(route.request().url()).searchParams;
     const status = query.get('status');
-    if (status) usageRequests.push(query);
+    if (status) {
+      usageRequests.push(query);
+    }
 
     if (status && usageFailure) {
       await route.fulfill({ status: 500, json: {} });
@@ -135,8 +139,11 @@ async function setup(page: Page, options: ISetupOptions = {}) {
     }
 
     let total = 0;
-    if (status === 'posted') total = options.posted ?? 0;
-    else if (status === 'archived') total = options.archived ?? 0;
+    if (status === 'posted') {
+      total = options.posted ?? 0;
+    } else if (status === 'archived') {
+      total = options.archived ?? 0;
+    }
 
     await route.fulfill({
       json: {
@@ -154,8 +161,9 @@ async function setup(page: Page, options: ISetupOptions = {}) {
     if (
       request.url().includes('/journal-entries') &&
       request.method() !== 'GET'
-    )
+    ) {
       transactionWrites.push(request.method());
+    }
   });
   await page.goto('/auth/signin');
   await page.getByLabel('Email').fill(authenticatedUser.email);
@@ -340,7 +348,7 @@ test('locks type for archived-only usage even with no visible recent transaction
   }
 });
 
-for (const role of ['vendor', 'contractor', 'employer'] as const)
+for (const role of ['vendor', 'contractor', 'employer'] as const) {
   test(`loads and updates the ${role} form from server metadata`, async ({
     page,
   }) => {
@@ -368,12 +376,13 @@ for (const role of ['vendor', 'contractor', 'employer'] as const)
     });
 
     let countryFailure = role === 'vendor';
-    if (role === 'vendor')
+    if (role === 'vendor') {
       await page.route('**/api/v1/accounting/jurisdictions', (route) =>
         countryFailure
           ? route.fulfill({ status: 500, json: {} })
           : route.fallback()
       );
+    }
 
     let release!: () => void;
 
@@ -382,7 +391,9 @@ for (const role of ['vendor', 'contractor', 'employer'] as const)
     });
 
     await page.route(endpoint, async (route) => {
-      if (route.request().method() === 'GET') await waiting;
+      if (route.request().method() === 'GET') {
+        await waiting;
+      }
 
       await route.fallback();
     });
@@ -393,7 +404,7 @@ for (const role of ['vendor', 'contractor', 'employer'] as const)
     ).toBeVisible();
     await expect(dialog.getByRole('textbox')).toHaveCount(0);
     release();
-    if (role === 'vendor')
+    if (role === 'vendor') {
       await test.step('Vendor prerequisites recover only after refresh', async () => {
         await expect(
           page.getByRole('heading', { name: 'Something went wrong' })
@@ -401,6 +412,7 @@ for (const role of ['vendor', 'contractor', 'employer'] as const)
         countryFailure = false;
         await page.reload();
       });
+    }
 
     await expect(dialog.getByLabel('Address', { exact: true })).toHaveValue(
       address.line1
@@ -408,11 +420,13 @@ for (const role of ['vendor', 'contractor', 'employer'] as const)
     await expect(dialog.getByLabel('Postal code')).toHaveValue(
       address.postalCode
     );
-    if (role === 'employer')
+    if (role === 'employer') {
       await expect(dialog.getByLabel(/Display name/)).toHaveValue(
         'Employer display'
       );
-    else await expect(dialog.getByLabel(/Display name/)).toHaveCount(0);
+    } else {
+      await expect(dialog.getByLabel(/Display name/)).toHaveCount(0);
+    }
 
     await dialog.getByLabel('City', { exact: true }).fill('Abuja');
     await dialog.getByRole('button', { name: 'Save changes' }).click();
@@ -427,6 +441,7 @@ for (const role of ['vendor', 'contractor', 'employer'] as const)
       expect(state.patches[0].meta?.employer).toEqual(meta.employer);
     }
   });
+}
 
 test('reports a raced type-use conflict without rewriting or retrying the failed update', async ({
   page,
@@ -537,8 +552,9 @@ test('normalizes stale hints and lets failed reads recover through a page reload
   });
   let fail = true;
   await page.route(endpoint, (route) => {
-    if (new URL(page.url()).searchParams.get('edit') !== 'true')
+    if (new URL(page.url()).searchParams.get('edit') !== 'true') {
       return route.fallback();
+    }
 
     return fail ? route.fulfill({ status: 404, json: {} }) : route.fallback();
   });

@@ -48,8 +48,9 @@ export function BankDetailsFormUpdateContainer({
     refetchOnWindowFocus: false,
   });
 
-  if (!bank && read.isFetchedAfterMount && read.isSuccess && !read.isFetching)
+  if (!bank && read.isFetchedAfterMount && read.isSuccess && !read.isFetching) {
     setBank(read.data);
+  }
 
   const handleSubmit = async (values: IBankDetailsFormValues) => {
     if (
@@ -59,8 +60,9 @@ export function BankDetailsFormUpdateContainer({
       opening.openingBalance === undefined ||
       !currencyEligibility.isSuccess ||
       !currencyEligibility.isFetchedAfterMount
-    )
+    ) {
       return;
+    }
 
     const request = assetAccountUpdateMapper.toBankUpdateReq(
       {
@@ -120,44 +122,56 @@ export function BankDetailsFormUpdateContainer({
       baseline.balance.currencyCode !== baseline.functionalBalance.currencyCode,
   };
 
-  if (opening.isError)
+  if (opening.isError) {
     return (
       <div role="alert">
         <p>{opening_balance_error_text}</p>
       </div>
     );
+  }
 
-  if (opening.openingBalance === undefined)
+  if (opening.openingBalance === undefined) {
     return <BankDetailsFormSkeleton {...skeletonProps} />;
+  }
 
-  if (!bank && read.isError)
+  if (!bank && read.isError) {
     return (
       <div role="alert">
         <p>{error_text}</p>
       </div>
     );
+  }
 
-  if (!bank) return <BankDetailsFormSkeleton {...skeletonProps} />;
+  if (!bank) {
+    return <BankDetailsFormSkeleton {...skeletonProps} />;
+  }
 
-  if (currencyEligibility.isError)
+  if (currencyEligibility.isError) {
     return (
       <div role="alert">
         <p>{currency_eligibility_error_text}</p>
       </div>
     );
+  }
 
-  if (currencyEligibility.isPending || !currencyEligibility.isFetchedAfterMount)
+  if (
+    currencyEligibility.isPending ||
+    !currencyEligibility.isFetchedAfterMount
+  ) {
     return <BankDetailsFormSkeleton {...skeletonProps} />;
+  }
 
-  if (canUpdateCurrency && currencies.isError)
+  if (canUpdateCurrency && currencies.isError) {
     return (
       <div role="alert">
         <p>{currencies_error_text}</p>
       </div>
     );
+  }
 
-  if (canUpdateCurrency && currencies.isPending)
+  if (canUpdateCurrency && currencies.isPending) {
     return <BankDetailsFormSkeleton {...skeletonProps} />;
+  }
 
   return (
     <BankDetailsFormContainer

@@ -50,7 +50,9 @@ export function AccountCombobox({
   const options = useMemo(() => {
     const normalizedSearchValue = searchValue.trim().toLowerCase();
 
-    if (!normalizedSearchValue) return accounts;
+    if (!normalizedSearchValue) {
+      return accounts;
+    }
 
     return accounts.filter((account) => {
       return (

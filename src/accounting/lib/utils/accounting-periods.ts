@@ -37,7 +37,9 @@ function createPeriods<TUnit extends UIntervalUnit>(
   previousPeriods: INamedPeriod[] = []
 ): INamedPeriod[] {
   const { startDate, endDate, unit } = values;
-  if (!isValidRange(startDate, endDate, maxFiscalMonths)) return [];
+  if (!isValidRange(startDate, endDate, maxFiscalMonths)) {
+    return [];
+  }
 
   const start = dayjs(startDate);
   const end = dayjs(endDate);
@@ -48,13 +50,21 @@ function createPeriods<TUnit extends UIntervalUnit>(
   while (!periodStart.isAfter(end, 'day')) {
     index += 1;
     let next = end.add(1, 'day');
-    if (unit === 'day') next = start.add(index, 'day');
+    if (unit === 'day') {
+      next = start.add(index, 'day');
+    }
 
-    if (unit === 'week') next = start.add(index * 7, 'day');
+    if (unit === 'week') {
+      next = start.add(index * 7, 'day');
+    }
 
-    if (unit === 'month') next = start.add(index, 'month');
+    if (unit === 'month') {
+      next = start.add(index, 'month');
+    }
 
-    if (unit === 'quarter') next = start.add(index * 3, 'month');
+    if (unit === 'quarter') {
+      next = start.add(index * 3, 'month');
+    }
 
     const periodEnd = next.isAfter(end) ? end : next.subtract(1, 'day');
     const rangeStart = periodStart.format('YYYY-MM-DD');

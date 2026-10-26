@@ -13,7 +13,9 @@ export function AccessTokenManagerContainer({
 
   useEffect(() => {
     const initialize = async () => {
-      if (hasInitialized.current) return;
+      if (hasInitialized.current) {
+        return;
+      }
 
       hasInitialized.current = true;
 

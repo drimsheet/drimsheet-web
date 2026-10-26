@@ -58,8 +58,9 @@ export async function registerAccountDashboardRoutes(page: Page) {
     state.accountQueries.push(params);
     await state.gate;
 
-    if (state.tableError)
+    if (state.tableError) {
       return route.fulfill({ status: 500, json: { message: 'Unavailable' } });
+    }
 
     const limit = Number(params.get('limit'));
     const currentPage = Number(params.get('page'));
@@ -73,7 +74,9 @@ export async function registerAccountDashboardRoutes(page: Page) {
           (!search || row.name.toLowerCase().includes(search))
       )
       .map((row) => {
-        if (!state.zero) return row;
+        if (!state.zero) {
+          return row;
+        }
 
         return {
           ...row,
@@ -102,11 +105,12 @@ export async function registerAccountDashboardRoutes(page: Page) {
       state.summaryQueries.push(params);
       await state.gate;
 
-      if (state.summaryError)
+      if (state.summaryError) {
         return route.fulfill({
           status: 500,
           json: { message: 'Unavailable' },
         });
+      }
 
       const amount = (value: number) => (state.zero ? 0 : value);
 
@@ -151,11 +155,12 @@ export async function registerAccountDashboardRoutes(page: Page) {
       state.historyQueries.push(params);
       await state.gate;
 
-      if (state.historyError)
+      if (state.historyError) {
         return route.fulfill({
           status: 500,
           json: { message: 'Unavailable' },
         });
+      }
 
       const from = params.get('from')!;
       const to = params.get('to')!;

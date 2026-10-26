@@ -94,10 +94,14 @@ export function CounterpartyCreationDialog({
   const [busy, setBusy] = useState(false);
 
   const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen && !busy) onClose();
+    if (!isOpen && !busy) {
+      onClose();
+    }
   };
 
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
 
   const { title, description } = getTitleAndDescription(role, t);
 

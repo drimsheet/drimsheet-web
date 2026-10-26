@@ -89,10 +89,14 @@ describe('useDeleteLedgerAccount', () => {
     expect(
       ledgerAccountService.deleteLedgerAccount
     ).toHaveBeenCalledExactlyOnceWith('account-1');
-    for (const key of removedKeys)
+    for (const key of removedKeys) {
       expect(queryClient.getQueryData(key)).toBeUndefined();
-    for (const key of refreshedKeys)
+    }
+
+    for (const key of refreshedKeys) {
       expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
+    }
+
     expect(queryClient.getQueryState(['unrelated'])?.isInvalidated).toBe(false);
   });
 

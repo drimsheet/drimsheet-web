@@ -73,8 +73,9 @@ export const accountingService = {
       }
     );
 
-    if (activeAccountingEntity?.id === entityId)
+    if (activeAccountingEntity?.id === entityId) {
       setActiveAccountingEntity(data);
+    }
 
     return data;
   },
@@ -130,7 +131,9 @@ export const accountingService = {
 
   prepareAccountingEntityReload() {
     const accountingEntityId = this.getAccountingEntityId();
-    if (!accountingEntityId) return;
+    if (!accountingEntityId) {
+      return;
+    }
 
     storageService.set({ accountingEntityId });
   },
@@ -148,10 +151,14 @@ export const accountingService = {
 
       return res.data;
     } catch (error) {
-      if (parseApiError(error).code !== 404) throw error;
+      if (parseApiError(error).code !== 404) {
+        throw error;
+      }
 
       const [firstAccountingEntity] = await this.getAccountingEntities();
-      if (!firstAccountingEntity) throw error;
+      if (!firstAccountingEntity) {
+        throw error;
+      }
 
       return this.switchAccountingEntity({
         accountingEntityId: firstAccountingEntity.id,

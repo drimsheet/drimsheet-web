@@ -18,7 +18,9 @@ export function BankDetailsHelp({
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (!pinned) setOpen(nextOpen);
+    if (!pinned) {
+      setOpen(nextOpen);
+    }
   };
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
@@ -39,7 +41,9 @@ export function BankDetailsHelp({
   ) => {
     const target = event.detail.originalEvent.target;
 
-    if (target instanceof Node && triggerRef.current?.contains(target)) return;
+    if (target instanceof Node && triggerRef.current?.contains(target)) {
+      return;
+    }
 
     handleDismiss();
   };

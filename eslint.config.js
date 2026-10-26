@@ -21,6 +21,11 @@ export default defineConfig([
     'test-results',
   ]),
   {
+    rules: {
+      curly: ['error', 'all'],
+    },
+  },
+  {
     files: ['**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,

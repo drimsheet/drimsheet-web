@@ -28,12 +28,16 @@ export function TransactionDetailsDrawer({
   const { t } = useTranslation('journal-entries');
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (archiving) return;
+    if (archiving) {
+      return;
+    }
 
     onOpenChange(nextOpen);
   };
 
-  if (!details) return null;
+  if (!details) {
+    return null;
+  }
 
   const details_title = t('transaction_details_title');
   const details_description = t('transaction_details_description');

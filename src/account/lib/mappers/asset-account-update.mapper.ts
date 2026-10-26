@@ -14,7 +14,9 @@ import type {
 function toOpeningBalanceAmount(
   openingBalance: IOpeningBalanceDto | null
 ): number | '' {
-  if (!openingBalance) return '';
+  if (!openingBalance) {
+    return '';
+  }
 
   const money = openingBalance.amount;
 

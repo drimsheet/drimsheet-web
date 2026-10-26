@@ -34,7 +34,9 @@ export function CounterpartyFormUpdateContainer({
   const usage = useCounterpartyTransactionUsage(baseline?.id);
 
   const handleSubmit = (values: ICounterpartyFormValues) => {
-    if (!baseline || state.saving) return;
+    if (!baseline || state.saving) {
+      return;
+    }
 
     void state.handleUpdate(
       counterpartyUpdateMapper.toCounterpartyUpdateReq(
@@ -52,10 +54,14 @@ export function CounterpartyFormUpdateContainer({
   }, [state.saving, onBusyChange]);
 
   useEffect(() => {
-    if (baseline) onLoaded?.(baseline);
+    if (baseline) {
+      onLoaded?.(baseline);
+    }
   }, [baseline, onLoaded]);
 
-  if (!baseline) return loadingFallback;
+  if (!baseline) {
+    return loadingFallback;
+  }
 
   const typeRestriction = usage.used
     ? {

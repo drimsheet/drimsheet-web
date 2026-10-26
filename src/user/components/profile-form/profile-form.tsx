@@ -27,7 +27,9 @@ export function ProfileForm({
   const validationSchema = useProfileFormValidation();
 
   const handleSubmit = async (values: IProfileFormValues) => {
-    if (isSaving) return;
+    if (isSaving) {
+      return;
+    }
 
     await onSubmit(values);
   };

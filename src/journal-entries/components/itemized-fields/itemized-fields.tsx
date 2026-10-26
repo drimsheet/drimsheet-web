@@ -42,7 +42,9 @@ export function ItemizedFields({
       (item) => item.id === initialEditItemId
     );
 
-    if (!initialEditItem) return null;
+    if (!initialEditItem) {
+      return null;
+    }
 
     return {
       id: initialEditItem.id,
@@ -107,10 +109,14 @@ export function ItemizedFields({
   };
 
   const handleEditItem = (itemId: string) => {
-    if (draftItem) return;
+    if (draftItem) {
+      return;
+    }
 
     const item = items.find((candidate) => candidate.id === itemId);
-    if (!item) return;
+    if (!item) {
+      return;
+    }
 
     handleDraftItemOpen({
       id: item.id,
@@ -125,7 +131,9 @@ export function ItemizedFields({
   };
 
   const handleAddItem = () => {
-    if (draftItem) return;
+    if (draftItem) {
+      return;
+    }
 
     handleDraftItemOpen(
       itemizedFieldsHelpers.createItem(generateUUID(), currencyCode)
@@ -133,10 +141,14 @@ export function ItemizedFields({
   };
 
   const handleSaveItem = () => {
-    if (!draftItem) return;
+    if (!draftItem) {
+      return;
+    }
 
     setSaveAttempted(true);
-    if (draftHasErrors) return;
+    if (draftHasErrors) {
+      return;
+    }
 
     const savedItem: IItemizedFieldValue = {
       id: draftItem.id,
@@ -163,7 +175,9 @@ export function ItemizedFields({
     const activeDraftItemDeleted = draftItem?.id === itemId;
 
     if (!committedItemExists) {
-      if (activeDraftItemDeleted) handleDraftItemClose();
+      if (activeDraftItemDeleted) {
+        handleDraftItemClose();
+      }
 
       return;
     }
@@ -171,7 +185,9 @@ export function ItemizedFields({
     const nextItems = items.filter((item) => item.id !== itemId);
 
     setItems(nextItems);
-    if (activeDraftItemDeleted) handleDraftItemClose();
+    if (activeDraftItemDeleted) {
+      handleDraftItemClose();
+    }
 
     onChange(nextItems);
   };

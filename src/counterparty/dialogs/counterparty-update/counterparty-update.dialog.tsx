@@ -43,8 +43,9 @@ export function CounterpartyUpdateDialog({
   const resolvedRole = helpers.getRole(params, role);
 
   const handleNormalize = (party: ICounterpartyDto) => {
-    if (helpers.normalizeParams(params, counterpartyId, party) === params)
+    if (helpers.normalizeParams(params, counterpartyId, party) === params) {
       return;
+    }
 
     setParams(
       (current) => helpers.normalizeParams(current, counterpartyId, party),
@@ -53,14 +54,20 @@ export function CounterpartyUpdateDialog({
   };
 
   const handleClose = () => {
-    if (!busy) onClose();
+    if (!busy) {
+      onClose();
+    }
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) handleClose();
+    if (!open) {
+      handleClose();
+    }
   };
 
-  if (!helpers.isOpen(params, counterpartyId)) return null;
+  if (!helpers.isOpen(params, counterpartyId)) {
+    return null;
+  }
 
   const title_text = t('update_counterparty_title');
   const description_text = t('update_counterparty_description');
@@ -96,7 +103,9 @@ function Render({ valid, role, ...common }: Readonly<RenderProps>) {
   const { t } = useTranslation('counterparty');
   const invalid_text = t('update_invalid_link_text');
 
-  if (!valid) return <p role="alert">{invalid_text}</p>;
+  if (!valid) {
+    return <p role="alert">{invalid_text}</p>;
+  }
 
   switch (role) {
     case 'vendor':

@@ -5,7 +5,9 @@ function getAddresses(counterparty: ICounterpartyDto) {
   const addresses: { lines: string[]; roles: UCounterpartyRole[] }[] = [];
   for (const role of counterparty.roles) {
     const address = counterparty.meta[role]?.address;
-    if (!address) continue;
+    if (!address) {
+      continue;
+    }
 
     const country =
       countries.find((item) => item.code === address.countryCode)?.name ??
@@ -23,8 +25,11 @@ function getAddresses(counterparty: ICounterpartyDto) {
       (item) => JSON.stringify(item.lines) === JSON.stringify(lines)
     );
 
-    if (existing) existing.roles.push(role);
-    else addresses.push({ lines, roles: [role] });
+    if (existing) {
+      existing.roles.push(role);
+    } else {
+      addresses.push({ lines, roles: [role] });
+    }
   }
 
   return addresses;

@@ -250,7 +250,9 @@ test('supplies counterparty-scoped search and sorting from the detail page', asy
             effectiveDate: index === 0 ? '2026-09-01T10:00:00Z' : timestamp,
           }));
 
-    if (q.get('sortDirection') === 'desc') data.reverse();
+    if (q.get('sortDirection') === 'desc') {
+      data.reverse();
+    }
 
     return route.fulfill({
       json: {
@@ -349,8 +351,9 @@ test('blocks transaction reads after profile failure and recovers on refresh', a
       : route.fulfill({ json: counterparty })
   );
   page.on('request', (request) => {
-    if (request.url().includes('/api/v1/journal-entries'))
+    if (request.url().includes('/api/v1/journal-entries')) {
       transactionsRequested = true;
+    }
   });
   await page.goto(detailUrl);
   await expect(

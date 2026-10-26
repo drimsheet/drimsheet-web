@@ -71,7 +71,9 @@ export function TransactionsTableContainer({
         journalEntry.sourceType
       );
 
-      if (!routeType) return;
+      if (!routeType) {
+        return;
+      }
 
       navigate(`/transactions/${routeType}/${journalEntry.id}/edit`);
     },
@@ -79,7 +81,9 @@ export function TransactionsTableContainer({
   );
 
   const handleArchiveTransaction = async (entry: IJournalEntryListDto) => {
-    if (archiving) return;
+    if (archiving) {
+      return;
+    }
 
     try {
       await archive(entry.id);

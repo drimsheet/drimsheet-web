@@ -29,7 +29,9 @@ export function useCategoryHistory(accountId: string, enabled: boolean) {
           signal
         );
 
-        for (const entry of response.data) entries.set(entry.id, entry);
+        for (const entry of response.data) {
+          entries.set(entry.id, entry);
+        }
 
         totalPages = response.meta.totalPages;
         page += 1;

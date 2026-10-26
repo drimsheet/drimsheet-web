@@ -30,7 +30,9 @@ export function ContractorFormCreateContainer({
   }, [isCreating, onBusyChange]);
 
   const handleSubmit = async (values: IContractorFormValues) => {
-    if (isCreating) return;
+    if (isCreating) {
+      return;
+    }
 
     try {
       await createCounterparty(
@@ -43,7 +45,9 @@ export function ContractorFormCreateContainer({
     }
   };
 
-  if (isPending) return <ContractorFormSkeleton />;
+  if (isPending) {
+    return <ContractorFormSkeleton />;
+  }
 
   return (
     <ContractorForm

@@ -128,8 +128,9 @@ export function AccountingEntityOnboardingPage() {
       !financialYearValues ||
       !reportsValues ||
       !incomeValues
-    )
+    ) {
       return;
+    }
 
     const standard = accountingEntityOnboardingHelpers.getAccountingStandard(
       entityValues,

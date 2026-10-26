@@ -342,11 +342,12 @@ for (const type of ['revenue', 'expense'] as const) {
     await page.route(`**/api/v1/ledger/${type}/${accountId}`, (route) => {
       expect(route.request().method()).toBe('PATCH');
       attempts += 1;
-      if (type === 'expense' && attempts === 1)
+      if (type === 'expense' && attempts === 1) {
         return route.fulfill({
           status: 503,
           json: { errorKey: 'unavailable' },
         });
+      }
 
       updates.push(route.request().postDataJSON());
       current = { ...current, name: 'Updated category' };
@@ -512,7 +513,9 @@ test('checks deletion eligibility on menu open and hides stale permission while 
     `**/api/v1/ledger/${accountId}/deletion-eligibility`,
     async (route) => {
       checks += 1;
-      if (checks === 2) await response;
+      if (checks === 2) {
+        await response;
+      }
 
       if (checks === 3) {
         await route.fulfill({ status: 500, json: { name: 'UnexpectedError' } });
@@ -634,7 +637,9 @@ test('checks deletion eligibility on menu open and hides stale permission while 
     );
     await page.route(`**/api/v1/ledger/${accountId}`, async (route) => {
       if (route.request().method() !== 'DELETE') {
-        if (deleted) detailReadsAfterDelete += 1;
+        if (deleted) {
+          detailReadsAfterDelete += 1;
+        }
 
         await route.fulfill({ json: { ...category, status } });
 

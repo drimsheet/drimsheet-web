@@ -60,13 +60,17 @@ export function EditTransactionPage() {
     );
   }
 
-  if (!journalEntry) return <Navigate replace to="/transactions" />;
+  if (!journalEntry) {
+    return <Navigate replace to="/transactions" />;
+  }
 
   const canonicalType = journalEntryRouteMapper.toRouteType(
     journalEntry.sourceType
   );
 
-  if (!canonicalType) return <Navigate replace to="/transactions" />;
+  if (!canonicalType) {
+    return <Navigate replace to="/transactions" />;
+  }
 
   if (journalEntry.sourceType !== routeSourceType) {
     return (

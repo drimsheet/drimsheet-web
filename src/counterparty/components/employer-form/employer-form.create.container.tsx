@@ -30,7 +30,9 @@ export function EmployerFormCreateContainer({
   }, [isCreating, onBusyChange]);
 
   const handleSubmit = async (values: IEmployerFormValues) => {
-    if (isCreating) return;
+    if (isCreating) {
+      return;
+    }
 
     try {
       await createCounterparty(counterpartyMapper.toEmployerCreateReq(values));
@@ -41,7 +43,9 @@ export function EmployerFormCreateContainer({
     }
   };
 
-  if (isPending) return <EmployerFormSkeleton />;
+  if (isPending) {
+    return <EmployerFormSkeleton />;
+  }
 
   return (
     <EmployerForm

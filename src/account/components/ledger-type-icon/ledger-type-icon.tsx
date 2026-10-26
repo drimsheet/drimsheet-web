@@ -37,7 +37,9 @@ export function LedgerTypeIcon({
   className,
 }: Readonly<LedgerTypeIconProps>) {
   const config = typeConfigs[type];
-  if (!config) return null;
+  if (!config) {
+    return null;
+  }
 
   const Icon = config.icon;
 

@@ -71,7 +71,9 @@ export function createCashTransferFormValidation(
       messages.exchangeRateRequired,
       function (exchangeRate) {
         const values = this.parent as ICashTransferFormValues;
-        if (!isExchangeRateRequired(values)) return true;
+        if (!isExchangeRateRequired(values)) {
+          return true;
+        }
 
         const hasRate =
           exchangeRate != null ||
@@ -152,7 +154,9 @@ export function createCashTransferFormValidation(
           messages.accountsDifferent,
           function (value) {
             const values = this.parent as ICashTransferFormValues;
-            if (!value || !values.sourceAccountId) return true;
+            if (!value || !values.sourceAccountId) {
+              return true;
+            }
 
             return value !== values.sourceAccountId;
           }
@@ -185,7 +189,9 @@ export function createCashTransferFormValidation(
           'not-before-account-opening',
           messages.dateBeforeAccountOpening,
           function (value) {
-            if (!value) return true;
+            if (!value) {
+              return true;
+            }
 
             const values = this.parent as ICashTransferFormValues;
 

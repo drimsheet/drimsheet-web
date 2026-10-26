@@ -26,11 +26,17 @@ function toMoney(value: IMoneyDto): IAccountDashboardMoney {
 function toBehavior(
   behavior: ULedgerAccountBehavior
 ): IAccountsTableRow['behavior'] {
-  if (behavior === 'bank') return 'bank';
+  if (behavior === 'bank') {
+    return 'bank';
+  }
 
-  if (behavior === 'petty_cash') return 'petty_cash';
+  if (behavior === 'petty_cash') {
+    return 'petty_cash';
+  }
 
-  if (behavior === 'default_cash') return 'default_cash';
+  if (behavior === 'default_cash') {
+    return 'default_cash';
+  }
 
   return 'other';
 }
@@ -50,8 +56,9 @@ function toSummary(
       const rightIsFunctional =
         right.currencyCode.toLowerCase() === functionalCurrencyCode;
 
-      if (leftIsFunctional !== rightIsFunctional)
+      if (leftIsFunctional !== rightIsFunctional) {
         return leftIsFunctional ? -1 : 1;
+      }
 
       return left.currencyCode.localeCompare(right.currencyCode);
     });
@@ -66,7 +73,9 @@ function toHistory(response: IBalancesBySubTypeDto): IAccountDashboardHistory {
   const points = response.buckets.flatMap(({ balances, date }) => {
     const balance = balances[0];
 
-    if (!balance) return [];
+    if (!balance) {
+      return [];
+    }
 
     return [
       {

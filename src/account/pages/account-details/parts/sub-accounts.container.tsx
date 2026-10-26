@@ -13,9 +13,13 @@ export function SubAccountsContainer({
   const accounts = useSubAccounts(accountId);
   const title = t('details_sub_accounts_error_title');
 
-  if (accounts.isPending) return <SubAccountsSkeleton />;
+  if (accounts.isPending) {
+    return <SubAccountsSkeleton />;
+  }
 
-  if (accounts.isError) return <SectionError title={title} />;
+  if (accounts.isError) {
+    return <SectionError title={title} />;
+  }
 
   return (
     <SubAccounts

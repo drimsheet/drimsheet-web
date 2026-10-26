@@ -30,7 +30,9 @@ function fixture(extra = {}) {
     ...extra,
   };
   for (const [file, text] of Object.entries(files)) {
-    if (text === null) continue;
+    if (text === null) {
+      continue;
+    }
     const name = path.join(root, file);
     fs.mkdirSync(path.dirname(name), { recursive: true });
     fs.writeFileSync(name, text);
@@ -47,8 +49,9 @@ function expectRule(extra, rule) {
 }
 
 afterEach(() => {
-  for (const root of roots.splice(0))
+  for (const root of roots.splice(0)) {
     fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 describe('skeleton ownership', () => {

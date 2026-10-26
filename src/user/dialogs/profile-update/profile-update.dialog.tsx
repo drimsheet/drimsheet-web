@@ -28,7 +28,9 @@ export function ProfileUpdateDialog({
   const handleApiError = useApiErrorHandler();
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (updateProfile.isPending) return;
+    if (updateProfile.isPending) {
+      return;
+    }
 
     updateProfile.reset();
     setOpen(nextOpen);

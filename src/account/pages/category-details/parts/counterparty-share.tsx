@@ -46,7 +46,9 @@ export function CounterpartyShare({
   const unavailable_label = t('category_details_share_unavailable_label');
   const signed_description = t('category_details_signed_share_description');
 
-  if (loading) return <CounterpartyShareSkeleton />;
+  if (loading) {
+    return <CounterpartyShareSkeleton />;
+  }
 
   return (
     <AppSection

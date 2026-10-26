@@ -201,7 +201,9 @@ test('lists transactions at the index route and preserves creation routes', asyn
         )
       : [...journalEntries];
 
-    if (query.get('sortDirection') === 'asc') data.reverse();
+    if (query.get('sortDirection') === 'asc') {
+      data.reverse();
+    }
 
     return route.fulfill({
       json: {
