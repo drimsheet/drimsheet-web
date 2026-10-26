@@ -24,6 +24,7 @@ export function TransactionsTable({
   emptyStateNode,
   data,
   loading = false,
+  sortable = true,
   archiving = false,
   onArchiveTransaction,
   onDeleteTransaction,
@@ -163,7 +164,7 @@ export function TransactionsTable({
         width: 140,
         minWidth: 140,
         title: dateLabel,
-        sortable: true,
+        sortable,
         render: (value) => (
           <FormattedDate
             value={new Date(String(value))}
@@ -234,7 +235,7 @@ export function TransactionsTable({
     });
 
     return tableColumns;
-  }, [handleTransactionOpen, t]);
+  }, [handleTransactionOpen, sortable, t]);
 
   if (loading) {
     return <TransactionsTableSkeleton />;

@@ -1,7 +1,7 @@
 import { useArchiveJournalEntry } from '@/journal-entries/hooks/use-archive-journal-entry';
 import { useDeleteJournalEntry } from '@/journal-entries/hooks/use-delete-journal-entry';
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
-import { TransactionsTableContainer } from '@/journal-entries/pages/transactions/parts/transactions-table.container';
+import { RecentTransactionsTableContainer } from '@/journal-entries/pages/transactions/parts/recent-transactions-table.container';
 import {
   ECounterpartyStatus,
   EJournalEntrySourceType,
@@ -86,16 +86,14 @@ function LocationPathname() {
 function renderContainer(initialEntry = '/transactions') {
   return render(
     <MemoryRouter initialEntries={[initialEntry]}>
-      <TransactionsTableContainer
-        actionButton={<button type="button">New transaction</button>}
-      />
+      <RecentTransactionsTableContainer />
       <LocationSearch />
       <LocationPathname />
     </MemoryRouter>
   );
 }
 
-describe('TransactionsTableContainer', () => {
+describe('RecentTransactionsTableContainer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useArchiveJournalEntry).mockReturnValue({
@@ -119,15 +117,15 @@ describe('TransactionsTableContainer', () => {
     const user = userEvent.setup();
     renderContainer();
 
-    expect(useJournalEntries).toHaveBeenCalledWith({
-      page: 1,
-      limit: 10,
-      orderBy: 'effectiveDate',
-      sortDirection: 'desc',
-    });
-    expect(
-      screen.getByRole('button', { name: 'New transaction' })
-    ).toBeInTheDocument();
+    expect(useJournalEntries).toHaveBeenCalledWith(
+      {
+        page: 1,
+        limit: 15,
+        orderBy: 'effectiveDate',
+        sortDirection: 'desc',
+      },
+      { throwOnError: false }
+    );
     expect(screen.getByText('Main checking')).toBeInTheDocument();
     expect(screen.getByText('Payment to Osahon Oboite')).toBeInTheDocument();
     expect(screen.getByText('Gift')).toBeInTheDocument();
@@ -139,27 +137,50 @@ describe('TransactionsTableContainer', () => {
     expect(screen.getByText('Outflow')).toBeInTheDocument();
   });
 
-  it('keeps search and reversible date sorting in URL-backed query state', async () => {
-    const user = userEvent.setup();
+  it('shows at most 15 recent entries without pagination or sorting controls', () => {
+    vi.mocked(useJournalEntries).mockReturnValue({
+      data: {
+        data: Array.from({ length: 16 }, (_, index) => ({
+          ...paymentEntry,
+          id: `payment-${index}`,
+        })),
+        meta: { page: 1, limit: 15, total: 40, totalPages: 3 },
+      },
+      isPending: false,
+    } as never);
     renderContainer();
+    expect(
+      screen.getAllByRole('button', { name: 'Open transaction' })
+    ).toHaveLength(15);
+    expect(
+      screen.queryByRole('button', { name: 'Sort by Date' })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+    expect(screen.queryByText(/rows per page/i)).not.toBeInTheDocument();
+  });
 
-    await user.type(
-      screen.getByPlaceholderText('Search transactions...'),
-      'gift'
+  it('shows a translated error when fetching transactions fails', () => {
+    vi.mocked(useJournalEntries).mockReturnValue({
+      isPending: false,
+      isError: true,
+    } as never);
+    renderContainer();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Couldn’t load transactions'
     );
-    await user.click(screen.getByRole('button', { name: 'Sort by Date' }));
+  });
 
-    await waitFor(() => {
-      expect(screen.getByLabelText('Location search')).toHaveTextContent(
-        'q=gift'
-      );
-      expect(screen.getByLabelText('Location search')).toHaveTextContent(
-        'order=asc'
-      );
-      expect(useJournalEntries).toHaveBeenLastCalledWith(
-        expect.objectContaining({ search: 'gift', sortDirection: 'asc' })
-      );
-    });
+  it('renders the table empty state without pagination when there are no transactions', () => {
+    vi.mocked(useJournalEntries).mockReturnValue({
+      data: { data: [], meta: { page: 1, limit: 15, total: 0, totalPages: 0 } },
+      isPending: false,
+    } as never);
+    renderContainer();
+    expect(
+      screen.queryByRole('button', { name: 'Open transaction' })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   it('navigates from the details drawer to the canonical edit route', async () => {

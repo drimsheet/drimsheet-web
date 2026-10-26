@@ -35,6 +35,7 @@ export interface TransactionsTableProps {
   emptyStateNode?: ReactNode;
   data: IJournalEntryListDto[];
   loading?: boolean;
+  sortable?: boolean;
   archiving?: boolean;
   onArchiveTransaction?: (entry: IJournalEntryListDto) => Promise<void>;
   onDeleteTransaction?: (entry: IJournalEntryListDto) => Promise<void>;

@@ -4,6 +4,7 @@ import { Button } from '@/shared/components/button';
 import { PlusIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { RecentTransactionsTableContainer } from './parts/recent-transactions-table.container';
 import { TransactionActivityContainer } from './parts/transaction-activity.container';
 import { TransactionsOverviewContainer } from './parts/transactions-overview.container';
 
@@ -16,7 +17,11 @@ export function TransactionsPage() {
   };
 
   const page_title = t('shared:transactions');
-  const all_transactions_heading = t('journal-entries:all_transactions');
+
+  const recent_transactions_heading = t(
+    'journal-entries:recent_transactions_title'
+  );
+
   const overview = t('journal-entries:overview');
 
   return (
@@ -33,7 +38,9 @@ export function TransactionsPage() {
         <TransactionsOverviewContainer />
         <TransactionActivityContainer />
       </AppSection>
-      <AppSection title={all_transactions_heading}>Table to come</AppSection>
+      <AppSection title={recent_transactions_heading}>
+        <RecentTransactionsTableContainer />
+      </AppSection>
     </AppBody>
   );
 }
