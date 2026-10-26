@@ -118,7 +118,9 @@ export function createCashTransactionFormValidation(
 
         const rate = exchangeRate?.value;
 
-        if (!required || rate === null || rate === undefined) return true;
+        if (!required || rate === null || rate === undefined) {
+          return true;
+        }
 
         return (
           Number.isFinite(rate) ||
@@ -202,7 +204,9 @@ export function createCashTransactionFormValidation(
         'not-before-account-opening',
         messages.dateBeforeAccountOpening,
         function (value) {
-          if (!value) return true;
+          if (!value) {
+            return true;
+          }
 
           const values = this.parent as ICashTransactionFormValues;
 

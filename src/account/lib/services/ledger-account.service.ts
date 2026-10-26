@@ -2,38 +2,19 @@ import { drimsheetApi } from '@/shared/lib/api';
 import {
   ELedgerAccountSubType,
   ELedgerType,
-  type IDateRangeDto,
-  type IGetAccountCashFlowQuery,
   type IGetAccountCounterpartyParticipationQuery,
-  type IGetAssetLiabilityAccountParticipationQuery,
-  type IGetJournalEntriesQuery,
   type IGetLedgerAccountsQuery,
   type IGetPermittedPostingAccountsQuery,
   type IHeaderAccountNameAliasesReq,
 } from '@/shared/lib/api/Api';
 
-async function getAssetLiabilityAccounts(
-  query: IGetAssetLiabilityAccountParticipationQuery,
+async function getLedgerAccounts(
+  query: IGetLedgerAccountsQuery,
   signal?: AbortSignal
 ) {
-  return (
-    await drimsheetApi.reporting.getAssetLiabilityAccountParticipation(query, {
-      signal,
-    })
-  ).data;
-}
-
-async function getAssetLiabilitySummary(
-  query: IDateRangeDto,
-  signal?: AbortSignal
-) {
-  return (
-    await drimsheetApi.reporting.getAssetLiabilitySummary(query, { signal })
-  ).data;
-}
-
-async function getLedgerAccounts(query: IGetLedgerAccountsQuery) {
-  const response = await drimsheetApi.ledger.getLedgerAccounts(query);
+  const response = await drimsheetApi.ledger.getLedgerAccounts(query, {
+    signal,
+  });
 
   return response.data;
 }
@@ -100,28 +81,6 @@ async function getSubAccounts(id: string) {
   return response.data;
 }
 
-async function getAccountCashFlow(id: string, query: IGetAccountCashFlowQuery) {
-  const response = await drimsheetApi.reporting.getAccountCashFlow(id, query);
-
-  return response.data;
-}
-
-async function getTransactions(
-  id: string,
-  query: IGetJournalEntriesQuery,
-  signal?: AbortSignal
-) {
-  const response = await drimsheetApi.journalEntries.getJournalEntries(
-    {
-      ...query,
-      accountId: id,
-    },
-    { signal }
-  );
-
-  return response.data;
-}
-
 async function getAccountCounterpartyParticipation(
   accountId: string,
   query: IGetAccountCounterpartyParticipationQuery,
@@ -142,8 +101,6 @@ async function setupHeaderAccounts(payload: IHeaderAccountNameAliasesReq) {
 }
 
 export const ledgerAccountService = Object.freeze({
-  getAssetLiabilityAccounts,
-  getAssetLiabilitySummary,
   setupHeaderAccounts,
   getAccountCounterpartyParticipation,
   getLedgerAccounts,
@@ -157,6 +114,4 @@ export const ledgerAccountService = Object.freeze({
   getBankDetails,
   getOpeningBalance,
   getSubAccounts,
-  getAccountCashFlow,
-  getTransactions,
 });

@@ -175,9 +175,13 @@ export function CashTransactionForm({
   };
 
   const handleDateDisabled = (date: Date) => {
-    if (!dateUtils.isNotInTheFuture(date)) return true;
+    if (!dateUtils.isNotInTheFuture(date)) {
+      return true;
+    }
 
-    if (!accountOpeningDate) return false;
+    if (!accountOpeningDate) {
+      return false;
+    }
 
     return !dateUtils.isOnOrAfter(date, accountOpeningDate);
   };
@@ -189,8 +193,11 @@ export function CashTransactionForm({
 
     if (typeof counterparty === 'string') {
       nextCounterparty = { name: counterparty };
-    } else if (counterparty === null) nextCounterparty = { name: '' };
-    else nextCounterparty = counterparty;
+    } else if (counterparty === null) {
+      nextCounterparty = { name: '' };
+    } else {
+      nextCounterparty = counterparty;
+    }
 
     void formik.setFieldValue('counterparty', nextCounterparty);
   };
@@ -239,7 +246,9 @@ export function CashTransactionForm({
 
   const handleItemizedEditModeChange = (isEditing: boolean) => {
     setIsItemizedRowEditing(isEditing);
-    if (!isEditing) setInitialItemizedEditItemId(undefined);
+    if (!isEditing) {
+      setInitialItemizedEditItemId(undefined);
+    }
   };
 
   const collapseToSingleEntry = () => {
@@ -262,8 +271,11 @@ export function CashTransactionForm({
   };
 
   const handleBackToSingleEntry = () => {
-    if (formik.values.items.length <= 1) collapseToSingleEntry();
-    else setSingleEntryConfirmationOpen(true);
+    if (formik.values.items.length <= 1) {
+      collapseToSingleEntry();
+    } else {
+      setSingleEntryConfirmationOpen(true);
+    }
   };
 
   /**

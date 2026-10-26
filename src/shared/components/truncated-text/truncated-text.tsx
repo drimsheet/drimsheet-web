@@ -24,7 +24,9 @@ export function TruncatedText({
     </span>
   );
 
-  if (!isTruncated || !showTooltip) return content;
+  if (!isTruncated || !showTooltip) {
+    return content;
+  }
 
   return (
     <Tooltip>

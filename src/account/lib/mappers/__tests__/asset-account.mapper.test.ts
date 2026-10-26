@@ -11,7 +11,6 @@ const values: IPettyCashAccountFormValues = {
   openingBalance: 100,
   openingDate: '2026-07-01',
   exchangeRate: null,
-  isSubAccount: false,
 };
 
 const bankFormValues: IBankDetailsFormValues = {
@@ -25,7 +24,6 @@ const bankFormValues: IBankDetailsFormValues = {
   openingBalance: 5000,
   openingDate: '2026-07-01',
   exchangeRate: null,
-  isSubAccount: false,
 };
 
 describe('assetAccountMapper', () => {
@@ -179,10 +177,26 @@ describe('assetAccountMapper', () => {
         { rate: 1500 } as IExchangeRate
       );
 
-      expect(result.openingBalance?.exchangeRate).toMatchObject({
-        baseCurrencyCode: 'USD',
-        targetCurrencyCode: 'NGN',
-        rate: 1500,
+      expect(result).toEqual({
+        name: 'Office cash',
+        currencyCode: 'USD',
+        isControlAccount: false,
+        openingBalance: {
+          amount: {
+            amount: 100,
+            currencyCode: 'USD',
+            isMinorUnit: false,
+          },
+          date: '2026-07-01',
+          exchangeRate: {
+            baseCurrencyCode: 'USD',
+            targetCurrencyCode: 'NGN',
+            rate: 1500,
+            type: EExchangeRateType.Market,
+            asOf: '2026-07-01',
+            source: 'manual',
+          },
+        },
       });
     });
 
@@ -200,17 +214,6 @@ describe('assetAccountMapper', () => {
         baseCurrencyCode: 'USD',
         targetCurrencyCode: 'NGN',
         rate: 1000,
-      });
-    });
-
-    it('ignores the sub-account form value', () => {
-      expect(
-        assetAccountMapper.toPettyCashAccountCreationDto(
-          { ...values, isSubAccount: true },
-          'NGN'
-        )
-      ).toMatchObject({
-        isControlAccount: false,
       });
     });
   });

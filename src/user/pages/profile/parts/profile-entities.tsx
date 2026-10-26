@@ -1,3 +1,4 @@
+import { AppSection } from '@/shared/components/app-section';
 import { Badge } from '@/shared/components/badge';
 import {
   Empty,
@@ -6,7 +7,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/shared/components/empty';
-import { PageSection } from '@/shared/components/page-section';
 import { Separator } from '@/shared/components/separator';
 import { Skeleton } from '@/shared/components/skeleton';
 import { AccountingEntityAvatar } from '@/user/components/accounting-entity-avatar';
@@ -46,7 +46,7 @@ export function ProfileEntities({
   });
 
   return (
-    <PageSection
+    <AppSection
       title={entities_title}
       role="region"
       titleId="profile-entities-title"
@@ -116,7 +116,7 @@ export function ProfileEntities({
           </ul>
         )}
       </div>
-    </PageSection>
+    </AppSection>
   );
 }
 
@@ -129,7 +129,7 @@ export function ProfileEntitiesSkeleton() {
   });
 
   return (
-    <PageSection
+    <AppSection
       aria-busy="true"
       title={loading_label}
       className="h-full min-w-0"
@@ -166,6 +166,6 @@ export function ProfileEntitiesSkeleton() {
           </Fragment>
         ))}
       </div>
-    </PageSection>
+    </AppSection>
   );
 }

@@ -38,12 +38,16 @@ export function useCounterpartyFormUpdate({
   const baseline = session.id === counterpartyId ? session.baseline : undefined;
 
   // Capture a version once per edit session; background reads cannot advance it.
-  if (session.id !== counterpartyId) setSession({ id: counterpartyId });
-  else if (!baseline && ready && counterparty?.id === counterpartyId)
+  if (session.id !== counterpartyId) {
+    setSession({ id: counterpartyId });
+  } else if (!baseline && ready && counterparty?.id === counterpartyId) {
     setSession({ id: counterpartyId, baseline: counterparty });
+  }
 
   const handleUpdate = async (request: ICounterpartyUpdateReq) => {
-    if (!baseline || baseline.status === 'archived' || update.isPending) return;
+    if (!baseline || baseline.status === 'archived' || update.isPending) {
+      return;
+    }
 
     if (!hasCounterpartyChanges(request)) {
       onSuccess();
@@ -57,7 +61,9 @@ export function useCounterpartyFormUpdate({
       onSuccess();
     } catch (value) {
       const error = handleApiError(value);
-      if (!error) return;
+      if (!error) {
+        return;
+      }
 
       if (isCounterpartyTypeConflict(value)) {
         toast.error(t('counterparty:type_locked_description'));

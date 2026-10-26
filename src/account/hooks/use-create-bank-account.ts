@@ -10,6 +10,9 @@ export function useCreateBankAccount() {
       queryClient.invalidateQueries({
         queryKey: ['ledgerAccountService'],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['reportingService'],
+      });
     },
   });
 }

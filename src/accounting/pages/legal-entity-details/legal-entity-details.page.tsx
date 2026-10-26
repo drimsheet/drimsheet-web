@@ -1,26 +1,18 @@
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
+import { useEntityDetails } from '@/accounting/hooks/use-entity-details';
+import { useFiscalYearContext } from '@/accounting/hooks/use-fiscal-year-context';
+import { useFiscalYears } from '@/accounting/hooks/use-fiscal-years';
 import { AppBody } from '@/shared/components/app';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/shared/components/breadcrumb';
+import { AppSection } from '@/shared/components/app-section';
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
 } from '@/shared/components/empty';
-import { PageSection } from '@/shared/components/page-section';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import helpers from './helper';
-import { useEntityDetails } from './hooks/use-entity-details';
-import { useFiscalYearContext } from './hooks/use-fiscal-year-context';
-import { useFiscalYears } from './hooks/use-fiscal-years';
 import {
   ContextDetails,
   ContextDetailsSkeleton,
@@ -54,23 +46,14 @@ export function LegalEntityDetailsPage() {
   const no_years = t('details_no_fiscal_years');
 
   return (
-    <AppBody>
-      <div className="flex min-w-0 flex-col gap-10">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/legal-entity">{list_title}</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem className="min-w-0">
-              <BreadcrumbPage className="break-words">
-                {entity.data?.name ?? page_title}
-              </BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+    <AppBody
+      breadcrumbs={{
+        label: list_title,
+        link: '/legal-entity',
+        next: { label: entity.data?.name ?? page_title },
+      }}
+    >
+      <div className="mt-7 flex min-w-0 flex-col gap-10">
         {entity.isPending && <EntitySummarySkeleton />}
         {entity.isError && <SectionError />}
         {entity.data && (
@@ -84,7 +67,7 @@ export function LegalEntityDetailsPage() {
                 />
               }
             />
-            <PageSection title={context_title} className="gap-6 py-0">
+            <AppSection title={context_title} className="gap-6 py-0">
               {years.isPending && <FiscalYearSummarySkeleton />}
               {years.isError && <SectionError />}
               {years.data?.length === 0 && (
@@ -108,7 +91,7 @@ export function LegalEntityDetailsPage() {
                   )}
                 </>
               )}
-            </PageSection>
+            </AppSection>
           </>
         )}
       </div>

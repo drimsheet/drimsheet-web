@@ -8,13 +8,18 @@ const supportFile =
 const unknown = Symbol('unresolved');
 
 function sourceFiles(directory) {
-  if (!fs.existsSync(directory)) return [];
+  if (!fs.existsSync(directory)) {
+    return [];
+  }
 
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const name = path.join(directory, entry.name);
-    if (supportFile.test(name + (entry.isDirectory() ? path.sep : '')))
+    if (supportFile.test(name + (entry.isDirectory() ? path.sep : ''))) {
       return [];
-    if (entry.isDirectory()) return sourceFiles(name);
+    }
+    if (entry.isDirectory()) {
+      return sourceFiles(name);
+    }
 
     return /\.[jt]sx?$/.test(name) ? [name] : [];
   });
@@ -78,32 +83,42 @@ export function checkHooks(root = process.cwd()) {
     ) {
       value = checker.getShorthandAssignmentValueSymbol(value.valueDeclaration);
     }
-    if (value?.flags & ts.SymbolFlags.Alias)
+    if (value?.flags & ts.SymbolFlags.Alias) {
       value = checker.getAliasedSymbol(value);
+    }
     return value;
   }
 
   function returnedExpression(fn) {
-    if (!fn.body) return undefined;
-    if (!ts.isBlock(fn.body)) return fn.body;
+    if (!fn.body) {
+      return undefined;
+    }
+    if (!ts.isBlock(fn.body)) {
+      return fn.body;
+    }
     const returns = fn.body.statements.filter(ts.isReturnStatement);
     return returns.length === 1 ? returns[0].expression : undefined;
   }
 
   function resolve(node, bindings = new Map(), seen = new Set()) {
     node = unwrap(node);
-    if (!node || seen.has(node)) return undefined;
+    if (!node || seen.has(node)) {
+      return undefined;
+    }
     seen = new Set(seen).add(node);
     if (ts.isIdentifier(node)) {
       const target = symbol(node);
       const argument = bindings.get(target);
-      if (argument) return resolve(argument.node, argument.bindings, seen);
+      if (argument) {
+        return resolve(argument.node, argument.bindings, seen);
+      }
       const declaration = target?.valueDeclaration;
       if (declaration && ts.isVariableDeclaration(declaration)) {
         return resolve(declaration.initializer, bindings, seen);
       }
-      if (declaration && ts.isFunctionDeclaration(declaration))
+      if (declaration && ts.isFunctionDeclaration(declaration)) {
         return { node: declaration, bindings };
+      }
     }
     if (ts.isCallExpression(node)) {
       const callee = node.expression.getText();
@@ -135,10 +150,14 @@ export function checkHooks(root = process.cwd()) {
   }
 
   function propertyName(node) {
-    if (ts.isIdentifier(node) || ts.isStringLiteralLike(node)) return node.text;
+    if (ts.isIdentifier(node) || ts.isStringLiteralLike(node)) {
+      return node.text;
+    }
     if (ts.isComputedPropertyName(node)) {
       const value = resolve(node.expression)?.node;
-      if (value && ts.isStringLiteralLike(value)) return value.text;
+      if (value && ts.isStringLiteralLike(value)) {
+        return value.text;
+      }
     }
     return undefined;
   }
@@ -149,8 +168,9 @@ export function checkHooks(root = process.cwd()) {
       !value ||
       !ts.isObjectLiteralExpression(value.node) ||
       seen.has(value.node)
-    )
+    ) {
       return unknown;
+    }
     seen = new Set(seen).add(value.node);
     for (const member of [...value.node.properties].reverse()) {
       if (ts.isSpreadAssignment(member)) {
@@ -164,9 +184,12 @@ export function checkHooks(root = process.cwd()) {
           if (
             type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown) ||
             type.getProperty(name)
-          )
+          ) {
             return unknown;
-        } else if (found) return found;
+          }
+        } else if (found) {
+          return found;
+        }
       } else if (propertyName(member.name) === name) {
         return {
           node: ts.isPropertyAssignment(member)
@@ -187,8 +210,9 @@ export function checkHooks(root = process.cwd()) {
       !value ||
       !ts.isArrayLiteralExpression(value.node) ||
       seen.has(value.node)
-    )
+    ) {
       return [unknown];
+    }
     seen = new Set(seen).add(value.node);
     const parts = [];
     for (const element of value.node.elements) {
@@ -201,11 +225,14 @@ export function checkHooks(root = process.cwd()) {
         );
       } else {
         const item = resolve(element, value.bindings)?.node;
-        if (!item || !ts.isStringLiteralLike(item)) return [...parts, unknown];
+        if (!item || !ts.isStringLiteralLike(item)) {
+          return [...parts, unknown];
+        }
         parts.push(item.text);
       }
-      if (parts.includes(unknown) || parts.length >= 2)
+      if (parts.includes(unknown) || parts.length >= 2) {
         return parts.slice(0, 2);
+      }
     }
     return parts;
   }
@@ -218,8 +245,9 @@ export function checkHooks(root = process.cwd()) {
         ts.isPropertyAccessExpression(node) ||
         ts.isElementAccessExpression(node)
       )
-    )
+    ) {
       return undefined;
+    }
     const receiver = symbol(node.expression);
     const service = receiver?.getName() ?? node.expression.getText();
     const method = ts.isPropertyAccessExpression(node)
@@ -231,15 +259,21 @@ export function checkHooks(root = process.cwd()) {
         : method && ts.isStringLiteralLike(method)
           ? method.text
           : undefined;
-    if (!service.endsWith('Service') || !methodName) return undefined;
+    if (!service.endsWith('Service') || !methodName) {
+      return undefined;
+    }
     return [service, methodName];
   }
 
   function serviceMethods(reference, seen = new Set()) {
     const direct = serviceMethod(reference.node);
-    if (direct) return [direct];
+    if (direct) {
+      return [direct];
+    }
     const value = resolve(reference.node, reference.bindings);
-    if (!value || seen.has(value.node)) return [];
+    if (!value || seen.has(value.node)) {
+      return [];
+    }
     seen = new Set(seen).add(value.node);
     const methods = [];
     function visit(node) {
@@ -268,7 +302,9 @@ export function checkHooks(root = process.cwd()) {
     const reference = { node, bindings };
     const fn = property(reference, 'queryFn');
     // Prefix-only cache operations (invalidate/cancel/remove/set) have no queryFn.
-    if (!required && !fn) return;
+    if (!required && !fn) {
+      return;
+    }
     if (
       !required &&
       fn === unknown &&
@@ -277,8 +313,9 @@ export function checkHooks(root = process.cwd()) {
           member.name &&
           ['queryFn', 'queryKey'].includes(propertyName(member.name))
       )
-    )
+    ) {
       return;
+    }
     const key = property(reference, 'queryKey');
     const actual = key && key !== unknown ? prefix(key) : [];
     const methods = fn && fn !== unknown ? serviceMethods(fn) : [];
@@ -320,14 +357,15 @@ export function checkHooks(root = process.cwd()) {
     ) {
       seen = new Set(seen).add(value.node);
       for (const element of value.node.elements) {
-        if (ts.isSpreadElement(element))
+        if (ts.isSpreadElement(element)) {
           validateQueries(
             { node: element.expression, bindings: value.bindings },
             origin,
             seen
           );
-        else
+        } else {
           validateOptions({ node: element, bindings: value.bindings }, origin);
+        }
       }
       return;
     }
@@ -365,15 +403,17 @@ export function checkHooks(root = process.cwd()) {
         node.body &&
         node.name &&
         /^use[A-Z0-9]/.test(propertyName(node.name) ?? '')
-      )
+      ) {
         hooks.push(node);
+      }
       if (
         ts.isPropertyAssignment(node) &&
         /^use[A-Z0-9]/.test(propertyName(node.name) ?? '')
       ) {
         const value = unwrap(node.initializer);
-        if (ts.isArrowFunction(value) || ts.isFunctionExpression(value))
+        if (ts.isArrowFunction(value) || ts.isFunctionExpression(value)) {
           hooks.push(node);
+        }
       }
       if (
         ts.isVariableDeclaration(node) &&
@@ -386,10 +426,13 @@ export function checkHooks(root = process.cwd()) {
           ts.isArrowFunction(value) ||
           ts.isFunctionExpression(value) ||
           checker.getTypeAtLocation(node.name).getCallSignatures().length
-        )
+        ) {
           hooks.push(node);
+        }
       }
-      if (ts.isObjectLiteralExpression(node)) validateQuery(node);
+      if (ts.isObjectLiteralExpression(node)) {
+        validateQuery(node);
+      }
       if (ts.isCallExpression(node)) {
         const callee = node.expression;
         const declaration = ts.isIdentifier(callee)
@@ -425,22 +468,25 @@ export function checkHooks(root = process.cwd()) {
             { node: node.arguments[0], bindings: new Map() },
             'queries'
           );
-          if (queries && queries !== unknown) validateQueries(queries, node);
-          else
+          if (queries && queries !== unknown) {
+            validateQueries(queries, node);
+          } else {
             report(
               node,
               'query-key: Queries must be statically resolvable to verify their service/method keys.'
             );
+          }
         }
       }
       ts.forEachChild(node, visit);
     }
     visit(source);
-    for (const hook of hooks.slice(1))
+    for (const hook of hooks.slice(1)) {
       report(
         hook,
         `one-hook-per-file: Move ${propertyName(hook.name)} to its own file; this file also defines ${propertyName(hooks[0].name)}.`
       );
+    }
   }
   return [...new Set(errors)];
 }

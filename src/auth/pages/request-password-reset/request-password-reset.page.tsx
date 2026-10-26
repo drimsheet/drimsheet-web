@@ -26,7 +26,9 @@ export function RequestPasswordResetPage() {
   const drimsheet_limited = tShared('drimsheet_limited');
 
   const handleRequestReset = async (email: string) => {
-    if (inFlight) return;
+    if (inFlight) {
+      return;
+    }
 
     setInFlight(true);
     try {

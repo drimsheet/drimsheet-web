@@ -1,6 +1,6 @@
+import { AppSection } from '@/shared/components/app-section';
 import { Badge } from '@/shared/components/badge';
 import { FormattedDate } from '@/shared/components/date';
-import { PageSection } from '@/shared/components/page-section';
 import { PageTitle } from '@/shared/components/page-title';
 import { ECounterpartyType } from '@/shared/lib/api/Api';
 import { Building2, UserRound } from 'lucide-react';
@@ -50,7 +50,7 @@ export function CounterpartyDetails({
         </div>
         <CounterpartyProfileActions {...actionProps} />
       </header>
-      <PageSection title={details_title}>
+      <AppSection title={details_title}>
         <dl className="grid gap-x-12 gap-y-6 text-sm sm:grid-cols-2">
           <div className="flex min-w-0 flex-col gap-2">
             <dt className="text-muted-foreground">{relationships_label}</dt>
@@ -103,7 +103,7 @@ export function CounterpartyDetails({
             </dd>
           </div>
         </dl>
-      </PageSection>
+      </AppSection>
       {children}
     </div>
   );

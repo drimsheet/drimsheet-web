@@ -33,7 +33,9 @@ export function AccountingEntityAvatarContainer({
     isLoadingAccountingEntities ||
     (hasAccountingEntities && isLoadingAccountingEntity);
 
-  if (isLoading) return <SidebarAccountButtonSkeleton />;
+  if (isLoading) {
+    return <SidebarAccountButtonSkeleton />;
+  }
 
   if (!activeEntity) {
     const unavailable_label = t('account_management_unavailable_aria_label');

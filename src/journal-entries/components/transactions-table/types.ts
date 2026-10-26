@@ -3,6 +3,7 @@ import type {
   IJournalEntryListDto,
   IMoneyDto,
   IPaginationResponseMeta,
+  UJournalEntrySourceType,
 } from '@/shared/lib/api/Api';
 import type { ReactNode } from 'react';
 
@@ -17,19 +18,21 @@ export interface ITransactionsTableRow {
   accountName: string;
   additionalCategoryCount: number;
   additionalCounterpartyCount: number;
-  amount: IMoneyDto;
+  amount: IMoneyDto | null;
+  canOpenDetails: boolean;
   destinationAccountName?: string;
-  direction: UTransactionsTableDirection;
+  direction: UJournalEntrySourceType;
   effectiveDate: string;
   entry: IJournalEntryListDto;
   firstCategoryName?: string;
   firstCounterpartyName?: string;
   sourceAccountName?: string;
-  summary: null;
+  summary: string | null;
 }
 
 export interface TransactionsTableProps {
-  actionButton?: ReactNode;
+  accountId?: string;
+  emptyStateNode?: ReactNode;
   data: IJournalEntryListDto[];
   loading?: boolean;
   archiving?: boolean;
@@ -45,6 +48,20 @@ export interface TransactionsTableProps {
   currentSortDirection?: 'asc' | 'desc' | null;
   className?: string;
   'data-testid'?: string;
-  searchValue?: string;
-  onSearchChange: (value: string) => void;
+}
+
+export type TTransactionSummaryRow = Pick<
+  ITransactionsTableRow,
+  | 'additionalCategoryCount'
+  | 'additionalCounterpartyCount'
+  | 'destinationAccountName'
+  | 'direction'
+  | 'firstCategoryName'
+  | 'firstCounterpartyName'
+  | 'sourceAccountName'
+>;
+
+export interface TransactionSummaryProps {
+  row: TTransactionSummaryRow;
+  onOpen?: () => void;
 }

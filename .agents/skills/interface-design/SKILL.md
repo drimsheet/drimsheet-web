@@ -37,7 +37,7 @@ money straightforward.
 
 ## Color palette and theme roles
 
-Use the six-family palette in [Color palette](references/color-palette.md) for
+Use the eight-family palette in [Color palette](references/color-palette.md) for
 color selection, theme mapping, component styling, and color reviews. Read that
 reference before those tasks; it is the single source of shade values, approved
 role mappings, and contrast pairs.
@@ -47,7 +47,7 @@ implementation. Preserve these palette choices and the established Butter brand
 and Ramp charcoal anchors in subsequent interface work.
 
 - Define colors as reusable primitives: Butter, neutral, green, terracotta,
-  blue, and amber, with numbered shade scales independent of components.
+  blue, amber, moss, and clay, with numbered shade scales independent of components.
 - Semantic aliases such as primary, secondary, background, and financial-income
   select palette shades for each theme. They must not introduce new hex values.
   Primary and secondary are roles, not separate shade families.
@@ -65,8 +65,9 @@ and Ramp charcoal anchors in subsequent interface work.
   show it on hover and keyboard focus and retain a visible focus indicator.
 - Keep panel surfaces separate from secondary action fills, and essential
   control borders separate from quiet decorative dividers.
-- Financial expense and destructive feedback retain independently named roles,
-  even where both select terracotta. Keep financial meaning distinct from
+- Financial income uses moss and financial expense uses clay. Success badges
+  and feedback retain green; error and destructive feedback retain terracotta.
+  Keep these semantic roles separate and financial meaning distinct from
   validation and operation outcomes. An expense increase is not automatically
   good, and every reversal is not an error.
 - Inspect consumers when changing role mappings. Existing opacity modifiers,
@@ -119,7 +120,7 @@ that avoids repeating context already established by the page title.
   Reset heading margins to preserve consistent section spacing.
 - **Title-only headers:** page section headers must contain only the section
   title, never actions, buttons, links, filters, period selectors, help controls,
-  badges, or other adornments. `PageSection` must not expose action or adornment
+  badges, or other adornments. `AppSection` must not expose action or adornment
   slots; do not embed controls in its `title` prop to bypass this rule.
 - Place section-specific controls and supporting information in the section's
   content area, alongside the relevant form, chart, or table controls. Place
@@ -181,8 +182,8 @@ repository's UI component and shadcn workflows when implementation is requested.
 
 ## Hybrid financial charts
 
-The approved system combines **Butter for UI identity** with **muted green for
-income** and **terracotta for expenses**. Neutral gray is for comparisons,
+The approved system combines **Butter for UI identity** with **solid moss for
+income** and **solid clay for expenses**. Neutral gray is for comparisons,
 inactive data, and reversals. Do not revert financial series to the earlier
 Butter/graphite exploration or assign a decorative color to every category.
 
@@ -196,8 +197,11 @@ Butter/graphite exploration or assign a decorative color to every category.
   and direct labels distinguish counterparties; a rainbow is unnecessary.
 - Keep ordinary amounts, axis labels, and summary numbers in neutral text.
   Colored marks and small legend swatches carry the financial signal.
-- For paired cash flow, use solid income bars and hatched expense bars, with
-  explicit labels. Color alone must not carry the distinction.
+- For paired cash flow, use solid moss income bars and solid clay expense bars,
+  with matching solid legend swatches. Keep income first (left) and expense
+  second (right), named legends, and labeled values in keyboard/touch-accessible
+  tooltips or a data view. Do not use expense hatching; color alone must not
+  carry the distinction.
 - A negative net amount extends below or left of zero and retains its sign.
   Use neutral hatching and a reversal label where appropriate; a negative
   revenue adjustment must not silently become an expense series.
@@ -226,8 +230,9 @@ encoding for negative net adjustments. Small corner radii, around 2–3px, are
 sufficient; avoid pill-shaped columns and decorative gradients.
 
 **Account cash flow:** paired income/expense bars on one shared scale and date
-axis. Retain solid-versus-hatched encoding, named legends, and exact amounts in
-tooltips or an accessible data view. Do not draw ordinary money out below zero
+axis. Use solid fills for both series, consistent income/expense order, named
+legends, and exact amounts in tooltips or an accessible data view. Do not draw
+ordinary money out below zero
 unless the underlying chart explicitly represents signed cash movement.
 
 ### Readability and states
@@ -246,8 +251,8 @@ unless the underlying chart explicitly represents signed cash movement.
 - Show a neutral loading skeleton, a useful no-activity state, and a distinct
   recoverable error state. Do not display fabricated bars in any of these states.
 - Keep existing chart/data primitives and accessibility behavior when implementing.
-  Verify color contrast against the actual theme; patterns and text remain
-  necessary even when both colors individually contrast well with the page.
+  Verify color contrast against the actual theme; labels and consistent series
+  order remain necessary even when both colors contrast well with the page.
 
 ## Working process
 

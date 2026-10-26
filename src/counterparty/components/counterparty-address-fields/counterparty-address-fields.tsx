@@ -26,7 +26,9 @@ export function CounterpartyAddressFields({
 
   const getFieldError = (fieldName: string) => {
     const fullPath = `${namePrefix}.${fieldName}`;
-    if (fieldErrors[fullPath]) return [{ message: fieldErrors[fullPath] }];
+    if (fieldErrors[fullPath]) {
+      return [{ message: fieldErrors[fullPath] }];
+    }
 
     const err = getIn(errors, fullPath);
     const touch = getIn(touched, fullPath);

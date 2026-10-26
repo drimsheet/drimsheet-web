@@ -38,21 +38,24 @@ function toVendorAddress(values: IAddressValues): IAddressDto | null {
 
 function toMeta(party: ICounterpartyDto): ICounterpartyCreateMetaReq {
   const meta: ICounterpartyCreateMetaReq = {};
-  if (party.meta.employer)
+  if (party.meta.employer) {
     meta.employer = {
       displayName: party.meta.employer.displayName || null,
       address: toAddress(toAddressValues(party.meta.employer.address)),
     };
+  }
 
-  if (party.meta.vendor)
+  if (party.meta.vendor) {
     meta.vendor = {
       address: toVendorAddress(toAddressValues(party.meta.vendor.address)),
     };
+  }
 
-  if (party.meta.contractor)
+  if (party.meta.contractor) {
     meta.contractor = {
       address: toAddress(toAddressValues(party.meta.contractor.address)),
     };
+  }
 
   return meta;
 }
@@ -89,21 +92,24 @@ function toReplacementMeta(
       : edited.contractor;
 
   const meta: ICounterpartyCreateMetaReq = {};
-  if (employer)
+  if (employer) {
     meta.employer = {
       displayName: employer.displayName,
       address: toPreservedAddress(employer.address),
     };
+  }
 
-  if (vendor)
+  if (vendor) {
     meta.vendor = {
       address: vendor.address
         ? toPreservedAddress(vendor.address)
         : vendor.address,
     };
+  }
 
-  if (contractor)
+  if (contractor) {
     meta.contractor = { address: toPreservedAddress(contractor.address) };
+  }
 
   return meta;
 }

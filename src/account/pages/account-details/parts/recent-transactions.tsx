@@ -2,13 +2,19 @@ import {
   TransactionsTable,
   TransactionsTableSkeleton,
 } from '@/journal-entries/components/transactions-table';
-import { Empty, EmptyHeader, EmptyTitle } from '@/shared/components/empty';
-import { PageSection } from '@/shared/components/page-section';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from '@/shared/components/empty';
+import { SearchField } from '@/shared/components/search-field';
 import { Skeleton } from '@/shared/components/skeleton';
 import { useTranslation } from 'react-i18next';
 import type { RecentTransactionsProps } from '../types';
 
 export function RecentTransactions({
+  accountId,
   transactions,
   pagination,
   search,
@@ -18,32 +24,45 @@ export function RecentTransactions({
   onPageChange,
   onSortChange,
 }: Readonly<RecentTransactionsProps>) {
-  const { t } = useTranslation('ledger-accounts');
-  const title = t('details_transactions_title');
+  const { t } = useTranslation(['ledger-accounts', 'journal-entries']);
+
+  const search_placeholder = t(
+    'journal-entries:transactions_table_search_placeholder'
+  );
+
   const empty_text = t('details_transactions_empty_text');
+  const empty_description = t('details_transactions_empty_description');
 
   return (
-    <PageSection title={title}>
-      {empty && (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>{empty_text}</EmptyTitle>
-          </EmptyHeader>
-        </Empty>
-      )}
-      {!empty && (
-        <TransactionsTable
-          data={transactions}
-          pagination={pagination}
-          searchValue={search}
-          onSearchChange={onSearchChange}
-          onPageChange={onPageChange}
-          currentSortDirection={sortDirection}
-          onSortChange={onSortChange}
-          className="border-0 shadow-none [&_thead]:border-0 [&_tr]:border-0"
+    <>
+      <div className="w-full max-w-sm">
+        <SearchField
+          type="search"
+          aria-label={search_placeholder}
+          placeholder={search_placeholder}
+          value={search}
+          onChange={(event) => onSearchChange(event.target.value)}
         />
-      )}
-    </PageSection>
+      </div>
+      <TransactionsTable
+        accountId={accountId}
+        data={transactions}
+        pagination={pagination && pagination.total > 0 ? pagination : undefined}
+        onPageChange={onPageChange}
+        currentSortDirection={sortDirection}
+        onSortChange={onSortChange}
+        emptyStateNode={
+          empty ? (
+            <Empty className="p-0 md:p-0">
+              <EmptyHeader>
+                <EmptyTitle className="text-sm">{empty_text}</EmptyTitle>
+                <EmptyDescription>{empty_description}</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : undefined
+        }
+      />
+    </>
   );
 }
 
@@ -52,14 +71,14 @@ export function RecentTransactionsSkeleton() {
   const loading_label = t('details_loading_recent_transactions');
 
   return (
-    <PageSection aria-busy="true">
+    <div aria-busy="true" className="flex min-w-0 flex-col gap-4">
       <output className="sr-only" aria-label={loading_label} aria-busy="true">
         {loading_label}
       </output>
-      <div className="flex flex-col gap-6">
-        <Skeleton className="h-5 w-48" />
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-9 w-full max-w-sm" />
         <TransactionsTableSkeleton />
       </div>
-    </PageSection>
+    </div>
   );
 }

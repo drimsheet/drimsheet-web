@@ -21,7 +21,31 @@ function setup() {
     'getLedgerAccountDeletionEligibility',
   ].map((method) => ['ledgerAccountService', method, 'account-1']);
 
+  const transactionKeys = [
+    [
+      'journalEntryService',
+      'getJournalEntries',
+      { accountId: 'account-1', page: 2 },
+    ],
+    [
+      'journalEntryService',
+      'getJournalEntries',
+      { accountId: 'account-1', limit: 100 },
+      'all-pages',
+    ],
+  ];
+
+  removedKeys.push(['reportingService', 'getAccountCashFlow', 'account-1']);
+
   const refreshedKeys = [
+    [
+      'journalEntryService',
+      'getJournalEntries',
+      { accountId: 'child-1', page: 1 },
+    ],
+    ['reportingService', 'getAccountCashFlow', 'child-1'],
+    ['reportingService', 'getLedgerBalancesByCurrency'],
+    ['reportingService', 'getBalancesBySubType'],
     ['ledgerAccountService', 'getLedgerAccounts', { page: 1 }],
     ['ledgerAccountService', 'getPermittedPostingAccounts', {}],
     ['ledgerAccountService', 'getSubAccounts', 'parent-1'],
@@ -30,7 +54,12 @@ function setup() {
     ['accountingBootstrapService', 'getRecommendations'],
   ];
 
-  for (const key of [...removedKeys, ...refreshedKeys, ['unrelated']]) {
+  for (const key of [
+    ...removedKeys,
+    ...transactionKeys,
+    ...refreshedKeys,
+    ['unrelated'],
+  ]) {
     queryClient.setQueryData(key, { cached: true });
   }
 
@@ -41,7 +70,7 @@ function setup() {
   return {
     ...renderHook(() => useDeleteLedgerAccount(), { wrapper }),
     queryClient,
-    removedKeys,
+    removedKeys: [...removedKeys, ...transactionKeys],
     refreshedKeys,
   };
 }
@@ -60,10 +89,14 @@ describe('useDeleteLedgerAccount', () => {
     expect(
       ledgerAccountService.deleteLedgerAccount
     ).toHaveBeenCalledExactlyOnceWith('account-1');
-    for (const key of removedKeys)
+    for (const key of removedKeys) {
       expect(queryClient.getQueryData(key)).toBeUndefined();
-    for (const key of refreshedKeys)
+    }
+
+    for (const key of refreshedKeys) {
       expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
+    }
+
     expect(queryClient.getQueryState(['unrelated'])?.isInvalidated).toBe(false);
   });
 

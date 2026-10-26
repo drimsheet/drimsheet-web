@@ -7,6 +7,18 @@ import type {
   ILedgerAccountDto,
 } from '@/shared/lib/api/Api';
 
+export interface BankDetailsHelpProps {
+  description: string;
+  triggerLabel: string;
+}
+
+export interface BankDetailsFormSkeletonProps {
+  mode?: BankDetailsFormProps['mode'];
+  showCancel?: boolean;
+  showSkipOpeningBalance?: boolean;
+  showExchangeRate?: boolean;
+}
+
 export interface IBankDetailsFormValues {
   name: string;
   currencyCode: string;
@@ -18,7 +30,6 @@ export interface IBankDetailsFormValues {
   openingBalance: number | '';
   openingDate: string;
   exchangeRate: ICurrencyExchangeRateInputValue | null;
-  isSubAccount: boolean;
 }
 
 export interface BankDetailsFormProps {

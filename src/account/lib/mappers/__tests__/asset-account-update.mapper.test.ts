@@ -64,7 +64,6 @@ describe('assetAccountUpdateMapper', () => {
       openingBalance: 25.5,
       openingDate: '2026-10-01',
       exchangeRate: { value: 1500, inverted: false },
-      isSubAccount: false,
     });
     expect(
       assetAccountUpdateMapper.toBankValues(account, bank, openingBalance)
@@ -79,7 +78,6 @@ describe('assetAccountUpdateMapper', () => {
       openingBalance: 25.5,
       openingDate: '2026-10-01',
       exchangeRate: { value: 1500, inverted: false },
-      isSubAccount: false,
     });
   });
 
@@ -91,7 +89,6 @@ describe('assetAccountUpdateMapper', () => {
       openingBalance: '',
       openingDate: '',
       exchangeRate: null,
-      isSubAccount: false,
     });
   });
 

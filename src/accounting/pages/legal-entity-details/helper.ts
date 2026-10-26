@@ -8,7 +8,9 @@ import type {
 
 function formatDate(value: string, locale: string, exclusiveEnd = false) {
   const timestamp = Date.parse(value);
-  if (!Number.isFinite(timestamp)) return '—';
+  if (!Number.isFinite(timestamp)) {
+    return '—';
+  }
 
   return new Intl.DateTimeFormat(locale, {
     day: 'numeric',
@@ -24,7 +26,9 @@ function selectFiscalYear(
   now: number
 ) {
   const selected = years.find((year) => year.id === selectedId);
-  if (selected) return selected;
+  if (selected) {
+    return selected;
+  }
 
   const sorted = [...years].sort(
     (a, b) => Date.parse(b.startDate) - Date.parse(a.startDate)

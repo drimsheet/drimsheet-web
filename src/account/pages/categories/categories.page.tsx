@@ -1,9 +1,9 @@
 import { CategoryEditorDialog } from '@/account/dialogs/category-editor';
+import { useCategoryAccounts } from '@/account/hooks/use-category-accounts';
 import { categoryService } from '@/account/lib/services/category.service';
 import { AppBody } from '@/shared/components/app';
+import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
-import { PageSection } from '@/shared/components/page-section';
-import { PageTitle } from '@/shared/components/page-title';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
 import type { IRevenueExpenseAccountDto } from '@/shared/lib/api/Api';
@@ -13,7 +13,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import categoriesHelpers from './helper';
-import { useCategoryAccounts } from './hooks/use-category-accounts';
 import { CategoryArchiveConfirmation } from './parts/archive-confirmation';
 import { CategoryOverviewContainer } from './parts/category-overview.container';
 import { CategoryPeriod } from './parts/category-period';
@@ -81,7 +80,9 @@ export function CategoriesPage() {
   };
 
   const handleArchive = async () => {
-    if (!archiveAccount) return;
+    if (!archiveAccount) {
+      return;
+    }
 
     try {
       await archive.mutateAsync(archiveAccount.accountId);
@@ -99,16 +100,17 @@ export function CategoriesPage() {
 
   return (
     <>
-      <AppBody>
+      <AppBody
+        title={title}
+        actionsSlot={
+          <Button onClick={() => navigate('/categories/new')}>
+            <Plus data-icon="inline-start" />
+            {add_label}
+          </Button>
+        }
+      >
         <div className="flex min-w-0 flex-col">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <PageTitle>{title}</PageTitle>
-            <Button onClick={() => navigate('/categories/new')}>
-              <Plus data-icon="inline-start" />
-              {add_label}
-            </Button>
-          </div>
-          <PageSection title={overview_title}>
+          <AppSection title={overview_title}>
             <div className="flex flex-wrap justify-end">
               <CategoryPeriod
                 period={period}
@@ -120,7 +122,7 @@ export function CategoriesPage() {
               query={categoriesHelpers.periodQuery(period, now)}
               onViewAccount={handleViewAccount}
             />
-          </PageSection>
+          </AppSection>
           {accounts.isError && <CategorySectionError title={table_title} />}
           <CategoryTable
             accounts={accounts.data}

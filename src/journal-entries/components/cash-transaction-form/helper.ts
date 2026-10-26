@@ -147,7 +147,9 @@ function createItem(
  */
 function getItemTotal(items: IItemizedFieldValue[]) {
   const total = items.reduce((sum, item) => {
-    if (!Number.isFinite(item.amount.amount)) return sum;
+    if (!Number.isFinite(item.amount.amount)) {
+      return sum;
+    }
 
     return sum + item.amount.amount;
   }, 0);
@@ -270,7 +272,9 @@ function getAccountCurrencyCode(
  * Resolves the complete counterparty copy contract for the transaction flow.
  */
 function getCounterpartyTextKeys(variant?: UCashTransactionFormVariant) {
-  if (!variant) return COUNTERPARTY_TEXT_KEYS.default;
+  if (!variant) {
+    return COUNTERPARTY_TEXT_KEYS.default;
+  }
 
   return COUNTERPARTY_TEXT_KEYS[variant];
 }

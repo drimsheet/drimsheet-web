@@ -63,18 +63,20 @@ async function prepare(
   await page.route('**/api/v1/**', async (route) => {
     const request = route.request();
     const path = new URL(request.url()).pathname.replace('/api/v1', '');
-    if (path.startsWith('/auth/'))
+    if (path.startsWith('/auth/')) {
       return route.fulfill({ json: { accessToken: 'integration-test-token' } });
+    }
 
-    if (path === '/currencies')
+    if (path === '/currencies') {
       return route.fulfill({
         json: [
           { code: 'NGN', name: 'Nigerian Naira', symbol: '₦', minorUnit: 2 },
           { code: 'USD', name: 'US Dollar', symbol: '$', minorUnit: 2 },
         ],
       });
+    }
 
-    if (path === '/accounting/jurisdictions')
+    if (path === '/accounting/jurisdictions') {
       return route.fulfill({
         json: [
           {
@@ -90,10 +92,12 @@ async function prepare(
           },
         ],
       });
+    }
 
     if (request.method() === 'GET') {
-      if (path === '/accounting/accounting-entities')
+      if (path === '/accounting/accounting-entities') {
         return route.fulfill({ json: entityCreated ? [entity] : [] });
+      }
 
       return route.fallback();
     }
@@ -105,11 +109,15 @@ async function prepare(
       payload,
       entityId: request.headers()['x-accounting-entity-id'],
     });
-    if (writes.length === 1 && pauseFirst) await pauseFirst;
+    if (writes.length === 1 && pauseFirst) {
+      await pauseFirst;
+    }
 
     if (failure?.path === path && !failureSent) {
       failureSent = true;
-      if (failure.abort) return route.abort('connectionfailed');
+      if (failure.abort) {
+        return route.abort('connectionfailed');
+      }
 
       return route.fulfill({
         status: failure.status ?? 422,
@@ -130,22 +138,29 @@ async function prepare(
       });
     }
 
-    if (path === paths[0]) entityCreated = true;
+    if (path === paths[0]) {
+      entityCreated = true;
+    }
 
-    if (path === paths[0] || path === paths[1])
+    if (path === paths[0] || path === paths[1]) {
       return route.fulfill({ json: entity });
+    }
 
-    if (path === paths[7]) return route.fulfill({ json: headers });
+    if (path === paths[7]) {
+      return route.fulfill({ json: headers });
+    }
 
-    if (path === '/ledger/revenues' || path === '/ledger/expenses')
+    if (path === '/ledger/revenues' || path === '/ledger/expenses') {
       return route.fulfill({
         json: { ...payload, id: `saved-${writes.length}` },
       });
+    }
 
-    if (paths.includes(path))
+    if (paths.includes(path)) {
       return route.fulfill({
         json: { ...payload, id: `saved-${path.split('/').at(-1)}` },
       });
+    }
 
     throw new Error(`Unexpected onboarding write: ${request.method()} ${path}`);
   });
@@ -365,11 +380,15 @@ test('skips category creation when no categories are selected', async ({
   page,
 }) => {
   const writes = await prepare(page);
-  for (const checkbox of await page.getByRole('checkbox').all())
+  for (const checkbox of await page.getByRole('checkbox').all()) {
     await checkbox.uncheck();
+  }
+
   await page.getByRole('button', { name: 'Back', exact: true }).click();
-  for (const checkbox of await page.getByRole('checkbox').all())
+  for (const checkbox of await page.getByRole('checkbox').all()) {
     await checkbox.uncheck();
+  }
+
   await page
     .getByRole('button', { name: 'Continue to expense categories' })
     .click();

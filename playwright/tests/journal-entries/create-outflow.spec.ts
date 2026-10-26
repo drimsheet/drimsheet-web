@@ -269,7 +269,9 @@ test.describe('Outflow payment creation', () => {
     await registerOutflowPageRoutes(page, queryLog, {
       postingAccountsGate,
       exchangeRateResponse: (query) => {
-        if (!query.currencyPair || !query.asOf) return [];
+        if (!query.currencyPair || !query.asOf) {
+          return [];
+        }
 
         const [baseCurrencyCode, targetCurrencyCode] =
           query.currencyPair.split('/');

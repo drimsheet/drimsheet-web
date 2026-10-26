@@ -128,8 +128,9 @@ export function AccountingEntityOnboardingPage() {
       !financialYearValues ||
       !reportsValues ||
       !incomeValues
-    )
+    ) {
       return;
+    }
 
     const standard = accountingEntityOnboardingHelpers.getAccountingStandard(
       entityValues,
@@ -263,6 +264,10 @@ export function AccountingEntityOnboardingPage() {
     });
     void queryClient.invalidateQueries({
       queryKey: ['ledgerAccountService'],
+      refetchType: 'none',
+    });
+    void queryClient.invalidateQueries({
+      queryKey: ['reportingService'],
       refetchType: 'none',
     });
     void queryClient.invalidateQueries({

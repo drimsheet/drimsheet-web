@@ -1,66 +1,56 @@
+import type { IAccountsTableRow } from '@/account/components/accounts-table';
 import type {
-  IAssetLiabilityAccountParticipationDto,
-  IAssetLiabilitySummaryDto,
-  IMoneyDto,
-  IPaginatedResponseIAssetLiabilityAccountParticipationDto,
-} from '@/shared/lib/api/Api';
+  IAccountDashboardHistory,
+  IAccountDashboardMoney,
+  IAccountDashboardSummary,
+} from '@/account/lib/types/account-dashboard.types';
+import type { UTransitionState } from '@/shared/components/with-transition-state';
 
-export type UAccountTypeFilter = 'all' | 'asset' | 'liability';
 export type UBalancePeriod = '1M' | '6M' | '1Y';
 
-export interface IAccountTableRow extends IAssetLiabilityAccountParticipationDto {
-  id: string;
-}
-
-export interface IBalancePoint {
+export interface IAccountBalanceChange {
+  amount: IAccountDashboardMoney;
+  percentageChange: number | null;
   date: string;
-  amount: IMoneyDto;
 }
 
 export interface AccountsSummaryProps {
-  summary: IAssetLiabilitySummaryDto;
+  summary: IAccountDashboardSummary;
+  change?: IAccountBalanceChange;
 }
 
-export interface AccountBreakdownProps {
-  type: 'asset' | 'liability';
-  accounts: IAssetLiabilityAccountParticipationDto[];
-  loading: boolean;
-  error: boolean;
-  hasMore: boolean;
-  loadingMore: boolean;
-  onLoadMore: () => void;
-  onViewAccount: (id: string) => void;
+export interface AccountsSummaryWithStateProps extends Pick<
+  AccountsSummaryProps,
+  'change'
+> {
+  state?: UTransitionState;
+  summary?: IAccountDashboardSummary | null;
 }
 
-export interface AccountsTableProps {
-  accounts?: IPaginatedResponseIAssetLiabilityAccountParticipationDto;
-  loading: boolean;
-  error: boolean;
-  search: string;
-  type: UAccountTypeFilter;
-  onSearchChange: (search: string) => void;
-  onTypeChange: (type: string) => void;
-  onPageChange: (page: number) => void;
-  onAddAccount: () => void;
-  onViewAccount: (id: string) => void;
-}
-
-export interface BalanceTrendProps {
-  points: IBalancePoint[];
-}
-
-export interface BalanceHistoryContainerProps {
+export interface BalanceHistoryProps {
   period: UBalancePeriod;
   onPeriodChange: (period: UBalancePeriod) => void;
-  summary?: IAssetLiabilitySummaryDto;
-  enabled: boolean;
-  summaryError: boolean;
+  history?: IAccountDashboardHistory;
+  loading: boolean;
+  error: boolean;
 }
 
 export interface DashboardErrorProps {
   title: string;
 }
 
-export interface AccountPageEmptyStateProps {
-  onAddAccount: () => void;
+export interface EmptyAccountDashboardProps {
+  onAdd: () => void;
+}
+
+export interface AccountDetailsActionsProps {
+  account: IAccountsTableRow;
+  busy?: boolean;
+  checking?: boolean;
+  eligibilityFailed?: boolean;
+  canDelete?: boolean;
+  onOpenChange: (open: boolean) => void;
+  onEdit: () => void;
+  onArchive: () => Promise<void>;
+  onDelete: () => void;
 }

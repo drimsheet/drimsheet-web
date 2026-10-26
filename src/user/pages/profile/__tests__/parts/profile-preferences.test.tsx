@@ -30,8 +30,10 @@ describe('ProfilePreferences', () => {
         isSaving
       />
     );
-    for (const radio of screen.getAllByRole('radio'))
+    for (const radio of screen.getAllByRole('radio')) {
       expect(radio).toBeDisabled();
+    }
+
     await user.click(screen.getByRole('radio', { name: 'Dark' }));
     expect(onChange).not.toHaveBeenCalled();
     expect(screen.getByRole('status')).toHaveTextContent('Saving preferences…');

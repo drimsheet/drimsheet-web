@@ -30,16 +30,22 @@ export function ConfirmationDialog({
   footer,
 }: Readonly<ConfirmationDialogProps>) {
   const handleOpenChange = (nextOpen: boolean) => {
-    if (loading) return;
+    if (loading) {
+      return;
+    }
 
     onOpenChange(nextOpen);
 
-    if (!nextOpen) onClose?.();
+    if (!nextOpen) {
+      onClose?.();
+    }
   };
 
   const handleConfirm = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    if (!loading) onConfirm();
+    if (!loading) {
+      onConfirm();
+    }
   };
 
   return (

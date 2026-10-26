@@ -36,7 +36,9 @@ export function RequestPasswordResetForm({
     },
     validationSchema,
     onSubmit: async (values) => {
-      if (loading) return;
+      if (loading) {
+        return;
+      }
 
       await onSubmit(values);
     },

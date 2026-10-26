@@ -44,7 +44,9 @@ export function EntityTypeCards({
   const handleValueChange = (nextValue: string) => {
     const option = options.find((option) => option.value === nextValue);
 
-    if (option) onChange(option.value);
+    if (option) {
+      onChange(option.value);
+    }
   };
 
   const type_label = t('entity_type_label');

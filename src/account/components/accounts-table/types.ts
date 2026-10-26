@@ -1,28 +1,37 @@
-import type {
-  ILedgerAccountDto,
-  IPaginationResponseMeta,
-} from '@/shared/lib/api/Api';
-
-export interface LedgerAccountsTableProps {
-  data: ILedgerAccountDto[];
-  loading?: boolean;
-  selectable?: boolean;
-  selectedRowIds?: (string | number)[];
-  onRowSelectionChange?: (selectedIds: (string | number)[]) => void;
-  pagination?: IPaginationResponseMeta;
-  onPageChange?: (page: number) => void;
-  stickyHeader?: boolean;
-  onSortChange: (
-    key: keyof ILedgerAccountDto,
-    direction: 'asc' | 'desc' | null
-  ) => void;
-  onFilterChange: (filters: Record<string, (string | number)[]>) => void;
-  currentSortKey?: string;
-  currentSortDirection?: 'asc' | 'desc' | null;
-  className?: string;
-  'data-testid'?: string;
-  searchValue?: string;
-  onSearchChange: (value: string) => void;
-  filters: Record<string, (string | number)[]>;
+import type { IMoneyDto } from '@/shared/lib/api/Api';
+import type { ReactNode } from 'react';
+export type UAccountBehaviorFilter = 'all' | 'bank' | 'petty_cash';
+export interface IAccountsTableRow {
+  id: string;
+  name: string;
+  behavior: 'bank' | 'petty_cash' | 'default_cash' | 'other';
+  balance: IMoneyDto;
+  status: 'draft' | 'active' | 'archived';
+}
+export interface IAccountsTablePagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+export interface IAccountsTableData {
+  data: IAccountsTableRow[];
+  meta: IAccountsTablePagination;
+}
+export interface AccountsTableErrorProps {
+  title: string;
+  description: string;
+}
+export interface AccountsTableProps {
+  accounts?: IAccountsTableData;
+  loading: boolean;
+  error: boolean;
+  search: string;
+  type: UAccountBehaviorFilter;
+  onSearchChange: (search: string) => void;
+  onTypeChange: (type: string) => void;
+  onPageChange: (page: number) => void;
   onAddAccount: () => void;
+  onViewAccount: (id: string) => void;
+  renderRowActions?: (account: IAccountsTableRow) => ReactNode;
 }

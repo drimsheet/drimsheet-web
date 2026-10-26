@@ -1,6 +1,5 @@
 import { Button } from '@/shared/components/button';
 import { Money } from '@/shared/components/money';
-import { PageSection } from '@/shared/components/page-section';
 import { Skeleton } from '@/shared/components/skeleton';
 import { useTranslation } from 'react-i18next';
 import type { SubAccountsProps } from '../types';
@@ -11,7 +10,9 @@ export function SubAccounts({
 }: Readonly<SubAccountsProps>) {
   const { t } = useTranslation(['ledger-accounts', 'shared']);
 
-  if (accounts.length === 0) return null;
+  if (accounts.length === 0) {
+    return null;
+  }
 
   const title = t('ledger-accounts:details_sub_accounts_title', {
     count: accounts.length,
@@ -20,12 +21,8 @@ export function SubAccounts({
   const balances_label = t('ledger-accounts:details_current_balances_label');
 
   return (
-    <PageSection
-      title={title}
-      role="region"
-      aria-label={title}
-      className="min-w-0 rounded-none bg-muted px-6 shadow-none ring-0"
-    >
+    <div className="flex min-w-0 flex-col gap-4">
+      <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
       <span className="text-sm text-muted-foreground">{balances_label}</span>
 
       <div>
@@ -52,7 +49,7 @@ export function SubAccounts({
           ))}
         </ul>
       </div>
-    </PageSection>
+    </div>
   );
 }
 
@@ -61,10 +58,7 @@ export function SubAccountsSkeleton() {
   const loading_label = t('details_loading_sub_accounts');
 
   return (
-    <PageSection
-      aria-busy="true"
-      className="min-w-0 rounded-none bg-muted px-6 shadow-none ring-0"
-    >
+    <div aria-busy="true" className="flex min-w-0 flex-col gap-4">
       <output className="sr-only" aria-label={loading_label} aria-busy="true">
         {loading_label}
       </output>
@@ -81,6 +75,6 @@ export function SubAccountsSkeleton() {
           </div>
         ))}
       </div>
-    </PageSection>
+    </div>
   );
 }

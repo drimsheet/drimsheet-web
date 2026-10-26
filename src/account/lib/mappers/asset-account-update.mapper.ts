@@ -14,7 +14,9 @@ import type {
 function toOpeningBalanceAmount(
   openingBalance: IOpeningBalanceDto | null
 ): number | '' {
-  if (!openingBalance) return '';
+  if (!openingBalance) {
+    return '';
+  }
 
   const money = openingBalance.amount;
 
@@ -43,7 +45,6 @@ function toPettyCashValues(
     exchangeRate: openingBalance?.exchangeRate
       ? { value: openingBalance.exchangeRate.rate, inverted: false }
       : null,
-    isSubAccount: false,
   };
 }
 
@@ -65,7 +66,6 @@ function toBankValues(
     exchangeRate: openingBalance?.exchangeRate
       ? { value: openingBalance.exchangeRate.rate, inverted: false }
       : null,
-    isSubAccount: false,
   };
 }
 

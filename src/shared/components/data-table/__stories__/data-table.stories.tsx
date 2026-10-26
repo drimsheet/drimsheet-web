@@ -91,7 +91,7 @@ export function ControlledDataTableWrapper<T extends IDataWithId>({
       )
     );
 
-    if (key && direction)
+    if (key && direction) {
       result.sort((a, b) => {
         const left = a[key as keyof T],
           right = b[key as keyof T];
@@ -103,6 +103,7 @@ export function ControlledDataTableWrapper<T extends IDataWithId>({
 
         return direction === 'asc' ? compared : -compared;
       });
+    }
 
     return result;
   }, [data, filters, key, direction]);

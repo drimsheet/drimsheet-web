@@ -4,6 +4,24 @@
 
 Make each file easy to understand, safe to change, and obvious for an AI agent to place correctly.
 
+## Design Philosophy
+
+- Organize by responsibility and domain, not by where code was first used.
+  Moving files alone does not establish a reusable boundary.
+- Compose capabilities rather than accumulating responsibilities. A caller
+  decides how pieces fit together; each piece owns how it fulfills its role.
+- Keep contextual decisions with the owner that understands them. Components
+  should not assume their caller's layout, hierarchy, wording, or workflow;
+  neither should callers manage a component's internal presentation and states.
+- Design contracts around what a component actually needs. Expose meaningful
+  choices, not implementation details or irrelevant requirements inherited
+  from one consumer.
+- Judge abstractions by whether they simplify their callers. More files,
+  wrappers, props, or configurable labels are not inherently more modular.
+  Share stable responsibilities without forcing different use cases together.
+- Refactor incrementally and preserve observable behavior. Compare existing
+  contracts before consolidating implementations; make behavior changes explicit.
+
 ## `*.tsx` Component Files
 
 - Pure component files must contain presentation logic only.
@@ -24,7 +42,11 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
   narrowing with a local immutable value when a predicate checks optional data.
   For complex render branches, use guard returns or a focused presentation part.
 
-## Statement Spacing
+## Control Statements and Spacing
+
+- Always use braces for control-statement bodies (`if`, `else`, `for`,
+  `for...in`, `for...of`, `while`, and `do...while`), including single-line
+  guards and returns. ESLint enforces this with `curly: ['error', 'all']`.
 
 - Separate logical groups with one blank line: hooks, derived values, handlers,
   guard clauses, and returned UI. Keep related simple declarations together.
@@ -132,7 +154,7 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
   Do not use this exception for ordinary HTML message containers.
 - ESLint's `local/prefer-native-status` rule enforces this for explicit status
   roles in JSX, including literal expressions and conditional branches. It
-  also checks component wrappers such as `PageSection`, `Card`, and `Field`.
+  also checks component wrappers such as `AppSection`, `Card`, and `Field`.
   Native `<svg>` elements and bindings imported from `lucide-react` are allowed.
   Other necessary SVG exceptions require a narrowly scoped ESLint disable
   comment explaining the element contract. The rule runs in `npm run lint`,
@@ -282,6 +304,45 @@ export function BankSelectionSkeleton() {
 
 - Each page lives in `pages/<page>/<page>.page.tsx` and orchestrates feature
   pieces and page composition. Its `index.ts` exports only the page component.
+- Page rendering MUST be composition-only, following this hierarchy:
+
+  ```text
+  Page
+    AppBody
+      AppSection
+        Components or private parts
+      AppSection
+        Components or private parts
+  ```
+
+- Pages MUST NOT define CSS: no `className`, inline `style`, CSS imports,
+  CSS-in-JS definitions, or class-building utilities in page entries. This
+  includes JSX passed through slots or render callbacks. Do not introduce
+  hand-built layout wrappers in a page.
+- `AppBody` owns spacing between its direct `AppSection` children.
+  `AppSection` owns standard section presentation and spacing between its
+  direct children. Pages compose these primitives through their supported
+  props; they must not reach into or style descendants.
+- `AppSection` MUST only be composed as a direct child of `AppBody`, at the
+  page composition boundary. Do not nest it inside another `AppSection`, a
+  layout wrapper, or a content component. Conditional rendering may choose
+  which direct sections appear, but must not introduce an intervening wrapper.
+- Components, private parts, containers, and their skeleton/error variants
+  MUST NOT render their own `AppSection`. They render content and controls;
+  the page owns the surrounding `AppSection` and its `title` prop. Move an
+  existing internal section wrapper to the page rather than adding a second
+  section around it. Stories and tests that render `AppSection` must compose
+  it directly under `AppBody` as well.
+- Components and private parts own their internal layout, typography,
+  responsive behavior, and the dimensions of their loading and error states.
+  Put specialized arrangements inside a component or part rather than adding
+  page-level CSS or exposing arbitrary CSS through layout props.
+- Use the singular name `AppSection` for the section primitive. Do not add
+  a separate `AppSections` layer or make pages assemble standalone section
+  title primitives.
+- This is the page presentation standard; account pages are the current
+  standardization scope. Existing pages are not exceptions to the standard,
+  but do not migrate unrelated pages without task scope.
 - Private UI belongs in `parts/`; effects belong in the page entry, private
   `.container.tsx` parts, or page-owned hooks under `hooks/`.
 - Page helpers follow the component `helper.ts` contract: one root module,

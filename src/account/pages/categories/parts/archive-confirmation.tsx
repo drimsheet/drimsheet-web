@@ -31,7 +31,9 @@ export function CategoryArchiveConfirmation({
   const error_text = t('categories_archive_error_text');
 
   const handleOpenChange = (open: boolean) => {
-    if (!open && !pending) onClose();
+    if (!open && !pending) {
+      onClose();
+    }
   };
 
   return (

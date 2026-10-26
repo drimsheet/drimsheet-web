@@ -63,7 +63,9 @@ function toOpeningBalanceDto(
   accountingCurrencyCode: string,
   officialExchangeRate?: IExchangeRate
 ): IOpeningBalanceDto | null {
-  if (values.createWithoutOpeningBalance) return null;
+  if (values.createWithoutOpeningBalance) {
+    return null;
+  }
 
   const hasForeignCurrency = values.currencyCode !== accountingCurrencyCode;
   let exchangeRate: IExchangeRateDto | null = null;

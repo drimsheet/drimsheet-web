@@ -17,6 +17,14 @@ function setup() {
   const detailKey = ['ledgerAccountService', 'getLedgerAccount', 'account-1'];
 
   const affectedKeys = [
+    [
+      'journalEntryService',
+      'getJournalEntries',
+      { accountId: 'account-1', page: 1 },
+    ],
+    ['reportingService', 'getLedgerBalancesByCurrency'],
+    ['reportingService', 'getBalancesBySubType'],
+    ['reportingService', 'getAccountCashFlow', 'account-1'],
     ['ledgerAccountService', 'getLedgerAccounts', { page: 1 }],
     ['ledgerAccountService', 'getPermittedPostingAccounts', { flow: 'inflow' }],
     ['ledgerAccountService', 'getSubAccounts', 'parent-1'],

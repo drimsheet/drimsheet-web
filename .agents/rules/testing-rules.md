@@ -39,6 +39,11 @@ that must be justified by the additional assurance.
 
 ## Browser Integration
 
+- Write Playwright tests only for behavior whose regression requires the
+  running frontend, browser, route, page, dialog, portal, or composed boundary.
+  If a component, container, hook, mapper, service, or validation test can
+  adequately detect the regression, that lower layer owns the coverage and it
+  must not be duplicated in Playwright.
 - Test dialogs, pages, and frontend route behavior with Playwright integration
   tests.
 - Exercise the running application, real composed components, browser portals,
@@ -73,9 +78,12 @@ audit. Before adding a case, establish all of the following:
   refresh, coordinated writes, focus, or history. Rendering a page is not
   sufficient justification for testing its individual fields in a browser.
 - **Lower-level gap:** inspect existing component, container, hook, mapper,
-  and validation coverage. Use or extend that coverage when it can adequately
-  detect the regression. Keep whole page/dialog composition in Playwright;
-  do not move it into Testing Library to reduce the browser count.
+  service, and validation coverage. If one of those layers can adequately
+  detect the regression, use or extend that coverage and do not add the
+  assertion to Playwright. A component appearing inside a page or dialog does
+  not move its owned behavior into the browser-test boundary. Keep whole
+  page/dialog composition in Playwright; do not move it into Testing Library to
+  reduce the browser count.
 - **Separate-case necessity:** extend an existing journey by default. A new
   case needs materially different setup, an incompatible terminal outcome,
   a distinct integration boundary, or a concrete isolation/diagnosis reason.

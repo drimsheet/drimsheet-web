@@ -14,7 +14,9 @@ async function upload(file: File): Promise<IFileUploadDto> {
 
   const uploadInstruction = uploadInstructionResponse.data[0];
 
-  if (!uploadInstruction) throw new Error('Missing file upload instruction');
+  if (!uploadInstruction) {
+    throw new Error('Missing file upload instruction');
+  }
 
   await axios.put(uploadInstruction.uploadUrl, file, {
     headers: uploadInstruction.headers,

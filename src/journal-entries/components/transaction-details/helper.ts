@@ -1,8 +1,12 @@
 function formatFileSize(size: number) {
-  if (size < 1024) return `${size} B`;
+  if (size < 1024) {
+    return `${size} B`;
+  }
 
   const kilobytes = size / 1024;
-  if (kilobytes < 1024) return `${Math.round(kilobytes)} KB`;
+  if (kilobytes < 1024) {
+    return `${Math.round(kilobytes)} KB`;
+  }
 
   const megabytes = kilobytes / 1024;
 

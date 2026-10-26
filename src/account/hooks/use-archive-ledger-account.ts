@@ -10,6 +10,12 @@ export function useArchiveLedgerAccount() {
     onSuccess: async (_data, id) => {
       const queryKey = ['ledgerAccountService'];
       await queryClient.cancelQueries({ queryKey });
+      await queryClient.cancelQueries({
+        queryKey: ['journalEntryService', 'getJournalEntries'],
+      });
+      await queryClient.cancelQueries({
+        queryKey: ['reportingService'],
+      });
       queryClient.setQueryData<ILedgerAccountDto>(
         [...queryKey, 'getLedgerAccount', id],
         (account) => account && { ...account, status: 'archived' }
@@ -18,6 +24,12 @@ export function useArchiveLedgerAccount() {
       // Control accounts archive descendants too; refresh details, lists,
       // sub-accounts and permitted posting selectors together.
       await queryClient.invalidateQueries({ queryKey });
+      await queryClient.invalidateQueries({
+        queryKey: ['journalEntryService', 'getJournalEntries'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['reportingService'],
+      });
     },
   });
 }

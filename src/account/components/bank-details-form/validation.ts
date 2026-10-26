@@ -24,7 +24,9 @@ const optionalNumber = (typeErrorMessage: string) =>
   yup
     .number()
     .transform((value, originalValue) => {
-      if (originalValue === null || originalValue === '') return undefined;
+      if (originalValue === null || originalValue === '') {
+        return undefined;
+      }
 
       return value;
     })
@@ -86,7 +88,6 @@ export function createBankDetailsFormValidation(
           ? true
           : exchangeRate.value > 0
       ),
-    isSubAccount: yup.boolean().required(),
   });
 }
 

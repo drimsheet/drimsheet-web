@@ -1,8 +1,9 @@
+import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
 import { useDebounce } from '@/shared/hooks/use-debounce';
+import { keepPreviousData } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAccountTransactions } from '../hooks/use-account-transactions';
-import type { AccountSectionProps } from '../types';
+import type { RecentTransactionsContainerProps } from '../types';
 import {
   RecentTransactions,
   RecentTransactionsSkeleton,
@@ -11,20 +12,29 @@ import { SectionError } from './section-error';
 
 export function RecentTransactionsContainer({
   accountId,
-}: Readonly<AccountSectionProps>) {
+  loading = false,
+}: Readonly<RecentTransactionsContainerProps>) {
   const { t } = useTranslation('ledger-accounts');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const debouncedSearch = useDebounce(search, 300);
 
-  const transactions = useAccountTransactions(accountId, {
-    page,
-    limit: 5,
-    orderBy: 'effectiveDate',
-    sortDirection,
-    ...(debouncedSearch ? { search: debouncedSearch } : {}),
-  });
+  const transactions = useJournalEntries(
+    {
+      accountId,
+      page,
+      limit: 5,
+      orderBy: 'effectiveDate',
+      sortDirection,
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
+    },
+    {
+      placeholderData: keepPreviousData,
+      throwOnError: false,
+      enabled: !!accountId && !loading,
+    }
+  );
 
   const title = t('details_transactions_title');
 
@@ -41,9 +51,21 @@ export function RecentTransactionsContainer({
     setPage(1);
   };
 
-  if (transactions.isPending) return <RecentTransactionsSkeleton />;
+  if (loading) {
+    return <RecentTransactionsSkeleton />;
+  }
 
-  if (transactions.isError) return <SectionError title={title} />;
+  if (!accountId) {
+    return null;
+  }
+
+  if (transactions.isPending) {
+    return <RecentTransactionsSkeleton />;
+  }
+
+  if (transactions.isError) {
+    return <SectionError title={title} />;
+  }
 
   const empty =
     !transactions.isPlaceholderData &&
@@ -53,6 +75,7 @@ export function RecentTransactionsContainer({
 
   return (
     <RecentTransactions
+      accountId={accountId}
       transactions={transactions.data.data}
       pagination={transactions.data.meta}
       search={search}

@@ -12,7 +12,9 @@ function getRole(
   params: URLSearchParams,
   role?: CounterpartyUpdateDialogProps['role']
 ) {
-  if (role) return role;
+  if (role) {
+    return role;
+  }
 
   const type = params.get('type');
 
@@ -20,7 +22,9 @@ function getRole(
 }
 
 function isOpen(params: URLSearchParams, counterpartyId?: string) {
-  if (params.has('edit')) return params.get('edit') === 'true';
+  if (params.has('edit')) {
+    return params.get('edit') === 'true';
+  }
 
   return counterpartyId === undefined && params.has('id');
 }
@@ -33,9 +37,13 @@ function isValidLink(
   const id = props.counterpartyId ?? params.get('id');
   const propDriven = props.counterpartyId !== undefined;
 
-  if (!isValidUUID(id) || (routeId && id !== routeId)) return false;
+  if (!isValidUUID(id) || (routeId && id !== routeId)) {
+    return false;
+  }
 
-  if (!propDriven) return isFormRole(params.get('type'));
+  if (!propDriven) {
+    return isFormRole(params.get('type'));
+  }
 
   const type = props.type;
 
@@ -47,17 +55,21 @@ function normalizeParams(
   counterpartyId: string | undefined,
   party: ICounterpartyDto
 ) {
-  if (counterpartyId === undefined) return params;
-
-  if (params.get('edit') !== 'true' || counterpartyId !== party.id)
+  if (counterpartyId === undefined) {
     return params;
+  }
+
+  if (params.get('edit') !== 'true' || counterpartyId !== party.id) {
+    return params;
+  }
 
   if (
     !params.has('id') &&
     !params.has('type') &&
     !params.has('editCounterpartyRole')
-  )
+  ) {
     return params;
+  }
 
   const next = new URLSearchParams(params);
   next.delete('id');

@@ -6,8 +6,9 @@ export function CategoryTransactionCount({
   transactionCount,
 }: Readonly<CategoryTransactionCountProps>) {
   const { t, i18n } = useTranslation('ledger-accounts');
-  if (transactionCount === undefined)
+  if (transactionCount === undefined) {
     return <CategoryTransactionCountSkeleton />;
+  }
 
   const count_text =
     transactionCount === null

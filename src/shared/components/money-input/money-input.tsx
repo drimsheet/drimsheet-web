@@ -7,12 +7,16 @@ import { forwardRef, useCallback, useMemo, useState } from 'react';
 import type { MoneyInputProps } from './types';
 
 const parseRawValue = (val: string | number | undefined | null) => {
-  if (val === null || val === undefined || val === '') return '';
+  if (val === null || val === undefined || val === '') {
+    return '';
+  }
 
   const strVal = String(val);
   const isNegative = strVal.startsWith('-');
   const rawNumeric = strVal.replace(/[^0-9.]/g, '');
-  if (!rawNumeric) return isNegative ? '-' : '';
+  if (!rawNumeric) {
+    return isNegative ? '-' : '';
+  }
 
   const parts = rawNumeric.split('.');
 
@@ -36,11 +40,15 @@ const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
     } = componentProps;
 
     const resolvedLocale = useMemo(() => {
-      if (locale) return locale;
+      if (locale) {
+        return locale;
+      }
 
       if (currencyCode) {
         const country = countries.find((c) => c.currencyCode === currencyCode);
-        if (country?.locale) return country.locale;
+        if (country?.locale) {
+          return country.locale;
+        }
       }
 
       return undefined;
@@ -77,7 +85,9 @@ const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
     const formatVal = useCallback(
       (val: string | number | undefined | null) => {
         const cleanVal = parseRawValue(val);
-        if (!cleanVal || cleanVal === '-') return cleanVal;
+        if (!cleanVal || cleanVal === '-') {
+          return cleanVal;
+        }
 
         const isNegative = cleanVal.startsWith('-');
         const numericStr = isNegative ? cleanVal.slice(1) : cleanVal;
@@ -95,7 +105,9 @@ const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
         }
 
         const num = Number(integerPart);
-        if (Number.isNaN(num)) return isNegative ? '-' : '';
+        if (Number.isNaN(num)) {
+          return isNegative ? '-' : '';
+        }
 
         const formattedInteger = intFormatter.format(num);
 

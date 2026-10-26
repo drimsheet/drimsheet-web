@@ -61,11 +61,13 @@ describe('CounterpartyShare', () => {
       );
       const button = screen.getByRole('button', { name: /Unassigned/ });
       expect(button.querySelector('[aria-hidden="true"]')).toBeNull();
-      if (share === null)
+      if (share === null) {
         expect(
           screen.getByLabelText('Share unavailable at zero balance')
         ).toHaveTextContent('—');
-      else expect(button).toHaveTextContent(`${share}%`);
+      } else {
+        expect(button).toHaveTextContent(`${share}%`);
+      }
     }
   );
   it('delegates pagination to the container', async () => {

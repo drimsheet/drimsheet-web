@@ -21,11 +21,15 @@ export function AccountUpdateDialog({
   const [busy, setBusy] = useState(false);
 
   const handleClose = () => {
-    if (!busy) onClose();
+    if (!busy) {
+      onClose();
+    }
   };
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) handleClose();
+    if (!nextOpen) {
+      handleClose();
+    }
   };
 
   const title_text = t(

@@ -28,7 +28,9 @@ export function ResetPasswordPage() {
     values,
     helpers
   ) => {
-    if (inFlight || isPending) return;
+    if (inFlight || isPending) {
+      return;
+    }
 
     setInFlight(true);
     try {

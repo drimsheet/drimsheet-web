@@ -392,7 +392,22 @@ export const EContraAccountRule = {
 export type UContraAccountRule =
   (typeof EContraAccountRule)[keyof typeof EContraAccountRule];
 
-export const ELedgerAccountBehavior = {
+export const ENormalBalance = {
+  Debit: 'debit',
+  Credit: 'credit',
+} as const;
+export type UNormalBalance =
+  (typeof ENormalBalance)[keyof typeof ENormalBalance];
+
+export const ELedgerAccountStatus = {
+  Draft: 'draft',
+  Active: 'active',
+  Archived: 'archived',
+} as const;
+export type ULedgerAccountStatus =
+  (typeof ELedgerAccountStatus)[keyof typeof ELedgerAccountStatus];
+
+export const ELedgerAccountSubType = {
   RetainedEarnings: 'retained_earnings',
   Sales: 'sales',
   Services: 'services',
@@ -415,38 +430,6 @@ export const ELedgerAccountBehavior = {
   UnrealizedLoss: 'unrealized_loss',
   ImpairmentLoss: 'impairment_loss',
   OtherLoss: 'other_loss',
-  Bank: 'bank',
-  PettyCash: 'petty_cash',
-  DefaultCash: 'default_cash',
-  StockAndEtfs: 'stock_and_etfs',
-  Bonds: 'bonds',
-  StatutoryReceivable: 'statutory_receivable',
-  TradeReceivable: 'trade_receivable',
-  DefaultReceivables: 'default_receivables',
-  Default: 'default',
-  CreditCard: 'credit_card',
-  Overdraft: 'overdraft',
-  ShortTermLoan: 'short_term_loan',
-  DefaultShortTermDebt: 'default_short_term_debt',
-  TaxPayable: 'tax_payable',
-  TradePayable: 'trade_payable',
-  DefaultPayable: 'default_payable',
-  Mortgage: 'mortgage',
-  OtherLongTermLoan: 'other_long_term_loan',
-  OwnerCapital: 'owner_capital',
-  RevaluationReserve: 'revaluation_reserve',
-  OpeningBalanceEquity: 'opening_balance_equity',
-  Cogs: 'cogs',
-  CostOfServices: 'cost_of_services',
-  CostOfRevenue: 'cost_of_revenue',
-  DefaultDirectCost: 'default_direct_cost',
-  TaxExpense: 'tax_expense',
-  AssetDisposalLoss: 'asset_disposal_loss',
-} as const;
-export type ULedgerAccountBehavior =
-  (typeof ELedgerAccountBehavior)[keyof typeof ELedgerAccountBehavior];
-
-export const ELedgerAccountSubType = {
   CashAndCashEquivalent: 'cash_and_cash_equivalent',
   ShortTermInvestment: 'short_term_investment',
   Receivables: 'receivables',
@@ -467,9 +450,38 @@ export const ELedgerAccountSubType = {
   LeaseLiability: 'lease_liability',
   Provision: 'provision',
   Capital: 'capital',
-  RetainedEarnings: 'retained_earnings',
   Reserve: 'reserve',
   OpeningBalance: 'opening_balance',
+  DirectCosts: 'direct_costs',
+  IncomeTaxExpense: 'income_tax_expense',
+  LossOnAssetDisposal: 'loss_on_asset_disposal',
+} as const;
+export type ULedgerAccountSubType =
+  (typeof ELedgerAccountSubType)[keyof typeof ELedgerAccountSubType];
+
+export const ELedgerAccountBehavior = {
+  Bank: 'bank',
+  PettyCash: 'petty_cash',
+  DefaultCash: 'default_cash',
+  StockAndEtfs: 'stock_and_etfs',
+  Bonds: 'bonds',
+  StatutoryReceivable: 'statutory_receivable',
+  TradeReceivable: 'trade_receivable',
+  DefaultReceivables: 'default_receivables',
+  Default: 'default',
+  CreditCard: 'credit_card',
+  Overdraft: 'overdraft',
+  ShortTermLoan: 'short_term_loan',
+  DefaultShortTermDebt: 'default_short_term_debt',
+  TaxPayable: 'tax_payable',
+  TradePayable: 'trade_payable',
+  DefaultPayable: 'default_payable',
+  Mortgage: 'mortgage',
+  OtherLongTermLoan: 'other_long_term_loan',
+  OwnerCapital: 'owner_capital',
+  RetainedEarnings: 'retained_earnings',
+  RevaluationReserve: 'revaluation_reserve',
+  OpeningBalanceEquity: 'opening_balance_equity',
   Sales: 'sales',
   Services: 'services',
   Subscriptions: 'subscriptions',
@@ -479,7 +491,10 @@ export const ELedgerAccountSubType = {
   UnrealizedGains: 'unrealized_gains',
   Grants: 'grants',
   Gifts: 'gifts',
-  DirectCosts: 'direct_costs',
+  Cogs: 'cogs',
+  CostOfServices: 'cost_of_services',
+  CostOfRevenue: 'cost_of_revenue',
+  DefaultDirectCost: 'default_direct_cost',
   PayrollAndPersonnel: 'payroll_and_personnel',
   RentAndUtilities: 'rent_and_utilities',
   AdminAndGeneral: 'admin_and_general',
@@ -489,21 +504,14 @@ export const ELedgerAccountSubType = {
   BankCharge: 'bank_charge',
   FinanceCost: 'finance_cost',
   Interest: 'interest',
-  IncomeTaxExpense: 'income_tax_expense',
+  TaxExpense: 'tax_expense',
   UnrealizedLoss: 'unrealized_loss',
-  LossOnAssetDisposal: 'loss_on_asset_disposal',
+  AssetDisposalLoss: 'asset_disposal_loss',
   ImpairmentLoss: 'impairment_loss',
   OtherLoss: 'other_loss',
 } as const;
-export type ULedgerAccountSubType =
-  (typeof ELedgerAccountSubType)[keyof typeof ELedgerAccountSubType];
-
-export const ENormalBalance = {
-  Debit: 'debit',
-  Credit: 'credit',
-} as const;
-export type UNormalBalance =
-  (typeof ENormalBalance)[keyof typeof ENormalBalance];
+export type ULedgerAccountBehavior =
+  (typeof ELedgerAccountBehavior)[keyof typeof ELedgerAccountBehavior];
 
 export const ELedgerType = {
   Asset: 'asset',
@@ -513,14 +521,6 @@ export const ELedgerType = {
   Equity: 'equity',
 } as const;
 export type ULedgerType = (typeof ELedgerType)[keyof typeof ELedgerType];
-
-export const ELedgerAccountStatus = {
-  Draft: 'draft',
-  Active: 'active',
-  Archived: 'archived',
-} as const;
-export type ULedgerAccountStatus =
-  (typeof ELedgerAccountStatus)[keyof typeof ELedgerAccountStatus];
 
 export const ECounterpartyRole = {
   Employer: 'employer',
@@ -737,61 +737,118 @@ export interface IGetAccountCounterpartyParticipationQuery {
   search?: string;
 }
 
-export interface IAssetLiabilityAccountParticipationDto {
-  accountId: string;
-  accountName: string;
-  code: string;
-  type: 'asset' | 'liability';
-  subType: string;
-  status: ULedgerAccountStatus;
-  /** Current signed functional balance of this posting account. */
-  amount: IMoneyDto;
-  /**
-   * Percentage of all root balances of the same type before filtering or
-   * pagination, rounded to two decimals; null when that total is zero.
-   * @format double
-   */
-  sharePercentage: number | null;
-}
-
-export interface IPaginatedResponseIAssetLiabilityAccountParticipationDto {
-  data: IAssetLiabilityAccountParticipationDto[];
-  meta: IPaginationResponseMeta;
-}
-
-export interface IGetAssetLiabilityAccountParticipationQuery {
-  /** @format double */
-  page?: number;
-  /** @format double */
-  limit?: number;
-  search?: string;
-  /** Omit for both asset and liability posting accounts. */
-  type?: 'asset' | 'liability';
-}
-
-export interface IAssetLiabilitySectionDto {
-  /** Cumulative balance through period.to, inclusive. */
-  total: IMoneyDto;
-  /** Cumulative balance through comparisonPeriod.to, inclusive. */
-  previousTotal: IMoneyDto;
-  /** Total less previous total. */
-  change: IMoneyDto;
-  /**
-   * Change divided by the absolute previous total; null when it is zero.
-   * @format double
-   */
-  percentageChange: number | null;
-}
-
-export interface IAssetLiabilitySummaryDto {
-  currencyCode: string;
+export interface IBalancesByAccountDto {
   period: IDateRangeDto;
-  /** Immediately preceding equal-length period, with inclusive dates. */
-  comparisonPeriod: IDateRangeDto;
-  assets: IAssetLiabilitySectionDto;
-  liabilities: IAssetLiabilitySectionDto;
-  /** Assets less liabilities: the dashboard's total balance. */
-  netAssets: IAssetLiabilitySectionDto;
+  buckets: {
+    balances: {
+      closingBalance: IMoneyDto;
+      accountId: string;
+    }[];
+    date: string;
+  }[];
+}
+
+export interface IGetBalancesByAccountQuery {
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to: string;
+  /**
+   * Positive calendar-day bucket size, anchored at from.
+   * @format double
+   */
+  bucketDays: number;
+  accountIds: string[];
+}
+
+export interface IBalancesByBehaviorDto {
+  period: IDateRangeDto;
+  buckets: {
+    balances: {
+      closingBalance: IMoneyDto;
+      behavior: string;
+      subType: string;
+      type: ULedgerType;
+    }[];
+    date: string;
+  }[];
+}
+
+export interface IGetBalancesByBehaviorQuery {
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to: string;
+  /**
+   * Positive calendar-day bucket size, anchored at from.
+   * @format double
+   */
+  bucketDays: number;
+  behaviors: ULedgerAccountBehavior[];
+}
+
+export interface IBalancesBySubTypeDto {
+  period: IDateRangeDto;
+  buckets: {
+    balances: {
+      closingBalance: IMoneyDto;
+      subType: string;
+      type: ULedgerType;
+    }[];
+    date: string;
+  }[];
+}
+
+export interface IGetBalancesBySubTypeQuery {
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to: string;
+  /**
+   * Positive calendar-day bucket size, anchored at from.
+   * @format double
+   */
+  bucketDays: number;
+  subTypes: ULedgerAccountSubType[];
+}
+
+export interface IBalancesByTypeDto {
+  period: IDateRangeDto;
+  buckets: {
+    balances: {
+      closingBalance: IMoneyDto;
+      type: ULedgerType;
+    }[];
+    /** Inclusive closing date, in YYYY-MM-DD format. */
+    date: string;
+  }[];
+}
+
+export interface IGetBalancesByTypeQuery {
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to: string;
+  /**
+   * Positive calendar-day bucket size, anchored at from.
+   * @format double
+   */
+  bucketDays: number;
+  types: ULedgerType[];
+}
+
+export interface ILedgerBalancesByCurrencyDto {
+  /** Sum of the currency groups' recorded functional balances. */
+  totalFunctionalBalance: IMoneyDto;
+  /** Current posting-account balances, ordered by currency code. */
+  balancesByCurrency: {
+    functionalBalance: IMoneyDto;
+    balance: IMoneyDto;
+  }[];
+}
+
+export interface IGetLedgerBalancesByCurrencyQuery {
+  type: 'asset' | 'liability';
 }
 
 export interface IRevenueExpenseAccountDto {
@@ -2364,29 +2421,29 @@ export class Api<
       }),
 
     /**
-     * @description Asset/liability posting accounts with current signed functional balances. Reads stored balances only; balances update asynchronously. Includes all statuses, zero balances and suspense. Shares use all root balances of the same type, including root posting accounts, before search/pagination. Control accounts are excluded from rows. Zero totals yield null shares; percentages round to two decimals. Search matches name or code; rows sort by code/ID. Omit type for both classes. No date range is applied. Amount magnitudes above 1 trillion major units return 400; missing balances return 404; unsafe numeric serialization returns 500. Defaults to page 1, limit 10.
+     * @description Closing balances in functional currency, grouped by accounts and closing date. Inclusive periods up to 366 days; bucketDays is anchored at from. Includes opening balances and archived history; carries balances across empty buckets. Reads corrected journals directly, excluding drafts, voided originals and reversals. Classification groups select their topmost matching accounts and include each root's full subtree, using the root's normal balance. Explicit IDs support posting and control accounts as independent series. Selected roots without activity return zero; absent roots produce no series. Account IDs must belong to the current entity. Amounts above 1 trillion major units return 400; unsafe numeric serialization returns 500.
      *
      * @tags Reporting
-     * @name GetAssetLiabilityAccountParticipation
-     * @request GET:/reporting/asset-liability-account-participation
+     * @name GetBalancesByAccount
+     * @request GET:/reporting/balances/accounts
      */
-    getAssetLiabilityAccountParticipation: (
-      query?: {
-        /** @format double */
-        page?: number;
-        /** @format double */
-        limit?: number;
-        search?: string;
-        /** Omit for both asset and liability posting accounts. */
-        type?: 'asset' | 'liability';
+    getBalancesByAccount: (
+      query: {
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        from: string;
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        to: string;
+        /**
+         * Positive calendar-day bucket size, anchored at from.
+         * @format double
+         */
+        bucketDays: number;
+        accountIds: string[];
       },
       params: RequestParams = {}
     ) =>
-      this.request<
-        IPaginatedResponseIAssetLiabilityAccountParticipationDto,
-        IHttpErrorDto
-      >({
-        path: `/reporting/asset-liability-account-participation`,
+      this.request<IBalancesByAccountDto, IHttpErrorDto>({
+        path: `/reporting/balances/accounts`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2394,23 +2451,110 @@ export class Api<
       }),
 
     /**
-     * @description Cumulative assets, liabilities and net assets in the functional currency. Dates are inclusive, up to 366 days. Compares balances at period end with the end of the immediately preceding equal-length period. Includes opening balances, suspense, contra/adjunct and archived accounts. Excludes drafts, never-posted entries, voided originals and reversals. Journal lines are counted once without hierarchy rollups. Historical results can change after rectification. Percentage changes use the absolute previous balance and are null when it is zero. Amount magnitudes above 1 trillion major units return 400; unsafe numeric serialization returns 500.
+     * @description Closing balances in functional currency, grouped by behaviors and closing date. Inclusive periods up to 366 days; bucketDays is anchored at from. Includes opening balances and archived history; carries balances across empty buckets. Reads corrected journals directly, excluding drafts, voided originals and reversals. Classification groups select their topmost matching accounts and include each root's full subtree, using the root's normal balance. Explicit IDs support posting and control accounts as independent series. Selected roots without activity return zero; absent roots produce no series. Account IDs must belong to the current entity. Amounts above 1 trillion major units return 400; unsafe numeric serialization returns 500.
      *
      * @tags Reporting
-     * @name GetAssetLiabilitySummary
-     * @request GET:/reporting/asset-liability-summary
+     * @name GetBalancesByBehavior
+     * @request GET:/reporting/balances/behaviors
      */
-    getAssetLiabilitySummary: (
+    getBalancesByBehavior: (
       query: {
         /** Inclusive calendar date in YYYY-MM-DD format. */
         from: string;
         /** Inclusive calendar date in YYYY-MM-DD format. */
         to: string;
+        /**
+         * Positive calendar-day bucket size, anchored at from.
+         * @format double
+         */
+        bucketDays: number;
+        behaviors: ULedgerAccountBehavior[];
       },
       params: RequestParams = {}
     ) =>
-      this.request<IAssetLiabilitySummaryDto, IHttpErrorDto>({
-        path: `/reporting/asset-liability-summary`,
+      this.request<IBalancesByBehaviorDto, IHttpErrorDto>({
+        path: `/reporting/balances/behaviors`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Closing balances in functional currency, grouped by sub-types and closing date. Inclusive periods up to 366 days; bucketDays is anchored at from. Includes opening balances and archived history; carries balances across empty buckets. Reads corrected journals directly, excluding drafts, voided originals and reversals. Classification groups select their topmost matching accounts and include each root's full subtree, using the root's normal balance. Explicit IDs support posting and control accounts as independent series. Selected roots without activity return zero; absent roots produce no series. Account IDs must belong to the current entity. Amounts above 1 trillion major units return 400; unsafe numeric serialization returns 500.
+     *
+     * @tags Reporting
+     * @name GetBalancesBySubType
+     * @request GET:/reporting/balances/sub-types
+     */
+    getBalancesBySubType: (
+      query: {
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        from: string;
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        to: string;
+        /**
+         * Positive calendar-day bucket size, anchored at from.
+         * @format double
+         */
+        bucketDays: number;
+        subTypes: ULedgerAccountSubType[];
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<IBalancesBySubTypeDto, IHttpErrorDto>({
+        path: `/reporting/balances/sub-types`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Closing balances in functional currency, grouped by types and closing date. Inclusive periods up to 366 days; bucketDays is anchored at from. Includes opening balances and archived history; carries balances across empty buckets. Reads corrected journals directly, excluding drafts, voided originals and reversals. Classification groups select their topmost matching accounts and include each root's full subtree, using the root's normal balance. Explicit IDs support posting and control accounts as independent series. Selected roots without activity return zero; absent roots produce no series. Account IDs must belong to the current entity. Amounts above 1 trillion major units return 400; unsafe numeric serialization returns 500.
+     *
+     * @tags Reporting
+     * @name GetBalancesByType
+     * @request GET:/reporting/balances/types
+     */
+    getBalancesByType: (
+      query: {
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        from: string;
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        to: string;
+        /**
+         * Positive calendar-day bucket size, anchored at from.
+         * @format double
+         */
+        bucketDays: number;
+        types: ULedgerType[];
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<IBalancesByTypeDto, IHttpErrorDto>({
+        path: `/reporting/balances/types`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Current asset or liability posting balances grouped by account currency, with a recorded functional balance per group and a total across groups. Type is required input and is not returned. Accounts without a fixed currency use functional currency. Includes all statuses, suspense and zero balances; excludes control rollups. Groups sort by currency code. Reads stored balances, which update asynchronously, without dates or FX repricing. Empty reports return a zero functional total and no groups. Amount magnitudes above 1 trillion major units return 400; missing balances return 404; unsafe numeric serialization returns 500. Invalid type returns 422.
+     *
+     * @tags Reporting
+     * @name GetLedgerBalancesByCurrency
+     * @request GET:/reporting/ledger-balances-by-currency
+     */
+    getLedgerBalancesByCurrency: (
+      query: {
+        type: 'asset' | 'liability';
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<ILedgerBalancesByCurrencyDto, IHttpErrorDto>({
+        path: `/reporting/ledger-balances-by-currency`,
         method: 'GET',
         query: query,
         format: 'json',

@@ -226,7 +226,9 @@ export function CashTransferForm({
   };
 
   const handleDateDisabled = (date: Date) => {
-    if (!dateUtils.isNotInTheFuture(date)) return true;
+    if (!dateUtils.isNotInTheFuture(date)) {
+      return true;
+    }
 
     return [sourceOpeningDate, destinationOpeningDate].some((openingDate) =>
       Boolean(openingDate && !dateUtils.isOnOrAfter(date, openingDate))
@@ -290,7 +292,9 @@ export function CashTransferForm({
 
   const handleItemizedEditModeChange = (isEditing: boolean) => {
     setIsItemizedRowEditing(isEditing);
-    if (!isEditing) setInitialItemizedEditItemId(undefined);
+    if (!isEditing) {
+      setInitialItemizedEditItemId(undefined);
+    }
   };
 
   const collapseToSingleEntry = () => {
@@ -313,8 +317,11 @@ export function CashTransferForm({
   };
 
   const handleBackToSingleEntry = () => {
-    if (formik.values.items.length <= 1) collapseToSingleEntry();
-    else setSingleEntryConfirmationOpen(true);
+    if (formik.values.items.length <= 1) {
+      collapseToSingleEntry();
+    } else {
+      setSingleEntryConfirmationOpen(true);
+    }
   };
 
   const interactionDisabled = disabled || loading || savingDraft;

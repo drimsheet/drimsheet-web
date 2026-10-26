@@ -5,12 +5,15 @@ import type {
   ILedgerAccountDto,
   IPaginationResponseMeta,
 } from '@/shared/lib/api/Api';
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps } from 'react';
 
-export interface LedgerAccountSummaryProps extends ComponentProps<'div'> {
-  account: ILedgerAccountDto;
+export interface LedgerAccountSummaryProps {
+  account: Pick<ILedgerAccountDto, 'balance' | 'functionalBalance'>;
   hasSubAccounts?: boolean;
-  actions?: ReactNode;
+}
+
+export interface AccountHeaderProps {
+  account: Pick<ILedgerAccountDto, 'name' | 'status'>;
 }
 
 export interface AccountActionsProps {
@@ -24,14 +27,6 @@ export interface AccountActionsProps {
   onActionsOpenChange?: (open: boolean) => void;
   onDelete?: () => void;
   onEdit?: () => void;
-}
-
-export interface AccountDeleteConfirmationProps {
-  accountName: string;
-  isControlAccount: boolean;
-  onDelete: () => Promise<void>;
-  onOpenChange: (open: boolean) => void;
-  open: boolean;
 }
 
 export interface AccountActionsContainerProps {
@@ -58,17 +53,19 @@ export interface IPeriodOption {
   label: string;
 }
 
-export interface TransactionsChartProps {
-  cashFlow: IAccountCashFlowDto;
-}
-
 export interface CashFlowPeriodProps {
   period: string;
   periods: IPeriodOption[];
   onPeriodChange: (period: string) => void;
 }
 
+export interface RecentTransactionsContainerProps {
+  accountId?: string;
+  loading?: boolean;
+}
+
 export interface RecentTransactionsProps {
+  accountId: string;
   transactions: IJournalEntryListDto[];
   pagination?: IPaginationResponseMeta;
   search: string;
@@ -84,4 +81,18 @@ export interface RecentTransactionsProps {
 
 export interface SectionErrorProps {
   title: string;
+}
+
+export type AccountCashFlowChartRangeProps = Pick<
+  IAccountCashFlowDto,
+  'period' | 'currencyCode'
+>;
+
+export interface AccountOverviewContainerProps {
+  account: ILedgerAccountDto;
+}
+
+export interface AccountOverviewProps {
+  account: ILedgerAccountDto;
+  hasSubAccounts: boolean;
 }

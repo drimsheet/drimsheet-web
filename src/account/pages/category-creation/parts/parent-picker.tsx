@@ -55,7 +55,9 @@ export function CategoryParentPicker({
   };
 
   const handleConfirm = () => {
-    if (!pendingParent || loading || error) return;
+    if (!pendingParent || loading || error) {
+      return;
+    }
 
     onSelect(pendingParent.account.id);
     handleOpenChange(false);

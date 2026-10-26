@@ -15,11 +15,15 @@ export function CounterpartyDeletionDialog({
   const { mutateAsync: deleteCounterparty } = useDeleteCounterparty();
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) onClose();
+    if (!open) {
+      onClose();
+    }
   };
 
   const handleDelete = async () => {
-    if (!counterparty) return;
+    if (!counterparty) {
+      return;
+    }
 
     let deleted = false;
 
@@ -33,10 +37,14 @@ export function CounterpartyDeletionDialog({
       onClose();
     }
 
-    if (deleted) onDeleted?.(counterparty.id);
+    if (deleted) {
+      onDeleted?.(counterparty.id);
+    }
   };
 
-  if (!counterparty) return null;
+  if (!counterparty) {
+    return null;
+  }
 
   return (
     <CounterpartyDeleteConfirmation

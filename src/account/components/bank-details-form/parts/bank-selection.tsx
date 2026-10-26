@@ -79,7 +79,9 @@ export function BankSelection({
       getBankCode(b) === bankName
   );
 
-  if (isBanksLoading && bankLocation) return <BankSelectionSkeleton />;
+  if (isBanksLoading && bankLocation) {
+    return <BankSelectionSkeleton />;
+  }
 
   const bank_location_label = t('bank_location_label');
   const bank_name_label = t('bank_name_label');
@@ -87,7 +89,7 @@ export function BankSelection({
   const no_banks_found = t('no_banks_found');
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-[2fr_3fr]">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
       <CountryComboBox
         error={locationError}
         jurisdictions={jurisdictions}
@@ -156,10 +158,7 @@ export function BankSelectionSkeleton() {
   const loading_label = t('loading_banks');
 
   return (
-    <div
-      aria-busy="true"
-      className="grid grid-cols-1 gap-5 sm:grid-cols-[2fr_3fr]"
-    >
+    <div aria-busy="true" className="grid grid-cols-1 gap-5 sm:grid-cols-2">
       <output className="sr-only" aria-label={loading_label} aria-busy="true">
         {loading_label}
       </output>

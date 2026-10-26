@@ -7,6 +7,7 @@ describe('RecentTransactions', () => {
   it('shows the account empty state when there are no transactions', () => {
     render(
       <RecentTransactions
+        accountId="cash-main"
         transactions={[]}
         empty
         search=""
@@ -17,13 +18,22 @@ describe('RecentTransactions', () => {
       />
     );
     expect(screen.getByText('No transactions yet.')).toBeInTheDocument();
-    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
+    expect(screen.getByRole('table')).toBeInTheDocument();
+    expect(screen.getAllByRole('columnheader')).toHaveLength(6);
+    expect(
+      screen.getByRole('columnheader', { name: 'Account' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('columnheader', { name: 'Summary' })
+    ).toBeInTheDocument();
   });
 
   it('keeps search available when no results match the query', async () => {
     const onSearchChange = vi.fn();
     render(
       <RecentTransactions
+        accountId="cash-main"
         transactions={[]}
         empty={false}
         search="Unmatched"

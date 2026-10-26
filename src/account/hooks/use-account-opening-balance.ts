@@ -27,8 +27,9 @@ export function useAccountOpeningBalance(accountId: string) {
     read.isFetchedAfterMount &&
     read.isSuccess &&
     !read.isFetching
-  )
+  ) {
     setOpeningBalance(read.data);
+  }
 
   return { openingBalance, isError: read.isError };
 }

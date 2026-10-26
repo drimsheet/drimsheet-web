@@ -24,6 +24,12 @@ Before editing integration tests or configuration:
 
 ## Select the boundary
 
+- Write Playwright coverage only when the regression depends on the running
+  frontend or a browser/page/dialog composition boundary. Before adding a case
+  or assertion, determine whether a component, container, hook, mapper,
+  service, or validation test can detect it. If so, add or retain the coverage
+  there and omit it from Playwright. Rendering that owner inside a page or
+  dialog does not make its isolated behavior an integration concern.
 - Use Playwright here for routes, pages, dialogs, portals, focus, navigation,
   browser APIs, and composed frontend behavior with controlled first-party API
   responses.
@@ -38,7 +44,8 @@ Before editing integration tests or configuration:
 2. Apply the browser-case admission requirements in
    [Testing Rules](../../rules/testing-rules.md#browser-integration). Identify
    the concrete regression; inspect the route, page/dialog, API contract,
-   translations, existing journeys, and lower-level coverage.
+   translations, existing journeys, and lower-level coverage. Reject the
+   Playwright assertion when a lower-level owner can adequately protect it.
 3. Default to extending an existing journey or lower-level test. Justify any
    new browser case and each matrix variant by the uncovered integration risk
    and reason it cannot reasonably join an existing lifecycle. Record that

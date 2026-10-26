@@ -37,7 +37,6 @@ export function DataTable<T extends IDataWithId>({
   headerHeight = 42,
   headerFontSize = 11,
   bodyFontSize = 14,
-  uppercaseHeaders = true,
   emptyStateNode,
   loadingStateNode,
   loading = false,
@@ -78,8 +77,11 @@ export function DataTable<T extends IDataWithId>({
 
   const handleSelectRow = (id: string | number) => {
     const selection = new Set(selectedRowIds);
-    if (selection.has(id)) selection.delete(id);
-    else selection.add(id);
+    if (selection.has(id)) {
+      selection.delete(id);
+    } else {
+      selection.add(id);
+    }
 
     onRowSelectionChange?.([...selection]);
   };
@@ -87,8 +89,11 @@ export function DataTable<T extends IDataWithId>({
   const handleSelectAll = () => {
     const selection = new Set(selectedRowIds);
     for (const row of data) {
-      if (allSelected) selection.delete(row.id);
-      else selection.add(row.id);
+      if (allSelected) {
+        selection.delete(row.id);
+      } else {
+        selection.add(row.id);
+      }
     }
 
     onRowSelectionChange?.([...selection]);
@@ -103,13 +108,17 @@ export function DataTable<T extends IDataWithId>({
     column: ITableColumn<T>,
     values: (string | number)[]
   ) => {
-    if (column.onFilterChange) column.onFilterChange(values);
-    else
+    if (column.onFilterChange) {
+      column.onFilterChange(values);
+    } else {
       onFilterChange?.(
         dataTableHelpers.filters(filters, String(column.dataIndex), values)
       );
+    }
 
-    if (pagination && pagination.meta.page !== 1) pagination.onPageChange(1);
+    if (pagination && pagination.meta.page !== 1) {
+      pagination.onPageChange(1);
+    }
   };
 
   const selection_label = t(
@@ -151,12 +160,7 @@ export function DataTable<T extends IDataWithId>({
               />
             ))}
           </colgroup>
-          <TableHeader
-            className={cn(
-              'bg-muted',
-              uppercaseHeaders && 'uppercase tracking-[0.07em]'
-            )}
-          >
+          <TableHeader className="bg-muted uppercase tracking-[0.07em]">
             <TableRow className="border-border hover:bg-transparent">
               {selectable && (
                 <TableHead

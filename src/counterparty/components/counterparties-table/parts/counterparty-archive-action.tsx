@@ -43,7 +43,9 @@ export function CounterpartyArchiveConfirmation({
   const busy = loading || submitting;
 
   const handleArchive = async () => {
-    if (busy) return;
+    if (busy) {
+      return;
+    }
 
     setSubmitting(true);
 

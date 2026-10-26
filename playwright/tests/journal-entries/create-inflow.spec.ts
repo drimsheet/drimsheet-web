@@ -269,7 +269,9 @@ test.describe('Inflow receipt creation', () => {
     await registerInflowPageRoutes(page, queryLog, {
       postingAccountsGate,
       exchangeRateResponse: (query) => {
-        if (!query.currencyPair || !query.asOf) return [];
+        if (!query.currencyPair || !query.asOf) {
+          return [];
+        }
 
         const [baseCurrencyCode, targetCurrencyCode] =
           query.currencyPair.split('/');

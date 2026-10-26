@@ -15,7 +15,9 @@ const PRECISION_FACTOR = 1_000_000;
 const BALANCE_TOLERANCE = 1 / PRECISION_FACTOR;
 
 function round(value: number) {
-  if (!Number.isFinite(value)) return Number.NaN;
+  if (!Number.isFinite(value)) {
+    return Number.NaN;
+  }
 
   return (
     Math.round((value + Number.EPSILON) * PRECISION_FACTOR) / PRECISION_FACTOR
@@ -46,7 +48,9 @@ function getAccountCurrencyCode(
 function getItemTotal(items: IItemizedFieldValue[]) {
   return round(
     items.reduce((sum, item) => {
-      if (!Number.isFinite(item.amount.amount)) return sum;
+      if (!Number.isFinite(item.amount.amount)) {
+        return sum;
+      }
 
       return sum + item.amount.amount;
     }, 0)
@@ -112,9 +116,13 @@ function calculateAmountReceived(
   chargeTotal: number,
   exchangeRateRequired: boolean
 ) {
-  if (!Number.isFinite(amountSent)) return Number.NaN;
+  if (!Number.isFinite(amountSent)) {
+    return Number.NaN;
+  }
 
-  if (!exchangeRateRequired) return round(amountSent - chargeTotal);
+  if (!exchangeRateRequired) {
+    return round(amountSent - chargeTotal);
+  }
 
   if (!exchangeRate || !Number.isFinite(exchangeRate) || exchangeRate <= 0) {
     return Number.NaN;

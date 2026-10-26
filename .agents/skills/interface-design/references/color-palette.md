@@ -5,7 +5,7 @@ Keep implementation scoped to the user's current request.
 
 ## Palette construction
 
-Six reusable families define the available colors, independent of components.
+Eight reusable families define the available colors, independent of components.
 Use names such as `butter-400` and `neutral-900`, not `button-yellow` or
 `secondary-500`. Primary and secondary are semantic roles, not hue families.
 
@@ -17,12 +17,15 @@ Use names such as `butter-400` and `neutral-900`, not `button-yellow` or
   achromatic, without an olive cast.
 - Butter retains the approved brand yellow at 400. Neutral retains the approved
   near-white at 0, Ramp charcoal at 950, and sidebar charcoal at 1000.
-- Green and terracotta retain the existing financial anchors at 300 and 600.
+- Moss and clay supply financial income and expense colors. Green and
+  terracotta retain their existing success and error/destructive mappings.
   Blue is muted steel blue; amber is warmer and more orange than Butter so
   warnings do not reuse the brand yellow.
-- Chromatic steps were interpolated in OKLab between selected anchors, with
+- The original chromatic steps were interpolated in OKLab between selected anchors, with
   chroma reduced where needed to fit sRGB. Neutral steps were tuned separately.
-  All six ramps have strictly descending OKLab lightness. This hex table is the
+  Moss and clay are separately tuned scales anchored at `#5F704B` and `#A36558`
+  for light charts, and `#ACBD97` and `#D5A092` for dark charts. All eight ramps
+  have strictly descending OKLab lightness. These hex tables are the
   canonical specification; do not regenerate it at runtime.
 - These are custom Drimsheet scales, not an imported MUI or Tailwind palette.
 
@@ -43,6 +46,29 @@ Use names such as `butter-400` and `neutral-900`, not `button-yellow` or
 | 900   | `#252323` | `#403418` | `#153527` | `#45221C`  | `#182E41` | `#422D10` |
 | 950   | `#1A1919` | `#302714` | `#102B20` | `#351A15`  | `#132536` | `#35240E` |
 | 1000  | `#121111` | —         | —         | —          | —         | —         |
+
+### Financial palette: moss and clay
+
+| Shade | Moss      | Clay      |
+| ----- | --------- | --------- |
+| 50    | `#F4F6EF` | `#FAF3F0` |
+| 100   | `#EDF1E7` | `#F3E4DE` |
+| 200   | `#D3DDC6` | `#E4C5BA` |
+| 300   | `#ACBD97` | `#D5A092` |
+| 400   | `#91A47B` | `#C28B7D` |
+| 500   | `#788D61` | `#B17668` |
+| 600   | `#5F704B` | `#A36558` |
+| 700   | `#4C5B3C` | `#825044` |
+| 800   | `#3B482F` | `#623B33` |
+| 900   | `#2D3724` | `#442823` |
+| 950   | `#222A1B` | `#35201B` |
+
+Use moss for income and clay for expenses across charts, legends, and financial
+indicators. Both ordinary series and their legend swatches use solid fills.
+Keep success badges green and error/destructive feedback terracotta. Preserve
+labels, consistent series order, and accessible exact values; do not use color
+alone to distinguish money in from money out. Negative revenue adjustments
+retain their income/reversal meaning instead of becoming expenses.
 
 ## Selection and theme aliases
 
@@ -85,8 +111,10 @@ shared palette.
 | Sidebar active fill              | butter-400                | butter-950                |
 | Sidebar active foreground        | neutral-900               | butter-400                |
 | Link text                        | butter-800                | butter-400                |
-| Financial income marks           | green-600                 | green-300                 |
-| Financial expense marks          | terracotta-600            | terracotta-300            |
+| Financial income marks           | moss-600                  | moss-300                  |
+| Financial income surface         | moss-50                   | moss-950                  |
+| Financial expense marks          | clay-600                  | clay-300                  |
+| Financial expense surface        | clay-50                   | clay-950                  |
 | Neutral comparison marks         | neutral-500               | neutral-400               |
 | Chart track                      | neutral-200               | neutral-800               |
 
@@ -119,7 +147,7 @@ For solid destructive actions, use terracotta-700 with neutral-0 text in light
 mode and terracotta-300 with neutral-950 text in dark mode. Feedback borders
 that identify a control use the family's 600 shade in light mode and 300 in dark
 mode. Do not use terracotta-600 for small text on terracotta-50: that pair is
-only 4.40:1. Its financial data-mark role has a different contrast requirement.
+only 4.40:1. Financial marks use the separate moss/clay families.
 
 ## Contrast guardrails and verification
 
@@ -143,6 +171,14 @@ Calculated sRGB contrast examples (rounded):
 | butter-800 on neutral-100              | 6.70:1  |
 | butter-400 on neutral-950              | 12.72:1 |
 | butter-400 on neutral-800              | 9.81:1  |
+| moss-600 on neutral-0                  | 5.33:1  |
+| clay-600 on neutral-0                  | 4.56:1  |
+| moss-300 on neutral-950                | 8.76:1  |
+| clay-300 on neutral-950                | 7.75:1  |
+
+Clay-600 on clay-50 is 4.20:1: suitable for financial icons and marks, but not
+normal-sized text. Keep ordinary financial amounts neutral; use a darker
+clay shade if a future text role needs that surface.
 
 These checks cover specified pairs, not every combination or application-wide
 accessibility. At implementation time, inspect all consumers of changed aliases,

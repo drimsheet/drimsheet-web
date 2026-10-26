@@ -21,7 +21,9 @@ export function OAuthConfirmationPage() {
     };
 
     const handleCompleteSignIn = async () => {
-      if (hasStartedCompletion.current) return;
+      if (hasStartedCompletion.current) {
+        return;
+      }
 
       hasStartedCompletion.current = true;
 

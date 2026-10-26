@@ -166,7 +166,6 @@ const transferEntry = createEntry({
 
 const defaultProps = {
   data: [paymentEntry, receiptEntry, transferEntry],
-  onSearchChange: vi.fn(),
 };
 
 describe('TransactionsTable', () => {
@@ -253,30 +252,23 @@ describe('TransactionsTable', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('emits search, effective-date sort, and page intents', async () => {
+  it('emits effective-date sort and page intents', async () => {
     const user = userEvent.setup();
-    const onSearchChange = vi.fn();
     const onSortChange = vi.fn();
     const onPageChange = vi.fn();
 
     render(
       <TransactionsTable
         {...defaultProps}
-        onSearchChange={onSearchChange}
         onSortChange={onSortChange}
         onPageChange={onPageChange}
         pagination={{ page: 1, limit: 10, total: 12, totalPages: 2 }}
       />
     );
 
-    await user.type(
-      screen.getByPlaceholderText('Search transactions...'),
-      'gift'
-    );
     await user.click(screen.getByRole('button', { name: 'Sort by Date' }));
     await user.click(screen.getByRole('button', { name: 'Next page' }));
 
-    expect(onSearchChange).toHaveBeenCalled();
     expect(onSortChange).toHaveBeenCalledWith('effectiveDate', 'asc');
     expect(onPageChange).toHaveBeenCalledWith(2);
   });
@@ -381,16 +373,77 @@ describe('TransactionsTable', () => {
     expect(onEditTransaction).toHaveBeenCalledWith(paymentEntry);
   });
 
-  it('renders an optional action button alongside the search field', () => {
-    render(
-      <TransactionsTable
-        {...defaultProps}
-        actionButton={<button type="button">New transaction</button>}
-      />
-    );
+  it('leaves search and page actions to its owner', () => {
+    render(<TransactionsTable {...defaultProps} />);
 
-    expect(
-      screen.getByRole('button', { name: 'New transaction' })
-    ).toBeInTheDocument();
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
   });
+});
+
+it('uses the standard columns and details action when scoped to an account', async () => {
+  const user = userEvent.setup();
+  render(<TransactionsTable {...defaultProps} accountId="cash-main" />);
+  expect(
+    screen.getByRole('columnheader', { name: 'Account' })
+  ).toBeInTheDocument();
+  expect(screen.getAllByRole('columnheader')).toHaveLength(6);
+  expect(
+    screen.getByRole('columnheader', { name: 'Summary' })
+  ).toBeInTheDocument();
+  const row = screen.getAllByRole('row')[1];
+  await user.click(
+    within(row).getByRole('button', { name: 'Open transaction' })
+  );
+  const drawer = screen.getByRole('dialog', { name: 'Transaction details' });
+  expect(within(drawer).getByText('Outflow')).toBeInTheDocument();
+  expect(within(drawer).getByText('Main checking')).toBeInTheDocument();
+});
+
+it('renders every paginated account entry, including opening balances and adjustments', () => {
+  const openingBalance = {
+    ...receiptEntry,
+    id: 'opening',
+    sourceType: EJournalEntrySourceType.OpeningBalance,
+    memo: 'Initial funds',
+  };
+
+  const adjustment = {
+    ...receiptEntry,
+    id: 'adjustment',
+    sourceType: EJournalEntrySourceType.Adjustment,
+    memo: 'Balance correction',
+  };
+
+  render(
+    <TransactionsTable
+      accountId="cash-main"
+      data={[receiptEntry, openingBalance, adjustment]}
+      pagination={{ page: 1, limit: 5, total: 3, totalPages: 1 }}
+      onPageChange={vi.fn()}
+    />
+  );
+
+  expect(screen.getAllByRole('row')).toHaveLength(4);
+  expect(screen.getByText('1–3 of 3')).toBeInTheDocument();
+  const openingRow = screen.getByText('Opening balance').closest('tr')!;
+  expect(within(openingRow).getByText('Initial funds')).toBeInTheDocument();
+  expect(within(openingRow).queryByRole('button')).not.toBeInTheDocument();
+  expect(screen.getByText('Adjustment')).toBeInTheDocument();
+  expect(screen.getByText('Balance correction')).toBeInTheDocument();
+});
+
+it('shows unavailable amounts without losing incomplete entries', () => {
+  render(
+    <TransactionsTable
+      accountId="cash-main"
+      data={[{ ...receiptEntry, lines: [] }]}
+    />
+  );
+
+  expect(screen.getAllByRole('row')).toHaveLength(2);
+  expect(screen.getByText('Receipt')).toBeInTheDocument();
+  expect(screen.getByText('Unavailable')).toBeInTheDocument();
+  expect(
+    screen.queryByRole('button', { name: 'Open transaction' })
+  ).not.toBeInTheDocument();
 });

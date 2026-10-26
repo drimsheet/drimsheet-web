@@ -23,8 +23,10 @@ describe('CategoriesForm — income', () => {
       </>
     );
     expect(screen.getByRole('status')).toHaveTextContent('4 selected');
-    for (const checkbox of screen.getAllByRole('checkbox'))
+    for (const checkbox of screen.getAllByRole('checkbox')) {
       expect(checkbox).toBeChecked();
+    }
+
     await user.click(screen.getByRole('checkbox', { name: 'Gifts (Default)' }));
     expect(screen.getByRole('status')).toHaveTextContent('3 selected');
     await user.click(screen.getByRole('button', { name: 'Save' }));
@@ -88,12 +90,16 @@ describe('CategoriesForm — income', () => {
   it('allows no categories to be selected and respects disabled state', async () => {
     const user = userEvent.setup();
     const { rerender } = render(<CategoriesForm kind="income" />);
-    for (const checkbox of screen.getAllByRole('checkbox'))
+    for (const checkbox of screen.getAllByRole('checkbox')) {
       await user.click(checkbox);
+    }
+
     expect(screen.getByRole('status')).toHaveTextContent('0 selected');
     rerender(<CategoriesForm kind="income" disabled />);
-    for (const checkbox of screen.getAllByRole('checkbox'))
+    for (const checkbox of screen.getAllByRole('checkbox')) {
       expect(checkbox).toBeDisabled();
+    }
+
     expect(
       screen.getByRole('button', { name: 'Add income category' })
     ).toBeDisabled();

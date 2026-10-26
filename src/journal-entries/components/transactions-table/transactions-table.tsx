@@ -9,7 +9,6 @@ import { DataTable, type ITableColumn } from '@/shared/components/data-table';
 import { FormattedDate } from '@/shared/components/date';
 import { ItemMedia } from '@/shared/components/item';
 import { Money } from '@/shared/components/money';
-import { SearchField } from '@/shared/components/search-field';
 import {
   EJournalEntrySourceType,
   ELedgerAccountBalanceEffect,
@@ -21,7 +20,8 @@ import { TransactionsTableSkeleton } from './skeleton';
 import type { ITransactionsTableRow, TransactionsTableProps } from './types';
 
 export function TransactionsTable({
-  actionButton,
+  accountId,
+  emptyStateNode,
   data,
   loading = false,
   archiving = false,
@@ -34,8 +34,6 @@ export function TransactionsTable({
   currentSortDirection = null,
   className,
   'data-testid': dataTestId = 'transactions-table',
-  searchValue = '',
-  onSearchChange,
 }: Readonly<TransactionsTableProps>) {
   const { t } = useTranslation(['journal-entries', 'shared']);
 
@@ -43,8 +41,8 @@ export function TransactionsTable({
     useState<IJournalEntryListDto | null>(null);
 
   const rows = useMemo(
-    () => transactionsTableHelpers.createRows({ entries: data }),
-    [data]
+    () => transactionsTableHelpers.createRows({ entries: data, accountId }),
+    [data, accountId]
   );
 
   const selectedDetails = useMemo(
@@ -70,24 +68,32 @@ export function TransactionsTable({
   );
 
   const handleDetailsOpenChange = useCallback((open: boolean) => {
-    if (!open) setSelectedTransaction(null);
+    if (!open) {
+      setSelectedTransaction(null);
+    }
   }, []);
 
   const handleSelectedTransactionEdit = useCallback(() => {
-    if (!selectedTransaction) return;
+    if (!selectedTransaction) {
+      return;
+    }
 
     onEditTransaction?.(selectedTransaction);
   }, [onEditTransaction, selectedTransaction]);
 
   const handleSelectedTransactionArchive = async () => {
-    if (!selectedTransaction || !onArchiveTransaction || archiving) return;
+    if (!selectedTransaction || !onArchiveTransaction || archiving) {
+      return;
+    }
 
     await onArchiveTransaction(selectedTransaction);
     setSelectedTransaction(null);
   };
 
   const handleSelectedTransactionDelete = async () => {
-    if (!selectedTransaction || !onDeleteTransaction) return;
+    if (!selectedTransaction || !onDeleteTransaction) {
+      return;
+    }
 
     await onDeleteTransaction(selectedTransaction);
     setSelectedTransaction(null);
@@ -97,7 +103,9 @@ export function TransactionsTable({
     const directionLabel = t('transactions_table_direction_label');
     const dateLabel = t('shared:date');
     const accountLabel = t('transactions_table_account_label');
+
     const summaryLabel = t('transactions_table_summary_label');
+
     const amountLabel = t('amount_label');
     const incomingLabel = t('transactions_table_incoming_direction_label');
     const outgoingLabel = t('transactions_table_outgoing_direction_label');
@@ -110,6 +118,10 @@ export function TransactionsTable({
         width: 64,
         headerRender: () => <span className="sr-only">{directionLabel}</span>,
         render: (_, row) => {
+          if (!row.canOpenDetails) {
+            return null;
+          }
+
           if (row.direction === EJournalEntrySourceType.Receipt) {
             return (
               <BalanceEffectIcon
@@ -148,6 +160,7 @@ export function TransactionsTable({
       },
       {
         dataIndex: 'effectiveDate',
+        width: 140,
         minWidth: 140,
         title: dateLabel,
         sortable: true,
@@ -169,20 +182,35 @@ export function TransactionsTable({
         proportion: 2.5,
         minWidth: 240,
         title: summaryLabel,
-        render: (_, row) => <TransactionSummary row={row} />,
+        render: (_, row) =>
+          row.canOpenDetails ? (
+            <TransactionSummary row={row} />
+          ) : (
+            <div className="flex min-w-0 flex-col gap-1 wrap-anywhere">
+              <span>{t(`transactions_table_source_${row.direction}`)}</span>
+              {row.summary && (
+                <span className="text-xs text-muted-foreground">
+                  {row.summary}
+                </span>
+              )}
+            </div>
+          ),
       },
       {
         dataIndex: 'amount',
         align: 'right',
-        proportion: 1.5,
+        width: 170,
         minWidth: 170,
         title: amountLabel,
-        render: (value) => (
-          <Money
-            className="text-foreground text-sm font-heading"
-            value={value as ITransactionsTableRow['amount']}
-          />
-        ),
+        render: (_, row) =>
+          row.amount ? (
+            <Money
+              className="text-foreground text-sm tabular-nums"
+              value={row.amount}
+            />
+          ) : (
+            t('transactions_table_amount_unavailable')
+          ),
       },
     ];
 
@@ -190,44 +218,33 @@ export function TransactionsTable({
       dataIndex: 'action',
       width: 64,
       title: '',
-      render: (_, row) => (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={openTransactionLabel}
-          title={openTransactionLabel}
-          onClick={() => handleTransactionOpen(row.entry)}
-        >
-          <ChevronRight />
-        </Button>
-      ),
+      render: (_, row) =>
+        row.canOpenDetails && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={openTransactionLabel}
+            title={openTransactionLabel}
+            onClick={() => handleTransactionOpen(row.entry)}
+          >
+            <ChevronRight />
+          </Button>
+        ),
     });
 
     return tableColumns;
   }, [handleTransactionOpen, t]);
 
-  const searchPlaceholder = t('transactions_table_search_placeholder');
-
-  if (loading) return <TransactionsTableSkeleton />;
+  if (loading) {
+    return <TransactionsTableSkeleton />;
+  }
 
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="w-full max-w-sm">
-          <SearchField
-            type="search"
-            placeholder={searchPlaceholder}
-            value={searchValue}
-            onChange={(event) => onSearchChange(event.target.value)}
-          />
-        </div>
-
-        {actionButton}
-      </div>
-
+    <>
       <DataTable
         columns={columns}
+        emptyStateNode={emptyStateNode}
         pagination={
           pagination && onPageChange
             ? { meta: pagination, onPageChange }
@@ -255,6 +272,6 @@ export function TransactionsTable({
         onOpenChange={handleDetailsOpenChange}
         open={Boolean(selectedDetails)}
       />
-    </div>
+    </>
   );
 }

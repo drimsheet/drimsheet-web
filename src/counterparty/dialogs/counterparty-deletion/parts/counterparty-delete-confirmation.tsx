@@ -25,14 +25,20 @@ export function CounterpartyDeleteConfirmation({
   const isDeleteConfirmed = confirmationText === confirmation_keyword;
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (submitting) return;
+    if (submitting) {
+      return;
+    }
 
     onOpenChange(nextOpen);
-    if (!nextOpen) setConfirmationText('');
+    if (!nextOpen) {
+      setConfirmationText('');
+    }
   };
 
   const handleDelete = async () => {
-    if (submitting || !isDeleteConfirmed) return;
+    if (submitting || !isDeleteConfirmed) {
+      return;
+    }
 
     setSubmitting(true);
 

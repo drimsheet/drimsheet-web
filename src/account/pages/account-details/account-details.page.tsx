@@ -1,95 +1,68 @@
 import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
 import { AppBody } from '@/shared/components/app';
-import { PageSection } from '@/shared/components/page-section';
+import { AppSection } from '@/shared/components/app-section';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
-import { useSubAccounts } from './hooks/use-sub-accounts';
-import { AccountActionsContainer } from './parts/account-actions.container';
-import {
-  LedgerAccountSummary,
-  LedgerAccountSummarySkeleton,
-} from './parts/account-summary';
-import { BankDetailsSkeleton } from './parts/bank-details';
-import { BankDetailsContainer } from './parts/bank-details.container';
-import { RecentTransactionsSkeleton } from './parts/recent-transactions';
+import { AccountOverviewSkeleton } from './parts/account-overview';
+import { AccountOverviewContainer } from './parts/account-overview.container';
 import { RecentTransactionsContainer } from './parts/recent-transactions.container';
 import { SectionError } from './parts/section-error';
-import { SubAccountsSkeleton } from './parts/sub-accounts';
-import { SubAccountsContainer } from './parts/sub-accounts.container';
-import { TransactionsChartSkeleton } from './parts/transactions-chart';
-import { TransactionsChartContainer } from './parts/transactions-chart.container';
 
 export function AccountDetailsPage() {
   const { t } = useTranslation(['ledger-accounts', 'shared']);
   const { accountId = '' } = useParams();
-  const accountQuery = useLedgerAccount(accountId);
-  const subAccounts = useSubAccounts(accountId);
-  const account = accountQuery.data;
 
-  const canShowCashFlow =
-    account &&
-    !account.isControlAccount &&
-    (account.behavior === 'bank' || account.behavior === 'petty_cash');
+  const { data: account, isPending, isError } = useLedgerAccount(accountId);
 
+  const transactions_title = t('ledger-accounts:details_transactions_title');
+  const overview_title = t('ledger-accounts:details_overview_title');
+  const accounts_label = t('shared:accounts');
   const error_title = t('ledger-accounts:details_account_error_title');
 
-  if (
+  const isUnsupportedAccount =
     account &&
     !account.isControlAccount &&
-    (account.type === 'revenue' || account.type === 'expense')
-  ) {
+    (account.type === 'revenue' || account.type === 'expense');
+
+  if (isUnsupportedAccount) {
     return <Navigate replace to={`/categories/${account.id}`} />;
   }
 
-  return (
-    <>
-      <AppBody>
-        <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-col">
-          {accountQuery.isPending && (
-            <>
-              <LedgerAccountSummarySkeleton />
-              <BankDetailsSkeleton />
-              <SubAccountsSkeleton />
-              <PageSection>
-                <TransactionsChartSkeleton />
-              </PageSection>
-              <RecentTransactionsSkeleton />
-            </>
-          )}
-          {accountQuery.isError && <SectionError title={error_title} />}
-          {accountQuery.isSuccess && account && (
-            <>
-              <LedgerAccountSummary
-                account={account}
-                hasSubAccounts={!!subAccounts.data?.length}
-                actions={
-                  <AccountActionsContainer key={account.id} account={account} />
-                }
-              />
-              {account.behavior === 'bank' && (
-                <BankDetailsContainer
-                  key={`bank-${account.id}`}
-                  accountId={account.id}
-                />
-              )}
-              <SubAccountsContainer
-                key={`children-${account.id}`}
-                accountId={account.id}
-              />
-              {canShowCashFlow && (
-                <TransactionsChartContainer
-                  key={`chart-${account.id}`}
-                  accountId={account.id}
-                />
-              )}
-              <RecentTransactionsContainer
-                key={`transactions-${account.id}`}
-                accountId={account.id}
-              />
-            </>
-          )}
-        </div>
+  const breadcrumbs = {
+    label: accounts_label,
+    link: '/accounts',
+    next: account ? { label: account.name } : undefined,
+  };
+
+  if (isError) {
+    return (
+      <AppBody breadcrumbs={breadcrumbs}>
+        <AppSection>
+          <SectionError title={error_title} />
+        </AppSection>
       </AppBody>
-    </>
+    );
+  }
+
+  return (
+    <AppBody breadcrumbs={breadcrumbs}>
+      <AppSection title={overview_title}>
+        {isPending ? (
+          <AccountOverviewSkeleton />
+        ) : (
+          account && (
+            <AccountOverviewContainer key={account.id} account={account} />
+          )
+        )}
+      </AppSection>
+
+      <AppSection title={transactions_title}>
+        <RecentTransactionsContainer
+          key={account?.id}
+          accountId={account?.id}
+          loading={isPending}
+        />
+      </AppSection>
+    </AppBody>
   );
 }

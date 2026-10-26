@@ -22,15 +22,21 @@ export interface DateInputProps extends Omit<
 }
 
 const parseDateValue = (value?: string) => {
-  if (!value) return undefined;
+  if (!value) {
+    return undefined;
+  }
 
   const [year, month, day] = value.split('-').map(Number);
 
-  if (!year || !month || !day) return undefined;
+  if (!year || !month || !day) {
+    return undefined;
+  }
 
   const date = new Date(year, month - 1, day);
 
-  if (!dateUtils.isValidDate(date)) return undefined;
+  if (!dateUtils.isValidDate(date)) {
+    return undefined;
+  }
 
   return date;
 };
@@ -54,7 +60,9 @@ function DateInput({
     : placeholder;
 
   const handleSelect = (date: Date | undefined) => {
-    if (!date) return;
+    if (!date) {
+      return;
+    }
 
     onValueChange?.(dateUtils.formatDateForApi(date));
     setOpen(false);

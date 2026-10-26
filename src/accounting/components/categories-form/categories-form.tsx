@@ -54,7 +54,9 @@ export function CategoriesForm({
 
   const handleAdd = (draft: ICategoryDraft) => {
     const parent = groups.find(({ id }) => id === draft.parentId);
-    if (!parent) return;
+    if (!parent) {
+      return;
+    }
 
     setValues((previous) => ({
       categories: [
@@ -72,7 +74,9 @@ export function CategoriesForm({
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!disabled) onSubmit?.(values);
+    if (!disabled) {
+      onSubmit?.(values);
+    }
   };
 
   const title = t('categories_recommended_title');
@@ -83,7 +87,7 @@ export function CategoriesForm({
 
   const add_label = t(`${kind}_categories_add_label`);
 
-  if (isAdding)
+  if (isAdding) {
     return (
       <CreateCategoryForm
         kind={kind}
@@ -94,6 +98,7 @@ export function CategoriesForm({
         onCancel={() => setIsAdding(false)}
       />
     );
+  }
 
   return (
     <form id={id} onSubmit={handleSubmit} className="flex flex-col gap-5">

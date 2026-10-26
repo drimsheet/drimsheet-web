@@ -45,24 +45,6 @@ export function OpeningBalanceFields({
 
   return (
     <FieldGroup>
-      {showSkipOpeningBalance && (
-        <Field orientation="horizontal">
-          <Checkbox
-            aria-label={create_without_opening_balance_label}
-            checked={createWithoutOpeningBalance}
-            disabled={disabled}
-            id="createWithoutOpeningBalance"
-            name="createWithoutOpeningBalance"
-            onCheckedChange={(checked) =>
-              onCreateWithoutOpeningBalanceChange(checked === true)
-            }
-          />
-          <Label htmlFor="createWithoutOpeningBalance">
-            {create_without_opening_balance_label}
-          </Label>
-        </Field>
-      )}
-
       <div className="grid gap-5 sm:grid-cols-2">
         <Field data-invalid={Boolean(openingBalanceError?.length)}>
           <Label htmlFor="openingBalance">{opening_balance_label}</Label>
@@ -92,8 +74,26 @@ export function OpeningBalanceFields({
         </Field>
       </div>
 
-      <div className="min-h-[76px]">
-        {showExchangeRate && (
+      {showSkipOpeningBalance && (
+        <Field orientation="horizontal">
+          <Checkbox
+            aria-label={create_without_opening_balance_label}
+            checked={createWithoutOpeningBalance}
+            disabled={disabled}
+            id="createWithoutOpeningBalance"
+            name="createWithoutOpeningBalance"
+            onCheckedChange={(checked) =>
+              onCreateWithoutOpeningBalanceChange(checked === true)
+            }
+          />
+          <Label htmlFor="createWithoutOpeningBalance">
+            {create_without_opening_balance_label}
+          </Label>
+        </Field>
+      )}
+
+      {showExchangeRate && (
+        <div className="min-h-[76px]">
           <Field data-invalid={Boolean(exchangeRateError?.length)}>
             <Label htmlFor="exchangeRate">{exchange_rate_label}</Label>
             <CurrencyExchangeRateInput
@@ -111,8 +111,8 @@ export function OpeningBalanceFields({
             />
             <FieldError errors={exchangeRateError} />
           </Field>
-        )}
-      </div>
+        </div>
+      )}
     </FieldGroup>
   );
 }

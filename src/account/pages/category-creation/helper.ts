@@ -22,10 +22,14 @@ function findParent(
 ): ICategoryParentSelection | null {
   for (const account of accounts) {
     const accountPath = [...path, account.name];
-    if (account.id === id) return { account, path: accountPath };
+    if (account.id === id) {
+      return { account, path: accountPath };
+    }
 
     const descendant = findParent(account.children, id, accountPath);
-    if (descendant) return descendant;
+    if (descendant) {
+      return descendant;
+    }
   }
 
   return null;
@@ -35,7 +39,9 @@ function promotionNames(
   values: ICategoryCreationFormValues,
   parent: TCategoryAccount
 ): ILedgerAccountPromotionNames | undefined {
-  if (parent.isControlAccount) return undefined;
+  if (parent.isControlAccount) {
+    return undefined;
+  }
 
   return {
     newControlAccountName: parent.name,

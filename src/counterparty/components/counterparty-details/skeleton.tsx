@@ -1,4 +1,4 @@
-import { PageSection } from '@/shared/components/page-section';
+import { AppSection } from '@/shared/components/app-section';
 import { Skeleton } from '@/shared/components/skeleton';
 import { useTranslation } from 'react-i18next';
 
@@ -21,7 +21,7 @@ export function CounterpartyDetailsSkeleton() {
         </div>
         <Skeleton className="h-9 w-24" />
       </header>
-      <PageSection title={profile_details_title}>
+      <AppSection title={profile_details_title}>
         <div className="grid gap-x-12 gap-y-6 sm:grid-cols-2">
           {[0, 1, 2, 3].map((field) => (
             <div key={field} className="flex min-w-0 flex-col gap-2">
@@ -30,7 +30,7 @@ export function CounterpartyDetailsSkeleton() {
             </div>
           ))}
         </div>
-      </PageSection>
+      </AppSection>
     </div>
   );
 }

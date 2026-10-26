@@ -114,10 +114,13 @@ describe('AccountingEntityForm', () => {
       <AccountingEntityForm currencies={[]} jurisdictions={[]} disabled />
     );
     expect(screen.getByRole('textbox', { name: 'Name' })).toBeDisabled();
-    for (const radio of screen.getAllByRole('radio'))
+    for (const radio of screen.getAllByRole('radio')) {
       expect(radio).toBeDisabled();
-    for (const field of screen.getAllByRole('combobox'))
+    }
+
+    for (const field of screen.getAllByRole('combobox')) {
       expect(field).toBeDisabled();
+    }
   });
 
   it('selects cards through their descriptions and changes the exclusive choice with the keyboard', async () => {

@@ -1,3 +1,4 @@
+import { useCategoryHistory } from '@/account/hooks/use-category-history';
 import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
 import { AppBody } from '@/shared/components/app';
 import type { IAccountCounterpartyParticipationDto } from '@/shared/lib/api/Api';
@@ -5,7 +6,6 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
 import categoryDetailsHelpers from './helper';
-import { useCategoryHistory } from './hooks/use-category-history';
 import { CategoryActionsContainer } from './parts/category-actions.container';
 import {
   CategorySummary,
@@ -42,7 +42,9 @@ export function CategoryDetailsPage() {
   const history = useCategoryHistory(accountId, isCategory);
 
   const activity = useMemo(() => {
-    if (!account || !history.data) return null;
+    if (!account || !history.data) {
+      return null;
+    }
 
     try {
       return categoryDetailsHelpers.activity(history.data, account, now);
@@ -86,8 +88,9 @@ export function CategoryDetailsPage() {
     );
   };
 
-  if (accountQuery.isSuccess && account && !isCategory)
+  if (accountQuery.isSuccess && account && !isCategory) {
     return <Navigate replace to={`/accounts/${account.id}`} />;
+  }
 
   const unassigned_label = t(
     'ledger-accounts:category_details_unassigned_label'

@@ -23,7 +23,9 @@ export function SignInPage() {
   const isLoading = inFlight || isPending;
 
   const handleLogin = async (values: ILoginFormValues) => {
-    if (isLoading) return;
+    if (isLoading) {
+      return;
+    }
 
     setInFlight(true);
     try {

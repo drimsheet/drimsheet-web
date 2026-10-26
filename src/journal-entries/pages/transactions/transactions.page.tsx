@@ -1,7 +1,6 @@
 import { AppBody } from '@/shared/components/app';
+import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
-import { PageSection } from '@/shared/components/page-section';
-import { PageTitle } from '@/shared/components/page-title';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -25,9 +24,8 @@ export function TransactionsPage() {
 
   return (
     <>
-      <AppBody>
-        <PageTitle>{page_title}</PageTitle>
-        <PageSection>
+      <AppBody title={page_title}>
+        <AppSection>
           {searchParams.has('accountId') && (
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-sm text-muted-foreground">
@@ -48,7 +46,7 @@ export function TransactionsPage() {
               </Button>
             }
           />
-        </PageSection>
+        </AppSection>
       </AppBody>
     </>
   );

@@ -13,6 +13,7 @@
   "petty_cash": "Petty cash",
   "bank": "Bank",
   "balance": "Balance",
+  "money_approximately_label": "approximately",
   "status": "Status",
   "created_on": "Created on",
   "previous_slide": "Previous slide",

@@ -26,6 +26,7 @@ interface ICreateRowInput {
 
 interface ICreateRowsInput {
   entries: IJournalEntryListDto[];
+  accountId?: string;
 }
 
 const transactionSourceTypes: Set<string> = new Set([
@@ -59,7 +60,9 @@ function getRowCashLine(
   lines: readonly IJournalLineListDto[],
   sourceType: UTransactionsTableDirection
 ) {
-  if (sourceType === EJournalEntrySourceType.Receipt) return lines.at(-1);
+  if (sourceType === EJournalEntrySourceType.Receipt) {
+    return lines.at(-1);
+  }
 
   return lines.at(0);
 }
@@ -68,9 +71,13 @@ function getRowCategoryLines(
   lines: readonly IJournalLineListDto[],
   sourceType: UTransactionsTableDirection
 ) {
-  if (sourceType === EJournalEntrySourceType.Receipt) return lines.slice(0, -1);
+  if (sourceType === EJournalEntrySourceType.Receipt) {
+    return lines.slice(0, -1);
+  }
 
-  if (sourceType === EJournalEntrySourceType.Payment) return lines.slice(1);
+  if (sourceType === EJournalEntrySourceType.Payment) {
+    return lines.slice(1);
+  }
 
   return [];
 }
@@ -84,7 +91,9 @@ function toMoney(value: IMoneyDto): IMoneyDto {
 }
 
 function toExchangeRate(value: IExchangeRate | null): IExchangeRate | null {
-  if (!value) return null;
+  if (!value) {
+    return null;
+  }
 
   return {
     asOf: value.asOf,
@@ -143,12 +152,16 @@ function createCashDetails(
   entry: IJournalEntryListDto,
   lines: readonly IJournalLineListDto[]
 ): ICashTransactionDetails | undefined {
-  if (!isCashTransactionSourceType(entry.sourceType)) return undefined;
+  if (!isCashTransactionSourceType(entry.sourceType)) {
+    return undefined;
+  }
 
   const cashLine = getRowCashLine(lines, entry.sourceType);
   const categoryLines = getRowCategoryLines(lines, entry.sourceType);
 
-  if (!cashLine || categoryLines.length === 0) return undefined;
+  if (!cashLine || categoryLines.length === 0) {
+    return undefined;
+  }
 
   return {
     amount: toMoney(cashLine.amount),
@@ -169,12 +182,16 @@ function createTransferDetails(
   entry: IJournalEntryListDto,
   lines: readonly IJournalLineListDto[]
 ): ITransferTransactionDetails | undefined {
-  if (entry.sourceType !== EJournalEntrySourceType.Transfer) return undefined;
+  if (entry.sourceType !== EJournalEntrySourceType.Transfer) {
+    return undefined;
+  }
 
   const sourceLine = lines.at(0);
   const destinationLine = lines.at(1);
 
-  if (!sourceLine || !destinationLine) return undefined;
+  if (!sourceLine || !destinationLine) {
+    return undefined;
+  }
 
   return {
     attachments: entry.attachments.map(toAttachment),
@@ -196,7 +213,9 @@ function createTransferDetails(
 function createDetails(
   entry: IJournalEntryListDto
 ): UTransactionDetails | undefined {
-  if (!isTransactionSourceType(entry.sourceType)) return undefined;
+  if (!isTransactionSourceType(entry.sourceType)) {
+    return undefined;
+  }
 
   const lines = sortLines(entry.lines);
 
@@ -207,12 +226,26 @@ function createDetails(
   return createCashDetails(entry, lines);
 }
 
-function createRow({
-  entry,
-}: ICreateRowInput): ITransactionsTableRow | undefined {
+function createRow({ entry }: ICreateRowInput): ITransactionsTableRow {
   const details = createDetails(entry);
 
-  if (!details) return undefined;
+  if (!details) {
+    const line = sortLines(entry.lines).at(0);
+
+    return {
+      id: entry.id,
+      action: null,
+      accountName: line?.account.name ?? '',
+      additionalCategoryCount: 0,
+      additionalCounterpartyCount: 0,
+      amount: line ? toMoney(line.amount) : null,
+      canOpenDetails: false,
+      direction: entry.sourceType,
+      effectiveDate: entry.effectiveDate,
+      entry,
+      summary: entry.memo,
+    };
+  }
 
   if (details.kind === 'transfer') {
     return {
@@ -222,6 +255,7 @@ function createRow({
       additionalCategoryCount: 0,
       additionalCounterpartyCount: 0,
       amount: details.sourceAmount,
+      canOpenDetails: true,
       destinationAccountName: details.destinationAccountName,
       direction: details.direction,
       effectiveDate: details.effectiveDate,
@@ -244,6 +278,7 @@ function createRow({
     additionalCategoryCount: Math.max(categories.length - 1, 0),
     additionalCounterpartyCount: Math.max(details.counterparties.length - 1, 0),
     amount: details.amount,
+    canOpenDetails: true,
     direction: details.direction,
     effectiveDate: details.effectiveDate,
     entry,
@@ -253,11 +288,22 @@ function createRow({
   };
 }
 
-function createRows({ entries }: ICreateRowsInput) {
-  return entries.flatMap((entry) => {
+function createRows({ entries, accountId }: ICreateRowsInput) {
+  return entries.map((entry) => {
     const row = createRow({ entry });
+    if (!accountId) {
+      return row;
+    }
 
-    return row ? [row] : [];
+    const accountLine = entry.lines.find(
+      (line) => line.account.id === accountId
+    );
+
+    return {
+      ...row,
+      accountName: accountLine?.account.name ?? '',
+      amount: accountLine ? toMoney(accountLine.amount) : null,
+    };
   });
 }
 

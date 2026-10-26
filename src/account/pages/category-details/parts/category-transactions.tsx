@@ -1,3 +1,4 @@
+import { AppSection } from '@/shared/components/app-section';
 import { Badge } from '@/shared/components/badge';
 import { Button } from '@/shared/components/button';
 import {
@@ -7,7 +8,6 @@ import {
 } from '@/shared/components/data-table';
 import { FormattedDate } from '@/shared/components/date';
 import { Money } from '@/shared/components/money';
-import { PageSection } from '@/shared/components/page-section';
 import { SearchField } from '@/shared/components/search-field';
 import { Skeleton } from '@/shared/components/skeleton';
 import { TablePagination } from '@/shared/components/table-pagination';
@@ -113,7 +113,7 @@ export function CategoryTransactions({
   });
 
   return (
-    <PageSection title={title}>
+    <AppSection title={title}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="w-full sm:max-w-xs">
           <SearchField
@@ -155,7 +155,7 @@ export function CategoryTransactions({
           onPageChange={setPage}
         />
       </div>
-    </PageSection>
+    </AppSection>
   );
 }
 
@@ -166,7 +166,7 @@ export function CategoryTransactionsSkeleton() {
   const categories_transactions_label = t('categories_transactions_label');
 
   return (
-    <PageSection title={categories_transactions_label} aria-busy="true">
+    <AppSection title={categories_transactions_label} aria-busy="true">
       <output className="sr-only" aria-label={loading_label} aria-busy="true">
         {loading_label}
       </output>
@@ -179,6 +179,6 @@ export function CategoryTransactionsSkeleton() {
         <Skeleton className="h-5 w-36" />
         <Skeleton className="h-8 w-48" />
       </div>
-    </PageSection>
+    </AppSection>
   );
 }

@@ -106,9 +106,15 @@ describe('BankDetailsForm', () => {
     expect(screen.getByLabelText('Account display name')).toBeEnabled();
   });
 
-  it('renders all form controls with accessible labels and info alert', () => {
+  it('renders the grouped account and bank controls with accessible labels', () => {
     renderForm();
 
+    expect(
+      screen.getByRole('heading', { name: 'Account details' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Bank account details' })
+    ).toBeInTheDocument();
     expect(screen.getByLabelText('Account display name')).toBeInTheDocument();
     expect(screen.getByLabelText('Currency')).toBeInTheDocument();
     expect(
@@ -120,15 +126,13 @@ describe('BankDetailsForm', () => {
     expect(screen.getByLabelText('Bank account number')).toBeInTheDocument();
     expect(screen.getByLabelText('Bank account name')).toBeInTheDocument();
     expect(
-      screen.getByText(
-        /We collect these details to ensure accurate reconciliation/i
-      )
+      screen.getByRole('button', { name: 'Why are we asking for this?' })
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Opening balance')).toBeInTheDocument();
     expect(screen.getByLabelText('Opening date')).toBeInTheDocument();
     expect(
-      screen.getByLabelText('Create as a sub account')
-    ).toBeInTheDocument();
+      screen.queryByLabelText('Create as a sub account')
+    ).not.toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Create account' })
     ).toBeInTheDocument();
@@ -203,7 +207,6 @@ describe('BankDetailsForm', () => {
         openingBalance: 5000,
         openingDate: '2026-07-01',
         exchangeRate: null,
-        isSubAccount: false,
       })
     );
   });
@@ -327,23 +330,15 @@ describe('BankDetailsForm', () => {
     });
   });
 
-  it('submits sub account checkbox state', async () => {
+  it('calls onCancel from the secondary action', async () => {
     const user = userEvent.setup();
+    const onCancel = vi.fn();
 
-    const { onSubmit } = renderForm({
-      initialValues: validInitialValues,
-    });
+    renderForm({ onCancel });
 
-    await user.click(screen.getByLabelText('Create as a sub account'));
-    await user.click(screen.getByRole('button', { name: 'Create account' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
-    await waitFor(() =>
-      expect(onSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({
-          isSubAccount: true,
-        })
-      )
-    );
+    expect(onCancel).toHaveBeenCalledOnce();
   });
 
   it('submits form values unchanged when opening balance creation is disabled', async () => {

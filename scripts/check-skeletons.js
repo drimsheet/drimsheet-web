@@ -8,21 +8,29 @@ const supportFile =
 const skeletonName = /^(?:[A-Z]\w*)?Skeleton$/;
 
 function sourceFiles(directory) {
-  if (!fs.existsSync(directory)) return [];
+  if (!fs.existsSync(directory)) {
+    return [];
+  }
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(directory, entry.name);
-    if (supportFile.test(file + (entry.isDirectory() ? path.sep : '')))
+    if (supportFile.test(file + (entry.isDirectory() ? path.sep : ''))) {
       return [];
-    if (entry.isDirectory()) return sourceFiles(file);
+    }
+    if (entry.isDirectory()) {
+      return sourceFiles(file);
+    }
     return /\.[jt]sx?$/.test(file) ? [file] : [];
   });
 }
 
 function ownerOf(srcRoot, file) {
   const segments = path.relative(srcRoot, file).split(path.sep);
-  if (!['components', 'pages', 'dialogs'].includes(segments[1]))
+  if (!['components', 'pages', 'dialogs'].includes(segments[1])) {
     return undefined;
-  if (segments.length < 4) return undefined;
+  }
+  if (segments.length < 4) {
+    return undefined;
+  }
   return {
     directory: path.join(srcRoot, ...segments.slice(0, 3)),
     kind: segments[1],
@@ -39,15 +47,18 @@ function runtimeDeclaration(node) {
 }
 
 function componentDeclaration(node) {
-  if (!ts.isVariableDeclaration(node)) return true;
+  if (!ts.isVariableDeclaration(node)) {
+    return true;
+  }
   let value = node.initializer;
   while (
     value &&
     (ts.isParenthesizedExpression(value) ||
       ts.isAsExpression(value) ||
       ts.isSatisfiesExpression(value))
-  )
+  ) {
     value = value.expression;
+  }
   return (
     value &&
     (ts.isArrowFunction(value) ||
@@ -57,31 +68,40 @@ function componentDeclaration(node) {
 }
 
 function topLevelDeclaration(node) {
-  if (ts.isVariableDeclaration(node))
+  if (ts.isVariableDeclaration(node)) {
     return (
       ts.isVariableStatement(node.parent.parent) &&
       ts.isSourceFile(node.parent.parent.parent)
     );
+  }
   return ts.isSourceFile(node.parent);
 }
 
 function literalText(node) {
-  if (!node) return undefined;
-  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node))
+  if (!node) {
+    return undefined;
+  }
+  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
     return node.text;
+  }
   if (
     ts.isJsxExpression(node) ||
     ts.isParenthesizedExpression(node) ||
     ts.isAsExpression(node) ||
     ts.isSatisfiesExpression(node)
-  )
+  ) {
     return literalText(node.expression);
+  }
   return undefined;
 }
 
 function containsLiteral(node, values) {
-  if (!node) return false;
-  if (values.includes(literalText(node))) return true;
+  if (!node) {
+    return false;
+  }
+  if (values.includes(literalText(node))) {
+    return true;
+  }
   return ts.forEachChild(node, (child) => containsLiteral(child, values));
 }
 
@@ -174,17 +194,22 @@ export function checkSkeletons(root = process.cwd()) {
   }
 
   function isPrimitive(symbol, seen = new Set()) {
-    if (!symbol || seen.has(symbol)) return false;
+    if (!symbol || seen.has(symbol)) {
+      return false;
+    }
     seen.add(symbol);
     if (
       symbol?.name === 'Skeleton' &&
       symbol.declarations?.some(
         (node) => path.resolve(node.getSourceFile().fileName) === primitivePath
       )
-    )
+    ) {
       return true;
+    }
     const declaration = symbol.valueDeclaration;
-    if (!declaration || !ts.isVariableDeclaration(declaration)) return false;
+    if (!declaration || !ts.isVariableDeclaration(declaration)) {
+      return false;
+    }
     const value = declaration.initializer;
     return value &&
       (ts.isIdentifier(value) || ts.isPropertyAccessExpression(value))
@@ -253,25 +278,30 @@ export function checkSkeletons(root = process.cwd()) {
             namedExport(candidate, componentName, symbolAt(declaration.name))
         )
     );
-    if (!component)
+    if (!component) {
       report(
         node,
         'skeleton-component',
         `${name} requires an exported ${componentName || 'named component'} ${owner?.part ? 'in the same file' : 'in the same component directory'}.`
       );
-    if (!namedExport(source, name, symbol))
+    }
+    if (!namedExport(source, name, symbol)) {
       report(
         node,
         'skeleton-export',
         `Export ${name} by its own name; a default, renamed, or type-only export is insufficient.`
       );
-    if (!owner?.part && path.basename(source.fileName) !== 'skeleton.tsx')
+    }
+    if (!owner?.part && path.basename(source.fileName) !== 'skeleton.tsx') {
       report(
         node,
         'skeleton-file',
         `Move ${name} to its component's skeleton.tsx.`
       );
-    if (owner?.part) continue;
+    }
+    if (owner?.part) {
+      continue;
+    }
 
     const barrel = program.getSourceFile(
       path.join(path.dirname(source.fileName), 'index.ts')
@@ -283,10 +313,13 @@ export function checkSkeletons(root = process.cwd()) {
         !statement.moduleSpecifier ||
         !statement.exportClause ||
         !ts.isNamedExports(statement.exportClause)
-      )
+      ) {
         return false;
+      }
       const target = symbolAt(statement.moduleSpecifier);
-      if (!target?.declarations?.includes(source)) return false;
+      if (!target?.declarations?.includes(source)) {
+        return false;
+      }
       return statement.exportClause.elements.some(
         (entry) =>
           !entry.isTypeOnly &&
@@ -294,21 +327,26 @@ export function checkSkeletons(root = process.cwd()) {
           symbolAt(entry.name) === symbol
       );
     });
-    if (!explicit)
+    if (!explicit) {
       report(
         node,
         'skeleton-barrel',
         `Explicitly re-export ${name} from ./skeleton in this component's index.ts.`
       );
+    }
   }
 
   // Resolve exported symbols too: importing a private part and then re-exporting
   // it (or exporting a namespace) must not evade the ownership boundary.
   function containsPrivateSkeleton(symbol, seen = new Set()) {
     symbol = resolveSymbol(symbol);
-    if (!symbol || seen.has(symbol)) return false;
+    if (!symbol || seen.has(symbol)) {
+      return false;
+    }
     seen.add(symbol);
-    if (skeletons.get(symbol)?.owner?.part) return true;
+    if (skeletons.get(symbol)?.owner?.part) {
+      return true;
+    }
     return symbol.flags & ts.SymbolFlags.Module
       ? checker
           .getExportsOfModule(symbol)
@@ -317,8 +355,12 @@ export function checkSkeletons(root = process.cwd()) {
   }
 
   function isSkeleton(symbol, seen = new Set()) {
-    if (!symbol || seen.has(symbol)) return false;
-    if (skeletons.has(symbol) || isPrimitive(symbol)) return true;
+    if (!symbol || seen.has(symbol)) {
+      return false;
+    }
+    if (skeletons.has(symbol) || isPrimitive(symbol)) {
+      return true;
+    }
     seen.add(symbol);
     const declaration = symbol.valueDeclaration;
     return declaration &&
@@ -335,10 +377,13 @@ export function checkSkeletons(root = process.cwd()) {
       (ts.isFunctionLike(node) ||
         ts.isConditionalExpression(node) ||
         ts.isBinaryExpression(node))
-    )
+    ) {
       return false;
+    }
     const cache = skeletonUsage[Number(crossBranches)];
-    if (cache.has(node)) return cache.get(node);
+    if (cache.has(node)) {
+      return cache.get(node);
+    }
     const found = Boolean(
       ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
         isSkeleton(symbolAt(node.tagName))) ||
@@ -360,7 +405,9 @@ export function checkSkeletons(root = process.cwd()) {
       'polite',
       'assertive',
     ]);
-    if (!output && !status && !live) return;
+    if (!output && !status && !live) {
+      return;
+    }
 
     let parent = node;
     let insideSkeleton = containsSkeleton(
@@ -382,22 +429,28 @@ export function checkSkeletons(root = process.cwd()) {
         ts.isFunctionLike(parent) ||
         ts.isConditionalExpression(parent) ||
         ts.isBinaryExpression(parent)
-      )
+      ) {
         break;
+      }
       if (
         (ts.isJsxElement(parent) || ts.isJsxFragment(parent)) &&
         containsSkeleton(parent)
-      )
+      ) {
         insideSkeleton = true;
+      }
       parent = parent.parent;
     }
-    if (!insideSkeleton) return;
+    if (!insideSkeleton) {
+      return;
+    }
 
     const classes =
       literalText(attribute('className')?.initializer)?.split(/\s+/) ?? [];
     const hidden = ['hidden', 'aria-hidden'].some((name) => {
       const prop = attribute(name);
-      if (!prop) return false;
+      if (!prop) {
+        return false;
+      }
       const value = prop.initializer;
       return (
         literalText(value) !== 'false' &&
@@ -424,7 +477,9 @@ export function checkSkeletons(root = process.cwd()) {
         'Keep the layout container and use a native <output className="sr-only"> for its loading announcement; use an explicit static className without spreads, visibility overrides, or hidden/aria-hidden attributes.'
       );
     }
-    if (!output || !ts.isJsxOpeningElement(node)) return;
+    if (!output || !ts.isJsxOpeningElement(node)) {
+      return;
+    }
     function checkContent(child) {
       if (
         (ts.isJsxOpeningElement(child) || ts.isJsxSelfClosingElement(child)) &&
@@ -451,25 +506,27 @@ export function checkSkeletons(root = process.cwd()) {
       /(?:^|[.-])skeleton(?:[.-]|$)/i.test(filename) &&
       source.fileName !== primitivePath
     ) {
-      if (owner?.part)
+      if (owner?.part) {
         report(
           source,
           'skeleton-part-file',
           'Define part skeletons in the represented part file; separate skeleton files are forbidden.'
         );
-      else if (localSkeletons.length === 0)
+      } else if (localSkeletons.length === 0) {
         report(
           source,
           'skeleton-component',
           'A skeleton module must define a named component skeleton.'
         );
+      }
     }
-    if (owner?.part && /^index\.[jt]sx?$/.test(filename))
+    if (owner?.part && /^index\.[jt]sx?$/.test(filename)) {
       report(
         source,
         'skeleton-private',
         'Do not create a barrel inside parts/.'
       );
+    }
 
     for (const exported of exportsOf(source)) {
       const target = resolveSymbol(exported);
@@ -479,69 +536,80 @@ export function checkSkeletons(root = process.cwd()) {
         !skeleton &&
         !isPrimitive(target) &&
         target?.flags & ts.SymbolFlags.Value
-      )
+      ) {
         report(
           source,
           'skeleton-export',
           `Define ${exported.name} as a named skeleton component instead of renaming another value.`
         );
+      }
       if (
         skeleton?.source === source &&
         exported.name !== skeleton.node.name.text
-      )
+      ) {
         report(
           exported.declarations?.[0] ?? source,
           'skeleton-export',
           `Do not rename ${skeleton.node.name.text} in its exports.`
         );
-      if (containsPrivateSkeleton(exported) && skeleton?.source !== source)
+      }
+      if (containsPrivateSkeleton(exported) && skeleton?.source !== source) {
         report(
           source,
           'skeleton-private',
           'Do not re-export a private part skeleton, directly or through another module.'
         );
+      }
     }
 
     function checkReference(node, targetFile) {
       const targetOwner = ownerOf(srcRoot, targetFile);
       const targetSource = program.getSourceFile(targetFile);
-      if (!targetSource) return;
+      if (!targetSource) {
+        return;
+      }
       const hasSkeleton = [...skeletons.values()].some(
         (entry) => entry.source === targetSource
       );
-      if (!hasSkeleton) return;
-      if (targetOwner?.part && owner?.directory !== targetOwner.directory)
+      if (!hasSkeleton) {
+        return;
+      }
+      if (targetOwner?.part && owner?.directory !== targetOwner.directory) {
         report(
           node,
           'skeleton-private',
           'Only files inside the part owner may import its skeleton.'
         );
-      else if (
+      } else if (
         !targetOwner?.part &&
         owner?.directory !== targetOwner?.directory &&
         path.basename(targetFile) !== 'index.ts'
-      )
+      ) {
         report(
           node,
           'skeleton-import',
           'Import public skeletons through the owning component barrel.'
         );
+      }
     }
 
     function visit(node) {
-      if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node))
+      if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
         checkAnnouncement(node, localSkeletons);
+      }
       // Check imports, re-exports, dynamic imports and require() module paths.
       let moduleSpecifier;
-      if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node))
+      if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
         moduleSpecifier = node.moduleSpecifier;
+      }
       if (
         ts.isCallExpression(node) &&
         (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
           (ts.isIdentifier(node.expression) &&
             node.expression.text === 'require'))
-      )
+      ) {
         moduleSpecifier = node.arguments[0];
+      }
       if (moduleSpecifier && ts.isStringLiteral(moduleSpecifier)) {
         const resolved = ts.resolveModuleName(
           moduleSpecifier.text,
@@ -549,8 +617,9 @@ export function checkSkeletons(root = process.cwd()) {
           options,
           host
         ).resolvedModule;
-        if (resolved)
+        if (resolved) {
           checkReference(moduleSpecifier, resolved.resolvedFileName);
+        }
       }
       const jsxPrimitive =
         (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
@@ -565,14 +634,19 @@ export function checkSkeletons(root = process.cwd()) {
         isPrimitive(symbolAt(node.arguments[0]));
       if (jsxPrimitive || createElementPrimitive) {
         let parent = node.parent;
-        while (parent && !localSkeletons.some((entry) => entry.node === parent))
+        while (
+          parent &&
+          !localSkeletons.some((entry) => entry.node === parent)
+        ) {
           parent = parent.parent;
-        if (!parent)
+        }
+        if (!parent) {
           report(
             node,
             'skeleton-primitive',
             'Use a named component skeleton; bare Skeleton primitives belong only inside component skeleton definitions.'
           );
+        }
       }
       ts.forEachChild(node, visit);
     }

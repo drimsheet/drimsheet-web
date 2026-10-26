@@ -94,7 +94,9 @@ test.beforeEach(async ({ page }) => {
     route.fulfill({ json: { accessToken: 'integration-test-token' } })
   );
   await page.addInitScript(() => {
-    if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'light');
+    if (!localStorage.getItem('theme')) {
+      localStorage.setItem('theme', 'light');
+    }
   });
   await page.goto('/auth/signin');
   await page.getByLabel('Email').fill(authenticatedUser.email);
@@ -254,7 +256,9 @@ test('creates an entity, prevents dismissal while saving, and updates the list w
     route.fulfill({ json: saved ? [...entities, created] : entities })
   );
   await page.route('**/api/v1/accounting/accounting-entity', async (route) => {
-    if (route.request().method() !== 'POST') return route.fallback();
+    if (route.request().method() !== 'POST') {
+      return route.fallback();
+    }
 
     payload = route.request().postDataJSON();
     attempts += 1;
@@ -323,7 +327,9 @@ test('creates an entity, prevents dismissal while saving, and updates the list w
 test('recovers from unavailable form options', async ({ page }) => {
   let fail = true;
   await page.route('**/api/v1/accounting/jurisdictions', (route) => {
-    if (fail) return route.fulfill({ status: 500, json: {} });
+    if (fail) {
+      return route.fulfill({ status: 500, json: {} });
+    }
 
     return route.fulfill({ json: jurisdictions });
   });

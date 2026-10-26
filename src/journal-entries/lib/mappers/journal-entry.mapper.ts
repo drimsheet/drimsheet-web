@@ -103,9 +103,13 @@ function toJournalCounterpartyReq(
     name: value.name,
   };
 
-  if (value.id !== undefined) counterparty.id = value.id;
+  if (value.id !== undefined) {
+    counterparty.id = value.id;
+  }
 
-  if (value.type !== undefined) counterparty.type = value.type;
+  if (value.type !== undefined) {
+    counterparty.type = value.type;
+  }
 
   return counterparty;
 }
@@ -419,7 +423,9 @@ function toRectificationCounterpartyLine(
     sequenceOrder: line.sequenceOrder,
   };
 
-  if (id !== undefined) rectificationLine.id = id;
+  if (id !== undefined) {
+    rectificationLine.id = id;
+  }
 
   return rectificationLine;
 }
@@ -449,7 +455,9 @@ function toTransferRectificationLine(
     sequenceOrder: line.sequenceOrder,
   };
 
-  if (id !== undefined) rectificationLine.id = id;
+  if (id !== undefined) {
+    rectificationLine.id = id;
+  }
 
   return rectificationLine;
 }
@@ -480,7 +488,9 @@ function toRectificationChargeLine(
     sequenceOrder: line.sequenceOrder,
   };
 
-  if (id !== undefined) rectificationLine.id = id;
+  if (id !== undefined) {
+    rectificationLine.id = id;
+  }
 
   return rectificationLine;
 }
@@ -499,9 +509,13 @@ function resolveRectificationLineId(
   accountId: string,
   isItemized: boolean
 ) {
-  if (itemId && originalIds.has(itemId)) return itemId;
+  if (itemId && originalIds.has(itemId)) {
+    return itemId;
+  }
 
-  if (!isItemized) return findReusableLineId(originalLines, accountId);
+  if (!isItemized) {
+    return findReusableLineId(originalLines, accountId);
+  }
 
   return undefined;
 }

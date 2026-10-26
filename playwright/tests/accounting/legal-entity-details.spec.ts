@@ -43,19 +43,25 @@ test.beforeEach(async ({ page }) => {
   );
   await page.route('**/api/v1/accounting/fiscal-years/*/*', (route) => {
     const path = new URL(route.request().url()).pathname;
-    if (path.includes(previousYear.id)) return route.fulfill({ json: null });
+    if (path.includes(previousYear.id)) {
+      return route.fulfill({ json: null });
+    }
 
-    if (path.endsWith('/accounting-context'))
+    if (path.endsWith('/accounting-context')) {
       return route.fulfill({ json: context.accounting });
+    }
 
-    if (path.endsWith('/reporting-context'))
+    if (path.endsWith('/reporting-context')) {
       return route.fulfill({ json: context.reporting });
+    }
 
-    if (path.endsWith('/accounting-interval'))
+    if (path.endsWith('/accounting-interval')) {
       return route.fulfill({ json: context.accountingInterval });
+    }
 
-    if (path.endsWith('/reporting-interval'))
+    if (path.endsWith('/reporting-interval')) {
       return route.fulfill({ json: context.reportingInterval });
+    }
 
     return route.fallback();
   });
@@ -95,11 +101,13 @@ test('loads the selected entity without switching and shows only current periods
   const scopes: string[] = [];
   const writes: string[] = [];
   page.on('request', (request) => {
-    if (request.url().includes('/accounting/fiscal-years'))
+    if (request.url().includes('/accounting/fiscal-years')) {
       scopes.push(request.headers()['x-accounting-entity-id']);
+    }
 
-    if (request.method() !== 'GET' && request.url().includes('/accounting/'))
+    if (request.method() !== 'GET' && request.url().includes('/accounting/')) {
       writes.push(request.url());
+    }
   });
   await page.goto(`/legal-entity/${entity.id}`);
   await expect(page.getByRole('heading', { name: entity.name })).toBeVisible();
@@ -171,8 +179,9 @@ test('recovers from failed details and supports an entity without fiscal years',
 }) => {
   let failed = true;
   await page.route('**/api/v1/accounting/accounting-entity', (route) => {
-    if (route.request().headers()['x-accounting-entity-id'] !== entity.id)
+    if (route.request().headers()['x-accounting-entity-id'] !== entity.id) {
       return route.fallback();
+    }
 
     return route.fulfill(failed ? { status: 500, json: {} } : { json: entity });
   });
@@ -201,12 +210,15 @@ test('validates and saves the entity name, retaining input on failure', async ({
   let payload: IAccountingEntityUpdateReq | undefined;
   let fail = true;
   await page.route('**/api/v1/accounting/accounting-entity', (route) => {
-    if (route.request().headers()['x-accounting-entity-id'] !== entity.id)
+    if (route.request().headers()['x-accounting-entity-id'] !== entity.id) {
       return route.fallback();
+    }
 
     if (route.request().method() === 'PATCH') {
       payload = route.request().postDataJSON();
-      if (fail) return route.fulfill({ status: 500, json: {} });
+      if (fail) {
+        return route.fulfill({ status: 500, json: {} });
+      }
 
       savedEntity = { ...entity, name: payload?.name ?? entity.name };
     }
@@ -283,7 +295,9 @@ test('explains a blocked deletion and only navigates away after success', async 
 }) => {
   let conflict = true;
   await page.route('**/api/v1/accounting/accounting-entity', (route) => {
-    if (route.request().method() !== 'DELETE') return route.fallback();
+    if (route.request().method() !== 'DELETE') {
+      return route.fallback();
+    }
 
     expect(route.request().headers()['x-accounting-entity-id']).toBe(entity.id);
 

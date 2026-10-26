@@ -1,7 +1,6 @@
 import { categoryService } from '@/account/lib/services/category.service';
 import { AppBody } from '@/shared/components/app';
-import { PageSection } from '@/shared/components/page-section';
-import { PageTitle } from '@/shared/components/page-title';
+import { AppSection } from '@/shared/components/app-section';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFormik, type FormikProps } from 'formik';
 import { useState } from 'react';
@@ -49,10 +48,11 @@ export function CategoryCreationPage() {
     mutationFn: (values: ICategoryCreationFormValues) => {
       // Submission is only reached after the selected parent passes form validation.
       const account = parent!.account;
-      if (values.type === 'revenue')
+      if (values.type === 'revenue') {
         return categoryService.createRevenue(
           categoryCreationHelpers.toRevenue(values, account)
         );
+      }
 
       return categoryService.createExpense(
         categoryCreationHelpers.toExpense(values, account)
@@ -67,6 +67,9 @@ export function CategoryCreationPage() {
         queryClient.invalidateQueries({ queryKey: ['categoryService'] }),
         queryClient.invalidateQueries({ queryKey: ['ledgerAccountService'] }),
         queryClient.invalidateQueries({
+          queryKey: ['reportingService'],
+        }),
+        queryClient.invalidateQueries({
           queryKey: ['accountingBootstrapService'],
         }),
       ]);
@@ -78,7 +81,9 @@ export function CategoryCreationPage() {
   }
 
   const handleTypeChange = (value: string) => {
-    if (value !== 'revenue' && value !== 'expense') return;
+    if (value !== 'revenue' && value !== 'expense') {
+      return;
+    }
 
     mutation.reset();
     void form.setValues(
@@ -115,13 +120,12 @@ export function CategoryCreationPage() {
 
   return (
     <>
-      <AppBody>
-        <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col">
-          <div className="flex flex-col gap-2">
-            <PageTitle>{title}</PageTitle>
+      <AppBody title={title}>
+        <div className="flex w-full min-w-0 max-w-3xl flex-col">
+          <div className="mt-2 flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
-          <PageSection>
+          <AppSection>
             <CategoryCreationForm
               form={form}
               parent={parent}
@@ -135,7 +139,7 @@ export function CategoryCreationPage() {
               onPickerOpenChange={setPickerOpen}
               onCancel={() => navigate('/categories')}
             />
-          </PageSection>
+          </AppSection>
         </div>
       </AppBody>
     </>

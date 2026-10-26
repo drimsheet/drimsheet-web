@@ -58,7 +58,9 @@ export function CounterpartyRowActions({
   };
 
   const handleCheckDeleteEligibility = async () => {
-    if (!onCheckDeleteEligibility || !onDelete) return;
+    if (!onCheckDeleteEligibility || !onDelete) {
+      return;
+    }
 
     setCanDelete(false);
     setCheckingDeleteEligibility(true);
@@ -74,7 +76,9 @@ export function CounterpartyRowActions({
 
   const handleMenuOpenChange = (open: boolean) => {
     setMenuOpen(open);
-    if (open) void handleCheckDeleteEligibility();
+    if (open) {
+      void handleCheckDeleteEligibility();
+    }
   };
 
   const handleDelete = () => {

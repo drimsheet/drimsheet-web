@@ -37,11 +37,15 @@ function toCanonicalRate(
     throw new RangeError('Exchange rate must be a positive finite number');
   }
 
-  if (isSamePair(enteredPair, canonicalPair)) return parsedRate;
+  if (isSamePair(enteredPair, canonicalPair)) {
+    return parsedRate;
+  }
 
   if (isReversedPair(enteredPair, canonicalPair)) {
     const invertedRate = currencyService.invertRate(parsedRate);
-    if (invertedRate !== undefined) return invertedRate;
+    if (invertedRate !== undefined) {
+      return invertedRate;
+    }
   }
 
   throw new RangeError('Exchange rate currency pair is incompatible');

@@ -53,7 +53,6 @@ export interface TableProps<T extends IDataWithId> {
   headerHeight?: number;
   headerFontSize?: number;
   bodyFontSize?: number;
-  uppercaseHeaders?: boolean;
   emptyStateNode?: ReactNode;
   loadingStateNode?: ReactNode;
   loading?: boolean;

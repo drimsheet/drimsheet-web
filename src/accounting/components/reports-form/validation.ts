@@ -40,10 +40,11 @@ export function useReportsFormValidation({
             maxFiscalMonths
           );
 
-          if (!periods.length)
+          if (!periods.length) {
             return this.createError({
               message: t('financial_year_dates_hint'),
             });
+          }
 
           const errors = periods
             .filter(({ name }) => !name.trim())
