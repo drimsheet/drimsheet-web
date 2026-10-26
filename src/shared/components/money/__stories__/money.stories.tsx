@@ -58,3 +58,12 @@ export const Converted: Story = {
     isConverted: true,
   },
 };
+
+export const SmallApproximation: Story = {
+  args: {
+    value: { amount: 11063, currencyCode: 'USD', isMinorUnit: false },
+    isConverted: true,
+    className: 'text-3xl',
+    approximationClassName: 'text-sm',
+  },
+};

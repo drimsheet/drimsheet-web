@@ -5,5 +5,6 @@ export interface MoneyProps extends ComponentProps<'span'> {
   localCode?: string;
   hide?: boolean;
   isConverted?: boolean;
+  approximationClassName?: string;
   hideZeroMinorUnit?: boolean;
 }

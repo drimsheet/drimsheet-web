@@ -9,6 +9,7 @@ export function Money({
   hide,
   hideZeroMinorUnit = true,
   isConverted = false,
+  approximationClassName,
   ...props
 }: Readonly<MoneyProps>) {
   const { t } = useTranslation('shared');
@@ -29,7 +30,9 @@ export function Money({
     <span {...props}>
       {isConverted && (
         <>
-          <span aria-hidden="true">≈</span>
+          <span aria-hidden="true" className={approximationClassName}>
+            ≈
+          </span>
           <span className="sr-only">{approximately_label} </span>
         </>
       )}
