@@ -7,6 +7,9 @@ export function useRefreshUpdatedAccount() {
   return async (account: ILedgerAccountDto) => {
     await client.cancelQueries({ queryKey: ['ledgerAccountService'] });
     await client.cancelQueries({
+      queryKey: ['journalEntryService', 'getJournalEntries'],
+    });
+    await client.cancelQueries({
       queryKey: ['reportingService'],
     });
     client.setQueryData(

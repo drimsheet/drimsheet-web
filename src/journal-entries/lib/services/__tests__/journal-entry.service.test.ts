@@ -8,6 +8,7 @@ vi.mock('@/shared/lib/api', () => ({
     journalEntries: {
       deleteJournalEntry: vi.fn(),
       getJournalEntry: vi.fn(),
+      getJournalEntries: vi.fn(),
       rectifyJournalEntry: vi.fn(),
     },
   },
@@ -73,4 +74,25 @@ describe('journalEntryService', () => {
       drimsheetApi.journalEntries.rectifyJournalEntry
     ).toHaveBeenCalledWith('entry-1', payload);
   });
+});
+
+it('forwards the complete journal query and cancellation signal', async () => {
+  const query = { accountId: 'account-1', page: 2, limit: 100 };
+  const signal = new AbortController().signal;
+
+  const response = {
+    data: [],
+    meta: { page: 2, limit: 100, total: 0, totalPages: 0 },
+  };
+
+  vi.mocked(drimsheetApi.journalEntries.getJournalEntries).mockResolvedValue({
+    data: response,
+  } as never);
+  await expect(
+    journalEntryService.getJournalEntries(query, signal)
+  ).resolves.toEqual(response);
+  expect(drimsheetApi.journalEntries.getJournalEntries).toHaveBeenCalledWith(
+    query,
+    { signal }
+  );
 });

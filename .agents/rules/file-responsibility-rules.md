@@ -4,6 +4,24 @@
 
 Make each file easy to understand, safe to change, and obvious for an AI agent to place correctly.
 
+## Design Philosophy
+
+- Organize by responsibility and domain, not by where code was first used.
+  Moving files alone does not establish a reusable boundary.
+- Compose capabilities rather than accumulating responsibilities. A caller
+  decides how pieces fit together; each piece owns how it fulfills its role.
+- Keep contextual decisions with the owner that understands them. Components
+  should not assume their caller's layout, hierarchy, wording, or workflow;
+  neither should callers manage a component's internal presentation and states.
+- Design contracts around what a component actually needs. Expose meaningful
+  choices, not implementation details or irrelevant requirements inherited
+  from one consumer.
+- Judge abstractions by whether they simplify their callers. More files,
+  wrappers, props, or configurable labels are not inherently more modular.
+  Share stable responsibilities without forcing different use cases together.
+- Refactor incrementally and preserve observable behavior. Compare existing
+  contracts before consolidating implementations; make behavior changes explicit.
+
 ## `*.tsx` Component Files
 
 - Pure component files must contain presentation logic only.

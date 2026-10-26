@@ -9,11 +9,26 @@ export function useDeleteLedgerAccount() {
     onSuccess: async (_data, id) => {
       await queryClient.cancelQueries({ queryKey: ['ledgerAccountService'] });
       await queryClient.cancelQueries({
+        queryKey: ['journalEntryService', 'getJournalEntries'],
+      });
+      await queryClient.cancelQueries({
         queryKey: ['reportingService'],
       });
       queryClient.removeQueries({
         queryKey: ['ledgerAccountService'],
         predicate: (query) => query.queryKey[2] === id,
+      });
+
+      queryClient.removeQueries({
+        queryKey: ['reportingService', 'getAccountCashFlow', id],
+      });
+
+      queryClient.removeQueries({
+        queryKey: [
+          'journalEntryService',
+          'getJournalEntries',
+          { accountId: id },
+        ],
       });
 
       // Deletion can remove descendants and draft journals. Mark related data

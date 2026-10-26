@@ -5,8 +5,9 @@ import {
   type TChartConfig,
 } from '@/shared/components/chart';
 import { Money } from '@/shared/components/money';
-import { Skeleton } from '@/shared/components/skeleton';
+import { WithTransitionState } from '@/shared/components/with-transition-state';
 import { currencyService } from '@/shared/lib/services/currency.service';
+import { toMajorUnits } from '@/shared/lib/utils/money';
 import { useTranslation } from 'react-i18next';
 import {
   Bar,
@@ -16,20 +17,30 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import accountDetailsHelpers from '../helper';
-import type { TransactionsChartProps } from '../types';
+import { AccountCashFlowChartError } from './error';
+import accountCashFlowChartHelpers from './helper';
+import { AccountCashFlowChartSkeleton } from './skeleton';
+import type {
+  AccountCashFlowChartProps,
+  AccountCashFlowChartWithStateProps,
+} from './types';
 
-export function TransactionsChart({
+export function AccountCashFlowChart({
   cashFlow,
-}: Readonly<TransactionsChartProps>) {
-  const { t, i18n } = useTranslation('ledger-accounts');
+  labels,
+}: Readonly<AccountCashFlowChartProps>) {
+  const { i18n } = useTranslation();
 
   const locale =
     i18n.resolvedLanguage === 'en' ? 'en-GB' : i18n.resolvedLanguage;
 
-  const data = accountDetailsHelpers.chartData(cashFlow, locale ?? 'en-GB');
-  const moneyIn = accountDetailsHelpers.toMajorUnits(cashFlow.totalMoneyIn);
-  const moneyOut = accountDetailsHelpers.toMajorUnits(cashFlow.totalMoneyOut);
+  const data = accountCashFlowChartHelpers.chartData(
+    cashFlow,
+    locale ?? 'en-GB'
+  );
+
+  const moneyIn = toMajorUnits(cashFlow.totalMoneyIn);
+  const moneyOut = toMajorUnits(cashFlow.totalMoneyOut);
 
   const compact = new Intl.NumberFormat(locale, {
     notation: 'compact',
@@ -52,19 +63,14 @@ export function TransactionsChart({
 
   const config = {
     moneyIn: {
-      label: t('details_money_in_label'),
+      label: labels.moneyInLabel,
       color: 'var(--financial-income)',
     },
     moneyOut: {
-      label: t('details_money_out_label'),
+      label: labels.moneyOutLabel,
       color: 'var(--financial-expense)',
     },
   } satisfies TChartConfig;
-
-  const total_in_label = t('details_total_in_label');
-  const total_out_label = t('details_total_out_label');
-  const date_label = t('details_date_label');
-  const chart_label = t('details_chart_aria_label');
 
   return (
     <div className="flex min-w-0 flex-col gap-5">
@@ -72,7 +78,7 @@ export function TransactionsChart({
         <div className="flex flex-col gap-2">
           <dt className="flex items-center gap-2 text-sm text-muted-foreground">
             <span aria-hidden className="size-3 bg-financial-income" />
-            {total_in_label}
+            {labels.totalInLabel}
           </dt>
           <dd>
             <Money
@@ -84,7 +90,7 @@ export function TransactionsChart({
         <div className="flex flex-col gap-2">
           <dt className="flex items-center gap-2 text-sm text-muted-foreground">
             <span aria-hidden className="size-3 bg-financial-expense" />
-            {total_out_label}
+            {labels.totalOutLabel}
           </dt>
           <dd>
             <Money
@@ -100,7 +106,7 @@ export function TransactionsChart({
           config={config}
           className="h-64 w-full aspect-auto"
           role="region"
-          aria-label={chart_label}
+          aria-label={labels.chartLabel}
         >
           <BarChart
             accessibilityLayer
@@ -162,28 +168,42 @@ export function TransactionsChart({
             />
           </BarChart>
         </ChartContainer>
-        <p className="text-right text-xs text-muted-foreground">{date_label}</p>
+        <p className="text-right text-xs text-muted-foreground">
+          {labels.dateLabel}
+        </p>
       </div>
     </div>
   );
 }
 
-export function TransactionsChartSkeleton() {
-  const { t } = useTranslation('ledger-accounts');
-  const loading_label = t('details_loading_transactions_chart');
+export function AccountCashFlowChartWithState({
+  state = 'success',
+  labels,
+  cashFlow,
+}: Readonly<AccountCashFlowChartWithStateProps>) {
+  const error = (
+    <AccountCashFlowChartError
+      title={labels.errorTitle}
+      description={labels.errorDescription}
+    />
+  );
 
   return (
-    <div aria-busy="true">
-      <output className="sr-only" aria-label={loading_label} aria-busy="true">
-        {loading_label}
-      </output>
-      <div className="flex flex-col gap-5">
-        <div className="flex flex-wrap gap-x-12 gap-y-5">
-          <Skeleton className="h-16 w-36" />
-          <Skeleton className="h-16 w-36" />
-        </div>
-        <Skeleton className="h-64 w-full" />
-      </div>
-    </div>
+    <WithTransitionState
+      state={state}
+      data={{ cashFlow }}
+      loading={
+        <AccountCashFlowChartSkeleton aria-label={labels.loadingLabel} />
+      }
+      error={error}
+    >
+      {(data) => {
+        if (data.cashFlow == null) return error;
+
+        return (
+          <AccountCashFlowChart cashFlow={data.cashFlow} labels={labels} />
+        );
+      }}
+    </WithTransitionState>
   );
 }

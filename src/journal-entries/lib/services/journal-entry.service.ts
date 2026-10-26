@@ -20,8 +20,13 @@ const journalEntryService = {
     return res.data;
   },
 
-  async getJournalEntries(query: IGetJournalEntriesQuery) {
-    const res = await drimsheetApi.journalEntries.getJournalEntries(query);
+  async getJournalEntries(
+    query: IGetJournalEntriesQuery,
+    signal?: AbortSignal
+  ) {
+    const res = await drimsheetApi.journalEntries.getJournalEntries(query, {
+      signal,
+    });
 
     return res.data;
   },

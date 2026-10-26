@@ -1,12 +1,12 @@
 import { Skeleton } from '@/shared/components/skeleton';
 import { useTranslation } from 'react-i18next';
 import accountDetailsHelpers from '../helper';
-import type { TransactionsChartRangeProps } from '../types';
+import type { AccountCashFlowChartRangeProps } from '../types';
 
-export function TransactionsChartRange({
+export function AccountCashFlowChartRange({
   period,
   currencyCode,
-}: Readonly<TransactionsChartRangeProps>) {
+}: Readonly<AccountCashFlowChartRangeProps>) {
   const { t, i18n } = useTranslation('ledger-accounts');
 
   const locale =
@@ -21,6 +21,6 @@ export function TransactionsChartRange({
   return <p className="text-sm text-muted-foreground">{range_text}</p>;
 }
 
-export function TransactionsChartRangeSkeleton() {
+export function AccountCashFlowChartRangeSkeleton() {
   return <Skeleton className="h-4 w-48" />;
 }

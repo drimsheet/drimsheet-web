@@ -32,6 +32,7 @@ for (const [useUpdate, method] of [
       const keys = [
         ['reportingService', 'getLedgerBalancesByCurrency'],
         ['reportingService', 'getBalancesBySubType'],
+        ['reportingService', 'getAccountCashFlow', 'account-1'],
         detailKey,
         ['ledgerAccountService', 'getBankDetails', 'account-1'],
         ['ledgerAccountService', 'getLedgerAccounts'],

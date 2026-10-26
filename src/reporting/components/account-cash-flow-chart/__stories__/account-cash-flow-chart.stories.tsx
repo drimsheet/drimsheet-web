@@ -1,9 +1,17 @@
-import { TransactionsChartSkeleton } from '@/account/pages/account-details/parts/transactions-chart';
 import type {
   IAccountCashFlowDto,
   ILedgerAccountDto,
   TEntityId,
 } from '@/shared/lib/api/Api';
+
+const labels = {
+  moneyInLabel: 'Money in',
+  moneyOutLabel: 'Money out',
+  totalInLabel: 'Total in',
+  totalOutLabel: 'Total out',
+  dateLabel: 'Date',
+  chartLabel: 'Money in and money out by date',
+};
 
 const account: ILedgerAccountDto = {
   id: 'account-1' as TEntityId,
@@ -53,15 +61,18 @@ const cashFlow: IAccountCashFlowDto = {
   ],
 };
 
-import { TransactionsChart } from '@/account/pages/account-details/parts/transactions-chart';
+import {
+  AccountCashFlowChart,
+  AccountCashFlowChartWithState,
+} from '@/reporting/components/account-cash-flow-chart';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
-  title: 'Ledger Accounts/AccountDetails/TransactionsChart',
-  component: TransactionsChart,
+  title: 'Reporting/AccountCashFlowChart',
+  component: AccountCashFlowChart,
   tags: ['autodocs'],
-  args: { cashFlow },
-} satisfies Meta<typeof TransactionsChart>;
+  args: { cashFlow, labels },
+} satisfies Meta<typeof AccountCashFlowChart>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -91,4 +102,15 @@ export const MoreMoneyOut: Story = {
   },
 };
 
-export const Skeleton: Story = { render: () => <TransactionsChartSkeleton /> };
+export const MissingData: Story = {
+  render: (args) => (
+    <AccountCashFlowChartWithState
+      labels={{
+        ...args.labels,
+        loadingLabel: 'Loading cash flow',
+        errorTitle: 'Cash flow',
+        errorDescription: 'Unable to load this section.',
+      }}
+    />
+  ),
+};

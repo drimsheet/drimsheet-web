@@ -45,6 +45,9 @@ export function CategoryEditorDialog({
         queryClient.invalidateQueries({ queryKey: ['categoryService'] }),
         queryClient.invalidateQueries({ queryKey: ['ledgerAccountService'] }),
         queryClient.invalidateQueries({
+          queryKey: ['journalEntryService', 'getJournalEntries'],
+        }),
+        queryClient.invalidateQueries({
           queryKey: ['reportingService'],
         }),
       ]);

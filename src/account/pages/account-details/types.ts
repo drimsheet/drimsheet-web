@@ -53,14 +53,15 @@ export interface IPeriodOption {
   label: string;
 }
 
-export interface TransactionsChartProps {
-  cashFlow: IAccountCashFlowDto;
-}
-
 export interface CashFlowPeriodProps {
   period: string;
   periods: IPeriodOption[];
   onPeriodChange: (period: string) => void;
+}
+
+export interface RecentTransactionsContainerProps {
+  accountId?: string;
+  loading?: boolean;
 }
 
 export interface RecentTransactionsProps {
@@ -82,7 +83,16 @@ export interface SectionErrorProps {
   title: string;
 }
 
-export type TransactionsChartRangeProps = Pick<
+export type AccountCashFlowChartRangeProps = Pick<
   IAccountCashFlowDto,
   'period' | 'currencyCode'
 >;
+
+export interface AccountOverviewContainerProps {
+  account: ILedgerAccountDto;
+}
+
+export interface AccountOverviewProps {
+  account: ILedgerAccountDto;
+  hasSubAccounts: boolean;
+}

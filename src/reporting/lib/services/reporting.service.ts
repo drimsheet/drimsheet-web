@@ -1,8 +1,15 @@
 import { drimsheetApi } from '@/shared/lib/api';
 import type {
+  IGetAccountCashFlowQuery,
   IGetBalancesBySubTypeQuery,
   IGetLedgerBalancesByCurrencyQuery,
 } from '@/shared/lib/api/Api';
+
+async function getAccountCashFlow(id: string, query: IGetAccountCashFlowQuery) {
+  const response = await drimsheetApi.reporting.getAccountCashFlow(id, query);
+
+  return response.data;
+}
 
 async function getBalancesBySubType(
   query: IGetBalancesBySubTypeQuery,
@@ -22,6 +29,7 @@ async function getLedgerBalancesByCurrency(
 }
 
 export const reportingService = Object.freeze({
+  getAccountCashFlow,
   getBalancesBySubType,
   getLedgerBalancesByCurrency,
 });

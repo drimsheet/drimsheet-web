@@ -34,9 +34,9 @@ export function LedgerAccountSummary({
       {shouldShowFunctionalBalance && (
         <dd className="flex min-w-0 items-baseline gap-1 text-sm text-muted-foreground tabular-nums">
           <span className="sr-only">{functional_balance_label}</span>
-          <span aria-hidden="true">≈</span>
           <Money
             value={account.functionalBalance}
+            isConverted
             className="min-w-0 wrap-anywhere"
           />
         </dd>

@@ -1,22 +1,17 @@
-import { ledgerAccountService } from '@/account/lib/services/ledger-account.service';
+import journalEntryService from '@/journal-entries/lib/services/journal-entry.service';
 import type { IJournalEntryListDto } from '@/shared/lib/api/Api';
 import { useQuery } from '@tanstack/react-query';
 
 export function useCategoryHistory(accountId: string, enabled: boolean) {
   const query = {
+    accountId,
     limit: 100,
     orderBy: 'effectiveDate',
     sortDirection: 'desc',
   } as const;
 
   return useQuery({
-    queryKey: [
-      'ledgerAccountService',
-      'getTransactions',
-      accountId,
-      query,
-      'all-pages',
-    ],
+    queryKey: ['journalEntryService', 'getJournalEntries', query, 'all-pages'],
     enabled,
     staleTime: 60_000,
     queryFn: async ({ signal }) => {
@@ -29,8 +24,7 @@ export function useCategoryHistory(accountId: string, enabled: boolean) {
       while (page <= totalPages) {
         signal.throwIfAborted();
 
-        const response = await ledgerAccountService.getTransactions(
-          accountId,
+        const response = await journalEntryService.getJournalEntries(
           { ...query, page },
           signal
         );

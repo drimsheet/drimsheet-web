@@ -2,9 +2,7 @@ import { drimsheetApi } from '@/shared/lib/api';
 import {
   ELedgerAccountSubType,
   ELedgerType,
-  type IGetAccountCashFlowQuery,
   type IGetAccountCounterpartyParticipationQuery,
-  type IGetJournalEntriesQuery,
   type IGetLedgerAccountsQuery,
   type IGetPermittedPostingAccountsQuery,
   type IHeaderAccountNameAliasesReq,
@@ -83,28 +81,6 @@ async function getSubAccounts(id: string) {
   return response.data;
 }
 
-async function getAccountCashFlow(id: string, query: IGetAccountCashFlowQuery) {
-  const response = await drimsheetApi.reporting.getAccountCashFlow(id, query);
-
-  return response.data;
-}
-
-async function getTransactions(
-  id: string,
-  query: IGetJournalEntriesQuery,
-  signal?: AbortSignal
-) {
-  const response = await drimsheetApi.journalEntries.getJournalEntries(
-    {
-      ...query,
-      accountId: id,
-    },
-    { signal }
-  );
-
-  return response.data;
-}
-
 async function getAccountCounterpartyParticipation(
   accountId: string,
   query: IGetAccountCounterpartyParticipationQuery,
@@ -138,6 +114,4 @@ export const ledgerAccountService = Object.freeze({
   getBankDetails,
   getOpeningBalance,
   getSubAccounts,
-  getAccountCashFlow,
-  getTransactions,
 });

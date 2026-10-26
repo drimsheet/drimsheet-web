@@ -2,7 +2,6 @@ import {
   TransactionsTable,
   TransactionsTableSkeleton,
 } from '@/journal-entries/components/transactions-table';
-import { AppSection } from '@/shared/components/app-section';
 import {
   Empty,
   EmptyDescription,
@@ -26,7 +25,6 @@ export function RecentTransactions({
   onSortChange,
 }: Readonly<RecentTransactionsProps>) {
   const { t } = useTranslation(['ledger-accounts', 'journal-entries']);
-  const title = t('details_transactions_title');
 
   const search_placeholder = t(
     'journal-entries:transactions_table_search_placeholder'
@@ -36,7 +34,7 @@ export function RecentTransactions({
   const empty_description = t('details_transactions_empty_description');
 
   return (
-    <AppSection title={title} className="py-0">
+    <>
       <div className="w-full max-w-sm">
         <SearchField
           type="search"
@@ -64,7 +62,7 @@ export function RecentTransactions({
           ) : undefined
         }
       />
-    </AppSection>
+    </>
   );
 }
 
@@ -73,15 +71,14 @@ export function RecentTransactionsSkeleton() {
   const loading_label = t('details_loading_recent_transactions');
 
   return (
-    <AppSection aria-busy="true" className="py-0">
+    <div aria-busy="true" className="flex min-w-0 flex-col gap-4">
       <output className="sr-only" aria-label={loading_label} aria-busy="true">
         {loading_label}
       </output>
       <div className="flex flex-col gap-4">
-        <Skeleton className="h-4 w-48" />
         <Skeleton className="h-9 w-full max-w-sm" />
         <TransactionsTableSkeleton />
       </div>
-    </AppSection>
+    </div>
   );
 }

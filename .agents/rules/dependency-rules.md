@@ -29,6 +29,21 @@ must not import account-owned types, helpers, or translations.
 It may also compose the BalanceTrend component family through
 `@/reporting/components/balance-trend`, with the same ownership restrictions.
 
+### Account details reporting composition exception
+
+`src/account/pages/account-details/` may import `useAccountCashFlow` from
+`@/reporting/hooks/use-account-cash-flow`. The page supplies the account ID
+and query; the reporting hook and service remain feature-owned.
+It may also compose `AccountCashFlowChart` and its skeleton through
+`@/reporting/components/account-cash-flow-chart`; the container stays page-private.
+
+### Account transaction data access exception
+
+Account details page-private parts may use `useJournalEntries` from
+`@/journal-entries/hooks/use-journal-entries`. The existing account-owned
+`useCategoryHistory` hook may call `journalEntryService.getJournalEntries`
+to aggregate category history across pages.
+
 ### Counterparty detail composition exception
 
 `src/counterparty/pages/counterparty-details/counterparty-details.page.tsx` may import the public
