@@ -615,51 +615,6 @@ export interface IUserProfileUpdateDto {
   lastName?: string;
 }
 
-export interface IDateRangeDto {
-  /** Inclusive calendar date in YYYY-MM-DD format. */
-  from: string;
-  /** Inclusive calendar date in YYYY-MM-DD format. */
-  to: string;
-}
-
-export interface IMoneyDto {
-  /** @format double */
-  amount: number;
-  currencyCode: string;
-  isMinorUnit: boolean;
-}
-
-export interface IAccountCashFlowBucketDto {
-  /** Inclusive calendar date in YYYY-MM-DD format. */
-  from: string;
-  /** Inclusive calendar date in YYYY-MM-DD format. */
-  to: string;
-  moneyIn: IMoneyDto;
-  moneyOut: IMoneyDto;
-}
-
-export interface IAccountCashFlowDto {
-  accountId: string;
-  currencyCode: string;
-  period: IDateRangeDto;
-  totalMoneyIn: IMoneyDto;
-  totalMoneyOut: IMoneyDto;
-  buckets: IAccountCashFlowBucketDto[];
-}
-
-/** The requested period may span at most 366 days. */
-export interface IGetAccountCashFlowQuery {
-  /** Inclusive calendar date in YYYY-MM-DD format. */
-  from: string;
-  /** Inclusive calendar date in YYYY-MM-DD format. */
-  to: string;
-  /**
-   * Positive integer number of calendar days per bucket, anchored at from.
-   * @format double
-   */
-  bucketDays: number;
-}
-
 export interface IAddressDto {
   line1: string;
   line2?: string;
@@ -697,7 +652,14 @@ export interface ICounterpartyDto {
   updatedAt: string;
 }
 
-export interface IAccountCounterpartyParticipationDto {
+export interface IMoneyDto {
+  /** @format double */
+  amount: number;
+  currencyCode: string;
+  isMinorUnit: boolean;
+}
+
+export interface IAccountBalanceContributionsByCounterpartyDto {
   counterparty: ICounterpartyDto | null;
   /** True only for transfer lines without a counterparty. */
   isSelf: boolean;
@@ -724,12 +686,12 @@ export interface IPaginationResponseMeta {
   totalPages: number;
 }
 
-export interface IPaginatedResponseIAccountCounterpartyParticipationDto {
-  data: IAccountCounterpartyParticipationDto[];
+export interface IPaginatedResponseIAccountBalanceContributionsByCounterpartyDto {
+  data: IAccountBalanceContributionsByCounterpartyDto[];
   meta: IPaginationResponseMeta;
 }
 
-export interface IGetAccountCounterpartyParticipationQuery {
+export interface IGetAccountBalanceContributionsByCounterpartyQuery {
   /** @format double */
   page?: number;
   /** @format double */
@@ -737,21 +699,45 @@ export interface IGetAccountCounterpartyParticipationQuery {
   search?: string;
 }
 
-export interface IAssetAndLiabilityBalancesByCurrencyDto {
-  /** Sum of the currency groups' recorded functional balances. */
-  totalFunctionalBalance: IMoneyDto;
-  /** Current posting-account balances, ordered by currency code. */
-  balancesByCurrency: {
-    functionalBalance: IMoneyDto;
-    balance: IMoneyDto;
-  }[];
+export interface IDateRangeDto {
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to: string;
 }
 
-export interface IGetAssetAndLiabilityBalancesByCurrencyQuery {
-  type: 'asset' | 'liability';
+export interface IAccountCashFlowBucketDto {
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to: string;
+  moneyIn: IMoneyDto;
+  moneyOut: IMoneyDto;
 }
 
-export interface IBalancesByAccountDto {
+export interface IAccountCashFlowDto {
+  accountId: string;
+  currencyCode: string;
+  period: IDateRangeDto;
+  totalMoneyIn: IMoneyDto;
+  totalMoneyOut: IMoneyDto;
+  buckets: IAccountCashFlowBucketDto[];
+}
+
+/** The requested period may span at most 366 days. */
+export interface IGetAccountCashFlowQuery {
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to: string;
+  /**
+   * Positive integer number of calendar days per bucket, anchored at from.
+   * @format double
+   */
+  bucketDays: number;
+}
+
+export interface IBalanceHistoryByAccountDto {
   period: IDateRangeDto;
   buckets: {
     balances: {
@@ -762,7 +748,7 @@ export interface IBalancesByAccountDto {
   }[];
 }
 
-export interface IGetBalancesByAccountQuery {
+export interface IGetBalanceHistoryByAccountQuery {
   /** Inclusive calendar date in YYYY-MM-DD format. */
   from: string;
   /** Inclusive calendar date in YYYY-MM-DD format. */
@@ -775,7 +761,7 @@ export interface IGetBalancesByAccountQuery {
   accountIds: string[];
 }
 
-export interface IBalancesByBehaviorDto {
+export interface IBalanceHistoryByBehaviorDto {
   period: IDateRangeDto;
   buckets: {
     balances: {
@@ -788,7 +774,7 @@ export interface IBalancesByBehaviorDto {
   }[];
 }
 
-export interface IGetBalancesByBehaviorQuery {
+export interface IGetBalanceHistoryByBehaviorQuery {
   /** Inclusive calendar date in YYYY-MM-DD format. */
   from: string;
   /** Inclusive calendar date in YYYY-MM-DD format. */
@@ -801,7 +787,7 @@ export interface IGetBalancesByBehaviorQuery {
   behaviors: ULedgerAccountBehavior[];
 }
 
-export interface IBalancesBySubTypeDto {
+export interface IBalanceHistoryBySubTypeDto {
   period: IDateRangeDto;
   buckets: {
     balances: {
@@ -813,7 +799,7 @@ export interface IBalancesBySubTypeDto {
   }[];
 }
 
-export interface IGetBalancesBySubTypeQuery {
+export interface IGetBalanceHistoryBySubTypeQuery {
   /** Inclusive calendar date in YYYY-MM-DD format. */
   from: string;
   /** Inclusive calendar date in YYYY-MM-DD format. */
@@ -826,7 +812,7 @@ export interface IGetBalancesBySubTypeQuery {
   subTypes: ULedgerAccountSubType[];
 }
 
-export interface IBalancesByTypeDto {
+export interface IBalanceHistoryByTypeDto {
   period: IDateRangeDto;
   buckets: {
     balances: {
@@ -838,7 +824,7 @@ export interface IBalancesByTypeDto {
   }[];
 }
 
-export interface IGetBalancesByTypeQuery {
+export interface IGetBalanceHistoryByTypeQuery {
   /** Inclusive calendar date in YYYY-MM-DD format. */
   from: string;
   /** Inclusive calendar date in YYYY-MM-DD format. */
@@ -849,6 +835,28 @@ export interface IGetBalancesByTypeQuery {
    */
   bucketDays: number;
   types: ULedgerType[];
+}
+
+export interface ICurrentAssetAndLiabilityBalancesByCurrencyDto {
+  /** Sum of the currency groups' recorded functional balances. */
+  totalFunctionalBalance: IMoneyDto;
+  /** Current posting-account balances, ordered by currency code. */
+  balancesByCurrency: {
+    functionalBalance: IMoneyDto;
+    balance: IMoneyDto;
+  }[];
+}
+
+export interface IGetCurrentAssetAndLiabilityBalancesByCurrencyQuery {
+  type: 'asset' | 'liability';
+}
+
+export interface ICurrentTotalBalanceByTypeDto {
+  totalFunctionalBalance: IMoneyDto;
+}
+
+export interface IGetCurrentTotalBalanceByTypeQuery {
+  type: ULedgerType;
 }
 
 export interface ILedgerTotalDebitsAndCreditsByCurrencyDto {
@@ -873,43 +881,6 @@ export interface IGetLedgerTotalDebitsAndCreditsByCurrencyQuery {
   endDate?: string;
 }
 
-export interface IRevenueExpenseAccountDto {
-  accountId: string;
-  accountName: string;
-  code: string;
-  type: 'revenue' | 'expense' | 'asset' | 'liability';
-  /** Suspense accounts supply the UI's Uncategorized rows. */
-  subType: string;
-  status: ULedgerAccountStatus;
-  /** Current accumulated functional balance of this posting account. */
-  amount: IMoneyDto;
-  /**
-   * Share of root header balances of this type; null for suspense or a zero total.
-   * @format double
-   */
-  sharePercentage: number | null;
-  /**
-   * Journal lines on this posting account, including all journal states.
-   * @format double
-   */
-  transactionCount: number;
-}
-
-export interface IPaginatedResponseIRevenueExpenseAccountDto {
-  data: IRevenueExpenseAccountDto[];
-  meta: IPaginationResponseMeta;
-}
-
-export interface IGetRevenueExpenseAccountsQuery {
-  /** @format double */
-  page?: number;
-  /** @format double */
-  limit?: number;
-  search?: string;
-  /** Omit for all revenue, expense and suspense posting accounts. */
-  type?: 'revenue' | 'expense';
-}
-
 export interface IRevenueExpenseSectionDto {
   total: IMoneyDto;
   previousTotal: IMoneyDto;
@@ -931,7 +902,7 @@ export interface IRevenueExpenseSectionDto {
   }[];
 }
 
-export interface IRevenueExpenseSummaryDto {
+export interface IRevenueAndExpenseActivitySummaryDto {
   currencyCode: string;
   period: IDateRangeDto;
   /** Immediately preceding equal-length period, with inclusive dates. */
@@ -949,12 +920,41 @@ export interface IRevenueExpenseSummaryDto {
   };
 }
 
-export interface ITotalBalanceByTypeDto {
-  totalFunctionalBalance: IMoneyDto;
+export interface IRevenueExpenseAndSuspenseAccountBalanceDto {
+  accountId: string;
+  accountName: string;
+  code: string;
+  type: 'revenue' | 'expense' | 'asset' | 'liability';
+  /** Suspense accounts supply the UI's Uncategorized rows. */
+  subType: string;
+  status: ULedgerAccountStatus;
+  /** Current accumulated functional balance of this posting account. */
+  amount: IMoneyDto;
+  /**
+   * Share of root header balances of this type; null for suspense or a zero total.
+   * @format double
+   */
+  sharePercentage: number | null;
+  /**
+   * Journal lines on this posting account, including all journal states.
+   * @format double
+   */
+  transactionCount: number;
 }
 
-export interface IGetTotalBalanceByTypeQuery {
-  type: ULedgerType;
+export interface IPaginatedResponseIRevenueExpenseAndSuspenseAccountBalanceDto {
+  data: IRevenueExpenseAndSuspenseAccountBalanceDto[];
+  meta: IPaginationResponseMeta;
+}
+
+export interface IGetRevenueExpenseAndSuspenseAccountBalancesQuery {
+  /** @format double */
+  page?: number;
+  /** @format double */
+  limit?: number;
+  search?: string;
+  /** Omit for all revenue, expense and suspense posting accounts. */
+  type?: 'revenue' | 'expense';
 }
 
 export interface ILedgerAccountDto {
@@ -2421,6 +2421,35 @@ export class Api<
   };
   reporting = {
     /**
+     * @description Returns counterparty contributions to an account balance, including descendants. Shares use the full account balance before filtering and pagination; zero balances yield null shares. Self-transfers and unattributed activity remain separate.
+     *
+     * @tags Reporting, Ledger Reporting
+     * @name GetAccountBalanceContributionsByCounterparty
+     * @request GET:/reporting/ledger/accounts/{accountId}/balance-contributions-by-counterparty
+     */
+    getAccountBalanceContributionsByCounterparty: (
+      accountId: string,
+      query?: {
+        /** @format double */
+        page?: number;
+        /** @format double */
+        limit?: number;
+        search?: string;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<
+        IPaginatedResponseIAccountBalanceContributionsByCounterpartyDto,
+        IHttpErrorDto
+      >({
+        path: `/reporting/ledger/accounts/${accountId}/balance-contributions-by-counterparty`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
      * @description Returns daily money in and out for a bank or petty-cash posting account in its own currency. Dates are inclusive, up to 366 days; empty days return zero flows. Opening balances and reversed activity are excluded.
      *
      * @tags Reporting, Ledger Reporting
@@ -2451,63 +2480,13 @@ export class Api<
       }),
 
     /**
-     * @description Returns counterparty contributions to an account balance, including descendants. Shares use the full account balance before filtering and pagination; zero balances yield null shares. Self-transfers and unattributed activity remain separate.
-     *
-     * @tags Reporting, Ledger Reporting
-     * @name GetAccountCounterpartyParticipation
-     * @request GET:/reporting/ledger/accounts/{accountId}/counterparty-participation
-     */
-    getAccountCounterpartyParticipation: (
-      accountId: string,
-      query?: {
-        /** @format double */
-        page?: number;
-        /** @format double */
-        limit?: number;
-        search?: string;
-      },
-      params: RequestParams = {}
-    ) =>
-      this.request<
-        IPaginatedResponseIAccountCounterpartyParticipationDto,
-        IHttpErrorDto
-      >({
-        path: `/reporting/ledger/accounts/${accountId}/counterparty-participation`,
-        method: 'GET',
-        query: query,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * @description Returns current asset or liability posting balances grouped by currency, with recorded functional balances and a combined functional total. Accounts without a fixed currency use functional currency. Stored balances update asynchronously; no date filter or FX repricing applies.
-     *
-     * @tags Reporting, Ledger Reporting
-     * @name GetAssetAndLiabilityBalancesByCurrency
-     * @request GET:/reporting/ledger/asset-and-liability-balances-by-currency
-     */
-    getAssetAndLiabilityBalancesByCurrency: (
-      query: {
-        type: 'asset' | 'liability';
-      },
-      params: RequestParams = {}
-    ) =>
-      this.request<IAssetAndLiabilityBalancesByCurrencyDto, IHttpErrorDto>({
-        path: `/reporting/ledger/asset-and-liability-balances-by-currency`,
-        method: 'GET',
-        query: query,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
      * @description Returns closing-balance series for selected accounts and their descendants in functional currency. Each account forms an independent series. Dates are inclusive, up to 366 days; balances carry across empty buckets.
      *
      * @tags Reporting, Ledger Reporting
-     * @name GetBalancesByAccount
-     * @request GET:/reporting/ledger/balances-by-account
+     * @name GetBalanceHistoryByAccount
+     * @request GET:/reporting/ledger/balance-history-by-account
      */
-    getBalancesByAccount: (
+    getBalanceHistoryByAccount: (
       query: {
         /** Inclusive calendar date in YYYY-MM-DD format. */
         from: string;
@@ -2522,8 +2501,8 @@ export class Api<
       },
       params: RequestParams = {}
     ) =>
-      this.request<IBalancesByAccountDto, IHttpErrorDto>({
-        path: `/reporting/ledger/balances-by-account`,
+      this.request<IBalanceHistoryByAccountDto, IHttpErrorDto>({
+        path: `/reporting/ledger/balance-history-by-account`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2534,10 +2513,10 @@ export class Api<
      * @description Returns closing-balance series grouped by account behavior in functional currency, including descendant activity. Dates are inclusive, up to 366 days; balances carry across empty buckets.
      *
      * @tags Reporting, Ledger Reporting
-     * @name GetBalancesByBehavior
-     * @request GET:/reporting/ledger/balances-by-behavior
+     * @name GetBalanceHistoryByBehavior
+     * @request GET:/reporting/ledger/balance-history-by-behavior
      */
-    getBalancesByBehavior: (
+    getBalanceHistoryByBehavior: (
       query: {
         /** Inclusive calendar date in YYYY-MM-DD format. */
         from: string;
@@ -2552,8 +2531,8 @@ export class Api<
       },
       params: RequestParams = {}
     ) =>
-      this.request<IBalancesByBehaviorDto, IHttpErrorDto>({
-        path: `/reporting/ledger/balances-by-behavior`,
+      this.request<IBalanceHistoryByBehaviorDto, IHttpErrorDto>({
+        path: `/reporting/ledger/balance-history-by-behavior`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2564,10 +2543,10 @@ export class Api<
      * @description Returns closing-balance series grouped by account sub-type in functional currency, including descendant activity. Dates are inclusive, up to 366 days; balances carry across empty buckets.
      *
      * @tags Reporting, Ledger Reporting
-     * @name GetBalancesBySubType
-     * @request GET:/reporting/ledger/balances-by-sub-type
+     * @name GetBalanceHistoryBySubType
+     * @request GET:/reporting/ledger/balance-history-by-sub-type
      */
-    getBalancesBySubType: (
+    getBalanceHistoryBySubType: (
       query: {
         /** Inclusive calendar date in YYYY-MM-DD format. */
         from: string;
@@ -2582,8 +2561,8 @@ export class Api<
       },
       params: RequestParams = {}
     ) =>
-      this.request<IBalancesBySubTypeDto, IHttpErrorDto>({
-        path: `/reporting/ledger/balances-by-sub-type`,
+      this.request<IBalanceHistoryBySubTypeDto, IHttpErrorDto>({
+        path: `/reporting/ledger/balance-history-by-sub-type`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2594,10 +2573,10 @@ export class Api<
      * @description Returns closing-balance series grouped by account type in functional currency, including descendant activity. Dates are inclusive, up to 366 days; balances carry across empty buckets.
      *
      * @tags Reporting, Ledger Reporting
-     * @name GetBalancesByType
-     * @request GET:/reporting/ledger/balances-by-type
+     * @name GetBalanceHistoryByType
+     * @request GET:/reporting/ledger/balance-history-by-type
      */
-    getBalancesByType: (
+    getBalanceHistoryByType: (
       query: {
         /** Inclusive calendar date in YYYY-MM-DD format. */
         from: string;
@@ -2612,8 +2591,53 @@ export class Api<
       },
       params: RequestParams = {}
     ) =>
-      this.request<IBalancesByTypeDto, IHttpErrorDto>({
-        path: `/reporting/ledger/balances-by-type`,
+      this.request<IBalanceHistoryByTypeDto, IHttpErrorDto>({
+        path: `/reporting/ledger/balance-history-by-type`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Returns current asset or liability posting balances grouped by currency, with recorded functional balances and a combined functional total. Accounts without a fixed currency use functional currency. Stored balances update asynchronously; no date filter or FX repricing applies.
+     *
+     * @tags Reporting, Ledger Reporting
+     * @name GetCurrentAssetAndLiabilityBalancesByCurrency
+     * @request GET:/reporting/ledger/current-asset-and-liability-balances-by-currency
+     */
+    getCurrentAssetAndLiabilityBalancesByCurrency: (
+      query: {
+        type: 'asset' | 'liability';
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<
+        ICurrentAssetAndLiabilityBalancesByCurrencyDto,
+        IHttpErrorDto
+      >({
+        path: `/reporting/ledger/current-asset-and-liability-balances-by-currency`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Returns the current sum of top-level account balances for one type in functional currency. Empty totals are zero. Balances update asynchronously; no date filter or FX conversion applies.
+     *
+     * @tags Reporting, Ledger Reporting
+     * @name GetCurrentTotalBalanceByType
+     * @request GET:/reporting/ledger/current-total-balance-by-type
+     */
+    getCurrentTotalBalanceByType: (
+      query: {
+        type: ULedgerType;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<ICurrentTotalBalanceByTypeDto, IHttpErrorDto>({
+        path: `/reporting/ledger/current-total-balance-by-type`,
         method: 'GET',
         query: query,
         format: 'json',
@@ -2648,13 +2672,37 @@ export class Api<
       }),
 
     /**
+     * @description Summarizes revenue, expense, and suspense activity in functional currency with account breakdowns. Dates are inclusive, up to 366 days, compared with the preceding equal-length period. Opening balances and reversed activity are excluded; zero denominators yield null percentages.
+     *
+     * @tags Reporting, Ledger Reporting
+     * @name GetRevenueAndExpenseActivitySummary
+     * @request GET:/reporting/ledger/revenue-and-expense-activity-summary
+     */
+    getRevenueAndExpenseActivitySummary: (
+      query: {
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        from: string;
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        to: string;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<IRevenueAndExpenseActivitySummaryDto, IHttpErrorDto>({
+        path: `/reporting/ledger/revenue-and-expense-activity-summary`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
      * @description Lists revenue, expense, and suspense posting accounts with current functional balances. Shares use full revenue or expense totals before filtering and pagination; suspense and zero totals yield null shares. Balances update asynchronously; no date filter applies.
      *
      * @tags Reporting, Ledger Reporting
-     * @name GetRevenueExpenseAccounts
-     * @request GET:/reporting/ledger/revenue-expense-accounts
+     * @name GetRevenueExpenseAndSuspenseAccountBalances
+     * @request GET:/reporting/ledger/revenue-expense-and-suspense-account-balances
      */
-    getRevenueExpenseAccounts: (
+    getRevenueExpenseAndSuspenseAccountBalances: (
       query?: {
         /** @format double */
         page?: number;
@@ -2666,53 +2714,11 @@ export class Api<
       },
       params: RequestParams = {}
     ) =>
-      this.request<IPaginatedResponseIRevenueExpenseAccountDto, IHttpErrorDto>({
-        path: `/reporting/ledger/revenue-expense-accounts`,
-        method: 'GET',
-        query: query,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * @description Summarizes revenue, expense, and suspense activity in functional currency with account breakdowns. Dates are inclusive, up to 366 days, compared with the preceding equal-length period. Opening balances and reversed activity are excluded; zero denominators yield null percentages.
-     *
-     * @tags Reporting, Ledger Reporting
-     * @name GetRevenueExpenseSummary
-     * @request GET:/reporting/ledger/revenue-expense-summary
-     */
-    getRevenueExpenseSummary: (
-      query: {
-        /** Inclusive calendar date in YYYY-MM-DD format. */
-        from: string;
-        /** Inclusive calendar date in YYYY-MM-DD format. */
-        to: string;
-      },
-      params: RequestParams = {}
-    ) =>
-      this.request<IRevenueExpenseSummaryDto, IHttpErrorDto>({
-        path: `/reporting/ledger/revenue-expense-summary`,
-        method: 'GET',
-        query: query,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * @description Returns the current sum of top-level account balances for one type in functional currency. Empty totals are zero. Balances update asynchronously; no date filter or FX conversion applies.
-     *
-     * @tags Reporting, Ledger Reporting
-     * @name GetTotalBalanceByType
-     * @request GET:/reporting/ledger/total-balance-by-type
-     */
-    getTotalBalanceByType: (
-      query: {
-        type: ULedgerType;
-      },
-      params: RequestParams = {}
-    ) =>
-      this.request<ITotalBalanceByTypeDto, IHttpErrorDto>({
-        path: `/reporting/ledger/total-balance-by-type`,
+      this.request<
+        IPaginatedResponseIRevenueExpenseAndSuspenseAccountBalanceDto,
+        IHttpErrorDto
+      >({
+        path: `/reporting/ledger/revenue-expense-and-suspense-account-balances`,
         method: 'GET',
         query: query,
         format: 'json',

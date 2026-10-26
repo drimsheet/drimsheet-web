@@ -4,8 +4,12 @@ import { useQuery } from '@tanstack/react-query';
 
 export function useCategorySummary(query: IDateRangeDto) {
   return useQuery({
-    queryKey: ['ledgerReportingService', 'getRevenueExpenseSummary', query],
+    queryKey: [
+      'ledgerReportingService',
+      'getRevenueAndExpenseActivitySummary',
+      query,
+    ],
     queryFn: ({ signal }) =>
-      ledgerReportingService.getRevenueExpenseSummary(query, signal),
+      ledgerReportingService.getRevenueAndExpenseActivitySummary(query, signal),
   });
 }

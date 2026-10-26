@@ -1,10 +1,10 @@
 import categoriesHelpers from '@/account/pages/categories/helper';
-import type { IRevenueExpenseAccountDto } from '@/shared/lib/api/Api';
+import type { IRevenueExpenseAndSuspenseAccountBalanceDto } from '@/shared/lib/api/Api';
 import { describe, expect, it } from 'vitest';
 
 describe('categoriesHelpers', () => {
   it('identifies table rows by account ID while preserving zero balances and null shares', () => {
-    const account: IRevenueExpenseAccountDto = {
+    const account: IRevenueExpenseAndSuspenseAccountBalanceDto = {
       accountId: 'archived-services',
       accountName: 'Services',
       code: '40001',

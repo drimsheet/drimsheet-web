@@ -42,7 +42,7 @@ function setup() {
   ]);
   removedKeys.push([
     'ledgerReportingService',
-    'getAccountCounterpartyParticipation',
+    'getAccountBalanceContributionsByCounterparty',
     'account-1',
   ]);
 
@@ -53,13 +53,13 @@ function setup() {
       { accountId: 'child-1', page: 1 },
     ],
     ['ledgerReportingService', 'getAccountCashFlow', 'child-1'],
-    ['ledgerReportingService', 'getAssetAndLiabilityBalancesByCurrency'],
-    ['ledgerReportingService', 'getBalancesBySubType'],
-    ['ledgerReportingService', 'getRevenueExpenseAccounts'],
-    ['ledgerReportingService', 'getRevenueExpenseSummary'],
+    ['ledgerReportingService', 'getCurrentAssetAndLiabilityBalancesByCurrency'],
+    ['ledgerReportingService', 'getBalanceHistoryBySubType'],
+    ['ledgerReportingService', 'getRevenueExpenseAndSuspenseAccountBalances'],
+    ['ledgerReportingService', 'getRevenueAndExpenseActivitySummary'],
     [
       'ledgerReportingService',
-      'getAccountCounterpartyParticipation',
+      'getAccountBalanceContributionsByCounterparty',
       'child-1',
     ],
     ['ledgerAccountService', 'getLedgerAccounts', { page: 1 }],

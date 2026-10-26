@@ -3,12 +3,12 @@ import {
   CategoryChartSkeleton,
 } from '@/account/pages/categories/parts/category-chart';
 import type {
-  IRevenueExpenseAccountDto,
-  IRevenueExpenseSummaryDto,
+  IRevenueAndExpenseActivitySummaryDto,
+  IRevenueExpenseAndSuspenseAccountBalanceDto,
 } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-const categoryAccount: IRevenueExpenseAccountDto = {
+const categoryAccount: IRevenueExpenseAndSuspenseAccountBalanceDto = {
   accountId: 'services',
   accountName: 'Consulting services',
   code: '40001',
@@ -20,7 +20,7 @@ const categoryAccount: IRevenueExpenseAccountDto = {
   transactionCount: 128,
 };
 
-const categorySummary: IRevenueExpenseSummaryDto = {
+const categorySummary: IRevenueAndExpenseActivitySummaryDto = {
   currencyCode: 'NGN',
   period: { from: '2026-10-01', to: '2026-10-14' },
   comparisonPeriod: { from: '2026-09-17', to: '2026-09-30' },

@@ -1,26 +1,26 @@
 import { ledgerReportingService } from '@/reporting/lib/services/ledger-reporting.service';
 import type {
-  IAssetAndLiabilityBalancesByCurrencyDto,
-  IGetAssetAndLiabilityBalancesByCurrencyQuery,
+  ICurrentAssetAndLiabilityBalancesByCurrencyDto,
+  IGetCurrentAssetAndLiabilityBalancesByCurrencyQuery,
 } from '@/shared/lib/api/Api';
 import { useQuery } from '@tanstack/react-query';
 
 export function useAssetAndLiabilityBalancesByCurrency<
-  TData = IAssetAndLiabilityBalancesByCurrencyDto,
+  TData = ICurrentAssetAndLiabilityBalancesByCurrencyDto,
 >(
-  query: IGetAssetAndLiabilityBalancesByCurrencyQuery,
+  query: IGetCurrentAssetAndLiabilityBalancesByCurrencyQuery,
   options?: {
-    select?: (data: IAssetAndLiabilityBalancesByCurrencyDto) => TData;
+    select?: (data: ICurrentAssetAndLiabilityBalancesByCurrencyDto) => TData;
   }
 ) {
   return useQuery({
     queryKey: [
       'ledgerReportingService',
-      'getAssetAndLiabilityBalancesByCurrency',
+      'getCurrentAssetAndLiabilityBalancesByCurrency',
       query,
     ],
     queryFn: ({ signal }) =>
-      ledgerReportingService.getAssetAndLiabilityBalancesByCurrency(
+      ledgerReportingService.getCurrentAssetAndLiabilityBalancesByCurrency(
         query,
         signal
       ),

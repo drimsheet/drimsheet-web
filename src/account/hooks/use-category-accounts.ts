@@ -1,11 +1,20 @@
 import { ledgerReportingService } from '@/reporting/lib/services/ledger-reporting.service';
-import type { IGetRevenueExpenseAccountsQuery } from '@/shared/lib/api/Api';
+import type { IGetRevenueExpenseAndSuspenseAccountBalancesQuery } from '@/shared/lib/api/Api';
 import { useQuery } from '@tanstack/react-query';
 
-export function useCategoryAccounts(query: IGetRevenueExpenseAccountsQuery) {
+export function useCategoryAccounts(
+  query: IGetRevenueExpenseAndSuspenseAccountBalancesQuery
+) {
   return useQuery({
-    queryKey: ['ledgerReportingService', 'getRevenueExpenseAccounts', query],
+    queryKey: [
+      'ledgerReportingService',
+      'getRevenueExpenseAndSuspenseAccountBalances',
+      query,
+    ],
     queryFn: ({ signal }) =>
-      ledgerReportingService.getRevenueExpenseAccounts(query, signal),
+      ledgerReportingService.getRevenueExpenseAndSuspenseAccountBalances(
+        query,
+        signal
+      ),
   });
 }

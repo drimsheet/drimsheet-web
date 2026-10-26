@@ -1,6 +1,6 @@
 import currencies from '@/shared/configs/currencies.json';
 import type {
-  IAccountCounterpartyParticipationDto,
+  IAccountBalanceContributionsByCounterpartyDto,
   IJournalEntryListDto,
   ILedgerAccountDto,
   IMoneyDto,
@@ -139,7 +139,7 @@ function filterTransactions(
     });
 }
 
-function participationId(row: IAccountCounterpartyParticipationDto) {
+function participationId(row: IAccountBalanceContributionsByCounterpartyDto) {
   if (row.counterparty) {
     return row.counterparty.id;
   }

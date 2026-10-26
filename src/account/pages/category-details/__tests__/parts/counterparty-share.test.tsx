@@ -1,11 +1,11 @@
 import { CounterpartyShare } from '@/account/pages/category-details/parts/counterparty-share';
 import type { CounterpartyShareProps } from '@/account/pages/category-details/types';
-import type { IAccountCounterpartyParticipationDto } from '@/shared/lib/api/Api';
+import type { IAccountBalanceContributionsByCounterpartyDto } from '@/shared/lib/api/Api';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-const row: IAccountCounterpartyParticipationDto = {
+const row: IAccountBalanceContributionsByCounterpartyDto = {
   counterparty: null,
   isSelf: true,
   participation: {

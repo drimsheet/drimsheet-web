@@ -17,12 +17,12 @@ export function TransactionsOverviewContainer() {
     queries: (['revenue', 'expense'] as const).map((type) => ({
       queryKey: [
         'ledgerReportingService',
-        'getTotalBalanceByType',
+        'getCurrentTotalBalanceByType',
         { type },
         entityId,
       ],
       queryFn: ({ signal }: { signal: AbortSignal }) =>
-        ledgerReportingService.getTotalBalanceByType({ type }, signal),
+        ledgerReportingService.getCurrentTotalBalanceByType({ type }, signal),
       throwOnError: false,
     })),
   });

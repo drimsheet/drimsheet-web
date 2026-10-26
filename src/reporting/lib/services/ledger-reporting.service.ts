@@ -1,16 +1,16 @@
 import { drimsheetApi } from '@/shared/lib/api';
 import type {
   IDateRangeDto,
+  IGetAccountBalanceContributionsByCounterpartyQuery,
   IGetAccountCashFlowQuery,
-  IGetAccountCounterpartyParticipationQuery,
-  IGetAssetAndLiabilityBalancesByCurrencyQuery,
-  IGetBalancesByAccountQuery,
-  IGetBalancesByBehaviorQuery,
-  IGetBalancesBySubTypeQuery,
-  IGetBalancesByTypeQuery,
+  IGetBalanceHistoryByAccountQuery,
+  IGetBalanceHistoryByBehaviorQuery,
+  IGetBalanceHistoryBySubTypeQuery,
+  IGetBalanceHistoryByTypeQuery,
+  IGetCurrentAssetAndLiabilityBalancesByCurrencyQuery,
+  IGetCurrentTotalBalanceByTypeQuery,
   IGetLedgerTotalDebitsAndCreditsByCurrencyQuery,
-  IGetRevenueExpenseAccountsQuery,
-  IGetTotalBalanceByTypeQuery,
+  IGetRevenueExpenseAndSuspenseAccountBalancesQuery,
 } from '@/shared/lib/api/Api';
 
 async function getAccountCashFlow(
@@ -25,13 +25,13 @@ async function getAccountCashFlow(
   ).data;
 }
 
-async function getAccountCounterpartyParticipation(
+async function getAccountBalanceContributionsByCounterparty(
   accountId: string,
-  query?: IGetAccountCounterpartyParticipationQuery,
+  query?: IGetAccountBalanceContributionsByCounterpartyQuery,
   signal?: AbortSignal
 ) {
   return (
-    await drimsheetApi.reporting.getAccountCounterpartyParticipation(
+    await drimsheetApi.reporting.getAccountBalanceContributionsByCounterparty(
       accountId,
       query,
       { signal }
@@ -39,47 +39,54 @@ async function getAccountCounterpartyParticipation(
   ).data;
 }
 
-async function getAssetAndLiabilityBalancesByCurrency(
-  query: IGetAssetAndLiabilityBalancesByCurrencyQuery,
+async function getCurrentAssetAndLiabilityBalancesByCurrency(
+  query: IGetCurrentAssetAndLiabilityBalancesByCurrencyQuery,
   signal?: AbortSignal
 ) {
   return (
-    await drimsheetApi.reporting.getAssetAndLiabilityBalancesByCurrency(query, {
-      signal,
-    })
+    await drimsheetApi.reporting.getCurrentAssetAndLiabilityBalancesByCurrency(
+      query,
+      {
+        signal,
+      }
+    )
   ).data;
 }
 
-async function getBalancesByAccount(
-  query: IGetBalancesByAccountQuery,
+async function getBalanceHistoryByAccount(
+  query: IGetBalanceHistoryByAccountQuery,
   signal?: AbortSignal
 ) {
-  return (await drimsheetApi.reporting.getBalancesByAccount(query, { signal }))
-    .data;
+  return (
+    await drimsheetApi.reporting.getBalanceHistoryByAccount(query, { signal })
+  ).data;
 }
 
-async function getBalancesByBehavior(
-  query: IGetBalancesByBehaviorQuery,
+async function getBalanceHistoryByBehavior(
+  query: IGetBalanceHistoryByBehaviorQuery,
   signal?: AbortSignal
 ) {
-  return (await drimsheetApi.reporting.getBalancesByBehavior(query, { signal }))
-    .data;
+  return (
+    await drimsheetApi.reporting.getBalanceHistoryByBehavior(query, { signal })
+  ).data;
 }
 
-async function getBalancesBySubType(
-  query: IGetBalancesBySubTypeQuery,
+async function getBalanceHistoryBySubType(
+  query: IGetBalanceHistoryBySubTypeQuery,
   signal?: AbortSignal
 ) {
-  return (await drimsheetApi.reporting.getBalancesBySubType(query, { signal }))
-    .data;
+  return (
+    await drimsheetApi.reporting.getBalanceHistoryBySubType(query, { signal })
+  ).data;
 }
 
-async function getBalancesByType(
-  query: IGetBalancesByTypeQuery,
+async function getBalanceHistoryByType(
+  query: IGetBalanceHistoryByTypeQuery,
   signal?: AbortSignal
 ) {
-  return (await drimsheetApi.reporting.getBalancesByType(query, { signal }))
-    .data;
+  return (
+    await drimsheetApi.reporting.getBalanceHistoryByType(query, { signal })
+  ).data;
 }
 
 async function getLedgerTotalDebitsAndCreditsByCurrency(
@@ -94,41 +101,48 @@ async function getLedgerTotalDebitsAndCreditsByCurrency(
   ).data;
 }
 
-async function getRevenueExpenseAccounts(
-  query?: IGetRevenueExpenseAccountsQuery,
+async function getRevenueExpenseAndSuspenseAccountBalances(
+  query?: IGetRevenueExpenseAndSuspenseAccountBalancesQuery,
   signal?: AbortSignal
 ) {
   return (
-    await drimsheetApi.reporting.getRevenueExpenseAccounts(query, { signal })
+    await drimsheetApi.reporting.getRevenueExpenseAndSuspenseAccountBalances(
+      query,
+      { signal }
+    )
   ).data;
 }
 
-async function getRevenueExpenseSummary(
+async function getRevenueAndExpenseActivitySummary(
   query: IDateRangeDto,
   signal?: AbortSignal
 ) {
   return (
-    await drimsheetApi.reporting.getRevenueExpenseSummary(query, { signal })
+    await drimsheetApi.reporting.getRevenueAndExpenseActivitySummary(query, {
+      signal,
+    })
   ).data;
 }
 
 export const ledgerReportingService = Object.freeze({
-  async getTotalBalanceByType(
-    query: IGetTotalBalanceByTypeQuery,
+  async getCurrentTotalBalanceByType(
+    query: IGetCurrentTotalBalanceByTypeQuery,
     signal?: AbortSignal
   ) {
     return (
-      await drimsheetApi.reporting.getTotalBalanceByType(query, { signal })
+      await drimsheetApi.reporting.getCurrentTotalBalanceByType(query, {
+        signal,
+      })
     ).data;
   },
   getAccountCashFlow,
-  getAccountCounterpartyParticipation,
-  getAssetAndLiabilityBalancesByCurrency,
-  getBalancesByAccount,
-  getBalancesByBehavior,
-  getBalancesBySubType,
-  getBalancesByType,
+  getAccountBalanceContributionsByCounterparty,
+  getCurrentAssetAndLiabilityBalancesByCurrency,
+  getBalanceHistoryByAccount,
+  getBalanceHistoryByBehavior,
+  getBalanceHistoryBySubType,
+  getBalanceHistoryByType,
   getLedgerTotalDebitsAndCreditsByCurrency,
-  getRevenueExpenseAccounts,
-  getRevenueExpenseSummary,
+  getRevenueExpenseAndSuspenseAccountBalances,
+  getRevenueAndExpenseActivitySummary,
 });

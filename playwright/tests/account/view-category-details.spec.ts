@@ -1,9 +1,9 @@
 import type {
-  IAccountCounterpartyParticipationDto,
+  IAccountBalanceContributionsByCounterpartyDto,
   IJournalEntryListDto,
   ILedgerAccountDto,
-  IRevenueExpenseAccountDto,
-  IRevenueExpenseSummaryDto,
+  IRevenueAndExpenseActivitySummaryDto,
+  IRevenueExpenseAndSuspenseAccountBalanceDto,
   TEntityId,
 } from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
@@ -90,7 +90,7 @@ const entries = [
   },
 ];
 
-const participation: IAccountCounterpartyParticipationDto[] = [
+const participation: IAccountBalanceContributionsByCounterpartyDto[] = [
   'Google',
   'Notion',
 ].map((name, index) => ({
@@ -114,7 +114,7 @@ const participation: IAccountCounterpartyParticipationDto[] = [
   },
 }));
 
-const participationUrl = `**/api/v1/reporting/ledger/accounts/${accountId}/counterparty-participation?*`;
+const participationUrl = `**/api/v1/reporting/ledger/accounts/${accountId}/balance-contributions-by-counterparty?*`;
 
 async function setup(page: Page, type: 'revenue' | 'expense' = 'expense') {
   await page.clock.setFixedTime(new Date('2026-10-15T12:00:00Z'));
@@ -585,7 +585,7 @@ test('checks deletion eligibility on menu open and hides stale permission while 
       finishDelete = resolve;
     });
 
-    const row: IRevenueExpenseAccountDto = {
+    const row: IRevenueExpenseAndSuspenseAccountBalanceDto = {
       accountId,
       accountName: category.name,
       code: category.code,
@@ -604,7 +604,7 @@ test('checks deletion eligibility on menu open and hides stale permission while 
       accounts: [],
     };
 
-    const summary: IRevenueExpenseSummaryDto = {
+    const summary: IRevenueAndExpenseActivitySummaryDto = {
       currencyCode: 'NGN',
       period: { from: '2026-10-01', to: '2026-10-15' },
       comparisonPeriod: { from: '2026-09-16', to: '2026-09-30' },
@@ -614,11 +614,11 @@ test('checks deletion eligibility on menu open and hides stale permission while 
     };
 
     await page.route(
-      '**/api/v1/reporting/ledger/revenue-expense-summary?*',
+      '**/api/v1/reporting/ledger/revenue-and-expense-activity-summary?*',
       (route) => route.fulfill({ json: summary })
     );
     await page.route(
-      '**/api/v1/reporting/ledger/revenue-expense-accounts?*',
+      '**/api/v1/reporting/ledger/revenue-expense-and-suspense-account-balances?*',
       (route) =>
         route.fulfill({
           json: {

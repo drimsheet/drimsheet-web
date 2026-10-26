@@ -14,7 +14,7 @@ vi.mock('@/accounting/lib/services/accounting.service', () => ({
 }));
 vi.mock('@/reporting/lib/services/ledger-reporting.service', () => ({
   ledgerReportingService: {
-    getTotalBalanceByType: vi.fn(),
+    getCurrentTotalBalanceByType: vi.fn(),
     getLedgerTotalDebitsAndCreditsByCurrency: vi.fn(),
   },
 }));
@@ -46,15 +46,15 @@ function setup() {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(accountingService.getCurrentFiscalYear).mockResolvedValue(year);
-  vi.mocked(ledgerReportingService.getTotalBalanceByType).mockImplementation(
-    async ({ type }) => ({
-      totalFunctionalBalance: {
-        amount: type === 'revenue' ? 11063 : 12075,
-        currencyCode: 'USD',
-        isMinorUnit: false,
-      },
-    })
-  );
+  vi.mocked(
+    ledgerReportingService.getCurrentTotalBalanceByType
+  ).mockImplementation(async ({ type }) => ({
+    totalFunctionalBalance: {
+      amount: type === 'revenue' ? 11063 : 12075,
+      currencyCode: 'USD',
+      isMinorUnit: false,
+    },
+  }));
   vi.mocked(
     ledgerReportingService.getLedgerTotalDebitsAndCreditsByCurrency
   ).mockImplementation(async ({ type, fiscalYearId }) => ({
@@ -104,10 +104,9 @@ describe('TransactionsOverviewContainer', () => {
       'Outflow: -$3,275'
     );
     for (const type of ['revenue', 'expense']) {
-      expect(ledgerReportingService.getTotalBalanceByType).toHaveBeenCalledWith(
-        { type },
-        expect.any(AbortSignal)
-      );
+      expect(
+        ledgerReportingService.getCurrentTotalBalanceByType
+      ).toHaveBeenCalledWith({ type }, expect.any(AbortSignal));
       expect(
         ledgerReportingService.getLedgerTotalDebitsAndCreditsByCurrency
       ).toHaveBeenCalledWith(
@@ -144,7 +143,7 @@ describe('TransactionsOverviewContainer', () => {
 
       if (source === 'balance') {
         vi.mocked(
-          ledgerReportingService.getTotalBalanceByType
+          ledgerReportingService.getCurrentTotalBalanceByType
         ).mockRejectedValue(new Error('failed'));
       }
 

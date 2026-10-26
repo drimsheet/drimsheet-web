@@ -64,7 +64,7 @@ async function setup(page: Page) {
   }
 
   await page.route(
-    '**/api/v1/reporting/ledger/revenue-expense-accounts?*',
+    '**/api/v1/reporting/ledger/revenue-expense-and-suspense-account-balances?*',
     (route) =>
       route.fulfill({
         json: {
@@ -82,7 +82,7 @@ async function setup(page: Page) {
   };
 
   await page.route(
-    '**/api/v1/reporting/ledger/revenue-expense-summary?*',
+    '**/api/v1/reporting/ledger/revenue-and-expense-activity-summary?*',
     (route) =>
       route.fulfill({
         json: {

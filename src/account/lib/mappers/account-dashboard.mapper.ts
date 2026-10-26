@@ -8,8 +8,8 @@ import type {
   IAccountDashboardSummary,
 } from '@/account/lib/types/account-dashboard.types';
 import type {
-  IAssetAndLiabilityBalancesByCurrencyDto,
-  IBalancesBySubTypeDto,
+  IBalanceHistoryBySubTypeDto,
+  ICurrentAssetAndLiabilityBalancesByCurrencyDto,
   IMoneyDto,
   IPaginatedResponseILedgerAccountDto,
   ULedgerAccountBehavior,
@@ -42,7 +42,7 @@ function toBehavior(
 }
 
 function toSummary(
-  response: IAssetAndLiabilityBalancesByCurrencyDto
+  response: ICurrentAssetAndLiabilityBalancesByCurrencyDto
 ): IAccountDashboardSummary {
   const functionalCurrencyCode =
     response.totalFunctionalBalance.currencyCode.toLowerCase();
@@ -69,7 +69,9 @@ function toSummary(
   };
 }
 
-function toHistory(response: IBalancesBySubTypeDto): IAccountDashboardHistory {
+function toHistory(
+  response: IBalanceHistoryBySubTypeDto
+): IAccountDashboardHistory {
   const points = response.buckets.flatMap(({ balances, date }) => {
     const balance = balances[0];
 

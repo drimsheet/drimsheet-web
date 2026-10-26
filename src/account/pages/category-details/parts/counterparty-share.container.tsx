@@ -16,12 +16,12 @@ export function CounterpartyShareContainer({
   const participation = useQuery({
     queryKey: [
       'ledgerReportingService',
-      'getAccountCounterpartyParticipation',
+      'getAccountBalanceContributionsByCounterparty',
       accountId,
       query,
     ],
     queryFn: ({ signal }) =>
-      ledgerReportingService.getAccountCounterpartyParticipation(
+      ledgerReportingService.getAccountBalanceContributionsByCounterparty(
         accountId,
         query,
         signal

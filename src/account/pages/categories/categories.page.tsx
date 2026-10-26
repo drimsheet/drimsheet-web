@@ -6,7 +6,7 @@ import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
-import type { IRevenueExpenseAccountDto } from '@/shared/lib/api/Api';
+import type { IRevenueExpenseAndSuspenseAccountBalanceDto } from '@/shared/lib/api/Api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
@@ -33,10 +33,11 @@ export function CategoriesPage() {
 
   const [period, setPeriod] = useState(periods[0].value);
 
-  const [editor, setEditor] = useState<IRevenueExpenseAccountDto | null>(null);
+  const [editor, setEditor] =
+    useState<IRevenueExpenseAndSuspenseAccountBalanceDto | null>(null);
 
   const [archiveAccount, setArchiveAccount] =
-    useState<IRevenueExpenseAccountDto | null>(null);
+    useState<IRevenueExpenseAndSuspenseAccountBalanceDto | null>(null);
 
   const table = useTableQueryParams<string, 'type'>({ filterKeys: ['type'] });
   const search = useDebounce(table.searchQuery, 300);
@@ -74,7 +75,9 @@ export function CategoriesPage() {
     table.handleFilterChange({ type: value === 'all' ? [] : [value] });
   };
 
-  const handleArchiveSelected = (account: IRevenueExpenseAccountDto) => {
+  const handleArchiveSelected = (
+    account: IRevenueExpenseAndSuspenseAccountBalanceDto
+  ) => {
     archive.reset();
     setArchiveAccount(account);
   };

@@ -2,7 +2,7 @@ import currencies from '@/shared/configs/currencies.json';
 import type {
   IDateRangeDto,
   IMoneyDto,
-  IRevenueExpenseAccountDto,
+  IRevenueExpenseAndSuspenseAccountBalanceDto,
   IRevenueExpenseSectionDto,
 } from '@/shared/lib/api/Api';
 import {
@@ -14,7 +14,9 @@ import {
 } from 'date-fns';
 import type { ICategoryTableRow } from './types';
 
-function tableRows(accounts: IRevenueExpenseAccountDto[]): ICategoryTableRow[] {
+function tableRows(
+  accounts: IRevenueExpenseAndSuspenseAccountBalanceDto[]
+): ICategoryTableRow[] {
   return accounts.map((account) => ({ ...account, id: account.accountId }));
 }
 

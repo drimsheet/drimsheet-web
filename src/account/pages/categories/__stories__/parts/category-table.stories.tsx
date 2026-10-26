@@ -1,8 +1,8 @@
 import { CategoryTable } from '@/account/pages/categories/parts/category-table';
-import type { IRevenueExpenseAccountDto } from '@/shared/lib/api/Api';
+import type { IRevenueExpenseAndSuspenseAccountBalanceDto } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-const categoryAccount: IRevenueExpenseAccountDto = {
+const categoryAccount: IRevenueExpenseAndSuspenseAccountBalanceDto = {
   accountId: 'services',
   accountName: 'Consulting services',
   code: '40001',
