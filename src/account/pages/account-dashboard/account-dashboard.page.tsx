@@ -157,11 +157,23 @@ export function AccountsDashboardPage() {
 
   if (pageError) {
     return (
-      <AppBody title={title}>
-        <AppSection>
-          <DashboardError title={page_error_title} />
-        </AppSection>
-      </AppBody>
+      <>
+        <AppBody title={title} actionsSlot={addActionNode}>
+          <AppSection>
+            <DashboardError title={page_error_title} />
+          </AppSection>
+        </AppBody>
+
+        <AccountTypeSelectionDialog
+          open={showAccountTypeSelection}
+          onClose={() => setShowAccountTypeSelection(false)}
+          onSubmit={handleAccountTypeSelected}
+        />
+        <PettyCashAccountCreationDialog
+          open={selectedBehavior === ELedgerAccountBehavior.PettyCash}
+          onClose={() => setSelectedBehavior(null)}
+        />
+      </>
     );
   }
 

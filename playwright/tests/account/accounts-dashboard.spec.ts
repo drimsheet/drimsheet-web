@@ -108,6 +108,7 @@ test('combines account behavior tabs and search while keeping overview queries i
     'Type',
     'Balance',
     'Status',
+    '',
   ]);
   await expect(table).toContainText('1–10 of 25');
   await table.getByRole('button', { name: 'Next page' }).click();
