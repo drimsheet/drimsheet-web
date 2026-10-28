@@ -90,7 +90,14 @@ describe('AppSidebar', () => {
 
     expect(
       accounting.getAllByRole('link').map((link) => link.textContent)
-    ).toEqual(['Dashboard', 'Accounts', 'Transactions', 'Categories']);
+    ).toEqual([
+      'Dashboard',
+      'Accounts',
+      'Transactions',
+      'Categories',
+      'Debt',
+      'Tax',
+    ]);
     expect(
       accounting.getByRole('link', { name: 'Categories' })
     ).toHaveAttribute('aria-current', 'page');
@@ -102,25 +109,29 @@ describe('AppSidebar', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('marks unfinished destinations as unavailable instead of linking to nowhere', () => {
+  it('links Debt and Tax to their destinations and highlights the current page', () => {
     render(
       <MemoryRouter>
         <TooltipProvider>
           <SidebarProvider>
-            <AppSidebar currentPath="/dashboard" />
+            <AppSidebar currentPath="/debt" />
           </SidebarProvider>
         </TooltipProvider>
       </MemoryRouter>
     );
 
-    for (const title of ['Debt', 'Tax']) {
-      expect(
-        screen.getByRole('button', { name: `${title} — Not available` })
-      ).toBeDisabled();
-      expect(
-        screen.queryByRole('link', { name: title })
-      ).not.toBeInTheDocument();
-    }
+    expect(screen.getByRole('link', { name: 'Debt' })).toHaveAttribute(
+      'href',
+      '/debt'
+    );
+    expect(screen.getByRole('link', { name: 'Debt' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(screen.getByRole('link', { name: 'Tax' })).toHaveAttribute(
+      'href',
+      '/tax'
+    );
   });
 
   it('keeps configuration navigation available when collapsed', () => {

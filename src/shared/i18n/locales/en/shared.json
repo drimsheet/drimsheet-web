@@ -1,4 +1,5 @@
 {
+  "placeholder_text": "Hello world",
   "drimsheet_limited": "Drimsheet",
   "invalid_date_text": "Invalid Date",
   "an_error_occurred": "An error occurred",
@@ -50,6 +51,7 @@
   "liability": "Liability",
   "equity": "Equity",
   "transactions": "Transactions",
+  "new_transaction": "New transaction",
   "file_type_images": "Images",
   "file_type_pdfs": "PDFs",
   "file_type_svg": "SVG",
