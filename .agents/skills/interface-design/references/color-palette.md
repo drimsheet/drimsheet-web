@@ -1,23 +1,28 @@
 # Drimsheet color palette
 
-Status: approved by the user for application CSS and component color mappings.
+Status: approved design specification. Financial income/inflow uses `#92916F`
+and expense/outflow uses `#806C6D` in both themes; Butter remains the brand accent.
+This guideline update does not implement application CSS or component changes.
 Keep implementation scoped to the user's current request.
 
 ## Palette construction
 
-Eight reusable families define the available colors, independent of components.
+Reusable shade families and financial anchors define the available colors,
+independent of components.
 Use names such as `butter-400` and `neutral-900`, not `button-yellow` or
 `secondary-500`. Primary and secondary are semantic roles, not hue families.
 
-- Every chromatic family has shades 50 through 950 as listed below. Higher
+- The existing chromatic scales have shades 50 through 950 as listed below. Higher
   numbers are darker. Matching numbers across families do not guarantee equal
-  lightness or accessible contrast.
+  lightness or accessible contrast. Olive and mauve currently have only the
+  approved 500 anchors; do not invent additional shades or theme variants.
 - Neutral adds 0 and 1000 for the warm near-white and deepest charcoal endpoints.
   Light shades retain the warm paper character; dark shades become nearly
   achromatic, without an olive cast.
 - Butter retains the approved brand yellow at 400. Neutral retains the approved
   near-white at 0, Ramp charcoal at 950, and sidebar charcoal at 1000.
-- Moss and clay supply financial income and expense colors. Green and
+- Olive and mauve supply financial income/inflow and expense/outflow colors.
+  Moss and clay remain legacy primitives, not current financial role mappings. Green and
   terracotta retain their existing success and error/destructive mappings.
   Blue is muted steel blue; amber is warmer and more orange than Butter so
   warnings do not reuse the brand yellow.
@@ -47,7 +52,10 @@ Use names such as `butter-400` and `neutral-900`, not `button-yellow` or
 | 950   | `#1A1919` | `#302714` | `#102B20` | `#351A15`  | `#132536` | `#35240E` |
 | 1000  | `#121111` | —         | —         | —          | —         | —         |
 
-### Financial palette: moss and clay
+### Legacy scales: moss and clay
+
+Retained as primitive reference values; these scales no longer define financial
+series colors. Use the approved olive/mauve anchors below.
 
 | Shade | Moss      | Clay      |
 | ----- | --------- | --------- |
@@ -63,8 +71,19 @@ Use names such as `butter-400` and `neutral-900`, not `button-yellow` or
 | 900   | `#2D3724` | `#442823` |
 | 950   | `#222A1B` | `#35201B` |
 
-Use moss for income and clay for expenses across charts, legends, and financial
-indicators. Both ordinary series and their legend swatches use solid fills.
+### Approved financial anchors: olive and mauve
+
+| Primitive | Value     | Role                              |
+| --------- | --------- | --------------------------------- |
+| olive-500 | `#92916F` | Income, revenue, inflow, money in |
+| mauve-500 | `#806C6D` | Expenses, outflow, money out      |
+
+Use these exact opaque values in both light and dark themes across charts,
+legends, and financial indicators. This pair replaces moss/clay, including the
+previous light/dark mark variants. Butter-400 (`#F4DB72`) remains the brand accent
+for actions and selection. Both ordinary series and their legend swatches use
+solid fills. Keep financial surfaces neutral rather than retaining moss/clay
+tints or inventing unapproved olive/mauve shades.
 Keep success badges green and error/destructive feedback terracotta. Preserve
 labels, consistent series order, and accessible exact values; do not use color
 alone to distinguish money in from money out. Negative revenue adjustments
@@ -111,10 +130,10 @@ shared palette.
 | Sidebar active fill              | butter-400                | butter-950                |
 | Sidebar active foreground        | neutral-900               | butter-400                |
 | Link text                        | butter-800                | butter-400                |
-| Financial income marks           | moss-600                  | moss-300                  |
-| Financial income surface         | moss-50                   | moss-950                  |
-| Financial expense marks          | clay-600                  | clay-300                  |
-| Financial expense surface        | clay-50                   | clay-950                  |
+| Financial income marks           | olive-500                 | olive-500                 |
+| Financial income surface         | neutral-50                | neutral-900               |
+| Financial expense marks          | mauve-500                 | mauve-500                 |
+| Financial expense surface        | neutral-50                | neutral-900               |
 | Neutral comparison marks         | neutral-500               | neutral-400               |
 | Chart track                      | neutral-200               | neutral-800               |
 
@@ -147,7 +166,7 @@ For solid destructive actions, use terracotta-700 with neutral-0 text in light
 mode and terracotta-300 with neutral-950 text in dark mode. Feedback borders
 that identify a control use the family's 600 shade in light mode and 300 in dark
 mode. Do not use terracotta-600 for small text on terracotta-50: that pair is
-only 4.40:1. Financial marks use the separate moss/clay families.
+only 4.40:1. Financial marks use the separate olive/mauve anchors.
 
 ## Contrast guardrails and verification
 
@@ -171,14 +190,20 @@ Calculated sRGB contrast examples (rounded):
 | butter-800 on neutral-100              | 6.70:1  |
 | butter-400 on neutral-950              | 12.72:1 |
 | butter-400 on neutral-800              | 9.81:1  |
-| moss-600 on neutral-0                  | 5.33:1  |
-| clay-600 on neutral-0                  | 4.56:1  |
-| moss-300 on neutral-950                | 8.76:1  |
-| clay-300 on neutral-950                | 7.75:1  |
+| olive-500 on neutral-0                 | 3.20:1  |
+| olive-500 on neutral-50                | 3.01:1  |
+| olive-500 on neutral-950               | 5.43:1  |
+| olive-500 on neutral-900               | 4.84:1  |
+| mauve-500 on neutral-0                 | 4.86:1  |
+| mauve-500 on neutral-50                | 4.57:1  |
+| mauve-500 on neutral-950               | 3.58:1  |
+| mauve-500 on neutral-900               | 3.19:1  |
 
-Clay-600 on clay-50 is 4.20:1: suitable for financial icons and marks, but not
-normal-sized text. Keep ordinary financial amounts neutral; use a darker
-clay shade if a future text role needs that surface.
+Keep ordinary financial amounts and small labels in neutral text. These anchors
+are financial marks, not general text colors: olive does not meet 4.5:1 on the
+light page, and mauve does not meet 4.5:1 on dark page/card surfaces. Preserve
+labels, consistent series order, and exact values so color alone never carries
+the inflow/outflow distinction.
 
 These checks cover specified pairs, not every combination or application-wide
 accessibility. At implementation time, inspect all consumers of changed aliases,

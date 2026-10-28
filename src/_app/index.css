@@ -42,6 +42,9 @@
   --color-green-900: #153527;
   --color-green-950: #102b20;
 
+  --color-olive-500: #92916f;
+  --color-mauve-500: #806c6d;
+
   --color-moss-50: #f4f6ef;
   --color-moss-100: #edf1e7;
   --color-moss-200: #d3ddc6;
@@ -145,10 +148,10 @@
   --sidebar-accent: var(--color-butter-400);
   --sidebar-accent-foreground: var(--color-neutral-900);
   --link: var(--color-butter-800);
-  --financial-income: var(--color-moss-600);
-  --financial-income-surface: var(--color-moss-50);
-  --financial-expense: var(--color-clay-600);
-  --financial-expense-surface: var(--color-clay-50);
+  --financial-income: var(--color-olive-500);
+  --financial-income-surface: var(--color-neutral-50);
+  --financial-expense: var(--color-mauve-500);
+  --financial-expense-surface: var(--color-neutral-50);
   --financial-neutral: var(--color-neutral-500);
   --chart-track: var(--color-neutral-200);
   --selection: var(--color-butter-50);
@@ -292,10 +295,10 @@
   --sidebar-accent: var(--color-butter-950);
   --sidebar-accent-foreground: var(--color-butter-400);
   --link: var(--color-butter-400);
-  --financial-income: var(--color-moss-300);
-  --financial-income-surface: var(--color-moss-950);
-  --financial-expense: var(--color-clay-300);
-  --financial-expense-surface: var(--color-clay-950);
+  --financial-income: var(--color-olive-500);
+  --financial-income-surface: var(--color-neutral-900);
+  --financial-expense: var(--color-mauve-500);
+  --financial-expense-surface: var(--color-neutral-900);
   --financial-neutral: var(--color-neutral-400);
   --chart-track: var(--color-neutral-800);
   --selection: var(--color-butter-950);

@@ -75,7 +75,7 @@ export function TransactionsOverview({
                   className="size-8"
                 />
               </dt>
-              <dd className="m-0 flex flex-col gap-1 text-sm font-medium tabular-nums">
+              <dd className="m-0 flex flex-col gap-1 text-sm font-semibold tabular-nums">
                 <span className="text-financial-income">
                   <span className="sr-only">{inflow_label}: </span>
                   {currency.inflow.amount > 0 && '+'}

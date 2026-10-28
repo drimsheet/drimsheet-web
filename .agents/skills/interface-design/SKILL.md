@@ -37,7 +37,7 @@ money straightforward.
 
 ## Color palette and theme roles
 
-Use the eight-family palette in [Color palette](references/color-palette.md) for
+Use the documented palette in [Color palette](references/color-palette.md) for
 color selection, theme mapping, component styling, and color reviews. Read that
 reference before those tasks; it is the single source of shade values, approved
 role mappings, and contrast pairs.
@@ -46,8 +46,8 @@ role mappings, and contrast pairs.
 implementation. Preserve these palette choices and the established Butter brand
 and Ramp charcoal anchors in subsequent interface work.
 
-- Define colors as reusable primitives: Butter, neutral, green, terracotta,
-  blue, amber, moss, and clay, with numbered shade scales independent of components.
+- Define colors as reusable primitives independent of components. Use the
+  documented numbered scales and the approved olive and mauve financial anchors.
 - Semantic aliases such as primary, secondary, background, and financial-income
   select palette shades for each theme. They must not introduce new hex values.
   Primary and secondary are roles, not separate shade families.
@@ -65,7 +65,9 @@ and Ramp charcoal anchors in subsequent interface work.
   show it on hover and keyboard focus and retain a visible focus indicator.
 - Keep panel surfaces separate from secondary action fills, and essential
   control borders separate from quiet decorative dividers.
-- Financial income uses moss and financial expense uses clay. Success badges
+- Financial income/inflow uses olive `#92916F` and financial expense/outflow
+  uses mauve `#806C6D`, with the same opaque values in light and dark themes.
+  Butter remains the brand accent for actions and selection. Success badges
   and feedback retain green; error and destructive feedback retain terracotta.
   Keep these semantic roles separate and financial meaning distinct from
   validation and operation outcomes. An expense increase is not automatically
@@ -182,22 +184,25 @@ repository's UI component and shadcn workflows when implementation is requested.
 
 ## Hybrid financial charts
 
-The approved system combines **Butter for UI identity** with **solid moss for
-income** and **solid clay for expenses**. Neutral gray is for comparisons,
-inactive data, and reversals. Do not revert financial series to the earlier
-Butter/graphite exploration or assign a decorative color to every category.
+The approved system combines **Butter for UI identity** with **solid olive
+(`#92916F`) for income/inflow** and **solid mauve (`#806C6D`) for expenses/outflow**
+in both light and dark themes. Neutral gray is for comparisons, inactive data,
+and reversals. This pair replaces the earlier moss/clay mapping; do not use
+Butter, warm graphite, or steel blue as ordinary financial series colors, or
+assign a decorative color to every category.
 
 ### Meaning and encoding
 
 - Revenue, income, money in, and shares of an income category use the income
   token. Expense categories and money out use the expense token.
 - Preserve the series identity across charts, legends, tooltips, and themes.
-  Light and dark variants adjust contrast, not financial meaning.
+  Keep the approved financial mark colors identical across light and dark themes;
+  verify their contrast against the actual adjacent surfaces.
 - Counterparty shares inherit the owning category's income/expense role. Names
   and direct labels distinguish counterparties; a rainbow is unnecessary.
 - Keep ordinary amounts, axis labels, and summary numbers in neutral text.
   Colored marks and small legend swatches carry the financial signal.
-- For paired cash flow, use solid moss income bars and solid clay expense bars,
+- For paired cash flow, use solid olive income bars and solid mauve expense bars,
   with matching solid legend swatches. Keep income first (left) and expense
   second (right), named legends, and labeled values in keyboard/touch-accessible
   tooltips or a data view. Do not use expense hatching; color alone must not
