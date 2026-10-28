@@ -1,6 +1,8 @@
-import { currencyService } from '@/shared/lib/services/currency.service';
 import { toMajorUnits } from '@/shared/lib/utils/money';
+import { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MoneyJurisdictionContext } from './context';
+import moneyHelpers from './helper';
 import type { MoneyProps } from './types';
 
 export function Money({
@@ -17,10 +19,9 @@ export function Money({
   ...props
 }: Readonly<MoneyProps>) {
   const { t } = useTranslation('shared');
+  const jurisdictionCode = useContext(MoneyJurisdictionContext);
 
-  const locale = currencyService.getJurisdictionLocale(
-    localCode || value.currencyCode
-  );
+  const locale = moneyHelpers.getLocale(localCode ?? jurisdictionCode);
 
   const formatted = new Intl.NumberFormat(locale, {
     style: 'currency',

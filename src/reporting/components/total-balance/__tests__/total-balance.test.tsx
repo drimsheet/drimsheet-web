@@ -37,7 +37,7 @@ describe('TotalBalance', () => {
         balanceLabel="Converted funds"
       />
     );
-    expect(screen.getByText('₦87,450,000')).toBeVisible();
+    expect(screen.getByText('NGN 87,450,000')).toBeVisible();
     expect(screen.queryByText('≈')).not.toBeInTheDocument();
     expect(screen.getByText('Available funds')).toBeVisible();
     expect(screen.getByText('Converted funds')).toHaveClass('sr-only');

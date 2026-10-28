@@ -3,6 +3,7 @@ import { useAccountingEntities } from '@/accounting/hooks/use-accounting-entitie
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
 import { LogoutConfirmationDialog } from '@/auth/dialogs/logout-confirmation';
 import { FullPageLoader } from '@/shared/components/full-page-loader';
+import { MoneyJurisdictionProvider } from '@/shared/components/money';
 import {
   SidebarInset,
   SidebarProvider,
@@ -23,9 +24,10 @@ export function AppLayout() {
 
   const hasAccountingEntities = !!accountingEntities?.length;
 
-  const { isLoading: isLoadingAccountingEntity } = useAccountingEntity({
-    disabled: !hasAccountingEntities,
-  });
+  const { data: accountingEntity, isLoading: isLoadingAccountingEntity } =
+    useAccountingEntity({
+      disabled: !hasAccountingEntities,
+    });
 
   const isLoading =
     isLoadingAccountingEntities ||
@@ -40,7 +42,7 @@ export function AppLayout() {
   }
 
   return (
-    <>
+    <MoneyJurisdictionProvider value={accountingEntity?.jurisdictionCode}>
       <SidebarProvider
         style={{ '--sidebar-width': '14rem' } as React.CSSProperties}
       >
@@ -63,6 +65,6 @@ export function AppLayout() {
         open={showLogoutConfirmation}
         onOpenChange={setShowLogoutConfirmation}
       />
-    </>
+    </MoneyJurisdictionProvider>
   );
 }

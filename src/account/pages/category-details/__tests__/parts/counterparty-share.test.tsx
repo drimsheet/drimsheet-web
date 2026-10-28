@@ -38,7 +38,7 @@ describe('CounterpartyShare', () => {
     const button = screen.getByRole('button', { name: /Self/ });
     expect(button).toHaveAttribute('aria-pressed', 'true');
     expect(button).toHaveTextContent('33.33%');
-    expect(button).toHaveTextContent('₦1,000');
+    expect(button).toHaveTextContent('NGN 1,000');
     button.focus();
     await user.keyboard('{Enter}');
     expect(values.onSelect).toHaveBeenCalledWith(row);

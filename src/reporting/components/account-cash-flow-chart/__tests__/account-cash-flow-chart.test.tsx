@@ -74,8 +74,8 @@ describe('AccountCashFlowChart', () => {
     expect(screen.getByText('Incoming funds')).toBeInTheDocument();
     expect(screen.getByText('Outgoing funds')).toBeInTheDocument();
     expect(screen.getByText(labels.dateLabel)).toBeInTheDocument();
-    expect(screen.getByText(/₦1,200,000/)).toBeInTheDocument();
-    expect(screen.getByText(/₦780,000/)).toBeInTheDocument();
+    expect(screen.getByText(/NGN\s*1,200,000/)).toBeInTheDocument();
+    expect(screen.getByText(/NGN\s*780,000/)).toBeInTheDocument();
   });
   it('renders the zero chart without an empty-state message', () => {
     render(

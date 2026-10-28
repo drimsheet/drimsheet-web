@@ -27,7 +27,6 @@ export function LedgerAccountSummary({
       <dd>
         <Money
           value={account.balance}
-          localCode={account.functionalBalance.currencyCode}
           className="font-heading text-4xl font-medium tracking-tight tabular-nums wrap-anywhere"
         />
       </dd>
