@@ -208,7 +208,7 @@ export function JournalEntryTableFilter({
             align="start"
             collisionPadding={16}
             aria-label={filters_label}
-            className="w-[560px] max-w-[calc(100vw-2rem)] gap-0 overflow-y-auto p-0 max-h-[var(--radix-popover-content-available-height)]"
+            className="w-[560px] max-w-[calc(100vw-2rem)] gap-0 overflow-y-auto border border-border p-0 shadow-none ring-0 max-h-[var(--radix-popover-content-available-height)]"
           >
             <div className="grid min-h-80 grid-cols-1 sm:grid-cols-[180px_minmax(0,1fr)]">
               <nav
