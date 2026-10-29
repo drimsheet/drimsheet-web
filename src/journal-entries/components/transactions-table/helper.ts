@@ -16,7 +16,9 @@ import {
   type UJournalEntrySourceType,
 } from '@/shared/lib/api/Api';
 import type {
+  IJournalEntryTableFilters,
   ITransactionsTableRow,
+  UJournalEntryFilterField,
   UTransactionsTableDirection,
 } from './types';
 
@@ -243,6 +245,7 @@ function createRow({ entry }: ICreateRowInput): ITransactionsTableRow {
       direction: entry.sourceType,
       effectiveDate: entry.effectiveDate,
       entry,
+      createdAt: entry.createdAt,
       summary: entry.memo,
     };
   }
@@ -260,6 +263,7 @@ function createRow({ entry }: ICreateRowInput): ITransactionsTableRow {
       direction: details.direction,
       effectiveDate: details.effectiveDate,
       entry,
+      createdAt: entry.createdAt,
       sourceAccountName: details.sourceAccountName,
       summary: null,
     };
@@ -282,6 +286,7 @@ function createRow({ entry }: ICreateRowInput): ITransactionsTableRow {
     direction: details.direction,
     effectiveDate: details.effectiveDate,
     entry,
+    createdAt: entry.createdAt,
     firstCategoryName: categories.at(0),
     firstCounterpartyName: details.counterparties.at(0)?.name,
     summary: null,
@@ -307,7 +312,64 @@ function createRows({ entries, accountId }: ICreateRowsInput) {
   });
 }
 
+function filterFields(): UJournalEntryFilterField[] {
+  return [
+    'effectiveDate',
+    'recordedDate',
+    'sourceType',
+    'accountId',
+    'categoryId',
+    'counterpartyId',
+    'currencyCode',
+  ];
+}
+
+function filterValue(
+  value: IJournalEntryTableFilters,
+  field: UJournalEntryFilterField
+): string | undefined {
+  if (field === 'effectiveDate') {
+    return (
+      [value.effectiveDateFrom, value.effectiveDateTo]
+        .filter(Boolean)
+        .join(' – ') || undefined
+    );
+  }
+
+  if (field === 'recordedDate') {
+    return (
+      [value.recordedDateFrom, value.recordedDateTo]
+        .filter(Boolean)
+        .join(' – ') || undefined
+    );
+  }
+
+  return value[field];
+}
+
+function clearFilter(
+  value: IJournalEntryTableFilters,
+  field: UJournalEntryFilterField
+): IJournalEntryTableFilters {
+  if (field === 'effectiveDate') {
+    return {
+      ...value,
+      effectiveDateFrom: undefined,
+      effectiveDateTo: undefined,
+    };
+  }
+
+  if (field === 'recordedDate') {
+    return { ...value, recordedDateFrom: undefined, recordedDateTo: undefined };
+  }
+
+  return { ...value, [field]: undefined };
+}
+
 const transactionsTableHelpers = Object.freeze({
+  filterFields,
+  filterValue,
+  clearFilter,
   createDetails,
   createRows,
 });

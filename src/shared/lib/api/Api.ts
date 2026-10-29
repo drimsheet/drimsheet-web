@@ -256,6 +256,22 @@ export const EJournalEntryRectificationMode = {
 export type UJournalEntryRectificationMode =
   (typeof EJournalEntryRectificationMode)[keyof typeof EJournalEntryRectificationMode];
 
+/** Exclude from T those types that are assignable to U */
+export const EExcludeUJournalEntrySourceTypeReversal = {
+  Expense: 'expense',
+  OpeningBalance: 'opening_balance',
+  Sale: 'sale',
+  Purchase: 'purchase',
+  CreditNote: 'credit_note',
+  DebitNote: 'debit_note',
+  Transfer: 'transfer',
+  Payment: 'payment',
+  Receipt: 'receipt',
+  Adjustment: 'adjustment',
+} as const;
+export type ExcludeUJournalEntrySourceTypeReversal =
+  (typeof EExcludeUJournalEntrySourceTypeReversal)[keyof typeof EExcludeUJournalEntrySourceTypeReversal];
+
 export const EJournalEntrySortBy = {
   CreatedAt: 'createdAt',
   EffectiveDate: 'effectiveDate',
@@ -545,6 +561,12 @@ export const ELedgerType = {
 } as const;
 export type ULedgerType = (typeof ELedgerType)[keyof typeof ELedgerType];
 
+export const EWaitListFeature = {
+  Mvp: 'mvp',
+} as const;
+export type UWaitListFeature =
+  (typeof EWaitListFeature)[keyof typeof EWaitListFeature];
+
 export const EAppUsageModePreference = {
   PowerUser: 'power_user',
   NonPowerUser: 'non_power_user',
@@ -603,6 +625,13 @@ export interface IUserProfileDto {
   createdAt: string;
   /** @format date-time */
   updatedAt: string;
+}
+
+export interface IJoinWaitListDto {
+  firstName?: string | null;
+  lastName?: string | null;
+  email: string;
+  feature: UWaitListFeature;
 }
 
 export interface IUserPreferencesUpdateDto {
@@ -1507,9 +1536,27 @@ export interface IGetJournalEntriesQuery {
   sortDirection?: UPaginationSortDirection;
   /** @format double */
   page?: number;
+  /** Inclusive timestamp with a timezone and at most 3 fractional digits. */
+  createdAtFrom?: string;
+  /** Inclusive timestamp with a timezone and at most 3 fractional digits. */
+  createdAtTo?: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  effectiveDateFrom?: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  effectiveDateTo?: string;
+  /** Inclusive timestamp with a timezone and at most 3 fractional digits. */
+  updatedAtFrom?: string;
+  /** Inclusive timestamp with a timezone and at most 3 fractional digits. */
+  updatedAtTo?: string;
+  /** Matches transaction currency on any line, independently of other filters. */
+  currencyCode?: string;
+  /** Matches account type on any line, independently of other filters. */
+  accountType?: ULedgerType;
   accountId?: string;
   counterpartyId?: string;
   status?: 'posted' | 'archived';
+  /** Reversal entries are excluded from this listing. */
+  sourceType?: ExcludeUJournalEntrySourceTypeReversal;
 }
 
 export interface IJournalLineDto {
@@ -2448,6 +2495,22 @@ export class Api<
         secure: true,
         type: EContentType.Json,
         format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Join the waitlist for a feature. Repeated submissions succeed.
+     *
+     * @tags User
+     * @name JoinWaitList
+     * @request POST:/users/waitlist
+     */
+    joinWaitList: (data: IJoinWaitListDto, params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/users/waitlist`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
         ...params,
       }),
   };
@@ -3407,9 +3470,27 @@ export class Api<
         sortDirection?: UPaginationSortDirection;
         /** @format double */
         page?: number;
+        /** Inclusive timestamp with a timezone and at most 3 fractional digits. */
+        createdAtFrom?: string;
+        /** Inclusive timestamp with a timezone and at most 3 fractional digits. */
+        createdAtTo?: string;
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        effectiveDateFrom?: string;
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        effectiveDateTo?: string;
+        /** Inclusive timestamp with a timezone and at most 3 fractional digits. */
+        updatedAtFrom?: string;
+        /** Inclusive timestamp with a timezone and at most 3 fractional digits. */
+        updatedAtTo?: string;
+        /** Matches transaction currency on any line, independently of other filters. */
+        currencyCode?: string;
+        /** Matches account type on any line, independently of other filters. */
+        accountType?: ULedgerType;
         accountId?: string;
         counterpartyId?: string;
         status?: 'posted' | 'archived';
+        /** Reversal entries are excluded from this listing. */
+        sourceType?: ExcludeUJournalEntrySourceTypeReversal;
       },
       params: RequestParams = {}
     ) =>

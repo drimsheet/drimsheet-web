@@ -50,7 +50,9 @@ export function RecentTransactions({
         pagination={pagination && pagination.total > 0 ? pagination : undefined}
         onPageChange={onPageChange}
         currentSortDirection={sortDirection}
-        onSortChange={onSortChange}
+        onSortChange={(_key, direction) =>
+          onSortChange('effectiveDate', direction)
+        }
         emptyStateNode={
           empty ? (
             <Empty className="p-0 md:p-0">

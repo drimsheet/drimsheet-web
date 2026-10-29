@@ -72,6 +72,14 @@ feature hooks.
 
 ## Page Ownership Boundaries
 
+### All transactions filter options exception
+
+`src/journal-entries/pages/all-transactions/` may call `ledgerAccountService`
+from `@/account/lib/services/ledger-account.service` and `counterpartyService`
+from `@/counterparty/lib/services/counterparty.service` to load transaction
+filter options. Transport stays in those owning services. The transactions
+table and its private filter receive options and callbacks through props.
+
 ### Transactions overview data access exception
 
 `src/journal-entries/pages/transactions/` may call `ledgerReportingService`

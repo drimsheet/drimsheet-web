@@ -9,4 +9,5 @@ export interface TransactionDetailsDrawerProps {
   onEdit: () => void;
   onOpenChange: (open: boolean) => void;
   open: boolean;
+  onCloseAutoFocus?: (event: Event) => void;
 }

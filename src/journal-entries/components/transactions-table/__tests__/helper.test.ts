@@ -475,3 +475,46 @@ describe('transactionsTableHelpers', () => {
     expect(transactionsTableHelpers.createDetails(transfer)).toBeUndefined();
   });
 });
+
+describe('transaction filters', () => {
+  it('lists all seven fields, groups date bounds, and clears whole ranges', () => {
+    const value = {
+      effectiveDateFrom: '2026-10-01',
+      effectiveDateTo: '2026-10-29',
+      recordedDateFrom: '2026-10-02',
+      currencyCode: 'NGN',
+    };
+
+    expect(transactionsTableHelpers.filterFields()).toEqual([
+      'effectiveDate',
+      'recordedDate',
+      'sourceType',
+      'accountId',
+      'categoryId',
+      'counterpartyId',
+      'currencyCode',
+    ]);
+    expect(transactionsTableHelpers.filterValue(value, 'effectiveDate')).toBe(
+      '2026-10-01 – 2026-10-29'
+    );
+    expect(transactionsTableHelpers.filterValue(value, 'recordedDate')).toBe(
+      '2026-10-02'
+    );
+    expect(
+      transactionsTableHelpers.filterValue({}, 'effectiveDate')
+    ).toBeUndefined();
+    expect(
+      transactionsTableHelpers.clearFilter(value, 'effectiveDate')
+    ).toEqual({
+      ...value,
+      effectiveDateFrom: undefined,
+      effectiveDateTo: undefined,
+    });
+    expect(transactionsTableHelpers.clearFilter(value, 'recordedDate')).toEqual(
+      { ...value, recordedDateFrom: undefined, recordedDateTo: undefined }
+    );
+    expect(transactionsTableHelpers.clearFilter(value, 'currencyCode')).toEqual(
+      { ...value, currencyCode: undefined }
+    );
+  });
+});

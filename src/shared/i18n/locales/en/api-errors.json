@@ -433,5 +433,6 @@
   "app_error_reporting_behaviors_invalid": "Invalid account behavior.",
   "app_error_reporting_sub_types_invalid": "Invalid account sub type.",
   "app_error_reporting_types_invalid": "Invalid account type.",
-  "app_error_ledger_balance_missing_unexpected": "An error occurred while fetching the account balance."
+  "app_error_ledger_balance_missing_unexpected": "An error occurred while fetching the account balance.",
+  "user_error_waitlist_feature_invalid": "Unknown feature."
 }

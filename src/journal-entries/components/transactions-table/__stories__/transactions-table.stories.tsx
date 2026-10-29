@@ -256,3 +256,27 @@ export const AccountDetailsNarrow: Story = {
     ),
   ],
 };
+
+export const AllTransactions: Story = {
+  args: {
+    showRecordedOn: true,
+    currentSortKey: 'effectiveDate',
+    currentSortDirection: 'desc',
+    pagination: { page: 1, limit: 25, total: 3, totalPages: 1 },
+    onPageChange: () => {},
+    filter: {
+      value: {},
+      onApply: () => {},
+      search: '',
+      onSearchChange: () => {},
+      options: {
+        accounts: [{ value: 'cash-main', label: 'Main checking' }],
+        categories: [{ value: 'gift', label: 'Gift' }],
+        counterparties: [{ value: 'party-1', label: 'Acme Consulting' }],
+        currencies: [{ value: 'NGN', label: 'NGN' }],
+      },
+    },
+  },
+};
+
+export const ErrorState: Story = { args: { data: [], error: true } };

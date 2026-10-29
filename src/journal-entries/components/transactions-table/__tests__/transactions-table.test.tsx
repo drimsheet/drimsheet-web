@@ -447,3 +447,39 @@ it('shows unavailable amounts without losing incomplete entries', () => {
     screen.queryByRole('button', { name: 'Open transaction' })
   ).not.toBeInTheDocument();
 });
+
+describe('all transactions columns', () => {
+  it('uses the agreed column order, sorts Recorded On, and leaves Account and Amount unsortable', async () => {
+    const user = userEvent.setup();
+    const onSortChange = vi.fn();
+    render(
+      <TransactionsTable
+        data={[paymentEntry]}
+        showRecordedOn
+        currentSortKey="createdAt"
+        currentSortDirection="desc"
+        onSortChange={onSortChange}
+      />
+    );
+    const headers = screen.getAllByRole('columnheader');
+    expect(headers.map((header) => header.textContent?.trim())).toEqual([
+      'Direction',
+      'Date',
+      'Amount',
+      'Summary',
+      'Account',
+      'Recorded On',
+      '',
+    ]);
+    await user.click(
+      screen.getByRole('button', { name: 'Sort by Recorded On' })
+    );
+    expect(onSortChange).toHaveBeenCalledWith('createdAt', null);
+    expect(
+      screen.queryByRole('button', { name: 'Sort by Amount' })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Sort by Account' })
+    ).not.toBeInTheDocument();
+  });
+});
