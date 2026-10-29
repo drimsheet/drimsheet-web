@@ -4,6 +4,7 @@ import { SidebarProvider } from '@/shared/components/sidebar';
 import { TooltipProvider } from '@/shared/components/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 
@@ -45,23 +46,45 @@ describe('AppSidebar', () => {
     expect(screen.queryByText('Petty cash accounts')).not.toBeInTheDocument();
   });
 
-  it('highlights Transactions and removes Income and Expenses', () => {
+  it('expands Transactions with the active List destination and can collapse it', async () => {
+    const user = userEvent.setup();
     render(
-      <MemoryRouter initialEntries={['/transactions/transfer']}>
+      <MemoryRouter initialEntries={['/transactions/list']}>
         <QueryClientProvider client={queryClient}>
           <SidebarProvider>
             <TooltipProvider>
-              <AppSidebar currentPath="/transactions/transfer" />
+              <AppSidebar currentPath="/transactions/list" />
             </TooltipProvider>
           </SidebarProvider>
         </QueryClientProvider>
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('link', { name: 'Transactions' })).toHaveAttribute(
-      'data-active',
-      'true'
+    expect(
+      screen.getByRole('button', { name: 'Transactions' })
+    ).toHaveAttribute('data-active', 'true');
+    expect(screen.getByRole('link', { name: 'Overview' })).toHaveAttribute(
+      'href',
+      '/transactions'
     );
+    expect(screen.getByRole('link', { name: 'List' })).toHaveAttribute(
+      'href',
+      '/transactions/list'
+    );
+    expect(screen.getByRole('link', { name: 'List' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(screen.getByRole('link', { name: 'Overview' })).not.toHaveAttribute(
+      'aria-current'
+    );
+    await user.click(screen.getByRole('button', { name: 'Transactions' }));
+    expect(
+      screen.getByRole('button', { name: 'Transactions' })
+    ).toHaveAttribute('aria-expanded', 'false');
+    expect(
+      screen.queryByRole('link', { name: 'List' })
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole('link', { name: 'Income' })
     ).not.toBeInTheDocument();
@@ -90,14 +113,7 @@ describe('AppSidebar', () => {
 
     expect(
       accounting.getAllByRole('link').map((link) => link.textContent)
-    ).toEqual([
-      'Dashboard',
-      'Accounts',
-      'Transactions',
-      'Categories',
-      'Debt',
-      'Tax',
-    ]);
+    ).toEqual(['Dashboard', 'Accounts', 'Categories', 'Debt', 'Tax']);
     expect(
       accounting.getByRole('link', { name: 'Categories' })
     ).toHaveAttribute('aria-current', 'page');
@@ -131,6 +147,29 @@ describe('AppSidebar', () => {
     expect(screen.getByRole('link', { name: 'Tax' })).toHaveAttribute(
       'href',
       '/tax'
+    );
+  });
+
+  it('opens transaction destinations from the collapsed sidebar with the keyboard', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <TooltipProvider>
+          <SidebarProvider defaultOpen={false}>
+            <AppSidebar currentPath="/transactions" />
+          </SidebarProvider>
+        </TooltipProvider>
+      </MemoryRouter>
+    );
+    screen.getByRole('button', { name: 'Transactions' }).focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('menuitem', { name: 'Overview' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(screen.getByRole('menuitem', { name: 'List' })).toHaveAttribute(
+      'href',
+      '/transactions/list'
     );
   });
 

@@ -7,6 +7,7 @@ import { useDeleteJournalEntry } from '@/journal-entries/hooks/use-delete-journa
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
 import { journalEntryRouteMapper } from '@/journal-entries/lib/mappers/journal-entry-route.mapper';
 import { Button } from '@/shared/components/button';
+import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import type { IJournalEntryListDto } from '@/shared/lib/api/Api';
 import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +17,7 @@ import { TransactionsTableError } from './transactions-table-error';
 export function RecentTransactionsTableContainer() {
   const navigate = useNavigate();
   const { t } = useTranslation('journal-entries');
+  const handleApiError = useApiErrorHandler();
   const archive = useArchiveJournalEntry();
   const remove = useDeleteJournalEntry();
 
@@ -32,11 +34,21 @@ export function RecentTransactionsTableContainer() {
   }
 
   async function handleArchive(entry: IJournalEntryListDto) {
-    await archive.mutateAsync(entry.id);
+    try {
+      await archive.mutateAsync(entry.id);
+      await navigate('/transactions', { replace: true });
+    } catch (error) {
+      handleApiError(error, { showToast: true });
+    }
   }
 
   async function handleDelete(entry: IJournalEntryListDto) {
-    await remove.mutateAsync(entry.id);
+    try {
+      await remove.mutateAsync(entry.id);
+    } catch (error) {
+      handleApiError(error, { showToast: true });
+      throw error;
+    }
   }
 
   if (transactions.isPending) {
@@ -62,7 +74,7 @@ export function RecentTransactionsTableContainer() {
       />
       <div className="flex justify-end">
         <Button variant="link" asChild>
-          <Link to="/transactions/all">
+          <Link to="/transactions/list">
             {view_all_label}
             <ArrowRight aria-hidden data-icon="inline-end" />
           </Link>

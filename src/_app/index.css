@@ -524,6 +524,28 @@
   font-weight: 600;
 }
 
+.app-nav [data-sidebar='menu-sub-button'] {
+  border-left: 2px solid transparent;
+}
+
+.app-nav [data-sidebar='menu-sub-button'][data-active='true'] {
+  background: transparent;
+  color: var(--sidebar-accent-foreground);
+  font-weight: inherit;
+}
+
+.app-nav
+  [data-sidebar='menu-sub-item']:has(
+    > [data-sidebar='menu-sub-button'][data-active='true']
+  )::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: calc(var(--spacing) * -2.5 - 1px);
+  border-left: 2px solid var(--primary);
+  pointer-events: none;
+}
+
 .app-nav [data-slot='badge'] {
   font-size: 0.6875rem;
   font-weight: 400;

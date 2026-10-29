@@ -1,5 +1,13 @@
+import type {
+  IAccountActivityByTypesDto,
+  ICurrentTotalBalanceByTypeDto,
+  IFiscalYear,
+  ILedgerTotalDebitsAndCreditsByCurrencyDto,
+  TEntityId,
+} from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
 import {
+  authenticatedAccountingEntity,
   authenticatedUser,
   registerAuthenticatedAppRoutes,
 } from '@integration/mocks/authenticated-app';
@@ -130,6 +138,62 @@ async function registerRoutes(
   journalEntryDetailRequests: string[]
 ) {
   await registerAuthenticatedAppRoutes(page);
+  const fiscalYearId = '00000000-0000-4000-8000-000000000004' as TEntityId;
+  const period = { from: '2026-01-01', to: '2026-12-31' };
+
+  await page.route(
+    '**/api/v1/accounting/fiscal-years/current',
+    async (route) => {
+      await route.fulfill({
+        json: {
+          id: fiscalYearId,
+          createdBy: authenticatedUser.id,
+          name: '2026',
+          status: 'open',
+          accountingEntityId: authenticatedAccountingEntity.id,
+          startDate: `${period.from}T00:00:00.000Z`,
+          endDate: `${period.to}T23:59:59.999Z`,
+          closedAt: null,
+          updatedAt: timestamp,
+        } satisfies IFiscalYear,
+      });
+    }
+  );
+  await page.route(
+    '**/api/v1/reporting/ledger/current-total-balance-by-type?*',
+    async (route) => {
+      await route.fulfill({
+        json: {
+          totalFunctionalBalance: money(0, 'NGN'),
+        } satisfies ICurrentTotalBalanceByTypeDto,
+      });
+    }
+  );
+  await page.route(
+    '**/api/v1/reporting/ledger/ledger-total-debits-and-credits-by-currency?*',
+    async (route) => {
+      await route.fulfill({
+        json: {
+          fiscalYearId,
+          period,
+          totalsByCurrency: [],
+        } satisfies ILedgerTotalDebitsAndCreditsByCurrencyDto,
+      });
+    }
+  );
+  await page.route(
+    '**/api/v1/reporting/ledger/account-activity-by-types?*',
+    async (route) => {
+      const query = new URL(route.request().url()).searchParams;
+      await route.fulfill({
+        json: {
+          currencyCode: 'NGN',
+          period: { from: query.get('from')!, to: query.get('to')! },
+          buckets: [],
+        } satisfies IAccountActivityByTypesDto,
+      });
+    }
+  );
   await page.route('**/api/v1/auth/login-with-email', async (route) => {
     await route.fulfill({ json: { accessToken: 'integration-test-token' } });
   });
@@ -249,7 +313,7 @@ test('lists all transactions with applied filters and preserves creation routes'
     });
   });
   await signIn(page);
-  await page.goto('/transactions/all');
+  await page.goto('/transactions/list');
   await expect(
     page.getByRole('heading', { name: 'All transactions' })
   ).toBeVisible();

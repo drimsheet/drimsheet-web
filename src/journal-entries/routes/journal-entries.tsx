@@ -11,7 +11,7 @@ export const useJournalEntriesRoutes: TModuleRoutes = (basePath) => ({
   path: basePath,
   children: [
     { index: true, element: <TransactionsPage /> },
-    { path: 'all', element: <AllTransactionsPage /> },
+    { path: 'list', element: <AllTransactionsPage /> },
     { path: ':type/:id/edit', element: <EditTransactionPage /> },
     {
       element: <TransactionLayout />,
