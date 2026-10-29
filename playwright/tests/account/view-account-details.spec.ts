@@ -14,7 +14,7 @@ import type { Page } from '@playwright/test';
 const accountId = '00000000-0000-4000-8000-000000000020' as TEntityId;
 const childId = '00000000-0000-4000-8000-000000000021' as TEntityId;
 const endpoint = `**/api/v1/ledger/${accountId}`;
-const flowEndpoint = `**/api/v1/reporting/accounts/${accountId}/cash-flow?*`;
+const flowEndpoint = `**/api/v1/reporting/ledger/accounts/${accountId}/cash-flow?*`;
 
 const account: ILedgerAccountDto = {
   id: accountId,
@@ -412,7 +412,7 @@ test('loads account sections, changes the cash-flow period, pages transactions, 
     })
   );
   await page.route(
-    `**/api/v1/reporting/accounts/${childId}/cash-flow?*`,
+    `**/api/v1/reporting/ledger/accounts/${childId}/cash-flow?*`,
     (route) => route.fulfill({ status: 503, json: { errorKey: 'unavailable' } })
   );
   await page.getByRole('button', { name: 'Payroll account' }).click();

@@ -1,10 +1,15 @@
-import { categoryService } from '@/account/lib/services/category.service';
+import { ledgerReportingService } from '@/reporting/lib/services/ledger-reporting.service';
 import type { IDateRangeDto } from '@/shared/lib/api/Api';
 import { useQuery } from '@tanstack/react-query';
 
 export function useCategorySummary(query: IDateRangeDto) {
   return useQuery({
-    queryKey: ['categoryService', 'getSummary', query],
-    queryFn: () => categoryService.getSummary(query),
+    queryKey: [
+      'ledgerReportingService',
+      'getRevenueAndExpenseActivitySummary',
+      query,
+    ],
+    queryFn: ({ signal }) =>
+      ledgerReportingService.getRevenueAndExpenseActivitySummary(query, signal),
   });
 }

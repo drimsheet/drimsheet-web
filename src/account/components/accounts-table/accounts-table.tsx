@@ -14,7 +14,7 @@ import { Tabs } from '@/shared/components/tabs';
 import { Search } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccountsTableError } from './parts/accounts-table-error';
+import { AccountsTableError } from './state';
 import type { AccountsTableProps, IAccountsTableRow } from './types';
 
 export function AccountsTable({

@@ -1,9 +1,9 @@
 import type {
   IDateRangeDto,
-  IPaginatedResponseIRevenueExpenseAccountDto,
-  IRevenueExpenseAccountDto,
+  IPaginatedResponseIRevenueExpenseAndSuspenseAccountBalanceDto,
+  IRevenueAndExpenseActivitySummaryDto,
+  IRevenueExpenseAndSuspenseAccountBalanceDto,
   IRevenueExpenseSectionDto,
-  IRevenueExpenseSummaryDto,
 } from '@/shared/lib/api/Api';
 import type { ReactNode } from 'react';
 
@@ -21,7 +21,7 @@ export interface CategoryPeriodProps {
 }
 
 export interface CategorySummaryProps {
-  summary: IRevenueExpenseSummaryDto;
+  summary: IRevenueAndExpenseActivitySummaryDto;
 }
 
 export interface CategoryChartProps {
@@ -33,7 +33,7 @@ export interface CategoryChartProps {
 }
 
 export interface CategoryTableProps {
-  accounts?: IPaginatedResponseIRevenueExpenseAccountDto;
+  accounts?: IPaginatedResponseIRevenueExpenseAndSuspenseAccountBalanceDto;
   loading: boolean;
   search: string;
   type: UCategoryTypeFilter;
@@ -41,15 +41,17 @@ export interface CategoryTableProps {
   onTypeChange: (value: string) => void;
   onPageChange: (page: number) => void;
   onViewAccount: (id: string) => void;
-  onEditAccount: (account: IRevenueExpenseAccountDto) => void;
-  onArchiveAccount: (account: IRevenueExpenseAccountDto) => void;
+  onEditAccount: (account: IRevenueExpenseAndSuspenseAccountBalanceDto) => void;
+  onArchiveAccount: (
+    account: IRevenueExpenseAndSuspenseAccountBalanceDto
+  ) => void;
 }
 
 export interface CategorySectionErrorProps {
   title: string;
 }
 
-export interface ICategoryTableRow extends IRevenueExpenseAccountDto {
+export interface ICategoryTableRow extends IRevenueExpenseAndSuspenseAccountBalanceDto {
   id: string;
 }
 
@@ -57,7 +59,7 @@ export interface CategoryRowActionsProps extends Pick<
   CategoryTableProps,
   'onViewAccount' | 'onEditAccount' | 'onArchiveAccount'
 > {
-  account: IRevenueExpenseAccountDto;
+  account: IRevenueExpenseAndSuspenseAccountBalanceDto;
 }
 
 export interface CategoryOverviewProps {
@@ -66,7 +68,7 @@ export interface CategoryOverviewProps {
 }
 
 export interface CategoryArchiveConfirmationProps {
-  account: IRevenueExpenseAccountDto | null;
+  account: IRevenueExpenseAndSuspenseAccountBalanceDto | null;
   pending: boolean;
   error: boolean;
   onClose: () => void;

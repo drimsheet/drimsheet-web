@@ -14,7 +14,7 @@ export function useArchiveLedgerAccount() {
         queryKey: ['journalEntryService', 'getJournalEntries'],
       });
       await queryClient.cancelQueries({
-        queryKey: ['reportingService'],
+        queryKey: ['ledgerReportingService'],
       });
       queryClient.setQueryData<ILedgerAccountDto>(
         [...queryKey, 'getLedgerAccount', id],
@@ -28,7 +28,7 @@ export function useArchiveLedgerAccount() {
         queryKey: ['journalEntryService', 'getJournalEntries'],
       });
       await queryClient.invalidateQueries({
-        queryKey: ['reportingService'],
+        queryKey: ['ledgerReportingService'],
       });
     },
   });

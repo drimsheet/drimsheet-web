@@ -2,7 +2,6 @@ import { Skeleton } from '@/shared/components/skeleton';
 import countries from '@/shared/configs/countries.json';
 import { cn } from '@/shared/lib/utils/cn';
 import { useTranslation } from 'react-i18next';
-
 import type { BankDetailsProps } from '../types';
 
 export function BankDetails({

@@ -1,5 +1,13 @@
+import type {
+  IAccountActivityByTypesDto,
+  ICurrentTotalBalanceByTypeDto,
+  IFiscalYear,
+  ILedgerTotalDebitsAndCreditsByCurrencyDto,
+  TEntityId,
+} from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
 import {
+  authenticatedAccountingEntity,
   authenticatedUser,
   registerAuthenticatedAppRoutes,
 } from '@integration/mocks/authenticated-app';
@@ -130,6 +138,62 @@ async function registerRoutes(
   journalEntryDetailRequests: string[]
 ) {
   await registerAuthenticatedAppRoutes(page);
+  const fiscalYearId = '00000000-0000-4000-8000-000000000004' as TEntityId;
+  const period = { from: '2026-01-01', to: '2026-12-31' };
+
+  await page.route(
+    '**/api/v1/accounting/fiscal-years/current',
+    async (route) => {
+      await route.fulfill({
+        json: {
+          id: fiscalYearId,
+          createdBy: authenticatedUser.id,
+          name: '2026',
+          status: 'open',
+          accountingEntityId: authenticatedAccountingEntity.id,
+          startDate: `${period.from}T00:00:00.000Z`,
+          endDate: `${period.to}T23:59:59.999Z`,
+          closedAt: null,
+          updatedAt: timestamp,
+        } satisfies IFiscalYear,
+      });
+    }
+  );
+  await page.route(
+    '**/api/v1/reporting/ledger/current-total-balance-by-type?*',
+    async (route) => {
+      await route.fulfill({
+        json: {
+          totalFunctionalBalance: money(0, 'NGN'),
+        } satisfies ICurrentTotalBalanceByTypeDto,
+      });
+    }
+  );
+  await page.route(
+    '**/api/v1/reporting/ledger/ledger-total-debits-and-credits-by-currency?*',
+    async (route) => {
+      await route.fulfill({
+        json: {
+          fiscalYearId,
+          period,
+          totalsByCurrency: [],
+        } satisfies ILedgerTotalDebitsAndCreditsByCurrencyDto,
+      });
+    }
+  );
+  await page.route(
+    '**/api/v1/reporting/ledger/account-activity-by-types?*',
+    async (route) => {
+      const query = new URL(route.request().url()).searchParams;
+      await route.fulfill({
+        json: {
+          currencyCode: 'NGN',
+          period: { from: query.get('from')!, to: query.get('to')! },
+          buckets: [],
+        } satisfies IAccountActivityByTypesDto,
+      });
+    }
+  );
   await page.route('**/api/v1/auth/login-with-email', async (route) => {
     await route.fulfill({ json: { accessToken: 'integration-test-token' } });
   });
@@ -180,86 +244,83 @@ async function signIn(page: Page) {
   await expect(page).toHaveURL('/dashboard');
 }
 
-test('lists transactions at the index route and preserves creation routes', async ({
+test('lists all transactions with applied filters and preserves creation routes', async ({
   page,
 }) => {
   const journalQueries: URLSearchParams[] = [];
-  const journalEntryDetailRequests: string[] = [];
-  await registerRoutes(page, journalQueries, journalEntryDetailRequests);
-  await signIn(page);
-
-  await page.route('**/api/v1/journal-entries?*', (route) => {
+  const detailRequests: string[] = [];
+  await registerRoutes(page, journalQueries, detailRequests);
+  await page.route('**/api/v1/ledger?*', async (route) => {
     const query = new URL(route.request().url()).searchParams;
-    journalQueries.push(query);
-    const search = query.get('search');
-
-    const data = search
-      ? journalEntries.filter((item) =>
-          item.lines.some((line) =>
-            line.account.name.toLowerCase().includes(search.toLowerCase())
-          )
-        )
-      : [...journalEntries];
-
-    if (query.get('sortDirection') === 'asc') {
-      data.reverse();
+    let data = accounts.filter((account) => account.id.startsWith('cash-'));
+    if (query.get('type') === 'revenue') {
+      data = accounts.filter((account) => account.id === 'services');
+    } else if (query.get('type') === 'expense') {
+      data = accounts.filter((account) =>
+        ['bank-fees', 'gift'].includes(account.id)
+      );
     }
 
-    return route.fulfill({
+    await route.fulfill({
       json: {
-        data,
-        meta: { page: 1, limit: 10, total: data.length, totalPages: 1 },
+        data: data.map((account) => ({
+          ...account,
+          balance: money(0, account.id === 'cash-usd' ? 'USD' : 'NGN'),
+        })),
+        meta: { page: 1, limit: 100, total: data.length, totalPages: 1 },
       },
     });
   });
-  await page.goto('/transactions');
-  await expect(page).toHaveURL('/transactions');
-  await expect(page.getByTestId('transactions-table')).toBeVisible();
-  await expect(page.getByText('Payment to Osahon Oboite')).toBeVisible();
-  await expect(page.getByText('Receipt from Acme Consulting')).toBeVisible();
-  await expect(page.getByText('USD account → Main checking')).toBeVisible();
+  await page.route('**/api/v1/journal-entries?*', async (route) => {
+    const query = new URL(route.request().url()).searchParams;
+    journalQueries.push(query);
+    const sourceType = query.get('sourceType');
+    const accountId = query.get('accountId');
+    const search = query.get('search');
+
+    let data = journalEntries.filter(
+      (item) =>
+        (!sourceType || item.sourceType === sourceType) &&
+        (!accountId ||
+          item.lines.some((line) => line.account.id === accountId)) &&
+        (!search ||
+          item.lines.some((line) =>
+            line.account.name.toLowerCase().includes(search.toLowerCase())
+          ))
+    );
+
+    if (
+      query.get('orderBy') === 'createdAt' &&
+      query.get('sortDirection') === 'asc'
+    ) {
+      data = [...data].reverse();
+    }
+
+    const currentPage = Number(query.get('page') ?? 1);
+    const total = data.length;
+    // Use a small server page to exercise the real pagination composition.
+    data = data.slice((currentPage - 1) * 2, currentPage * 2);
+    await route.fulfill({
+      json: {
+        data,
+        meta: {
+          page: currentPage,
+          limit: 2,
+          total,
+          totalPages: Math.ceil(total / 2),
+        },
+      },
+    });
+  });
+  await signIn(page);
+  await page.goto('/transactions/list');
   await expect(
-    page.getByRole('button', { name: 'Open transaction' })
-  ).toHaveCount(3);
-
-  await page.getByRole('button', { name: 'Open transaction' }).nth(0).click();
-  let drawer = page.getByRole('dialog', { name: 'Transaction details' });
-  await expect(drawer.getByText('Outflow')).toBeVisible();
-  await expect(drawer.getByText('Main checking')).toBeVisible();
-  await expect(drawer.getByText('Gift')).toBeVisible();
-  await drawer
-    .getByRole('button', { name: 'Close transaction details' })
-    .click();
-  await expect(drawer).not.toBeVisible();
-
-  await page.getByRole('button', { name: 'Open transaction' }).nth(1).click();
-  drawer = page.getByRole('dialog', { name: 'Transaction details' });
-  await expect(drawer.getByText('Inflow')).toBeVisible();
-  await expect(drawer.getByText('Professional services')).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(drawer).not.toBeVisible();
-
-  await page.getByRole('button', { name: 'Open transaction' }).nth(2).click();
-  drawer = page.getByRole('dialog', { name: 'Transaction details' });
-  await expect(drawer.getByText('Transfer', { exact: true })).toBeVisible();
-  await expect(drawer.getByText('USD account')).toBeVisible();
-  await expect(drawer.getByText('Main checking')).toBeVisible();
-  await expect(drawer.getByText('1 USD = 1,590 NGN')).toBeVisible();
-  await expect(drawer.getByText('Bank fees')).toBeVisible();
-  await expect(drawer.getByText('International transfer charge')).toBeVisible();
-  await page
-    .locator('[data-slot="sheet-overlay"]')
-    .click({ position: { x: 10, y: 10 } });
-  await expect(drawer).not.toBeVisible();
-  expect(journalEntryDetailRequests).toEqual([]);
-
-  await expect.poll(() => journalQueries.length).toBeGreaterThan(0);
-  expect(journalQueries[0].get('page')).toBe('1');
-  expect(journalQueries[0].get('limit')).toBe('10');
-  expect(journalQueries[0].get('orderBy')).toBe('effectiveDate');
-  expect(journalQueries[0].get('sortDirection')).toBe('desc');
-
-  await page.getByRole('button', { name: 'Sort by Date' }).click();
+    page.getByRole('heading', { name: 'All transactions' })
+  ).toBeVisible();
+  await expect(page.getByText('Payment to Osahon Oboite')).toBeVisible();
+  await page.getByRole('button', { name: 'Next page' }).click();
+  await expect(page.getByText('USD account → Main checking')).toBeVisible();
+  await page.getByRole('button', { name: 'Sort by Recorded On' }).click();
   await expect(page.getByRole('table').getByRole('row').nth(1)).toContainText(
     'USD account → Main checking'
   );
@@ -267,38 +328,116 @@ test('lists transactions at the index route and preserves creation routes', asyn
     .poll(() => Object.fromEntries(journalQueries.at(-1)!))
     .toMatchObject({
       page: '1',
-      limit: '10',
-      orderBy: 'effectiveDate',
+      limit: '25',
+      orderBy: 'createdAt',
       sortDirection: 'asc',
     });
-  await page.getByRole('button', { name: 'Sort by Date' }).click();
-  await expect(page.getByRole('table').getByRole('row').nth(1)).toContainText(
-    'Payment to Osahon Oboite'
-  );
-  await page.getByPlaceholder('Search transactions...').fill('gift');
-  await page.getByRole('button', { name: 'Sort by Date' }).click();
-  await expect(page).toHaveURL(/q=gift/);
-  await expect(page).toHaveURL(/order=asc/);
-  await expect
-    .poll(() => journalQueries.some((query) => query.get('search') === 'gift'))
-    .toBe(true);
 
+  await page.getByRole('button', { name: 'Filters', exact: true }).click();
+  const popover = page.getByRole('dialog', { name: 'Filters', exact: true });
+  await page.clock.setFixedTime(new Date('2026-10-29T12:00:00Z'));
+  await popover.getByLabel('From', { exact: true }).click();
+  await page
+    .getByRole('button', { name: /Thursday, October 1st, 2026/ })
+    .click();
+  await expect(popover).toBeVisible();
+  await expect(popover.getByLabel('From', { exact: true })).toBeFocused();
+
+  await popover.getByRole('button', { name: 'Account', exact: true }).click();
+
+  const accountInput = page.getByRole('combobox', {
+    name: 'Account',
+    exact: true,
+  });
+
+  await accountInput.fill('Main');
+  await page
+    .getByRole('option', { name: 'Main checking', exact: true })
+    .click();
+  await expect(popover).toBeVisible();
+  await popover
+    .getByRole('button', { name: 'Transaction type', exact: true })
+    .click();
+  await popover
+    .getByRole('combobox', { name: 'Transaction type', exact: true })
+    .click();
+  await page.getByRole('option', { name: 'Inflow', exact: true }).click();
+  expect(journalQueries.at(-1)!.has('sourceType')).toBe(false);
+  await popover
+    .getByRole('button', { name: 'Apply filters', exact: true })
+    .click();
+  await expect(popover).not.toBeVisible();
+  await expect(page.getByRole('button', { name: /^Filters/ })).toBeFocused();
+  await expect(page.getByText('Receipt from Acme Consulting')).toBeVisible();
+  await expect(page.getByText('Payment to Osahon Oboite')).not.toBeVisible();
   await expect
     .poll(() => Object.fromEntries(journalQueries.at(-1)!))
     .toMatchObject({
-      search: 'gift',
       page: '1',
-      limit: '10',
-      orderBy: 'effectiveDate',
+      limit: '25',
+      sourceType: 'receipt',
+      effectiveDateFrom: '2026-10-01',
+      accountId: 'cash-main',
+      orderBy: 'createdAt',
       sortDirection: 'asc',
     });
+  await page.getByRole('button', { name: /^Filters/ }).click();
+  await page.keyboard.press('Escape');
+  await expect(popover).not.toBeVisible();
+  await expect(page.getByRole('button', { name: /^Filters/ })).toBeFocused();
+
+  await page.getByRole('button', { name: 'Open transaction' }).click();
+  const drawer = page.getByRole('dialog', { name: 'Transaction details' });
+  await expect(drawer.getByText('Inflow', { exact: true })).toBeVisible();
+  await expect(drawer.getByText('Professional services')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(drawer).not.toBeVisible();
   await expect(
     page.getByRole('button', { name: 'Open transaction' })
-  ).toHaveCount(1);
+  ).toBeFocused();
+  expect(detailRequests).toEqual([]);
+
+  await page.getByRole('button', { name: /^Filters/ }).click();
+  await popover.getByRole('button', { name: 'Clear all' }).click();
+  await popover.getByRole('button', { name: 'Apply filters' }).click();
+  await expect(page.getByText('USD account → Main checking')).toBeVisible();
+  await page
+    .getByRole('textbox', { name: 'Search transactions…' })
+    .fill('gift');
+  await expect(page.getByText('Payment to Osahon Oboite')).toBeVisible();
   await expect(
     page.getByText('Receipt from Acme Consulting')
   ).not.toBeVisible();
-  await page.getByRole('link', { name: 'New transaction' }).click();
+  await expect
+    .poll(() => Object.fromEntries(journalQueries.at(-1)!))
+    .toEqual({
+      page: '1',
+      limit: '25',
+      search: 'gift',
+      orderBy: 'createdAt',
+      sortDirection: 'asc',
+    });
+
+  await page.getByRole('textbox', { name: 'Search transactions…' }).fill('');
+  await expect(page.getByText('USD account → Main checking')).toBeVisible();
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth)
+  ).toBeLessThanOrEqual(1280);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: /^Filters/ }).click();
+  await expect(popover).toBeVisible();
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth)
+  ).toBeLessThanOrEqual(390);
+  await expect(
+    popover.getByRole('button', { name: 'Apply filters' })
+  ).toBeInViewport();
+  await page.keyboard.press('Escape');
+  await expect(popover).not.toBeVisible();
+  await expect(page.getByRole('button', { name: /^Filters/ })).toBeFocused();
+  await page
+    .getByRole('button', { name: 'Add new transaction', exact: true })
+    .click();
   await expect(page).toHaveURL('/transactions/inflow');
   await expect(page.getByRole('tab', { name: 'Inflow' })).toBeVisible();
 });

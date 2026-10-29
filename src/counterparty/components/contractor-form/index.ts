@@ -2,7 +2,7 @@ export { ContractorForm } from './contractor-form';
 export type { ContractorFormProps, IContractorFormValues } from './types';
 export { useContractorFormValidation } from './validation';
 
-export { ContractorFormSkeleton } from './skeleton';
+export { ContractorFormSkeleton } from './state';
 export type { ContractorFormSkeletonProps } from './types';
 
 export { ContractorFormCreateContainer } from './contractor-form.create.container';

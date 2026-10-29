@@ -1,9 +1,9 @@
 import { CounterpartyShare } from '@/account/pages/category-details/parts/counterparty-share';
-import type { IAccountCounterpartyParticipationDto } from '@/shared/lib/api/Api';
+import type { IAccountBalanceContributionsByCounterpartyDto } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
 
-const counterparties: IAccountCounterpartyParticipationDto[] = [
+const counterparties: IAccountBalanceContributionsByCounterpartyDto[] = [
   'Google',
   'Microsoft',
   'Notion',

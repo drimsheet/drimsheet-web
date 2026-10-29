@@ -63,10 +63,15 @@ async function setup(page: Page) {
     );
   }
 
-  await page.route('**/api/v1/reporting/revenue-expense-accounts?*', (route) =>
-    route.fulfill({
-      json: { data: [], meta: { page: 1, totalPages: 0, total: 0, limit: 10 } },
-    })
+  await page.route(
+    '**/api/v1/reporting/ledger/revenue-expense-and-suspense-account-balances?*',
+    (route) =>
+      route.fulfill({
+        json: {
+          data: [],
+          meta: { page: 1, totalPages: 0, total: 0, limit: 10 },
+        },
+      })
   );
 
   const section = {
@@ -76,17 +81,19 @@ async function setup(page: Page) {
     accounts: [],
   };
 
-  await page.route('**/api/v1/reporting/revenue-expense-summary?*', (route) =>
-    route.fulfill({
-      json: {
-        currencyCode: 'NGN',
-        period: { from: '2026-10-01', to: '2026-10-15' },
-        comparisonPeriod: { from: '2026-09-16', to: '2026-09-30' },
-        revenue: section,
-        expenses: section,
-        suspense: { amount: money, transactionCount: 0 },
-      },
-    })
+  await page.route(
+    '**/api/v1/reporting/ledger/revenue-and-expense-activity-summary?*',
+    (route) =>
+      route.fulfill({
+        json: {
+          currencyCode: 'NGN',
+          period: { from: '2026-10-01', to: '2026-10-15' },
+          comparisonPeriod: { from: '2026-09-16', to: '2026-09-30' },
+          revenue: section,
+          expenses: section,
+          suspense: { amount: money, transactionCount: 0 },
+        },
+      })
   );
   await page.route(chartEndpoint, (route) =>
     route.fulfill({

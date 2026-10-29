@@ -1,5 +1,5 @@
 export { AccountingEntityForm } from './accounting-entity-form';
-export { AccountingEntityFormSkeleton } from './skeleton';
+export { AccountingEntityFormSkeleton } from './state';
 export type {
   AccountingEntityFormProps,
   IAccountingEntityFormValues,

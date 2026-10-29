@@ -1,6 +1,6 @@
 import type {
-  IRevenueExpenseAccountDto,
-  IRevenueExpenseSummaryDto,
+  IRevenueAndExpenseActivitySummaryDto,
+  IRevenueExpenseAndSuspenseAccountBalanceDto,
 } from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
 import {
@@ -9,11 +9,15 @@ import {
 } from '@integration/mocks/authenticated-app';
 import type { Page } from '@playwright/test';
 
-const accountsEndpoint = '**/api/v1/reporting/revenue-expense-accounts?*';
-const summaryEndpoint = '**/api/v1/reporting/revenue-expense-summary?*';
+const accountsEndpoint =
+  '**/api/v1/reporting/ledger/revenue-expense-and-suspense-account-balances?*';
+
+const summaryEndpoint =
+  '**/api/v1/reporting/ledger/revenue-and-expense-activity-summary?*';
+
 const money = { amount: 800000, currencyCode: 'NGN', isMinorUnit: false };
 
-const account: IRevenueExpenseAccountDto = {
+const account: IRevenueExpenseAndSuspenseAccountBalanceDto = {
   accountId: '00000000-0000-4000-8000-000000000030',
   accountName: 'Consulting services',
   code: '40001',
@@ -25,7 +29,7 @@ const account: IRevenueExpenseAccountDto = {
   transactionCount: 12,
 };
 
-const summary: IRevenueExpenseSummaryDto = {
+const summary: IRevenueAndExpenseActivitySummaryDto = {
   currencyCode: 'NGN',
   period: { from: '2026-10-01', to: '2026-10-14' },
   comparisonPeriod: { from: '2026-09-17', to: '2026-09-30' },
@@ -417,7 +421,7 @@ test('renames and archives categories, then opens category details', async ({
   ).toBeVisible();
   const requests: URLSearchParams[] = [];
   await page.route(
-    `**/api/v1/reporting/accounts/${account.accountId}/counterparty-participation?*`,
+    `**/api/v1/reporting/ledger/accounts/${account.accountId}/balance-contributions-by-counterparty?*`,
     (route) =>
       route.fulfill({
         json: {

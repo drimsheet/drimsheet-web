@@ -3,6 +3,7 @@ import type {
   IJournalEntryListDto,
   IMoneyDto,
   IPaginationResponseMeta,
+  UJournalEntrySortBy,
   UJournalEntrySourceType,
 } from '@/shared/lib/api/Api';
 import type { ReactNode } from 'react';
@@ -23,6 +24,7 @@ export interface ITransactionsTableRow {
   destinationAccountName?: string;
   direction: UJournalEntrySourceType;
   effectiveDate: string;
+  createdAt: string;
   entry: IJournalEntryListDto;
   firstCategoryName?: string;
   firstCounterpartyName?: string;
@@ -35,6 +37,11 @@ export interface TransactionsTableProps {
   emptyStateNode?: ReactNode;
   data: IJournalEntryListDto[];
   loading?: boolean;
+  sortable?: boolean;
+  showRecordedOn?: boolean;
+  currentSortKey?: UJournalEntrySortBy;
+  filter?: JournalEntryTableFilterProps;
+  error?: boolean;
   archiving?: boolean;
   onArchiveTransaction?: (entry: IJournalEntryListDto) => Promise<void>;
   onDeleteTransaction?: (entry: IJournalEntryListDto) => Promise<void>;
@@ -42,7 +49,7 @@ export interface TransactionsTableProps {
   onEditTransaction?: (entry: IJournalEntryListDto) => void;
   onPageChange?: (page: number) => void;
   onSortChange?: (
-    key: 'effectiveDate',
+    key: UJournalEntrySortBy,
     direction: 'asc' | 'desc' | null
   ) => void;
   currentSortDirection?: 'asc' | 'desc' | null;
@@ -64,4 +71,67 @@ export type TTransactionSummaryRow = Pick<
 export interface TransactionSummaryProps {
   row: TTransactionSummaryRow;
   onOpen?: () => void;
+}
+
+export interface IJournalEntryTableFilters {
+  effectiveDateFrom?: string;
+  effectiveDateTo?: string;
+  recordedDateFrom?: string;
+  recordedDateTo?: string;
+  sourceType?: UTransactionsTableDirection;
+  accountId?: string;
+  categoryId?: string;
+  counterpartyId?: string;
+  currencyCode?: string;
+}
+
+export interface IJournalEntryFilterOption {
+  value: string;
+  label: string;
+}
+
+export interface IJournalEntryFilterOptions {
+  accounts: IJournalEntryFilterOption[];
+  categories: IJournalEntryFilterOption[];
+  counterparties: IJournalEntryFilterOption[];
+  currencies: IJournalEntryFilterOption[];
+}
+
+export interface JournalEntryTableFilterProps {
+  value: IJournalEntryTableFilters;
+  onApply: (value: IJournalEntryTableFilters) => void;
+  options: IJournalEntryFilterOptions;
+  optionsLoading?: boolean;
+  optionsError?: boolean;
+  search: string;
+  onSearchChange: (search: string) => void;
+}
+
+export type UJournalEntryFilterField =
+  | 'effectiveDate'
+  | 'recordedDate'
+  | 'sourceType'
+  | 'accountId'
+  | 'categoryId'
+  | 'counterpartyId'
+  | 'currencyCode';
+
+export interface JournalEntryFilterOptionsProps {
+  label: string;
+  value?: string;
+  options: IJournalEntryFilterOption[];
+  onChange: (value: string | undefined) => void;
+  loading?: boolean;
+  error?: boolean;
+  select?: boolean;
+}
+
+export interface TransactionsTableSkeletonProps {
+  showRecordedOn?: boolean;
+}
+
+export interface TransactionsTableWithStateProps extends TransactionsTableSkeletonProps {
+  loading: boolean;
+  error: boolean;
+  children: ReactNode;
 }

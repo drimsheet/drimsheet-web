@@ -39,7 +39,7 @@ describe('SubAccounts', () => {
   it('shows each account currency and requests navigation to the chosen account', async () => {
     const onOpenAccount = vi.fn();
     render(<SubAccounts accounts={[account]} onOpenAccount={onOpenAccount} />);
-    expect(screen.getByText(/₦2,450,000/)).toBeInTheDocument();
+    expect(screen.getByText(/NGN\s*2,450,000/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: account.name }));
     expect(onOpenAccount).toHaveBeenCalledWith(account.id);
   });

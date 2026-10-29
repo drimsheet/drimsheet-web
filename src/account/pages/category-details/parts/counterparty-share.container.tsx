@@ -1,4 +1,4 @@
-import { ledgerAccountService } from '@/account/lib/services/ledger-account.service';
+import { ledgerReportingService } from '@/reporting/lib/services/ledger-reporting.service';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { CounterpartyShareContainerProps } from '../types';
@@ -15,13 +15,13 @@ export function CounterpartyShareContainer({
 
   const participation = useQuery({
     queryKey: [
-      'ledgerAccountService',
-      'getAccountCounterpartyParticipation',
+      'ledgerReportingService',
+      'getAccountBalanceContributionsByCounterparty',
       accountId,
       query,
     ],
     queryFn: ({ signal }) =>
-      ledgerAccountService.getAccountCounterpartyParticipation(
+      ledgerReportingService.getAccountBalanceContributionsByCounterparty(
         accountId,
         query,
         signal

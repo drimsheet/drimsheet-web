@@ -1,6 +1,7 @@
 import { ArrowLeftRight, ChevronRight } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTransactionDetailsFocus } from './use-transaction-details-focus';
 
 import { TransactionDetailsDrawer } from '@/journal-entries/components/transaction-details-drawer';
 import { BalanceEffectIcon } from '@/shared/components/balance-effect-icon';
@@ -15,8 +16,9 @@ import {
   type IJournalEntryListDto,
 } from '@/shared/lib/api/Api';
 import transactionsTableHelpers from './helper';
+import { JournalEntryTableFilter } from './parts/filter';
 import { TransactionSummary } from './parts/transaction-summary';
-import { TransactionsTableSkeleton } from './skeleton';
+import { TransactionsTableWithState } from './state';
 import type { ITransactionsTableRow, TransactionsTableProps } from './types';
 
 export function TransactionsTable({
@@ -24,6 +26,11 @@ export function TransactionsTable({
   emptyStateNode,
   data,
   loading = false,
+  sortable = true,
+  showRecordedOn = false,
+  currentSortKey = 'effectiveDate',
+  filter,
+  error = false,
   archiving = false,
   onArchiveTransaction,
   onDeleteTransaction,
@@ -40,6 +47,8 @@ export function TransactionsTable({
   const [selectedTransaction, setSelectedTransaction] =
     useState<IJournalEntryListDto | null>(null);
 
+  const { rememberTrigger, restoreFocus } = useTransactionDetailsFocus();
+
   const rows = useMemo(
     () => transactionsTableHelpers.createRows({ entries: data, accountId }),
     [data, accountId]
@@ -55,16 +64,19 @@ export function TransactionsTable({
 
   const handleSortChange = useCallback(
     (key: keyof ITransactionsTableRow, direction: 'asc' | 'desc' | null) => {
-      if (key === 'effectiveDate') {
-        onSortChange?.('effectiveDate', direction);
+      if (key === 'effectiveDate' || key === 'createdAt') {
+        onSortChange?.(key, direction);
       }
     },
     [onSortChange]
   );
 
   const handleTransactionOpen = useCallback(
-    (entry: IJournalEntryListDto) => setSelectedTransaction(entry),
-    []
+    (entry: IJournalEntryListDto, event: MouseEvent<HTMLButtonElement>) => {
+      rememberTrigger(event.currentTarget);
+      setSelectedTransaction(entry);
+    },
+    [rememberTrigger]
   );
 
   const handleDetailsOpenChange = useCallback((open: boolean) => {
@@ -163,7 +175,7 @@ export function TransactionsTable({
         width: 140,
         minWidth: 140,
         title: dateLabel,
-        sortable: true,
+        sortable,
         render: (value) => (
           <FormattedDate
             value={new Date(String(value))}
@@ -174,13 +186,13 @@ export function TransactionsTable({
       {
         dataIndex: 'accountName',
         proportion: 1.5,
-        minWidth: 180,
+        minWidth: showRecordedOn ? 160 : 180,
         title: accountLabel,
       },
       {
         dataIndex: 'summary',
         proportion: 2.5,
-        minWidth: 240,
+        minWidth: showRecordedOn ? 220 : 240,
         title: summaryLabel,
         render: (_, row) =>
           row.canOpenDetails ? (
@@ -214,6 +226,39 @@ export function TransactionsTable({
       },
     ];
 
+    if (showRecordedOn) {
+      const [
+        directionColumn,
+        dateColumn,
+        accountColumn,
+        summaryColumn,
+        amountColumn,
+      ] = tableColumns;
+
+      tableColumns.splice(
+        0,
+        tableColumns.length,
+        directionColumn,
+        dateColumn,
+        amountColumn,
+        summaryColumn,
+        accountColumn
+      );
+      tableColumns.push({
+        dataIndex: 'createdAt',
+        title: t('transactions_table_recorded_on_label'),
+        width: 150,
+        minWidth: 150,
+        sortable,
+        render: (value) => (
+          <FormattedDate
+            value={new Date(String(value))}
+            className="whitespace-nowrap"
+          />
+        ),
+      });
+    }
+
     tableColumns.push({
       dataIndex: 'action',
       width: 64,
@@ -226,7 +271,7 @@ export function TransactionsTable({
             size="icon"
             aria-label={openTransactionLabel}
             title={openTransactionLabel}
-            onClick={() => handleTransactionOpen(row.entry)}
+            onClick={(event) => handleTransactionOpen(row.entry, event)}
           >
             <ChevronRight />
           </Button>
@@ -234,30 +279,32 @@ export function TransactionsTable({
     });
 
     return tableColumns;
-  }, [handleTransactionOpen, t]);
-
-  if (loading) {
-    return <TransactionsTableSkeleton />;
-  }
+  }, [handleTransactionOpen, sortable, showRecordedOn, t]);
 
   return (
-    <>
-      <DataTable
-        columns={columns}
-        emptyStateNode={emptyStateNode}
-        pagination={
-          pagination && onPageChange
-            ? { meta: pagination, onPageChange }
-            : undefined
-        }
-        data={rows}
-        onSortChange={handleSortChange}
-        currentSortKey="effectiveDate"
-        currentSortDirection={currentSortDirection}
-        className={className}
-        data-testid={dataTestId}
-      />
-
+    <div className="flex min-w-0 flex-col gap-4">
+      {filter && <JournalEntryTableFilter {...filter} />}
+      <TransactionsTableWithState
+        loading={loading}
+        error={error}
+        showRecordedOn={showRecordedOn}
+      >
+        <DataTable
+          columns={columns}
+          emptyStateNode={emptyStateNode}
+          pagination={
+            pagination && onPageChange
+              ? { meta: pagination, onPageChange }
+              : undefined
+          }
+          data={rows}
+          onSortChange={handleSortChange}
+          currentSortKey={currentSortKey}
+          currentSortDirection={currentSortDirection}
+          className={className}
+          data-testid={dataTestId}
+        />
+      </TransactionsTableWithState>
       <TransactionDetailsDrawer
         archiving={archiving}
         onArchive={
@@ -271,7 +318,8 @@ export function TransactionsTable({
         onEdit={handleSelectedTransactionEdit}
         onOpenChange={handleDetailsOpenChange}
         open={Boolean(selectedDetails)}
+        onCloseAutoFocus={restoreFocus}
       />
-    </>
+    </div>
   );
 }

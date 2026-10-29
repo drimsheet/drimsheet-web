@@ -173,7 +173,7 @@ describe('Account row actions', () => {
     );
     await waitFor(() =>
       expect(refresh).toHaveBeenCalledWith({
-        queryKey: ['reportingService'],
+        queryKey: ['ledgerReportingService'],
         type: 'active',
       })
     );

@@ -2,8 +2,14 @@ import type { IMoneyDto } from '@/shared/lib/api/Api';
 import type { ComponentProps } from 'react';
 export interface MoneyProps extends ComponentProps<'span'> {
   value: IMoneyDto;
+  /** Jurisdiction country code overriding the app's active jurisdiction. */
   localCode?: string;
   hide?: boolean;
   isConverted?: boolean;
+  approximationClassName?: string;
   hideZeroMinorUnit?: boolean;
+  notation?: Intl.NumberFormatOptions['notation'];
+  signDisplay?: Intl.NumberFormatOptions['signDisplay'];
+  currencyDisplay?: Intl.NumberFormatOptions['currencyDisplay'];
+  maximumFractionDigits?: number;
 }

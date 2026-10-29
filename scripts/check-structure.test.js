@@ -348,7 +348,7 @@ describe('checkStructure component skeletons', () => {
     const root = createFixture({
       helperTest: false,
       indexSource:
-        "export { Example } from './example'; export { ExampleSkeleton } from './skeleton';",
+        "export { Example } from './example'; export { ExampleSkeleton } from './state';",
     });
     const componentPath = path.join(
       root,
@@ -364,15 +364,15 @@ describe('checkStructure component skeletons', () => {
       'export function Example() { return <section />; }'
     );
     fs.writeFileSync(
-      path.join(componentPath, 'skeleton.tsx'),
+      path.join(componentPath, 'state.tsx'),
       'export function ExampleSkeleton() { return <section />; }'
     );
     fs.writeFileSync(
-      path.join(componentPath, '__tests__', 'skeleton.test.tsx'),
+      path.join(componentPath, '__tests__', 'state.test.tsx'),
       'export {};\n'
     );
     fs.writeFileSync(
-      path.join(componentPath, '__stories__', 'skeleton.stories.tsx'),
+      path.join(componentPath, '__stories__', 'state.stories.tsx'),
       'export default {};\n'
     );
 
@@ -404,9 +404,9 @@ describe('checkStructure component skeletons', () => {
     );
 
     expect(checkStructure(root)).toEqual([
-      expect.stringContaining('skeleton.tsx'),
-      expect.stringContaining('skeleton.test.tsx'),
-      expect.stringContaining('skeleton.stories.tsx'),
+      expect.stringContaining('state.tsx'),
+      expect.stringContaining('state.test.tsx'),
+      expect.stringContaining('state.stories.tsx'),
     ]);
   });
 });

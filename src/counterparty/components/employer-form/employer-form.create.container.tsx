@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { EmployerForm } from './employer-form';
-import { EmployerFormSkeleton } from './skeleton';
+import { EmployerFormSkeleton } from './state';
 import type {
   EmployerFormCreateContainerProps,
   IEmployerFormValues,

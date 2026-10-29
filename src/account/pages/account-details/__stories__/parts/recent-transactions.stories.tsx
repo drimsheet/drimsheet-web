@@ -1,9 +1,13 @@
-import { RecentTransactionsSkeleton } from '@/account/pages/account-details/parts/recent-transactions';
+import {
+  RecentTransactions,
+  RecentTransactionsSkeleton,
+} from '@/account/pages/account-details/parts/recent-transactions';
 import type {
   IJournalEntryListDto,
   ILedgerAccountDto,
   TEntityId,
 } from '@/shared/lib/api/Api';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const account: ILedgerAccountDto = {
   id: 'account-1' as TEntityId,
@@ -84,9 +88,6 @@ const transaction: IJournalEntryListDto = {
     },
   ],
 };
-
-import { RecentTransactions } from '@/account/pages/account-details/parts/recent-transactions';
-import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
   title: 'Ledger Accounts/AccountDetails/RecentTransactions',

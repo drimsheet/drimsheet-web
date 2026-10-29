@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PettyCashAccountForm } from './petty-cash-account-form';
-import { PettyCashAccountFormSkeleton } from './skeleton';
+import { PettyCashAccountFormSkeleton } from './state';
 import type {
   IPettyCashAccountFormValues,
   PettyCashAccountFormUpdateContainerProps,

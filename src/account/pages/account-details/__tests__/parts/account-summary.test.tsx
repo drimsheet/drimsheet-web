@@ -34,7 +34,7 @@ describe('LedgerAccountSummary', () => {
     render(<LedgerAccountSummary account={account} />);
 
     expect(screen.getByText('Current balance')).toBeInTheDocument();
-    expect(screen.getByText(/₦2,450,000/)).toBeInTheDocument();
+    expect(screen.getByText(/NGN\s*2,450,000/)).toBeInTheDocument();
   });
 
   it('shows an approximate functional balance for a foreign currency account', () => {
@@ -52,7 +52,7 @@ describe('LedgerAccountSummary', () => {
     expect(
       screen.getByText('Approximate balance in functional currency')
     ).toBeInTheDocument();
-    expect(screen.getByText(/₦2,450,000/)).toBeInTheDocument();
+    expect(screen.getByText(/NGN\s*2,450,000/)).toBeInTheDocument();
   });
 
   it('does not repeat a same-currency balance, even with different currency-code casing', () => {

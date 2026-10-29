@@ -30,7 +30,7 @@ describe('CategoryChart', () => {
       />
     );
     const button = screen.getByRole('button', { name: /Refunds/ });
-    expect(button).toHaveTextContent('-₦1,234.5');
+    expect(button).toHaveTextContent('-NGN 1,234.5');
     expect(button).toHaveTextContent('—');
     await user.click(button);
     expect(onViewAccount).toHaveBeenCalledWith('refunds');

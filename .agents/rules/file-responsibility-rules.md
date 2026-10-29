@@ -170,28 +170,39 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
 </output>
 ```
 
-## Component Skeleton Ownership and Exports
+## Component State Ownership and Exports
+
+- Use singular `state.tsx` for existing skeletons, error components, and
+  `<ComponentName>WithState` wrappers. Export public states explicitly from
+  `index.ts`; private states remain in the same file as their component.
+- If a component already has both a skeleton and an error component, provide
+  its `WithState` wrapper alongside those states using `WithTransitionState`. Callers supply data
+  and state without wiring loading/error views. Preserve precedence and
+  missing-data behavior. Do not invent missing states just to add a wrapper;
+  shared section errors do not imply individual component error states.
+- The shared `Skeleton` primitive remains in `skeleton/skeleton.tsx`.
 
 - Every skeleton MUST represent a specific rendered component and mirror its
   layout, field/row structure, spacing, and responsive behavior. Compose it from
   the shared `Skeleton` primitive. Do not create generic page placeholders or
   scatter bare skeleton primitives through orchestration files.
-- For a component with its own directory, put its skeleton in `skeleton.tsx`,
-  name it `<ComponentName>Skeleton`, and explicitly export it from that
+- For a component with its own directory, put its existing skeleton and error states in `state.tsx`,
+  name skeletons `<ComponentName>Skeleton`, and explicitly export it from that
   component's `index.ts`. External consumers import the component barrel;
-  files inside the owner may import `./skeleton` directly.
-- For a component in `*/parts/*`, define and export `<PartName>Skeleton` in the
-  SAME `.tsx` file as the component it represents. Do not create a separate
-  `parts/skeleton.tsx` or `<part>-skeleton.tsx`. Owner-local consumers import the
-  skeleton from that part file. Do not add a `parts/index.ts` or re-export the
-  private part or its skeleton from the component, page, or dialog barrel.
+  files inside the owner may import `./state` directly.
+- For private parts, define and export existing skeletons, errors, and
+  `WithState` wrappers in the SAME `.tsx` file as their component. Keep them
+  owner-private and import directly from that part file. Do not create
+  `parts/state.tsx`, a parts barrel, or public re-exports of private states.
+  Existing shared section-error parts retain their own files.
+
 - Pages, dialogs, and containers compose these component skeletons. Extract a
   real presentation component first if the content needing a skeleton does not
   yet have one; a page or dialog directory alone is not a skeleton owner.
 - A component's dedicated skeleton support files use
-  `__stories__/skeleton.stories.tsx` and, when tests are warranted,
-  `__tests__/skeleton.test.tsx`. Document an inline part skeleton in the part's
-  mirrored story and test meaningful loading transitions in its mirrored tests.
+  `__stories__/state.stories.tsx` and, when tests are warranted,
+  `__tests__/state.test.tsx`. Document private part states in the part's mirrored story and test
+  meaningful loading transitions in its mirrored tests.
 - Run `npm run check:skeletons` to enforce production skeleton ownership,
   naming, placement, named runtime exports, explicit component-barrel exports,
   private-part boundaries, and use of bare primitives only inside named
@@ -216,12 +227,13 @@ Make each file easy to understand, safe to change, and obvious for an AI agent t
 ```tsx
 // components/bank-details-form/index.ts
 export { BankDetailsForm } from './bank-details-form';
-export { BankDetailsFormSkeleton } from './skeleton';
+export { BankDetailsFormSkeleton } from './state';
 
 // components/bank-details-form/parts/bank-selection.tsx
 export function BankSelection(props: Readonly<BankSelectionProps>) {
   /* ... */
 }
+
 export function BankSelectionSkeleton() {
   /* ... */
 }

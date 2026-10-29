@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from '@/shared/components/select';
 import { useTranslation } from 'react-i18next';
-import { CounterpartyTypeSelectSkeleton } from './skeleton';
+import { CounterpartyTypeSelectSkeleton } from './state';
 import type { CounterpartyTypeSelectProps } from './types';
 
 export function CounterpartyTypeSelect({

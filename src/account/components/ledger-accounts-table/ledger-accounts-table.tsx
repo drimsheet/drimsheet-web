@@ -76,7 +76,6 @@ export function LedgerAccountsTable({
           <>
             <Money
               className="text-foreground text-sm font-heading"
-              localCode={row.functionalBalance.currencyCode}
               value={value as IMoneyDto}
             />
 

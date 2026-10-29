@@ -1,4 +1,4 @@
-import { reportingService } from '@/reporting/lib/services/reporting.service';
+import { ledgerReportingService } from '@/reporting/lib/services/ledger-reporting.service';
 import type { IGetAccountCashFlowQuery } from '@/shared/lib/api/Api';
 import { useQuery } from '@tanstack/react-query';
 
@@ -7,7 +7,13 @@ export function useAccountCashFlow(
   query: IGetAccountCashFlowQuery
 ) {
   return useQuery({
-    queryKey: ['reportingService', 'getAccountCashFlow', accountId, query],
-    queryFn: () => reportingService.getAccountCashFlow(accountId, query),
+    queryKey: [
+      'ledgerReportingService',
+      'getAccountCashFlow',
+      accountId,
+      query,
+    ],
+    queryFn: ({ signal }) =>
+      ledgerReportingService.getAccountCashFlow(accountId, query, signal),
   });
 }

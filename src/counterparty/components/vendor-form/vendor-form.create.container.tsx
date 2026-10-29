@@ -5,7 +5,7 @@ import { useJurisdictions } from '@/shared/hooks/use-jurisdictions';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { VendorFormSkeleton } from './skeleton';
+import { VendorFormSkeleton } from './state';
 import type {
   IVendorFormValues,
   VendorFormCreateContainerProps,

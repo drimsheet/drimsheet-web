@@ -24,6 +24,10 @@ function setActiveAccountingEntity(accountingEntity: IAccountingEntity) {
 }
 
 export const accountingService = {
+  async getCurrentFiscalYear(signal?: AbortSignal) {
+    return (await drimsheetApi.accounting.getCurrentFiscalYear({ signal }))
+      .data;
+  },
   async getEntityDetails(entityId: string) {
     return (
       await drimsheetApi.accounting.getActiveAccountingEntity({

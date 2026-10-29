@@ -93,10 +93,7 @@ export function CounterpartyDetailsPage() {
     );
   };
 
-  const handleSortChange = (
-    _key: 'effectiveDate',
-    direction: 'asc' | 'desc' | null
-  ) => {
+  const handleSortChange = (_key: string, direction: 'asc' | 'desc' | null) => {
     setSortDirection(direction ?? EPaginationSortDirection.Asc);
   };
 
@@ -108,23 +105,21 @@ export function CounterpartyDetailsPage() {
 
   if (isPending) {
     return (
-      <>
-        <AppBody>
-          <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-            <Button
-              variant="link"
-              asChild
-              className="w-fit px-0 text-muted-foreground"
-            >
-              <Link to="/counterparties">
-                <ArrowLeft data-icon="inline-start" aria-hidden="true" />
-                {all_counterparties_label}
-              </Link>
-            </Button>
-            <CounterpartyDetailsSkeleton />
-          </div>
-        </AppBody>
-      </>
+      <AppBody>
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+          <Button
+            variant="link"
+            asChild
+            className="w-fit px-0 text-muted-foreground"
+          >
+            <Link to="/counterparties">
+              <ArrowLeft data-icon="inline-start" aria-hidden="true" />
+              {all_counterparties_label}
+            </Link>
+          </Button>
+          <CounterpartyDetailsSkeleton />
+        </div>
+      </AppBody>
     );
   }
 

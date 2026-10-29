@@ -1,5 +1,5 @@
 import type {
-  IAccountCounterpartyParticipationDto,
+  IAccountBalanceContributionsByCounterpartyDto,
   ILedgerAccountDto,
   IMoneyDto,
   IPaginationResponseMeta,
@@ -60,13 +60,15 @@ export interface CategoryTrendProps {
 
 export interface CounterpartyShareProps {
   type: 'revenue' | 'expense';
-  counterparties: IAccountCounterpartyParticipationDto[];
+  counterparties: IAccountBalanceContributionsByCounterpartyDto[];
   pagination?: IPaginationResponseMeta;
   loading: boolean;
   error: boolean;
   onPageChange: (page: number) => void;
   selectedId: string | null;
-  onSelect: (participation: IAccountCounterpartyParticipationDto) => void;
+  onSelect: (
+    participation: IAccountBalanceContributionsByCounterpartyDto
+  ) => void;
 }
 
 export interface CounterpartyShareContainerProps extends Pick<

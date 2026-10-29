@@ -7,10 +7,12 @@ import { useLedgerAccountRoutes } from '@/account/routes/ledger-account';
 import { useAccountingRoutes } from '@/accounting/routes/accounting';
 import { useAuthRoutes } from '@/auth/routes/auth';
 import { useCounterpartiesRoutes } from '@/counterparty/routes/counterparties';
+import { useDebtRoutes } from '@/debt/routes/debt';
 import { useJournalEntriesRoutes } from '@/journal-entries/routes/journal-entries';
 import { useOnboardingRoutes } from '@/onboarding/routes/onboarding';
 import { useReportingRoutes } from '@/reporting/routes/reporting';
 import { featureFlagKeys } from '@/shared/hooks/use-feature-flags';
+import { useTaxRoutes } from '@/tax/routes/tax';
 import { useUserRoutes } from '@/user/routes/user';
 import { wrapUseRoutesV7 } from '@sentry/react';
 import { Outlet, useRoutes } from 'react-router-dom';
@@ -27,6 +29,8 @@ export function AppRoutes() {
   const categoryRoutes = useCategoryRoutes('/categories');
   const accountingRoutes = useAccountingRoutes('/legal-entity');
   const onboardingRoutes = useOnboardingRoutes('/onboarding');
+  const debtRoutes = useDebtRoutes('/debt');
+  const taxRoutes = useTaxRoutes('/tax');
 
   const routes = useSentryRoutes([
     {
@@ -52,6 +56,8 @@ export function AppRoutes() {
             categoryRoutes,
             userRoutes,
             accountingRoutes,
+            debtRoutes,
+            taxRoutes,
           ],
         },
       ],

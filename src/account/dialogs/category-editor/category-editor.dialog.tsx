@@ -49,7 +49,7 @@ export function CategoryEditorDialog({
           queryKey: ['journalEntryService', 'getJournalEntries'],
         }),
         queryClient.invalidateQueries({
-          queryKey: ['reportingService'],
+          queryKey: ['ledgerReportingService'],
         }),
       ]);
       onClose();

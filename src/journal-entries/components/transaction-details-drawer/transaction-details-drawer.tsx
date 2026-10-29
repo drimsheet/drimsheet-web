@@ -23,6 +23,7 @@ export function TransactionDetailsDrawer({
   editDisabled = false,
   onEdit,
   onOpenChange,
+  onCloseAutoFocus,
   open,
 }: Readonly<TransactionDetailsDrawerProps>) {
   const { t } = useTranslation('journal-entries');
@@ -46,7 +47,11 @@ export function TransactionDetailsDrawer({
 
   return (
     <Sheet onOpenChange={handleOpenChange} open={open}>
-      <SheetContent className="gap-0 p-0 sm:max-w-md" showCloseButton={false}>
+      <SheetContent
+        onCloseAutoFocus={onCloseAutoFocus}
+        className="gap-0 p-0 sm:max-w-md"
+        showCloseButton={false}
+      >
         <SheetHeader className="flex-row items-center justify-between border-b border-border px-5 py-4">
           <div>
             <SheetTitle>{details_title}</SheetTitle>

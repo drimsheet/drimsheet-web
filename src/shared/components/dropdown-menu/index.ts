@@ -1,4 +1,4 @@
 export * from './dropdown-menu';
-export { DropdownMenuItemSkeleton } from './skeleton';
+export { DropdownMenuItemSkeleton } from './state';
 
 export type { DropdownMenuItemSkeletonProps } from './types';

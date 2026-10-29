@@ -8,7 +8,7 @@ import {
 } from '@/shared/components/breadcrumb';
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
-import { PageBreadcrumbsSkeleton } from './skeleton';
+import { PageBreadcrumbsSkeleton } from './state';
 import type { IPageBreadcrumb, PageBreadcrumbsProps } from './types';
 
 function flattenBreadcrumb(breadcrumb: IPageBreadcrumb) {

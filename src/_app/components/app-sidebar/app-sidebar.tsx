@@ -58,14 +58,34 @@ export function AppSidebar({
       title: t('shared:transactions'),
       url: '/transactions',
       icon: <ArrowLeftRight aria-hidden />,
+      items: [
+        {
+          title: t('navigation:transactions_overview'),
+          url: '/transactions',
+          isActive: currentPath === '/transactions',
+        },
+        {
+          title: t('navigation:transactions_list'),
+          url: '/transactions/list',
+          isActive: currentPath === '/transactions/list',
+        },
+      ],
     },
     {
       title: t('shared:categories'),
       url: '/categories',
       icon: <Tags aria-hidden />,
     },
-    { title: t('navigation:debt'), icon: <HandCoins aria-hidden /> },
-    { title: t('shared:tax'), icon: <Calculator aria-hidden /> },
+    {
+      title: t('navigation:debt'),
+      url: '/debt',
+      icon: <HandCoins aria-hidden />,
+    },
+    {
+      title: t('shared:tax'),
+      url: '/tax',
+      icon: <Calculator aria-hidden />,
+    },
   ];
 
   const configurationItems: INavItem[] = [

@@ -1,6 +1,9 @@
-export { BalanceTrend, BalanceTrendWithState } from './balance-trend';
-export { BalanceTrendError } from './error';
-export { BalanceTrendSkeleton } from './skeleton';
+export { BalanceTrend } from './balance-trend';
+export {
+  BalanceTrendError,
+  BalanceTrendSkeleton,
+  BalanceTrendWithState,
+} from './state';
 export type {
   BalanceTrendErrorProps,
   BalanceTrendProps,

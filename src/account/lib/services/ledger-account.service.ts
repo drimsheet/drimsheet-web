@@ -2,7 +2,6 @@ import { drimsheetApi } from '@/shared/lib/api';
 import {
   ELedgerAccountSubType,
   ELedgerType,
-  type IGetAccountCounterpartyParticipationQuery,
   type IGetLedgerAccountsQuery,
   type IGetPermittedPostingAccountsQuery,
   type IHeaderAccountNameAliasesReq,
@@ -81,28 +80,12 @@ async function getSubAccounts(id: string) {
   return response.data;
 }
 
-async function getAccountCounterpartyParticipation(
-  accountId: string,
-  query: IGetAccountCounterpartyParticipationQuery,
-  signal?: AbortSignal
-) {
-  const response =
-    await drimsheetApi.reporting.getAccountCounterpartyParticipation(
-      accountId,
-      query,
-      { signal }
-    );
-
-  return response.data;
-}
-
 async function setupHeaderAccounts(payload: IHeaderAccountNameAliasesReq) {
   return (await drimsheetApi.ledger.setupHeaderAccounts(payload)).data;
 }
 
 export const ledgerAccountService = Object.freeze({
   setupHeaderAccounts,
-  getAccountCounterpartyParticipation,
   getLedgerAccounts,
   getPettyBaseCashFilters,
   getLedgerAccount,

@@ -11,7 +11,7 @@ export function useCreateBankAccount() {
         queryKey: ['ledgerAccountService'],
       });
       queryClient.invalidateQueries({
-        queryKey: ['reportingService'],
+        queryKey: ['ledgerReportingService'],
       });
     },
   });

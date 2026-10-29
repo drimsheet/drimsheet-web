@@ -1,5 +1,5 @@
 export { PageBreadcrumbs } from './page-breadcrumbs';
-export { PageBreadcrumbsSkeleton } from './skeleton';
+export { PageBreadcrumbsSkeleton } from './state';
 
 export type {
   IPageBreadcrumb,

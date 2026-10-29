@@ -1,8 +1,8 @@
 import { CategoryArchiveConfirmation } from '@/account/pages/categories/parts/archive-confirmation';
-import type { IRevenueExpenseAccountDto } from '@/shared/lib/api/Api';
+import type { IRevenueExpenseAndSuspenseAccountBalanceDto } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-const categoryAccount: IRevenueExpenseAccountDto = {
+const categoryAccount: IRevenueExpenseAndSuspenseAccountBalanceDto = {
   accountId: 'services',
   accountName: 'Consulting services',
   code: '40001',

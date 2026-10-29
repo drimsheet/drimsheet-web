@@ -1,8 +1,8 @@
-import type { IRevenueExpenseAccountDto } from '@/shared/lib/api/Api';
+import type { IRevenueExpenseAndSuspenseAccountBalanceDto } from '@/shared/lib/api/Api';
 
 export interface CategoryEditorDialogProps {
   account: Pick<
-    IRevenueExpenseAccountDto,
+    IRevenueExpenseAndSuspenseAccountBalanceDto,
     'accountId' | 'accountName' | 'type'
   >;
   onClose: () => void;

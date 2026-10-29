@@ -1,4 +1,4 @@
-import { Money } from '@/shared/components/money';
+import { Money, MoneyJurisdictionProvider } from '@/shared/components/money';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
@@ -32,6 +32,19 @@ export const EUR: Story = {
   },
 };
 
+export const GermanJurisdiction: Story = {
+  args: {
+    value: { amount: 123456, currencyCode: 'USD', isMinorUnit: true },
+  },
+  decorators: [
+    (Story) => (
+      <MoneyJurisdictionProvider value="DE">
+        <Story />
+      </MoneyJurisdictionProvider>
+    ),
+  ],
+};
+
 export const GBP: Story = {
   args: {
     value: { amount: 432000, currencyCode: 'GBP', isMinorUnit: true },
@@ -56,5 +69,14 @@ export const Converted: Story = {
   args: {
     value: { amount: 87450000, currencyCode: 'NGN', isMinorUnit: false },
     isConverted: true,
+  },
+};
+
+export const SmallApproximation: Story = {
+  args: {
+    value: { amount: 11063, currencyCode: 'USD', isMinorUnit: false },
+    isConverted: true,
+    className: 'text-3xl',
+    approximationClassName: 'text-sm',
   },
 };
