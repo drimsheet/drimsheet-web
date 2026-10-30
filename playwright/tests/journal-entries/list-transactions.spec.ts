@@ -439,7 +439,27 @@ test('lists all transactions with applied filters and preserves creation routes'
     .getByRole('button', { name: 'Add new transaction', exact: true })
     .click();
   await expect(page).toHaveURL('/transactions/inflow');
-  await expect(page.getByRole('tab', { name: 'Inflow' })).toBeVisible();
+  await expect(
+    page.getByRole('radio', { name: 'Inflow', exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('radio', { name: 'Inflow', exact: true })
+  ).toBeChecked();
+  await page.getByRole('radio', { name: 'Outflow', exact: true }).click();
+  await expect(page).toHaveURL('/transactions/outflow');
+  await expect(
+    page.getByRole('radio', { name: 'Outflow', exact: true })
+  ).toBeChecked();
+  await page.getByRole('radio', { name: 'Transfer', exact: true }).click();
+  await expect(page).toHaveURL('/transactions/transfer');
+  await expect(
+    page.getByRole('radio', { name: 'Transfer', exact: true })
+  ).toBeChecked();
+  await page
+    .getByRole('navigation', { name: 'breadcrumb' })
+    .getByRole('link', { name: 'Transactions', exact: true })
+    .click();
+  await expect(page).toHaveURL('/transactions');
 });
 
 test('requires typing delete before confirming transaction deletion', async ({
