@@ -17,10 +17,6 @@ export function CategoryTransactionCount({
 
   const categories_transactions_label = t('categories_transactions_label');
 
-  const category_details_count_description = t(
-    'category_details_count_description'
-  );
-
   return (
     <div className="flex flex-col gap-2">
       <dt className="text-sm text-muted-foreground">
@@ -28,9 +24,6 @@ export function CategoryTransactionCount({
       </dt>
       <dd className="font-heading text-3xl font-medium tabular-nums">
         {count_text}
-      </dd>
-      <dd className="text-xs text-muted-foreground">
-        {category_details_count_description}
       </dd>
     </div>
   );
@@ -44,10 +37,6 @@ export function CategoryTransactionCountSkeleton() {
   );
 
   const categories_transactions_label = t('categories_transactions_label');
-
-  const category_details_count_description = t(
-    'category_details_count_description'
-  );
 
   return (
     <div aria-busy="true" className="flex flex-col gap-2">
@@ -63,9 +52,6 @@ export function CategoryTransactionCountSkeleton() {
           {category_details_loading_count_label}
         </output>
         <Skeleton className="h-9 w-16" />
-      </dd>
-      <dd className="text-xs text-muted-foreground">
-        {category_details_count_description}
       </dd>
     </div>
   );

@@ -142,7 +142,13 @@ async function setup(page: Page, type: 'revenue' | 'expense' = 'expense') {
     const params = new URL(route.request().url()).searchParams;
     expect(params.get('accountId')).toBe(accountId);
     const pageNumber = Number(params.get('page'));
-    const data = pageNumber === 1 ? entries.slice(0, 1) : entries.slice(1);
+    const status = params.get('status');
+
+    const matching = entries.filter(
+      (entry) => !status || entry.status === status
+    );
+
+    const data = pageNumber === 1 ? matching.slice(0, 1) : matching.slice(1);
 
     return route.fulfill({
       json: {
@@ -153,7 +159,12 @@ async function setup(page: Page, type: 'revenue' | 'expense' = 'expense') {
             side: type === 'revenue' ? 'credit' : 'debit',
           })),
         })),
-        meta: { page: pageNumber, limit: 100, totalPages: 2, total: 3 },
+        meta: {
+          page: pageNumber,
+          limit: 100,
+          totalPages: 2,
+          total: matching.length,
+        },
       },
     });
   });
@@ -187,7 +198,7 @@ test('keeps the balance visible when history fails and recovers after browser re
       await route.fulfill({
         json: {
           data: entries.slice(0, 1),
-          meta: { page: 1, limit: 100, total: 3, totalPages: 2 },
+          meta: { page: 1, limit: 100, total: 2, totalPages: 2 },
         },
       });
 
@@ -284,12 +295,19 @@ test('pages server participation while preserving the transaction filter', async
   ).toBeVisible();
   await table.getByRole('button', { name: 'Clear filter: Notion' }).click();
   await expect(
-    table.getByText('3 transactions', { exact: true })
+    table.getByText('2 transactions', { exact: true })
   ).toBeVisible();
+  await expect(
+    page
+      .getByLabel(category.name, { exact: true })
+      .getByRole('definition')
+      .filter({ hasText: /^2$/ })
+  ).toBeVisible();
+  await expect(table.getByText('Figma subscription')).toHaveCount(0);
   await table
     .getByRole('textbox', { name: 'Search transactions…' })
-    .fill('Figma');
-  await expect(table.getByText('Figma subscription')).toBeVisible();
+    .fill('Notion');
+  await expect(table.getByText('Notion subscription')).toBeVisible();
   await expect(table.getByText('Google subscription')).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 844 });
   expect(
@@ -616,6 +634,19 @@ test('checks deletion eligibility on menu open and hides stale permission while 
     await page.route(
       '**/api/v1/reporting/ledger/revenue-and-expense-activity-summary?*',
       (route) => route.fulfill({ json: summary })
+    );
+    await page.route('**/api/v1/ledger?*', (route) =>
+      route.fulfill({
+        json: {
+          data: deleted ? [] : [{ ...category, status }],
+          meta: {
+            page: 1,
+            limit: 10,
+            total: deleted ? 0 : 1,
+            totalPages: deleted ? 0 : 1,
+          },
+        },
+      })
     );
     await page.route(
       '**/api/v1/reporting/ledger/revenue-expense-and-suspense-account-balances?*',

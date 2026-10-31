@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 export function useCategoryHistory(accountId: string, enabled: boolean) {
   const query = {
     accountId,
+    status: 'posted',
     limit: 100,
     orderBy: 'effectiveDate',
     sortDirection: 'desc',

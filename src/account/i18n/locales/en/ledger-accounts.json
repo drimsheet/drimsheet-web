@@ -342,7 +342,6 @@
   "category_details_actions_aria_label": "Open category actions",
   "category_details_scope_text": "All time · {{currency}}",
   "category_details_balance_label": "Total balance",
-  "category_details_count_description": "Includes drafts and voided transactions",
   "category_details_loading_count_label": "Loading transaction count",
   "category_details_revenue_trend_title": "Revenue over time",
   "category_details_expense_trend_title": "Expense over time",
