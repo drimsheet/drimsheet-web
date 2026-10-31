@@ -1,32 +1,100 @@
 import categoriesHelpers from '@/account/pages/categories/helper';
-import type { IRevenueExpenseAndSuspenseAccountBalanceDto } from '@/shared/lib/api/Api';
+import type {
+  ILedgerAccountDto,
+  IRevenueExpenseAndSuspenseAccountBalanceDto,
+} from '@/shared/lib/api/Api';
 import { describe, expect, it } from 'vitest';
 
 describe('categoriesHelpers', () => {
-  it('identifies table rows by account ID while preserving zero balances and null shares', () => {
-    const account: IRevenueExpenseAndSuspenseAccountBalanceDto = {
-      accountId: 'archived-services',
-      accountName: 'Services',
+  it('totals signed functional balances across types and minor units, including archived accounts', () => {
+    const base: IRevenueExpenseAndSuspenseAccountBalanceDto = {
+      accountId: 'a',
+      accountName: 'A',
       code: '40001',
       type: 'revenue',
       subType: 'operating_revenue',
-      status: 'archived',
-      amount: { amount: 0, currencyCode: 'NGN', isMinorUnit: false },
+      status: 'active',
+      amount: { amount: 10000, currencyCode: 'NGN', isMinorUnit: true },
       sharePercentage: null,
-      transactionCount: 0,
+      transactionCount: 1,
+    };
+
+    const totals = categoriesHelpers.totals([
+      base,
+      {
+        ...base,
+        status: 'archived',
+        amount: { ...base.amount, amount: -2000 },
+      },
+      {
+        ...base,
+        type: 'expense',
+        amount: { ...base.amount, amount: 30, isMinorUnit: false },
+      },
+      {
+        ...base,
+        type: 'asset',
+        subType: 'suspense',
+        amount: { ...base.amount, amount: 500 },
+      },
+      {
+        ...base,
+        type: 'liability',
+        subType: 'suspense',
+        amount: { ...base.amount, amount: 700 },
+      },
+    ]);
+
+    expect(totals).toEqual({
+      revenue: { amount: 80, currencyCode: 'NGN', isMinorUnit: false },
+      expenses: { amount: 30, currencyCode: 'NGN', isMinorUnit: false },
+      uncategorized: { amount: 12, currencyCode: 'NGN', isMinorUnit: false },
+    });
+    expect(categoriesHelpers.totals([])).toBeNull();
+  });
+  it('maps ledger identity and functional balances to category rows', () => {
+    const account: ILedgerAccountDto = {
+      id: 'archived-services',
+      name: 'Services',
+      code: '40001',
+      type: 'revenue',
+      subType: 'services',
+      status: 'archived',
+      functionalBalance: { amount: 0, currencyCode: 'NGN', isMinorUnit: false },
+      materializedPath: '40001',
+      accountingEntityId: 'entity',
+      normalBalance: 'credit',
+      behavior: 'services',
+      isControlAccount: false,
+      contraAccountRule: 'contra_not_applicable',
+      adjunctAccountRule: 'adjunct_not_applicable',
+      openingBalanceDate: null,
+      createdBy: 'user',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      balance: { amount: 100, currencyCode: 'USD', isMinorUnit: false },
     };
 
     const rows = categoriesHelpers.tableRows([
       account,
-      { ...account, accountId: 'active-services', status: 'active' },
+      { ...account, id: 'active-services', status: 'active' },
     ]);
 
     expect(rows.map(({ id }) => id)).toEqual([
       'archived-services',
       'active-services',
     ]);
-    expect(rows[0]).toEqual({ ...account, id: 'archived-services' });
-    expect(account).not.toHaveProperty('id');
+    expect(rows[0]).toEqual({
+      id: 'archived-services',
+      accountId: 'archived-services',
+      accountName: 'Services',
+      code: '40001',
+      type: 'revenue',
+      subType: 'services',
+      status: 'archived',
+      amount: { amount: 0, currencyCode: 'NGN', isMinorUnit: false },
+    });
+    expect(account).not.toHaveProperty('accountId');
     expect(categoriesHelpers.tableRows([])).toEqual([]);
   });
 

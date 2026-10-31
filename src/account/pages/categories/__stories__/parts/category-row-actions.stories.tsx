@@ -14,8 +14,6 @@ const meta = {
       subType: 'operating_revenue',
       status: 'active',
       amount: { amount: 100000, currencyCode: 'NGN', isMinorUnit: false },
-      sharePercentage: 80,
-      transactionCount: 12,
     },
     onViewAccount: () => {},
     onEditAccount: () => {},
@@ -36,7 +34,6 @@ export const Uncategorized: Story = {
       type: 'asset',
       subType: 'suspense',
       accountName: 'Uncategorized payments',
-      sharePercentage: null,
     },
   },
 };

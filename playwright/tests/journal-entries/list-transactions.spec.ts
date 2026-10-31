@@ -253,9 +253,9 @@ test('lists all transactions with applied filters and preserves creation routes'
   await page.route('**/api/v1/ledger?*', async (route) => {
     const query = new URL(route.request().url()).searchParams;
     let data = accounts.filter((account) => account.id.startsWith('cash-'));
-    if (query.get('type') === 'revenue') {
+    if (query.get('types[]') === 'revenue') {
       data = accounts.filter((account) => account.id === 'services');
-    } else if (query.get('type') === 'expense') {
+    } else if (query.get('types[]') === 'expense') {
       data = accounts.filter((account) =>
         ['bank-fees', 'gift'].includes(account.id)
       );

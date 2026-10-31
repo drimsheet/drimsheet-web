@@ -10,8 +10,8 @@ vi.mock('@/account/lib/services/ledger-account.service', () => ({
   ledgerAccountService: {
     getLedgerAccounts: vi.fn(),
     getPettyBaseCashFilters: () => ({
-      type: 'asset',
-      subType: 'cash_and_cash_equivalent',
+      types: ['asset'],
+      subTypes: ['cash_and_cash_equivalent'],
       isControlAccount: false,
     }),
   },
@@ -42,8 +42,8 @@ describe('useTransactionFilterOptions', () => {
         ({
           data: [
             {
-              id: `${query.type}-${query.page}`,
-              name: `${query.type} ${query.page}`,
+              id: `${query.types?.[0]}-${query.page}`,
+              name: `${query.types?.[0]} ${query.page}`,
               balance: { currencyCode: query.page === 2 ? 'USD' : 'NGN' },
             },
           ],
@@ -74,7 +74,7 @@ describe('useTransactionFilterOptions', () => {
       result.current.options.currencies.map((option) => option.value)
     ).toEqual(['NGN', 'USD']);
     expect(ledgerAccountService.getLedgerAccounts).toHaveBeenCalledWith(
-      { type: 'revenue', isControlAccount: false, page: 2, limit: 100 },
+      { types: ['revenue'], isControlAccount: false, page: 2, limit: 100 },
       expect.any(AbortSignal)
     );
   });

@@ -1,6 +1,10 @@
 import {
-  ELedgerAccountSubType,
+  EAssetSubType,
+  EEquitySubType,
+  EExpenseSubType,
   ELedgerType,
+  ELiabilitySubType,
+  ERevenueSubType,
   type ILedgerAccountDto,
   type ULedgerAccountSubType,
   type ULedgerType,
@@ -60,7 +64,7 @@ type TSubTypeIconMaps = Partial<
 >;
 
 const assetTypeMaps: TSubTypeIconMaps = {
-  [ELedgerAccountSubType.CashAndCashEquivalent]: {
+  [EAssetSubType.CashAndCashEquivalent]: {
     fallback: Wallet,
     behaviorMaps: {
       default_cash: Wallet,
@@ -68,7 +72,7 @@ const assetTypeMaps: TSubTypeIconMaps = {
       bank: Landmark,
     },
   },
-  [ELedgerAccountSubType.Receivables]: {
+  [EAssetSubType.Receivables]: {
     fallback: ReceiptText,
     behaviorMaps: {
       default_receivables: ReceiptText,
@@ -76,7 +80,7 @@ const assetTypeMaps: TSubTypeIconMaps = {
       trade_receivable: WalletCards,
     },
   },
-  [ELedgerAccountSubType.Suspense]: {
+  [EAssetSubType.Suspense]: {
     fallback: ShieldQuestion,
     behaviorMaps: {
       default: ShieldQuestion,
@@ -85,7 +89,7 @@ const assetTypeMaps: TSubTypeIconMaps = {
 };
 
 const liabilityTypeMaps: TSubTypeIconMaps = {
-  [ELedgerAccountSubType.ShortTermDebt]: {
+  [ELiabilitySubType.ShortTermDebt]: {
     fallback: BanknoteArrowDown,
     behaviorMaps: {
       default_short_term_debt: BanknoteArrowDown,
@@ -94,7 +98,7 @@ const liabilityTypeMaps: TSubTypeIconMaps = {
       short_term_loan: Banknote,
     },
   },
-  [ELedgerAccountSubType.Payable]: {
+  [ELiabilitySubType.Payable]: {
     fallback: Receipt,
     behaviorMaps: {
       default_payable: Receipt,
@@ -102,7 +106,7 @@ const liabilityTypeMaps: TSubTypeIconMaps = {
       trade_payable: ShoppingCart,
     },
   },
-  [ELedgerAccountSubType.Suspense]: {
+  [ELiabilitySubType.Suspense]: {
     fallback: ShieldQuestion,
     behaviorMaps: {
       default: ShieldQuestion,
@@ -111,13 +115,13 @@ const liabilityTypeMaps: TSubTypeIconMaps = {
 };
 
 const equityTypeMaps: TSubTypeIconMaps = {
-  [ELedgerAccountSubType.RetainedEarnings]: {
+  [EEquitySubType.RetainedEarnings]: {
     fallback: ChartNoAxesCombined,
     behaviorMaps: {
       retained_earnings: ChartNoAxesCombined,
     },
   },
-  [ELedgerAccountSubType.OpeningBalance]: {
+  [EEquitySubType.OpeningBalance]: {
     fallback: Scale,
     behaviorMaps: {
       opening_balance_equity: Scale,
@@ -126,25 +130,25 @@ const equityTypeMaps: TSubTypeIconMaps = {
 };
 
 const revenueTypeMaps: TSubTypeIconMaps = {
-  [ELedgerAccountSubType.Services]: {
+  [ERevenueSubType.Services]: {
     fallback: BriefcaseBusiness,
     behaviorMaps: {
       services: BriefcaseBusiness,
     },
   },
-  [ELedgerAccountSubType.EmploymentIncome]: {
+  [ERevenueSubType.EmploymentIncome]: {
     fallback: UserRound,
     behaviorMaps: {
       employment_income: UserRound,
     },
   },
-  [ELedgerAccountSubType.GainOnAssetSale]: {
+  [ERevenueSubType.GainOnAssetSale]: {
     fallback: BadgeDollarSign,
     behaviorMaps: {
       gain_on_asset_sale: BadgeDollarSign,
     },
   },
-  [ELedgerAccountSubType.UnrealizedGains]: {
+  [ERevenueSubType.UnrealizedGains]: {
     fallback: TrendingUp,
     behaviorMaps: {
       unrealized_gains: TrendingUp,
@@ -153,7 +157,7 @@ const revenueTypeMaps: TSubTypeIconMaps = {
 };
 
 const expenseTypeMaps: TSubTypeIconMaps = {
-  [ELedgerAccountSubType.DirectCosts]: {
+  [EExpenseSubType.DirectCosts]: {
     fallback: Factory,
     behaviorMaps: {
       cogs: ShoppingCart,
@@ -162,43 +166,43 @@ const expenseTypeMaps: TSubTypeIconMaps = {
       default_direct_cost: Factory,
     },
   },
-  [ELedgerAccountSubType.RentAndUtilities]: {
+  [EExpenseSubType.RentAndUtilities]: {
     fallback: HousePlug,
     behaviorMaps: {
       rent_and_utilities: HousePlug,
     },
   },
-  [ELedgerAccountSubType.BankCharge]: {
+  [EExpenseSubType.BankCharge]: {
     fallback: Building2,
     behaviorMaps: {
       bank_charge: Building2,
     },
   },
-  [ELedgerAccountSubType.FinanceCost]: {
+  [EExpenseSubType.FinanceCost]: {
     fallback: BadgePercent,
     behaviorMaps: {
       finance_cost: BadgePercent,
     },
   },
-  [ELedgerAccountSubType.Interest]: {
+  [EExpenseSubType.Interest]: {
     fallback: CirclePercent,
     behaviorMaps: {
       interest: CirclePercent,
     },
   },
-  [ELedgerAccountSubType.IncomeTaxExpense]: {
+  [EExpenseSubType.IncomeTaxExpense]: {
     fallback: Landmark,
     behaviorMaps: {
       tax_expense: Landmark,
     },
   },
-  [ELedgerAccountSubType.UnrealizedLoss]: {
+  [EExpenseSubType.UnrealizedLoss]: {
     fallback: TrendingDown,
     behaviorMaps: {
       unrealized_loss: TrendingDown,
     },
   },
-  [ELedgerAccountSubType.LossOnAssetDisposal]: {
+  [EExpenseSubType.LossOnAssetDisposal]: {
     fallback: Trash2,
     behaviorMaps: {
       asset_disposal_loss: Trash2,

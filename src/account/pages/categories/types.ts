@@ -1,7 +1,7 @@
 import type {
-  IDateRangeDto,
-  IPaginatedResponseIRevenueExpenseAndSuspenseAccountBalanceDto,
-  IRevenueAndExpenseActivitySummaryDto,
+  ILedgerAccountDto,
+  IMoneyDto,
+  IPaginatedResponseILedgerAccountDto,
   IRevenueExpenseAndSuspenseAccountBalanceDto,
   IRevenueExpenseSectionDto,
 } from '@/shared/lib/api/Api';
@@ -21,7 +21,11 @@ export interface CategoryPeriodProps {
 }
 
 export interface CategorySummaryProps {
-  summary: IRevenueAndExpenseActivitySummaryDto;
+  summary: {
+    revenue: IMoneyDto;
+    expenses: IMoneyDto;
+    uncategorized: IMoneyDto;
+  };
 }
 
 export interface CategoryChartProps {
@@ -33,7 +37,7 @@ export interface CategoryChartProps {
 }
 
 export interface CategoryTableProps {
-  accounts?: IPaginatedResponseIRevenueExpenseAndSuspenseAccountBalanceDto;
+  accounts?: IPaginatedResponseILedgerAccountDto;
   loading: boolean;
   search: string;
   type: UCategoryTypeFilter;
@@ -41,17 +45,21 @@ export interface CategoryTableProps {
   onTypeChange: (value: string) => void;
   onPageChange: (page: number) => void;
   onViewAccount: (id: string) => void;
-  onEditAccount: (account: IRevenueExpenseAndSuspenseAccountBalanceDto) => void;
-  onArchiveAccount: (
-    account: IRevenueExpenseAndSuspenseAccountBalanceDto
-  ) => void;
+  onEditAccount: (account: TCategoryAccount) => void;
+  onArchiveAccount: (account: TCategoryAccount) => void;
 }
 
 export interface CategorySectionErrorProps {
   title: string;
 }
 
-export interface ICategoryTableRow extends IRevenueExpenseAndSuspenseAccountBalanceDto {
+export type TCategoryAccount = Pick<
+  IRevenueExpenseAndSuspenseAccountBalanceDto,
+  'accountId' | 'accountName' | 'code' | 'subType' | 'status' | 'amount'
+> &
+  Pick<ILedgerAccountDto, 'type'>;
+
+export interface ICategoryTableRow extends TCategoryAccount {
   id: string;
 }
 
@@ -59,16 +67,11 @@ export interface CategoryRowActionsProps extends Pick<
   CategoryTableProps,
   'onViewAccount' | 'onEditAccount' | 'onArchiveAccount'
 > {
-  account: IRevenueExpenseAndSuspenseAccountBalanceDto;
-}
-
-export interface CategoryOverviewProps {
-  query: IDateRangeDto;
-  onViewAccount: (id: string) => void;
+  account: TCategoryAccount;
 }
 
 export interface CategoryArchiveConfirmationProps {
-  account: IRevenueExpenseAndSuspenseAccountBalanceDto | null;
+  account: TCategoryAccount | null;
   pending: boolean;
   error: boolean;
   onClose: () => void;

@@ -53,8 +53,8 @@ async function loadCounterparties() {
 export function useTransactionFilterOptions() {
   const queries: IGetLedgerAccountsQuery[] = [
     ledgerAccountService.getPettyBaseCashFilters(),
-    { type: ELedgerType.Revenue, isControlAccount: false },
-    { type: ELedgerType.Expense, isControlAccount: false },
+    { types: [ELedgerType.Revenue], isControlAccount: false },
+    { types: [ELedgerType.Expense], isControlAccount: false },
   ];
 
   const accounts = useQueries({

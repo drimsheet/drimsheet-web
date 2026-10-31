@@ -14,8 +14,8 @@ import { Button } from '@/shared/components/button';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
 import {
+  EAssetSubType,
   ELedgerAccountBehavior,
-  ELedgerAccountSubType,
   ELedgerType,
   type ULedgerAccountBehavior,
 } from '@/shared/lib/api/Api';
@@ -55,8 +55,8 @@ export function AccountsDashboardPage() {
       page: Math.max(1, table.page),
       limit: 10,
       search: search || undefined,
-      type: ELedgerType.Asset,
-      subType: ELedgerAccountSubType.CashAndCashEquivalent,
+      types: [ELedgerType.Asset],
+      subTypes: [EAssetSubType.CashAndCashEquivalent],
       behavior: type === 'all' ? undefined : type,
       isControlAccount: false,
     },
@@ -72,7 +72,7 @@ export function AccountsDashboardPage() {
     {
       ...dashboardHelpers.periodQuery(period, now),
       bucketDays: dashboardHelpers.bucketDays(period),
-      subTypes: [ELedgerAccountSubType.CashAndCashEquivalent],
+      subTypes: [EAssetSubType.CashAndCashEquivalent],
     },
     { select: accountDashboardMapper.toHistory }
   );

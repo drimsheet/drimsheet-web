@@ -1,6 +1,8 @@
-import type {
-  IRevenueAndExpenseActivitySummaryDto,
-  IRevenueExpenseAndSuspenseAccountBalanceDto,
+import {
+  EExpenseSubType,
+  ERevenueSubType,
+  type ILedgerAccountDto,
+  type IRevenueExpenseAndSuspenseAccountBalanceDto,
 } from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
 import {
@@ -9,11 +11,8 @@ import {
 } from '@integration/mocks/authenticated-app';
 import type { Page } from '@playwright/test';
 
-const accountsEndpoint =
-  '**/api/v1/reporting/ledger/revenue-expense-and-suspense-account-balances?*';
-
 const summaryEndpoint =
-  '**/api/v1/reporting/ledger/revenue-and-expense-activity-summary?*';
+  '**/api/v1/reporting/ledger/revenue-expense-and-suspense-account-balances?*';
 
 const money = { amount: 800000, currencyCode: 'NGN', isMinorUnit: false };
 
@@ -29,37 +28,28 @@ const account: IRevenueExpenseAndSuspenseAccountBalanceDto = {
   transactionCount: 12,
 };
 
-const summary: IRevenueAndExpenseActivitySummaryDto = {
-  currencyCode: 'NGN',
-  period: { from: '2026-10-01', to: '2026-10-14' },
-  comparisonPeriod: { from: '2026-09-17', to: '2026-09-30' },
-  revenue: {
-    total: money,
-    previousTotal: { ...money, amount: 0 },
-    percentageChange: null,
-    accounts: [
-      {
-        accountId: account.accountId,
-        accountName: account.accountName,
-        amount: money,
-        sharePercentage: 100,
-      },
-    ],
-  },
-  expenses: {
-    total: { ...money, amount: 500000 },
-    previousTotal: { ...money, amount: 625000 },
-    percentageChange: -20,
-    accounts: [
-      {
-        accountId: 'rent',
-        accountName: 'Rent',
-        amount: { ...money, amount: 500000 },
-        sharePercentage: 100,
-      },
-    ],
-  },
-  suspense: { amount: { ...money, amount: 5000 }, transactionCount: 2 },
+const accountsEndpoint = '**/api/v1/ledger?*';
+
+const ledgerAccount: ILedgerAccountDto = {
+  id: account.accountId,
+  name: account.accountName,
+  code: account.code,
+  type: 'revenue',
+  subType: 'services',
+  status: 'active',
+  balance: { amount: 100, currencyCode: 'USD', isMinorUnit: false },
+  functionalBalance: money,
+  materializedPath: '40001',
+  accountingEntityId: 'entity',
+  normalBalance: 'credit',
+  behavior: 'services',
+  isControlAccount: false,
+  contraAccountRule: 'contra_not_applicable',
+  adjunctAccountRule: 'adjunct_not_applicable',
+  openingBalanceDate: null,
+  createdBy: 'user',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
 };
 
 async function setup(page: Page) {
@@ -72,12 +62,17 @@ async function setup(page: Page) {
   }
 
   await page.route(summaryEndpoint, (route) =>
-    route.fulfill({ json: summary })
+    route.fulfill({
+      json: {
+        data: [account],
+        meta: { page: 1, totalPages: 1, limit: 10, total: 1 },
+      },
+    })
   );
   await page.route(accountsEndpoint, (route) =>
     route.fulfill({
       json: {
-        data: [account],
+        data: [ledgerAccount],
         meta: { page: 1, totalPages: 1, limit: 10, total: 1 },
       },
     })
@@ -89,115 +84,112 @@ async function setup(page: Page) {
   await expect(page).toHaveURL('/dashboard');
 }
 
-test('opens from navigation, shows API totals, and keeps both chart sections within 400px', async ({
+test('opens totals and table from navigation without reporting controls or charts', async ({
   page,
 }) => {
   await setup(page);
+  await page.route(summaryEndpoint, (route) => {
+    const query = new URL(route.request().url()).searchParams;
+    const isTotals = query.get('limit') === '100';
+    const second = query.get('page') === '2';
 
-  const accounts = Array.from({ length: 18 }, (_, index) => ({
-    accountId: `account-${index}`,
-    accountName: `Category ${index + 1}`,
-    amount: { ...money, amount: (18 - index) * 10000 },
-    sharePercentage: 5,
-  }));
-
-  await page.route(summaryEndpoint, (route) =>
-    route.fulfill({
+    return route.fulfill({
       json: {
-        ...summary,
-        revenue: { ...summary.revenue, accounts },
-        expenses: { ...summary.expenses, accounts },
+        data:
+          isTotals && second
+            ? [
+                {
+                  ...account,
+                  accountId: 'expense',
+                  type: 'expense',
+                  amount: { ...money, amount: 500000 },
+                },
+                {
+                  ...account,
+                  accountId: 'suspense',
+                  type: 'liability',
+                  subType: 'suspense',
+                  amount: { ...money, amount: 5000 },
+                },
+              ]
+            : [account],
+        meta: {
+          page: second ? 2 : 1,
+          totalPages: isTotals ? 2 : 1,
+          total: isTotals ? 3 : 1,
+          limit: isTotals ? 100 : 10,
+        },
       },
-    })
-  );
+    });
+  });
   await page.getByRole('link', { name: 'Categories', exact: true }).click();
   await expect(page).toHaveURL('/categories');
   await expect(
     page.getByRole('region', { name: 'Total revenue', exact: true })
   ).toContainText('₦800,000');
   await expect(
+    page.getByRole('region', { name: 'Total expenses', exact: true })
+  ).toContainText('₦500,000');
+  await expect(
     page.getByRole('region', { name: 'Uncategorized', exact: true })
-  ).toContainText('2 transactions');
-  await expect(page.getByText('No previous-period comparison')).toBeVisible();
+  ).toContainText('₦5,000');
+  await expect(
+    page.getByRole('combobox', { name: 'Reporting month' })
+  ).toHaveCount(0);
+  await expect(
+    page.getByText('Revenue by category', { exact: true })
+  ).toHaveCount(0);
+  await expect(
+    page.getByText('Expenses by category', { exact: true })
+  ).toHaveCount(0);
   await expect(
     page.getByRole('cell', { name: 'Consulting services', exact: true })
   ).toBeVisible();
   await expect(
-    page.getByText(/Current accumulated balances/)
+    page.getByRole('tab', { name: 'All', exact: true })
+  ).toHaveAttribute('aria-selected', 'true');
+  await expect(
+    page.getByText('Current accumulated balances.', { exact: true })
   ).not.toBeVisible();
-
-  const tableHelp = page.getByRole('button', {
-    name: 'About category balances and counts',
-  });
-
-  await tableHelp.focus();
-  await page.keyboard.press('Enter');
-
-  const tableHelpDialog = page.getByRole('dialog', {
-    name: 'About category balances and counts',
-  });
-
-  await expect(tableHelpDialog).toContainText(
-    'Current accumulated balances, independent of the reporting month.'
-  );
-  await expect(tableHelpDialog).toContainText(
-    'Transaction counts include journal lines in all states.'
-  );
-  await page.keyboard.press('Escape');
-  await expect(tableHelpDialog).not.toBeVisible();
-  await expect(tableHelp).toBeFocused();
-  await page
-    .getByRole('button', { name: 'About the reporting period' })
-    .click();
-  await expect(
-    page.getByRole('dialog', { name: 'About the reporting period' })
-  ).toContainText('Compared with Sep 17, 2026 – Sep 30, 2026.');
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('table')).not.toContainText(account.code);
-  for (const title of ['Revenue by category', 'Expenses by category']) {
-    const chart = page.getByRole('region', { name: title, exact: true });
-    await expect(chart.getByRole('button')).toHaveCount(18);
-    expect(
-      await chart.evaluate((element) => ({
-        height: element.getBoundingClientRect().height,
-        overflow: getComputedStyle(element).overflowY,
-        scrolls: element.scrollHeight > element.clientHeight,
-      }))
-    ).toEqual({ height: 400, overflow: 'auto', scrolls: true });
-    await chart.focus();
-    await page.keyboard.press('End');
-    await expect
-      .poll(() => chart.evaluate((element) => element.scrollTop))
-      .toBeGreaterThan(0);
-  }
-
-  await page.getByRole('button', { name: 'Add category' }).focus();
-  await page.evaluate(() => window.scrollTo(0, 0));
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(
-    page.getByRole('heading', { name: 'Categories', exact: true })
-  ).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth
     )
   ).toBe(true);
-  await page.evaluate(() => window.scrollTo(0, 0));
 });
 
-test('filters and paginates accounts on the server while the month only changes the overview', async ({
+test('filters and paginates the table independently of accumulated totals', async ({
   page,
 }) => {
   await setup(page);
-  const accountQueries: URLSearchParams[] = [];
-  const summaryQueries: URLSearchParams[] = [];
-  await page.route(accountsEndpoint, (route) => {
-    const params = new URL(route.request().url()).searchParams;
-    accountQueries.push(params);
+  const queries: URLSearchParams[] = [];
+  let summaryRequests = 0;
+  await page.route(summaryEndpoint, (route) => {
+    summaryRequests += 1;
 
     return route.fulfill({
       json: {
         data: [account],
+        meta: { page: 1, totalPages: 1, limit: 100, total: 1 },
+      },
+    });
+  });
+  await page.route(accountsEndpoint, (route) => {
+    const params = new URL(route.request().url()).searchParams;
+    queries.push(params);
+    let name = account.accountName;
+    if (params.has('search')) {
+      name = 'Rent search result';
+    } else if (params.get('types[]') === 'expense') {
+      name = 'Rent filtered result';
+    } else if (params.get('page') === '2') {
+      name = 'Second page result';
+    }
+
+    return route.fulfill({
+      json: {
+        data: [{ ...ledgerAccount, name }],
         meta: {
           page: Number(params.get('page')),
           totalPages: 2,
@@ -207,172 +199,113 @@ test('filters and paginates accounts on the server while the month only changes 
       },
     });
   });
-  await page.route(summaryEndpoint, (route) => {
-    const params = new URL(route.request().url()).searchParams;
-    summaryQueries.push(params);
+  await page.goto('/categories');
 
-    return route.fulfill({
+  const total = page.getByRole('region', {
+    name: 'Total revenue',
+    exact: true,
+  });
+
+  await expect(total).toContainText('₦800,000');
+  await expect(
+    page.getByRole('cell', { name: 'Consulting services', exact: true })
+  ).toBeVisible();
+  expect(queries[0]?.getAll('types[]')).toEqual([
+    'revenue',
+    'expense',
+    'asset',
+  ]);
+  expect(queries[0]?.getAll('subTypes[]')).toEqual([
+    'suspense',
+    ...Object.values(ERevenueSubType),
+    ...Object.values(EExpenseSubType),
+  ]);
+  expect(queries[0]?.get('isControlAccount')).toBe('false');
+  await page.getByRole('button', { name: 'Next page', exact: true }).click();
+  await expect(
+    page.getByRole('cell', { name: 'Second page result', exact: true })
+  ).toBeVisible();
+  await page.getByRole('tab', { name: 'Expenses', exact: true }).click();
+  await expect(
+    page.getByRole('cell', { name: 'Rent filtered result', exact: true })
+  ).toBeVisible();
+  await page.getByRole('searchbox', { name: 'Search by name' }).fill('rent');
+  await expect(
+    page.getByRole('cell', { name: 'Rent search result', exact: true })
+  ).toBeVisible();
+  expect(queries.at(-1)?.get('page')).toBe('1');
+  expect(queries.at(-1)?.get('types[]')).toBe('expense');
+  expect(queries.at(-1)?.get('search')).toBe('rent');
+  await expect(total).toContainText('₦800,000');
+  expect(summaryRequests).toBe(1);
+});
+
+test('shows independent summary errors and recovers on refresh', async ({
+  page,
+}) => {
+  await setup(page);
+  let release!: () => void;
+
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  await page.route(summaryEndpoint, async (route) => {
+    if (new URL(route.request().url()).searchParams.get('limit') === '100') {
+      await gate;
+      await route.fulfill({ status: 500, json: { message: 'failure' } });
+
+      return;
+    }
+
+    await route.fulfill({
       json: {
-        ...summary,
-        period: { from: params.get('from'), to: params.get('to') },
+        data: [account],
+        meta: { page: 1, totalPages: 1, total: 1, limit: 10 },
       },
     });
   });
   await page.goto('/categories');
   await expect(
-    page.getByRole('cell', { name: 'Consulting services', exact: true })
-  ).toBeVisible();
-  expect(accountQueries.at(-1)?.has('type')).toBe(false);
-  expect(summaryQueries.at(-1)?.get('to')).toBe('2026-10-14');
-  await page.getByRole('button', { name: 'Next page', exact: true }).click();
-  await expect.poll(() => accountQueries.at(-1)?.get('page')).toBe('2');
-  await page.getByRole('tab', { name: 'Expenses', exact: true }).click();
-  await expect.poll(() => accountQueries.at(-1)?.get('type')).toBe('expense');
-  expect(accountQueries.at(-1)?.get('page')).toBe('1');
-  await page.getByRole('searchbox', { name: 'Search by name' }).fill('rent');
-  await expect.poll(() => accountQueries.at(-1)?.get('search')).toBe('rent');
-  const countBefore = accountQueries.length;
-  await page.getByRole('combobox', { name: 'Reporting month' }).click();
-  await page
-    .getByRole('option', { name: 'September 2026', exact: true })
-    .click();
-  await expect
-    .poll(() => summaryQueries.at(-1)?.get('from'))
-    .toBe('2026-09-01');
-  expect(summaryQueries.at(-1)?.get('to')).toBe('2026-09-30');
-  expect(accountQueries.length).toBe(countBefore);
-  expect(
-    accountQueries.every((query) => !query.has('from') && !query.has('to'))
-  ).toBe(true);
-});
-
-test('keeps loading, independent errors, refresh recovery and empty states useful', async ({
-  page,
-}) => {
-  await setup(page);
-  let releaseSummary!: () => void;
-
-  const gate = new Promise<void>((resolve) => {
-    releaseSummary = resolve;
-  });
-
-  await page.route(summaryEndpoint, async (route) => {
-    await gate;
-    await route.fulfill({ status: 500, json: { message: 'failure' } });
-  });
-  await page.goto('/categories');
-  await expect(
     page.getByRole('status', { name: 'Loading category overview' })
-  ).toBeVisible();
+  ).toBeAttached();
   await expect(
     page.getByRole('cell', { name: 'Consulting services', exact: true })
   ).toBeVisible();
-  releaseSummary();
+  release();
   await expect(page.getByRole('alert')).toContainText(
     'We couldn’t load this section.'
   );
-  await test.step('Refresh recovers into a usable no-activity layout', async () => {
-    await page.setViewportSize({ width: 1440, height: 1000 });
-
-    const zeroAmount = { ...money, amount: 0 };
-
-    const emptySection = {
-      total: zeroAmount,
-      previousTotal: zeroAmount,
-      percentageChange: null,
-      accounts: [],
-    };
-
-    await page.route(summaryEndpoint, (route) =>
-      route.fulfill({
-        json: {
-          ...summary,
-          revenue: emptySection,
-          expenses: emptySection,
-          suspense: { amount: zeroAmount, transactionCount: 0 },
-        },
-      })
-    );
-    await page.route(accountsEndpoint, (route) =>
-      route.fulfill({
-        json: {
-          data: [
-            'Services (Default)',
-            'Employment Income (Default)',
-            'Gain on Sale of Assets (Default)',
-            'Unrealized Gains (Default)',
-            'Grants (Default)',
-            'Gifts (Default)',
-            'Direct Costs (Default)',
-            'Rent and Utilities (Default)',
-          ].map((name, index) => ({
-            ...account,
-            accountId: `category-${index}`,
-            accountName: name,
-            type: index < 6 ? 'revenue' : 'expense',
-            amount: zeroAmount,
-            sharePercentage: null,
-            transactionCount: 0,
-          })),
-          meta: { page: 1, totalPages: 1, limit: 10, total: 8 },
-        },
-      })
-    );
-    await page.reload();
-    await expect(page.getByText('No activity in this period')).toHaveCount(2);
-    await expect(
-      page.getByRole('region', { name: 'Uncategorized', exact: true })
-    ).toContainText('0 transactions');
-    await expect(
-      page.getByRole('cell', { name: 'Services (Default)', exact: true })
-    ).toBeInViewport();
-    await expect(page.getByRole('searchbox')).toBeInViewport();
-
-    await page.setViewportSize({ width: 390, height: 844 });
-    await expect(
-      page.getByRole('button', { name: 'Add category' })
-    ).toBeInViewport();
-    await page
-      .getByRole('button', { name: 'About the reporting period' })
-      .click();
-    await expect(
-      page.getByRole('dialog', { name: 'About the reporting period' })
-    ).toBeInViewport();
-    await page
-      .getByRole('button', { name: 'About the reporting period' })
-      .click();
-    await expect(page.getByRole('dialog')).not.toBeVisible();
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= window.innerWidth
-      )
-    ).toBe(true);
-  });
-  await page.route(accountsEndpoint, (route) =>
-    route.fulfill({ status: 500, json: { message: 'failure' } })
+  await page.route(summaryEndpoint, (route) =>
+    route.fulfill({
+      json: {
+        data: [{ ...account, amount: { ...money, amount: 0 } }],
+        meta: { page: 1, totalPages: 1, total: 1, limit: 10 },
+      },
+    })
   );
-  await page.getByRole('tab', { name: 'Revenue', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText('All categories');
+  await page.reload();
   await expect(
     page.getByRole('region', { name: 'Total revenue', exact: true })
-  ).toBeVisible();
+  ).toContainText('₦0');
+  await expect(page.getByRole('alert')).toHaveCount(0);
   await page.route(accountsEndpoint, (route) =>
     route.fulfill({
       json: { data: [], meta: { page: 1, totalPages: 0, total: 0, limit: 10 } },
     })
   );
-  await expect(
-    page.getByRole('button', { name: /^(Retry|Try again)$/i })
-  ).toHaveCount(0);
-  await page.reload();
+  await page.getByRole('searchbox').fill('missing');
   await expect(page.getByText('No categories found')).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: 'Total revenue', exact: true })
+  ).toContainText('₦0');
 });
 
 test('renames and archives categories, then opens category details', async ({
   page,
 }) => {
   await setup(page);
-  let current = { ...account };
+  let current = { ...ledgerAccount };
   let updatePayload: unknown;
   await page.route(accountsEndpoint, (route) =>
     route.fulfill({
@@ -386,7 +319,7 @@ test('renames and archives categories, then opens category details', async ({
     `**/api/v1/ledger/revenue/${account.accountId}`,
     async (route) => {
       updatePayload = route.request().postDataJSON();
-      current = { ...current, accountName: 'Advisory' };
+      current = { ...current, name: 'Advisory' };
       await route.fulfill({ json: { id: account.accountId } });
     }
   );

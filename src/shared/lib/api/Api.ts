@@ -423,17 +423,7 @@ export const ELedgerAccountStatus = {
 export type ULedgerAccountStatus =
   (typeof ELedgerAccountStatus)[keyof typeof ELedgerAccountStatus];
 
-export const ELedgerAccountSubType = {
-  RetainedEarnings: 'retained_earnings',
-  Sales: 'sales',
-  Services: 'services',
-  Subscriptions: 'subscriptions',
-  EmploymentIncome: 'employment_income',
-  InterestIncome: 'interest_income',
-  GainOnAssetSale: 'gain_on_asset_sale',
-  UnrealizedGains: 'unrealized_gains',
-  Grants: 'grants',
-  Gifts: 'gifts',
+export const EExpenseSubType = {
   PayrollAndPersonnel: 'payroll_and_personnel',
   RentAndUtilities: 'rent_and_utilities',
   AdminAndGeneral: 'admin_and_general',
@@ -446,6 +436,50 @@ export const ELedgerAccountSubType = {
   UnrealizedLoss: 'unrealized_loss',
   ImpairmentLoss: 'impairment_loss',
   OtherLoss: 'other_loss',
+  DirectCosts: 'direct_costs',
+  IncomeTaxExpense: 'income_tax_expense',
+  LossOnAssetDisposal: 'loss_on_asset_disposal',
+} as const;
+export type UExpenseSubType =
+  (typeof EExpenseSubType)[keyof typeof EExpenseSubType];
+
+export const ERevenueSubType = {
+  Sales: 'sales',
+  Services: 'services',
+  Subscriptions: 'subscriptions',
+  EmploymentIncome: 'employment_income',
+  InterestIncome: 'interest_income',
+  GainOnAssetSale: 'gain_on_asset_sale',
+  UnrealizedGains: 'unrealized_gains',
+  Grants: 'grants',
+  Gifts: 'gifts',
+} as const;
+export type URevenueSubType =
+  (typeof ERevenueSubType)[keyof typeof ERevenueSubType];
+
+export const EEquitySubType = {
+  RetainedEarnings: 'retained_earnings',
+  Capital: 'capital',
+  Reserve: 'reserve',
+  OpeningBalance: 'opening_balance',
+} as const;
+export type UEquitySubType =
+  (typeof EEquitySubType)[keyof typeof EEquitySubType];
+
+export const ELiabilitySubType = {
+  Suspense: 'suspense',
+  ShortTermDebt: 'short_term_debt',
+  Payable: 'payable',
+  AccruedExpense: 'accrued_expense',
+  DeferredRevenue: 'deferred_revenue',
+  LongTermLoan: 'long_term_loan',
+  LeaseLiability: 'lease_liability',
+  Provision: 'provision',
+} as const;
+export type ULiabilitySubType =
+  (typeof ELiabilitySubType)[keyof typeof ELiabilitySubType];
+
+export const EAssetSubType = {
   CashAndCashEquivalent: 'cash_and_cash_equivalent',
   ShortTermInvestment: 'short_term_investment',
   Receivables: 'receivables',
@@ -458,22 +492,8 @@ export const ELedgerAccountSubType = {
   RightOfUseAssets: 'right_of_use_assets',
   Goodwill: 'goodwill',
   Suspense: 'suspense',
-  ShortTermDebt: 'short_term_debt',
-  Payable: 'payable',
-  AccruedExpense: 'accrued_expense',
-  DeferredRevenue: 'deferred_revenue',
-  LongTermLoan: 'long_term_loan',
-  LeaseLiability: 'lease_liability',
-  Provision: 'provision',
-  Capital: 'capital',
-  Reserve: 'reserve',
-  OpeningBalance: 'opening_balance',
-  DirectCosts: 'direct_costs',
-  IncomeTaxExpense: 'income_tax_expense',
-  LossOnAssetDisposal: 'loss_on_asset_disposal',
 } as const;
-export type ULedgerAccountSubType =
-  (typeof ELedgerAccountSubType)[keyof typeof ELedgerAccountSubType];
+export type UAssetSubType = (typeof EAssetSubType)[keyof typeof EAssetSubType];
 
 export const ELedgerAccountBehavior = {
   Bank: 'bank',
@@ -860,6 +880,13 @@ export interface IBalanceHistoryBySubTypeDto {
   }[];
 }
 
+export type ULedgerAccountSubType =
+  | UAssetSubType
+  | ULiabilitySubType
+  | UEquitySubType
+  | URevenueSubType
+  | UExpenseSubType;
+
 export interface IGetBalanceHistoryBySubTypeQuery {
   /** Inclusive calendar date in YYYY-MM-DD format. */
   from: string;
@@ -1068,9 +1095,9 @@ export interface IGetLedgerAccountsQuery {
   sortDirection?: UPaginationSortDirection;
   /** @format double */
   page?: number;
-  status?: ULedgerAccountStatus;
-  type?: ULedgerType;
-  subType?: ULedgerAccountSubType;
+  statuses?: ULedgerAccountStatus[];
+  types?: ULedgerType[];
+  subTypes?: ULedgerAccountSubType[];
   behavior?: string;
   isControlAccount?: boolean;
 }
@@ -2867,9 +2894,9 @@ export class Api<
         sortDirection?: UPaginationSortDirection;
         /** @format double */
         page?: number;
-        status?: ULedgerAccountStatus;
-        type?: ULedgerType;
-        subType?: ULedgerAccountSubType;
+        statuses?: ULedgerAccountStatus[];
+        types?: ULedgerType[];
+        subTypes?: ULedgerAccountSubType[];
         behavior?: string;
         isControlAccount?: boolean;
       },

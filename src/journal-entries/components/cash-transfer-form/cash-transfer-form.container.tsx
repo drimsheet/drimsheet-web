@@ -7,8 +7,8 @@ import { journalEntryMapper } from '@/journal-entries/lib/mappers/journal-entry.
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useExchangeRates } from '@/shared/hooks/use-exchange-rates';
 import {
+  EAssetSubType,
   EJournalEntrySourceType,
-  ELedgerAccountSubType,
   type IJournalEntryListDto,
 } from '@/shared/lib/api/Api';
 import { fileUploadService } from '@/shared/lib/services/file-upload.service';
@@ -91,11 +91,11 @@ export function CashTransferFormContainer({
   const permittedDestinationAccounts = permittedDestinations?.data ?? [];
 
   const destinationAccounts = permittedDestinationAccounts.filter(
-    (account) => account.subType === ELedgerAccountSubType.CashAndCashEquivalent
+    (account) => account.subType === EAssetSubType.CashAndCashEquivalent
   );
 
   const categories = permittedDestinationAccounts.filter(
-    (account) => account.subType !== ELedgerAccountSubType.CashAndCashEquivalent
+    (account) => account.subType !== EAssetSubType.CashAndCashEquivalent
   );
 
   const handlePersistValues = async (

@@ -1,9 +1,9 @@
 import { AccountOverview } from '@/account/components/account-overview';
 import {
   EAdjunctAccountRule,
+  EAssetSubType,
   EContraAccountRule,
   ELedgerAccountStatus,
-  ELedgerAccountSubType,
   ELedgerType,
   ENormalBalance,
   type ILedgerAccountDto,
@@ -19,7 +19,7 @@ const baseAccount: ILedgerAccountDto = {
   openingBalanceDate: null,
   type: ELedgerType.Asset,
   normalBalance: ENormalBalance.Debit,
-  subType: ELedgerAccountSubType.CashAndCashEquivalent,
+  subType: EAssetSubType.CashAndCashEquivalent,
   behavior: 'bank',
   isControlAccount: true,
   name: 'Account name',
