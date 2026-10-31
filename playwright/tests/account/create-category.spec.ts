@@ -74,6 +74,12 @@ async function setup(page: Page) {
       })
   );
 
+  await page.route('**/api/v1/ledger?*', (route) =>
+    route.fulfill({
+      json: { data: [], meta: { page: 1, totalPages: 0, total: 0, limit: 10 } },
+    })
+  );
+
   const section = {
     total: money,
     previousTotal: money,
@@ -115,9 +121,15 @@ async function setup(page: Page) {
 
 async function chooseParent(page: Page, name: string) {
   await page
-    .getByRole('button', { name: /^(Select Parent|Change parent)$/ })
+    .getByRole('button', { name: /^(Select parent account|Change parent)$/ })
     .click();
-  const sheet = page.getByRole('dialog', { name: 'Select Parent' });
+  const sheet = page.getByRole('dialog', { name: 'Select parent account' });
+  if (name === 'Utilities') {
+    await sheet
+      .getByRole('button', { name: 'Expand or collapse Operating expenses' })
+      .click();
+  }
+
   await sheet.getByRole('radio', { name, exact: true }).click();
   await sheet.getByRole('button', { name: 'Use selected parent' }).click();
   await expect(sheet).not.toBeVisible();
@@ -129,7 +141,7 @@ test('creates an expense under a posting parent, preserving names after failure 
   await setup(page);
   await page.getByRole('radio', { name: 'Expenses', exact: true }).click();
   await chooseParent(page, 'Utilities');
-  await page.getByLabel(/^Name\s*Required$/).fill('Internet');
+  await page.getByLabel('Category name', { exact: true }).fill('Internet');
   await page
     .getByRole('button', { name: 'Create category', exact: true })
     .click();
@@ -152,19 +164,17 @@ test('creates an expense under a posting parent, preserving names after failure 
   ).toBe(true);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.getByRole('button', { name: 'Change parent' }).click();
+  await page
+    .getByRole('button', { name: 'Expand or collapse Operating expenses' })
+    .click();
   await expect(
     page.getByRole('radio', { name: 'Utilities', exact: true })
   ).toBeChecked();
-  const sheet = page.getByRole('dialog', { name: 'Select Parent' });
+  const sheet = page.getByRole('dialog', { name: 'Select parent account' });
   await expect(sheet.getByText('5100', { exact: true })).toHaveCount(0);
   await expect(sheet.getByText('5101', { exact: true })).toHaveCount(0);
-  await expect(sheet.getByText('Parent', { exact: true })).toBeVisible();
-  await expect(sheet.getByText('Child', { exact: true })).toBeVisible();
   await expect(sheet.getByText('Control', { exact: true })).toHaveCount(0);
   await expect(sheet.getByText('Posting', { exact: true })).toHaveCount(0);
-  await expect(sheet.getByRole('alert')).toHaveText(
-    'Selecting this child account requires a name for its cloned child account.'
-  );
   await sheet
     .getByRole('radio', { name: 'Operating expenses', exact: true })
     .click();
@@ -185,7 +195,9 @@ test('creates an expense under a posting parent, preserving names after failure 
   await expect(
     page.getByRole('alert').filter({ hasText: 'We couldn’t save' })
   ).toBeVisible();
-  await expect(page.getByLabel(/^Name\s*Required$/)).toHaveValue('Internet');
+  await expect(page.getByLabel('Category name', { exact: true })).toHaveValue(
+    'Internet'
+  );
   await expect(
     page.getByLabel('Name for cloned posting account', { exact: false })
   ).toHaveValue('General utilities');
@@ -228,7 +240,7 @@ test('switches class, clears the old parent, and creates income under a control 
 }) => {
   await setup(page);
   await expect(
-    page.getByRole('button', { name: 'Select Parent' })
+    page.getByRole('button', { name: 'Select parent account' })
   ).toBeDisabled();
   await page
     .getByRole('button', { name: 'Create category', exact: true })
@@ -239,7 +251,7 @@ test('switches class, clears the old parent, and creates income under a control 
   await page
     .getByLabel('Name for cloned posting account', { exact: false })
     .fill('General utilities');
-  await page.getByLabel(/^Name\s*Required$/).fill('Consulting');
+  await page.getByLabel('Category name', { exact: true }).fill('Consulting');
   await page.getByRole('radio', { name: 'Income', exact: true }).click();
   await expect(page.getByText('No parent selected')).toBeVisible();
   await expect(
@@ -251,7 +263,7 @@ test('switches class, clears the old parent, and creates income under a control 
   await expect(
     page.getByText('Select a parent account for this category type.')
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Select Parent' }).click();
+  await page.getByRole('button', { name: 'Select parent account' }).click();
   await expect(
     page.getByRole('radio', { name: 'Services', exact: true })
   ).toBeVisible();
@@ -293,8 +305,8 @@ test('handles chart loading, refresh recovery, empty results, expansion and canc
     await route.fulfill({ status: 500, json: { message: 'failure' } });
   });
   await page.getByRole('radio', { name: 'Expenses', exact: true }).click();
-  await page.getByRole('button', { name: 'Select Parent' }).click();
-  const sheet = page.getByRole('dialog', { name: 'Select Parent' });
+  await page.getByRole('button', { name: 'Select parent account' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Select parent account' });
   await expect(
     sheet.getByRole('status', { name: 'Loading chart of accounts' })
   ).toBeVisible();
@@ -311,19 +323,18 @@ test('handles chart loading, refresh recovery, empty results, expansion and canc
   ).toHaveCount(0);
   await page.reload();
   await page.getByRole('radio', { name: 'Expenses', exact: true }).click();
-  await page.getByRole('button', { name: 'Select Parent' }).click();
+  await page.getByRole('button', { name: 'Select parent account' }).click();
   await expect(sheet.getByText('No parent accounts available')).toBeVisible();
   await sheet.getByRole('button', { name: 'Cancel', exact: true }).click();
   await page.route(chartEndpoint, (route) =>
     route.fulfill({ json: [expenses] })
   );
-  await page.getByRole('button', { name: 'Select Parent' }).click();
+  await page.getByRole('button', { name: 'Select parent account' }).click();
 
   const toggle = sheet.getByRole('button', {
     name: 'Expand or collapse Operating expenses',
   });
 
-  await toggle.click();
   await expect(
     sheet.getByRole('radio', { name: 'Utilities', exact: true })
   ).not.toBeVisible();

@@ -116,32 +116,33 @@ export function CategoryCreationPage() {
   };
 
   const title = t('category_creation_title');
-  const description = t('category_creation_description');
+
+  const categories_label = t('categories_table_breadcrumb');
 
   return (
-    <>
-      <AppBody title={title}>
-        <div className="flex w-full min-w-0 max-w-3xl flex-col">
-          <div className="mt-2 flex flex-col gap-2">
-            <p className="text-sm text-muted-foreground">{description}</p>
-          </div>
-          <AppSection>
-            <CategoryCreationForm
-              form={form}
-              parent={parent}
-              accounts={accounts.data ?? []}
-              loadingAccounts={accounts.isFetching}
-              accountsError={accounts.isError}
-              pending={mutation.isPending || form.isSubmitting}
-              error={mutation.isError}
-              onTypeChange={handleTypeChange}
-              onParentChange={handleParentChange}
-              onPickerOpenChange={setPickerOpen}
-              onCancel={() => navigate('/categories')}
-            />
-          </AppSection>
-        </div>
-      </AppBody>
-    </>
+    <AppBody
+      title={title}
+      breadcrumbs={{
+        label: categories_label,
+        link: '/categories',
+        next: { label: title },
+      }}
+    >
+      <AppSection>
+        <CategoryCreationForm
+          form={form}
+          parent={parent}
+          accounts={accounts.data ?? []}
+          loadingAccounts={accounts.isFetching}
+          accountsError={accounts.isError}
+          pending={mutation.isPending || form.isSubmitting}
+          error={mutation.isError}
+          onTypeChange={handleTypeChange}
+          onParentChange={handleParentChange}
+          onPickerOpenChange={setPickerOpen}
+          onCancel={() => navigate('/categories')}
+        />
+      </AppSection>
+    </AppBody>
   );
 }

@@ -12,19 +12,23 @@ import {
   FieldError,
   FieldLabel,
 } from '@/shared/components/field';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/shared/components/input-group';
 import { RadioGroup } from '@/shared/components/radio-group';
 import { Separator } from '@/shared/components/separator';
 import {
   Sheet,
   SheetClose,
   SheetContent,
-  SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from '@/shared/components/sheet';
-import { Info, X } from 'lucide-react';
+import { ChevronRight, Search, X } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import categoryCreationHelpers from '../helper';
@@ -46,9 +50,16 @@ export function CategoryParentPicker({
   const id = useId();
   const [open, setOpen] = useState(false);
   const [pendingId, setPendingId] = useState('');
+  const [search, setSearch] = useState('');
+
+  const matchingAccounts = accounts.filter((account) =>
+    categoryCreationHelpers.matchesSearch(account, search)
+  );
+
   const pendingParent = categoryCreationHelpers.findParent(accounts, pendingId);
 
   const handleOpenChange = (nextOpen: boolean) => {
+    setSearch('');
     setPendingId(parent?.account.id ?? '');
     setOpen(nextOpen);
     onOpenChange(nextOpen);
@@ -64,7 +75,6 @@ export function CategoryParentPicker({
   };
 
   const parent_label = t('category_creation_parent_label');
-  const required_label = t('category_creation_required_label');
 
   const select_label = parent
     ? t('category_creation_change_parent')
@@ -73,7 +83,6 @@ export function CategoryParentPicker({
   const empty_parent_text = t('category_creation_no_parent');
   const choose_type_text = t('category_creation_choose_type_first');
   const title = t('category_creation_select_parent');
-  const description = t('category_creation_parent_description');
   const loading_label = t('category_creation_accounts_loading');
   const error_text = t('category_creation_accounts_error');
   const empty_title = t('category_creation_accounts_empty');
@@ -82,53 +91,50 @@ export function CategoryParentPicker({
   const confirm_label = t('category_creation_use_parent');
   const close_label = t('category_creation_close_picker');
   const tree_label = t('category_creation_chart_label');
-  const selected_path = pendingParent?.path.join(' / ') ?? empty_parent_text;
-  const promotion_text = t('category_creation_promotion_required');
+  const search_placeholder = t('category_creation_search_placeholder');
+  const no_results_title = t('category_creation_search_empty');
+
+  const no_results_description = t(
+    'category_creation_search_empty_description'
+  );
 
   return (
     <Field data-invalid={!!validationError}>
-      <FieldLabel htmlFor={`${id}-trigger`}>
-        {parent_label}
-        <span className="text-xs font-normal text-muted-foreground">
-          {required_label}
-        </span>
-      </FieldLabel>
+      <FieldLabel htmlFor={`${id}-trigger`}>{parent_label}</FieldLabel>
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <div className="flex flex-col items-start justify-between gap-4 rounded-lg border border-input bg-card p-4 sm:flex-row sm:items-center">
-          <div className="min-w-0" aria-live="polite">
-            <p className="break-words text-sm font-medium">
-              {parent?.account.name ?? empty_parent_text}
-            </p>
-            {parent && (
-              <p className="mt-1 break-words text-xs text-muted-foreground">
-                {parent.path.join(' / ')}
-              </p>
-            )}
-          </div>
-          <SheetTrigger asChild>
-            <Button
-              id={`${id}-trigger`}
-              aria-label={select_label}
-              type="button"
-              variant="outline"
-              disabled={disabled || !type}
-              aria-invalid={!!validationError}
-              aria-describedby={validationError ? `${id}-error` : undefined}
-              className="shrink-0"
-            >
-              {select_label}
-            </Button>
-          </SheetTrigger>
-        </div>
+        <SheetTrigger asChild>
+          <Button
+            id={`${id}-trigger`}
+            aria-label={select_label}
+            type="button"
+            variant="outline"
+            disabled={disabled || !type}
+            aria-invalid={!!validationError}
+            aria-describedby={validationError ? `${id}-error` : undefined}
+            className="h-auto min-h-16 w-full justify-between gap-4 bg-muted px-3 py-3 text-left whitespace-normal"
+          >
+            <span className="flex min-w-0 flex-1 flex-col gap-1">
+              <span className="break-words font-medium">
+                {parent?.account.name ?? empty_parent_text}
+              </span>
+              {parent && parent.path.length > 1 && (
+                <span className="break-words text-xs font-normal text-muted-foreground">
+                  {parent.path.slice(0, -1).join(' / ')}
+                </span>
+              )}
+            </span>
+            <ChevronRight className="shrink-0" />
+          </Button>
+        </SheetTrigger>
         <SheetContent
           side="right"
+          aria-describedby={undefined}
           showCloseButton={false}
-          className="data-[side=right]:w-full data-[side=right]:sm:max-w-lg"
+          className="data-[side=right]:w-full data-[side=right]:sm:max-w-md"
         >
-          <SheetHeader className="flex-row items-start justify-between gap-4">
+          <SheetHeader className="flex-row items-start justify-between gap-4 p-6 pb-0">
             <div className="flex min-w-0 flex-col gap-2">
               <SheetTitle>{title}</SheetTitle>
-              <SheetDescription>{description}</SheetDescription>
             </div>
             <SheetClose asChild>
               <Button
@@ -141,7 +147,21 @@ export function CategoryParentPicker({
               </Button>
             </SheetClose>
           </SheetHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+          <div className="px-6">
+            <InputGroup>
+              <InputGroupInput
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder={search_placeholder}
+                aria-label={search_placeholder}
+              />
+              <InputGroupAddon>
+                <Search aria-hidden />
+              </InputGroupAddon>
+            </InputGroup>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
             {loading && (
               <div className="flex flex-col gap-3">
                 <output className="sr-only" aria-label={loading_label}>
@@ -167,33 +187,39 @@ export function CategoryParentPicker({
                 </EmptyHeader>
               </Empty>
             )}
-            {!loading && !error && accounts.length > 0 && (
+            {!loading &&
+              !error &&
+              accounts.length > 0 &&
+              matchingAccounts.length === 0 && (
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyTitle>{no_results_title}</EmptyTitle>
+                    <EmptyDescription>
+                      {no_results_description}
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              )}
+            {!loading && !error && matchingAccounts.length > 0 && (
               <RadioGroup
                 value={pendingId}
                 onValueChange={setPendingId}
                 aria-label={tree_label}
               >
                 <ul>
-                  {accounts.map((account) => (
-                    <AccountTreeNode key={account.id} account={account} />
+                  {matchingAccounts.map((account) => (
+                    <AccountTreeNode
+                      key={`${account.id}-${!!search.trim()}`}
+                      account={account}
+                      search={search}
+                    />
                   ))}
                 </ul>
               </RadioGroup>
             )}
           </div>
           <Separator />
-          <SheetFooter>
-            <div aria-live="polite" className="mb-3 flex flex-col gap-2">
-              <p className="break-words text-xs text-muted-foreground">
-                {selected_path}
-              </p>
-              {pendingParent && !pendingParent.account.isControlAccount && (
-                <Alert variant="info">
-                  <Info aria-hidden />
-                  <AlertDescription>{promotion_text}</AlertDescription>
-                </Alert>
-              )}
-            </div>
+          <SheetFooter className="p-6">
             <div className="flex flex-wrap justify-end gap-3">
               <SheetClose asChild>
                 <Button type="button" variant="outline">
