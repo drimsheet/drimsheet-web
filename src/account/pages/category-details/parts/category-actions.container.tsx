@@ -1,3 +1,4 @@
+import { CategoryDeleteConfirmation } from '@/account/components/category-delete-confirmation';
 import { CategoryEditorDialog } from '@/account/dialogs/category-editor';
 import { useArchiveLedgerAccount } from '@/account/hooks/use-archive-ledger-account';
 import { useDeleteLedgerAccount } from '@/account/hooks/use-delete-ledger-account';
@@ -10,7 +11,6 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import type { CategoryActionsContainerProps } from '../types';
 import { CategoryActions } from './category-actions';
-import { CategoryDeleteConfirmation } from './category-delete-confirmation';
 
 export function CategoryActionsContainer({
   account,

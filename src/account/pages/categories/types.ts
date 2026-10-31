@@ -68,6 +68,12 @@ export interface CategoryRowActionsProps extends Pick<
   'onViewAccount' | 'onEditAccount' | 'onArchiveAccount'
 > {
   account: TCategoryAccount;
+  checking: boolean;
+  eligibilityFailed: boolean;
+  canDelete: boolean;
+  deleting: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDelete: () => void;
 }
 
 export interface CategoryArchiveConfirmationProps {

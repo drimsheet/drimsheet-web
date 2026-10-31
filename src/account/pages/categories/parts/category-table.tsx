@@ -16,7 +16,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import categoriesHelpers from '../helper';
 import type { CategoryTableProps, ICategoryTableRow } from '../types';
-import { CategoryRowActions } from './category-row-actions';
+import { CategoryRowActionsContainer } from './category-row-actions.container';
 
 export function CategoryTable({
   accounts,
@@ -100,7 +100,7 @@ export function CategoryTable({
         align: 'right',
         headerRender: () => <span className="sr-only">{actions_label}</span>,
         render: (_, account) => (
-          <CategoryRowActions
+          <CategoryRowActionsContainer
             account={account}
             onViewAccount={onViewAccount}
             onEditAccount={onEditAccount}

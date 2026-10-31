@@ -18,6 +18,12 @@ const meta = {
     onViewAccount: () => {},
     onEditAccount: () => {},
     onArchiveAccount: () => {},
+    checking: false,
+    eligibilityFailed: false,
+    canDelete: false,
+    deleting: false,
+    onOpenChange: () => {},
+    onDelete: () => {},
   },
 } satisfies Meta<typeof CategoryRowActions>;
 
@@ -26,6 +32,9 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const Archived: Story = {
   args: { account: { ...meta.args.account, status: 'archived' } },
+};
+export const Deletable: Story = {
+  args: { canDelete: true },
 };
 export const Uncategorized: Story = {
   args: {
