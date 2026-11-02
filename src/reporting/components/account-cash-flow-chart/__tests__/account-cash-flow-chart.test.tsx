@@ -65,10 +65,43 @@ import {
   AccountCashFlowChart,
   AccountCashFlowChartWithState,
 } from '@/reporting/components/account-cash-flow-chart';
+import { MoneyJurisdictionProvider } from '@/shared/components/money';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+afterEach(() => vi.restoreAllMocks());
 
 describe('AccountCashFlowChart', () => {
+  it('formats axis and tooltip amounts in major units using the active money jurisdiction', async () => {
+    const user = userEvent.setup();
+    const getBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
+
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        if (this.classList.contains('recharts-responsive-container')) {
+          return new DOMRect(0, 0, 640, 256);
+        }
+
+        return getBoundingClientRect.call(this);
+      }
+    );
+
+    render(
+      <MoneyJurisdictionProvider value="DE">
+        <AccountCashFlowChart labels={labels} cashFlow={cashFlow} />
+      </MoneyJurisdictionProvider>
+    );
+
+    expect(await screen.findByText('0 ₦')).toBeInTheDocument();
+
+    await user.tab();
+    await user.keyboard('{ArrowRight}');
+
+    expect(await screen.findByText('600.000 NGN')).toBeInTheDocument();
+    expect(screen.getByText('500.000 NGN')).toBeInTheDocument();
+  });
+
   it('renders totals in major units', () => {
     render(<AccountCashFlowChart labels={labels} cashFlow={cashFlow} />);
     expect(screen.getByText('Incoming funds')).toBeInTheDocument();

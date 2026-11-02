@@ -5,7 +5,6 @@ import {
   type TChartConfig,
 } from '@/shared/components/chart';
 import { Money } from '@/shared/components/money';
-import { currencyService } from '@/shared/lib/services/currency.service';
 import { toMajorUnits } from '@/shared/lib/utils/money';
 import { useTranslation } from 'react-i18next';
 import {
@@ -35,20 +34,6 @@ export function AccountCashFlowChart({
 
   const moneyIn = toMajorUnits(cashFlow.totalMoneyIn);
   const moneyOut = toMajorUnits(cashFlow.totalMoneyOut);
-
-  const compact = new Intl.NumberFormat(locale, {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  });
-
-  const currency = new Intl.NumberFormat(
-    currencyService.getJurisdictionLocale(cashFlow.currencyCode),
-    {
-      style: 'currency',
-      currency: cashFlow.currencyCode,
-      trailingZeroDisplay: 'stripIfInteger',
-    }
-  );
 
   const hasActivity =
     moneyIn !== 0 ||
@@ -118,7 +103,9 @@ export function AccountCashFlowChart({
             <YAxis
               tickLine={false}
               axisLine={false}
-              width={52}
+              width="auto"
+              tickSize={0}
+              tickMargin={8}
               domain={
                 hasActivity
                   ? [
@@ -128,9 +115,29 @@ export function AccountCashFlowChart({
                   : [0, 1]
               }
               ticks={hasActivity ? undefined : [0, 0.25, 0.5, 0.75, 1]}
-              tickFormatter={(value: number) =>
-                hasActivity || value === 0 ? compact.format(value) : ''
-              }
+              tick={({ x, y, payload }) => (
+                <foreignObject
+                  x={0}
+                  y={Number(y) - 8}
+                  width={Number(x)}
+                  height={16}
+                  overflow="visible"
+                >
+                  {(hasActivity || Number(payload.value) === 0) && (
+                    <Money
+                      value={{
+                        amount: Number(payload.value),
+                        currencyCode: cashFlow.currencyCode,
+                        isMinorUnit: false,
+                      }}
+                      notation="compact"
+                      currencyDisplay="narrowSymbol"
+                      maximumFractionDigits={1}
+                      className="recharts-cartesian-axis-tick-value ml-auto block w-max text-xs leading-4 whitespace-nowrap text-muted-foreground tabular-nums"
+                    />
+                  )}
+                </foreignObject>
+              )}
             />
             <ReferenceLine y={0} stroke="var(--muted-foreground)" />
             <ChartTooltip
@@ -140,9 +147,14 @@ export function AccountCashFlowChart({
                   formatter={(value, name) => (
                     <div className="flex w-full justify-between gap-6">
                       <span>{config[name as keyof typeof config]?.label}</span>
-                      <span className="tabular-nums">
-                        {currency.format(Number(value))}
-                      </span>
+                      <Money
+                        value={{
+                          amount: Number(value),
+                          currencyCode: cashFlow.currencyCode,
+                          isMinorUnit: false,
+                        }}
+                        className="tabular-nums"
+                      />
                     </div>
                   )}
                 />

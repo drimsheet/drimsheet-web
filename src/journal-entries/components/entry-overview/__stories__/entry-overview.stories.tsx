@@ -14,7 +14,7 @@ export const WithActions: Story = {
   args: {
     title: 'Consulting payment',
     subtitle: 'Acme Ltd.',
-    amount: '₦1,000',
+    amount: { amount: 1000, currencyCode: 'NGN', isMinorUnit: false },
     menuItems: [
       { label: 'Edit', icon: <Pencil />, onSelect: () => undefined },
       {

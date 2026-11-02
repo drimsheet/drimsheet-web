@@ -41,12 +41,6 @@ export function CategoryTrend({
     year: '2-digit',
   });
 
-  const moneyFormat = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: currencyCode,
-    maximumFractionDigits: 2,
-  });
-
   const data = months.map((month) => ({
     ...month,
     label: dateFormat.format(parseISO(`${month.month}-01`)),
@@ -145,7 +139,16 @@ export function CategoryTrend({
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  formatter={(value) => moneyFormat.format(Number(value))}
+                  formatter={(value) => (
+                    <Money
+                      value={{
+                        amount: Number(value),
+                        currencyCode,
+                        isMinorUnit: false,
+                      }}
+                      className="tabular-nums"
+                    />
+                  )}
                 />
               }
             />

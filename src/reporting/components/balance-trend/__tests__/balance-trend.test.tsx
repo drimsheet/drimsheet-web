@@ -16,8 +16,48 @@ import {
   BalanceTrend,
   BalanceTrendWithState,
 } from '@/reporting/components/balance-trend';
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { MoneyJurisdictionProvider } from '@/shared/components/money';
+import { render, screen, within } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+afterEach(() => vi.restoreAllMocks());
+
+it('formats axis amounts in major units using the active money jurisdiction', async () => {
+  const getBoundingClientRect = HTMLElement.prototype.getBoundingClientRect;
+
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+    function (this: HTMLElement) {
+      if (this.classList.contains('recharts-responsive-container')) {
+        return new DOMRect(0, 0, 640, 224);
+      }
+
+      return getBoundingClientRect.call(this);
+    }
+  );
+
+  render(
+    <MoneyJurisdictionProvider value="DE">
+      <BalanceTrend
+        labels={labels}
+        points={[
+          {
+            date: '2026-10-01',
+            amount: { amount: 0, currencyCode: 'EUR', isMinorUnit: true },
+          },
+          {
+            date: '2026-10-02',
+            amount: { amount: 100000, currencyCode: 'EUR', isMinorUnit: true },
+          },
+        ]}
+      />
+    </MoneyJurisdictionProvider>
+  );
+
+  const chart = within(screen.getByRole('application'));
+
+  expect(await chart.findByText('0 €')).toBeInTheDocument();
+  expect(await chart.findByText('1000 €')).toBeInTheDocument();
+});
 
 describe('BalanceTrend empty states', () => {
   it('distinguishes missing history from observed zero balances', () => {

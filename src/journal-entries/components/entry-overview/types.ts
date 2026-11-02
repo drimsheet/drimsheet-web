@@ -1,3 +1,4 @@
+import type { IMoneyDto } from '@/shared/lib/api/Api';
 import type { ReactNode } from 'react';
 
 export interface IEntryOverviewMenuItem {
@@ -10,6 +11,6 @@ export interface IEntryOverviewMenuItem {
 export interface EntryOverviewProps {
   title: string;
   subtitle?: string;
-  amount: string;
+  amount: IMoneyDto;
   menuItems: IEntryOverviewMenuItem[];
 }

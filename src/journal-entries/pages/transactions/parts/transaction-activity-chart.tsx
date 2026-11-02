@@ -4,6 +4,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/shared/components/chart';
+import { Money } from '@/shared/components/money';
 import { Skeleton } from '@/shared/components/skeleton';
 import { WithTransitionState } from '@/shared/components/with-transition-state';
 import { parseISO } from 'date-fns';
@@ -27,19 +28,6 @@ export function TransactionActivityChart({
 }: Readonly<TransactionActivityChartProps>) {
   const { t, i18n } = useTranslation('journal-entries');
   const locale = i18n.resolvedLanguage ?? 'en';
-
-  const compact = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: currencyCode,
-    currencyDisplay: 'narrowSymbol',
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  });
-
-  const currency = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: currencyCode,
-  });
 
   const dateFormat = new Intl.DateTimeFormat(locale, {
     day: 'numeric',
@@ -83,7 +71,29 @@ export function TransactionActivityChart({
             minTickGap={40}
           />
           <YAxis
-            tickFormatter={(value: number) => compact.format(value)}
+            tick={({ x, y, payload }) => (
+              <foreignObject
+                x={0}
+                y={Number(y) - 8}
+                width={Number(x)}
+                height={16}
+                overflow="visible"
+              >
+                <Money
+                  value={{
+                    amount: Number(payload.value),
+                    currencyCode,
+                    isMinorUnit: false,
+                  }}
+                  notation="compact"
+                  currencyDisplay="narrowSymbol"
+                  maximumFractionDigits={1}
+                  className="recharts-cartesian-axis-tick-value ml-auto block w-max text-xs leading-4 whitespace-nowrap text-muted-foreground tabular-nums"
+                />
+              </foreignObject>
+            )}
+            tickSize={0}
+            tickMargin={8}
             tickLine={false}
             axisLine={false}
             width="auto"
@@ -99,9 +109,14 @@ export function TransactionActivityChart({
                 formatter={(value, name) => (
                   <div className="flex w-full justify-between gap-6">
                     <span>{config[name as keyof typeof config]?.label}</span>
-                    <span className="tabular-nums">
-                      {currency.format(Number(value))}
-                    </span>
+                    <Money
+                      value={{
+                        amount: Number(value),
+                        currencyCode,
+                        isMinorUnit: false,
+                      }}
+                      className="tabular-nums"
+                    />
                   </div>
                 )}
               />
