@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { CounterpartyOverviewContainer } from './parts/counterparty-overview.container';
 
 export function CounterpartiesPage() {
-  const { t } = useTranslation(['shared', 'counterparty', 'navigation']);
+  const { t } = useTranslation(['shared', 'counterparty']);
   const [showRoleSelection, setShowRoleSelection] = useState(false);
 
   const [selectedRole, setSelectedRole] =
@@ -27,17 +27,12 @@ export function CounterpartiesPage() {
   const overview_title = t('counterparty:overview_title');
   const table_title = t('counterparty:all_counterparties_label');
   const add_label = t('counterparty:add_counterparty');
-  const configuration_label = t('navigation:configuration');
 
   return (
     <>
       <AppBody
         title={page_title}
         description={page_description}
-        breadcrumbs={{
-          label: configuration_label,
-          next: { label: page_title },
-        }}
         actionsSlot={
           <Button onClick={() => setShowRoleSelection(true)}>
             <Plus data-icon="inline-start" aria-hidden />
