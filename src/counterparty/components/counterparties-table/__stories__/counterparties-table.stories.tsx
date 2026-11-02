@@ -69,9 +69,9 @@ const meta = {
     onSortChange: (key, direction) =>
       console.log('Sort changed:', key, direction),
     onFilterChange: (filters) => console.log('Filter changed:', filters),
-    onAddCounterparty: () => console.log('Add counterparty clicked'),
-    onSearchChange: (value) => console.log('Search changed:', value),
     filters: {},
+    onPageChange: () => {},
+    pagination: { page: 1, limit: 10, total: 24, totalPages: 3 },
   },
   decorators: [
     (Story) => (
@@ -92,7 +92,6 @@ export const Default: Story = {
     data: mockCounterparties,
     selectable: true,
     stickyHeader: true,
-    searchValue: '',
   },
 };
 

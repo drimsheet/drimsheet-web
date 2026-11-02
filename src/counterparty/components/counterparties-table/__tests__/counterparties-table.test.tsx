@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -57,10 +56,7 @@ const defaultProps = {
   selectable: true,
   onSortChange: vi.fn(),
   onFilterChange: vi.fn(),
-  onSearchChange: vi.fn(),
-  onAddCounterparty: vi.fn(),
   filters: {},
-  searchValue: '',
 };
 
 describe('CounterpartiesTable', () => {
@@ -112,46 +108,5 @@ describe('CounterpartiesTable', () => {
     expect(screen.getByText('Contractor')).toBeInTheDocument();
     expect(screen.getByText('Vendor')).toBeInTheDocument();
     expect(screen.getByText('—')).toBeInTheDocument(); // fallback for Bob Johnson who has no roles
-  });
-
-  it('triggers onSearchChange when search value is entered', async () => {
-    const onSearchChange = vi.fn();
-    const user = userEvent.setup();
-
-    render(
-      <MemoryRouter>
-        <CounterpartiesTable
-          {...defaultProps}
-          onSearchChange={onSearchChange}
-        />
-      </MemoryRouter>
-    );
-
-    const searchInput = screen.getByPlaceholderText(
-      /search counterparties.../i
-    );
-
-    await user.type(searchInput, 'Alice');
-
-    expect(onSearchChange).toHaveBeenCalled();
-  });
-
-  it('triggers onAddCounterparty when add button is clicked', async () => {
-    const onAddCounterparty = vi.fn();
-    const user = userEvent.setup();
-
-    render(
-      <MemoryRouter>
-        <CounterpartiesTable
-          {...defaultProps}
-          onAddCounterparty={onAddCounterparty}
-        />
-      </MemoryRouter>
-    );
-
-    const addButton = screen.getByRole('button', { name: /add counterparty/i });
-    await user.click(addButton);
-
-    expect(onAddCounterparty).toHaveBeenCalledTimes(1);
   });
 });

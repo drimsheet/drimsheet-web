@@ -38,7 +38,7 @@ const original: ICounterpartyDto = {
 };
 
 const restriction =
-  'This counterparty’s type cannot be changed because it has been used in a transaction. Create a new counterparty if a different type is required.';
+  'This person or business’s type cannot be changed because it has been used in a transaction. Create a new person or business if a different type is required.';
 
 interface ISetupOptions {
   party?: ICounterpartyDto;
@@ -194,7 +194,7 @@ async function setup(page: Page, options: ISetupOptions = {}) {
 
 async function open(page: Page) {
   await page.getByRole('button', { name: 'Edit', exact: true }).click();
-  const dialog = page.getByRole('dialog', { name: 'Edit counterparty' });
+  const dialog = page.getByRole('dialog', { name: 'Edit person or business' });
   await expect(
     dialog.getByRole('textbox', { name: /^(Name|Legal name)$/ })
   ).toBeVisible();
@@ -273,7 +273,7 @@ test('preserves a failed draft edit, blocks duplicate saves, and refreshes detai
     release();
     await expect(
       page.getByText(
-        'Unable to update this counterparty. Reload the page and try again.',
+        'Unable to update this person or business. Reload the page and try again.',
         { exact: true }
       )
     ).toBeVisible();
@@ -285,7 +285,7 @@ test('preserves a failed draft edit, blocks duplicate saves, and refreshes detai
     );
     await dialog.getByRole('button', { name: 'Save changes' }).click();
     await expect(
-      page.getByText('Invalid counterparty update.', { exact: true })
+      page.getByText('Invalid person or business update.', { exact: true })
     ).toBeVisible();
     await expect(
       dialog.getByRole('button', { name: 'Save changes' })
@@ -313,7 +313,7 @@ test('preserves a failed draft edit, blocks duplicate saves, and refreshes detai
       page.getByRole('button', { name: 'Edit', exact: true })
     ).toBeDisabled();
   });
-  await page.getByRole('link', { name: 'All counterparties' }).click();
+  await page.getByRole('link', { name: 'All people & businesses' }).click();
   await expect(
     page.getByRole('link', { name: 'Updated counterparty', exact: true })
   ).toBeVisible();
@@ -398,7 +398,11 @@ for (const role of ['vendor', 'contractor', 'employer'] as const) {
       await route.fallback();
     });
     await page.getByRole('button', { name: 'Edit', exact: true }).click();
-    const dialog = page.getByRole('dialog', { name: 'Edit counterparty' });
+
+    const dialog = page.getByRole('dialog', {
+      name: 'Edit person or business',
+    });
+
     await expect(
       dialog.getByRole('status', { name: `Loading ${role} form` })
     ).toBeVisible();
@@ -478,7 +482,7 @@ test('lets a failed usage check reach the app error boundary and recovers on pag
   ).toBeVisible();
   state.setUsageFailure(false);
   await page.reload();
-  const dialog = page.getByRole('dialog', { name: 'Edit counterparty' });
+  const dialog = page.getByRole('dialog', { name: 'Edit person or business' });
   await expect(dialog.getByRole('combobox', { name: 'Type' })).toBeEnabled();
   await expect(
     dialog.getByRole('button', { name: 'Retry', exact: true })
@@ -508,7 +512,9 @@ test('shows the loading skeleton, preserves unrelated parameters, and supports r
   await page.getByRole('button', { name: 'Edit', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await expect(
-    dialog.getByRole('status', { name: 'Loading counterparty for editing' })
+    dialog.getByRole('status', {
+      name: 'Loading person or business for editing',
+    })
   ).toBeVisible();
   await expect(page).toHaveURL(`${url}?keep=preserved&edit=true`);
   release();

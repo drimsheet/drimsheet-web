@@ -198,7 +198,9 @@ test('opens the linked profile, supplies scoped data to the existing table, and 
     .getByRole('link', { name: counterparty.name, exact: true })
     .click();
   await expect(page).toHaveURL(detailUrl);
-  await expect(page.getByText('Loading counterparty details')).toBeAttached();
+  await expect(
+    page.getByText('Loading person or business details')
+  ).toBeAttached();
   release();
   const params = new URL((await requestPromise).url()).searchParams;
   expect(Object.fromEntries(params)).toMatchObject({
@@ -230,7 +232,7 @@ test('opens the linked profile, supplies scoped data to the existing table, and 
   });
   await page.reload();
   await expectProfile(page);
-  await page.getByRole('link', { name: 'All counterparties' }).click();
+  await page.getByRole('link', { name: 'All people & businesses' }).click();
   await expect(page).toHaveURL('/counterparties');
 });
 
@@ -458,15 +460,19 @@ test('checks deletion eligibility and deletes from the counterparty details page
   await page.goto(detailUrl);
   await expectProfile(page);
   expect(eligibilityRequests).toBe(0);
-  await page.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await page
+    .getByRole('button', { name: 'Open person or business actions' })
+    .click();
   await expect(
     page.getByRole('menuitem', { name: 'Delete', exact: true })
   ).toBeVisible();
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await page
+    .getByRole('button', { name: 'Open person or business actions' })
+    .click();
   await expect(
     page.getByRole('status', {
-      name: 'Checking whether this counterparty can be deleted',
+      name: 'Checking whether this person or business can be deleted',
     })
   ).toBeVisible();
 
@@ -482,11 +488,13 @@ test('checks deletion eligibility and deletes from the counterparty details page
   await expect(
     page.getByRole('button', { name: 'Edit', exact: true })
   ).toBeEnabled();
-  await page.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await page
+    .getByRole('button', { name: 'Open person or business actions' })
+    .click();
   await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
 
   const confirmation = page.getByRole('alertdialog', {
-    name: 'Delete counterparty?',
+    name: 'Delete person or business?',
   });
 
   await confirmation.getByLabel('Type "delete" to confirm').fill('delete');
@@ -497,7 +505,7 @@ test('checks deletion eligibility and deletes from the counterparty details page
   await expect(confirmation).not.toBeVisible();
   await expect(page).toHaveURL('/counterparties');
   await expect(
-    page.getByText('Counterparty deleted successfully')
+    page.getByText('Person or business deleted successfully')
   ).toBeVisible();
   await expect(
     page.getByRole('link', { name: counterparty.name, exact: true })

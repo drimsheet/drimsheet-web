@@ -74,12 +74,14 @@ it('shows deletion eligibility progress only inside the actions menu', async () 
   expect(screen.queryByRole('status')).not.toBeInTheDocument();
   await userEvent
     .setup()
-    .click(screen.getByRole('button', { name: 'Open counterparty actions' }));
+    .click(
+      screen.getByRole('button', { name: 'Open person or business actions' })
+    );
   expect(onActionsOpenChange).toHaveBeenCalledWith(true);
 
   expect(
     screen.getByRole('status', {
-      name: 'Checking whether this counterparty can be deleted',
+      name: 'Checking whether this person or business can be deleted',
     })
   ).toBeVisible();
   expect(
@@ -102,7 +104,7 @@ it('emits delete intent when the API marks the counterparty as deletable', async
 
   const user = userEvent.setup();
   await user.click(
-    screen.getByRole('button', { name: 'Open counterparty actions' })
+    screen.getByRole('button', { name: 'Open person or business actions' })
   );
   await user.click(screen.getByRole('menuitem', { name: 'Delete' }));
 
@@ -113,7 +115,9 @@ it('does not offer deletion when eligibility is unavailable or false', async () 
   render(<CounterpartyDetails counterparty={party} onDelete={vi.fn()} />);
   await userEvent
     .setup()
-    .click(screen.getByRole('button', { name: 'Open counterparty actions' }));
+    .click(
+      screen.getByRole('button', { name: 'Open person or business actions' })
+    );
   expect(screen.getByText('No available actions')).toBeVisible();
   expect(
     screen.queryByRole('menuitem', { name: 'Delete' })

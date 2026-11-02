@@ -44,12 +44,12 @@ export function TablePagination({
         className
       )}
     >
-      <span aria-live="polite" className="tabular-nums">
+      <output className="tabular-nums">
         {range_text}
         {unfilteredTotal !== undefined && unfilteredTotal > meta.total && (
           <> · {filtered_text}</>
         )}
-      </span>
+      </output>
       <div className="flex items-center gap-3">
         <Button
           type="button"

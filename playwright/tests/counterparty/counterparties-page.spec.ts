@@ -301,7 +301,7 @@ test('combines server search, filters, sorting and pagination without losing que
     await expect(names).toHaveText(['Bob Contractor']);
   });
   await test.step('Search combines with existing filters and clearing restores results', async () => {
-    const search = page.getByPlaceholder(/Search counterparties/i);
+    const search = page.getByPlaceholder(/search people & businesses/i);
     await search.fill('Nobody');
     await expect(
       page.getByRole('cell', { name: 'Bob Contractor', exact: true })

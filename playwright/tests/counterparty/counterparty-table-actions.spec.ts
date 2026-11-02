@@ -130,7 +130,9 @@ test('opens the role-specific update dialog from the table and keeps its identit
 
   const row = page.getByRole('row').filter({ hasText: counterparty.name });
 
-  await row.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await row
+    .getByRole('button', { name: 'Open person or business actions' })
+    .click();
   await page.getByRole('menuitem', { name: 'Edit' }).click();
 
   await expect
@@ -143,7 +145,7 @@ test('opens the role-specific update dialog from the table and keeps its identit
     .poll(() => new URL(page.url()).searchParams.get('counterpartyType'))
     .toBe('organization');
 
-  const dialog = page.getByRole('dialog', { name: 'Edit counterparty' });
+  const dialog = page.getByRole('dialog', { name: 'Edit person or business' });
   await expect(dialog.getByLabel('Legal name', { exact: true })).toHaveValue(
     counterparty.name
   );
@@ -173,23 +175,25 @@ test('asks for confirmation and archives the selected counterparty', async ({
 
   const row = page.getByRole('row').filter({ hasText: counterparty.name });
 
-  await row.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await row
+    .getByRole('button', { name: 'Open person or business actions' })
+    .click();
   await page.getByRole('menuitem', { name: 'Archive' }).click();
 
   const confirmation = page.getByRole('alertdialog', {
-    name: 'Archive counterparty?',
+    name: 'Archive person or business?',
   });
 
   await expect(confirmation).toBeVisible();
   expect(state.archiveRequestBodies).toEqual([]);
   await confirmation
-    .getByRole('button', { name: 'Archive counterparty' })
+    .getByRole('button', { name: 'Archive person or business' })
     .click();
 
   await expect(confirmation).not.toBeVisible();
   expect(state.archiveRequestBodies).toEqual([null]);
   await expect(
-    page.getByText('Counterparty archived successfully')
+    page.getByText('Person or business archived successfully')
   ).toBeVisible();
   await expect(
     page.getByRole('row').filter({ hasText: counterparty.name })
@@ -225,13 +229,15 @@ test('rechecks row deletion eligibility after a conflict and refreshes the list 
   await expect(row).toBeVisible();
   expect(state.deletionEligibilityRequests).toEqual([]);
 
-  await row.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await row
+    .getByRole('button', { name: 'Open person or business actions' })
+    .click();
   await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
   expect(state.deletionEligibilityRequests).toHaveLength(1);
   await page.getByRole('menuitem', { name: 'Delete' }).click();
 
   const confirmation = page.getByRole('alertdialog', {
-    name: 'Delete counterparty?',
+    name: 'Delete person or business?',
   });
 
   const deleteButton = confirmation.getByRole('button', {
@@ -250,12 +256,12 @@ test('rechecks row deletion eligibility after a conflict and refreshes the list 
     await expect(confirmation).not.toBeVisible();
     await expect(
       page.getByText(
-        'This counterparty cannot be deleted because it is referenced by one or more transactions.'
+        'This person or business cannot be deleted because it is referenced by one or more transactions.'
       )
     ).toBeVisible();
     await expect(row).toBeVisible();
     await row
-      .getByRole('button', { name: 'Open counterparty actions' })
+      .getByRole('button', { name: 'Open person or business actions' })
       .click();
     await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
     expect(state.deletionEligibilityRequests).toHaveLength(2);
@@ -267,7 +273,7 @@ test('rechecks row deletion eligibility after a conflict and refreshes the list 
   await expect(confirmation).not.toBeVisible();
   await expect(row).not.toBeVisible();
   await expect(
-    page.getByText('Counterparty deleted successfully')
+    page.getByText('Person or business deleted successfully')
   ).toBeVisible();
   expect(state.deleteRequestBodies).toEqual([null]);
 });

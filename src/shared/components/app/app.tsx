@@ -4,6 +4,7 @@ import type { AppBodyProps } from './types';
 
 export function AppBody({
   title,
+  description,
   titleSlot,
   titleBadgeSlot,
   breadcrumbs,
@@ -36,11 +37,18 @@ export function AppBody({
           {(hasHeading || hasActions) && (
             <div className="flex min-h-10 min-w-0 flex-wrap items-center justify-between gap-4">
               {hasHeading && (
-                <div className="flex min-w-0 flex-wrap items-center gap-3">
-                  <PageTitle className="flex min-w-0 flex-wrap items-center gap-3 wrap-anywhere">
-                    {heading}
-                  </PageTitle>
-                  {titleBadgeSlot}
+                <div className="flex min-w-0 flex-col gap-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-3">
+                    <PageTitle className="flex min-w-0 flex-wrap items-center gap-3 wrap-anywhere">
+                      {heading}
+                    </PageTitle>
+                    {titleBadgeSlot}
+                  </div>
+                  {description && (
+                    <p className="m-0 text-sm text-muted-foreground">
+                      {description}
+                    </p>
+                  )}
                 </div>
               )}
               {hasActions && (

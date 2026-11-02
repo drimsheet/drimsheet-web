@@ -61,7 +61,7 @@ const validationMessages: ICashTransactionFormValidationMessages = {
   itemAmountRequired: 'Item amount is required',
   itemCategoryRequired: 'Item category is required',
   itemsRequired: 'Add at least one item',
-  counterpartyRequired: 'Counterparty is required',
+  counterpartyRequired: 'Person or business is required',
   attachmentSize: 'Attachment must be no larger than 2 MB',
   attachmentType: 'Attachment must be a JPEG, PNG, or PDF',
 };
@@ -202,9 +202,9 @@ describe('CashTransactionForm', () => {
     variant: UCashTransactionFormVariant | undefined;
   }>([
     {
-      label: 'Counterparty',
-      placeholder: 'Select or enter a counterparty',
-      requiredMessage: 'Counterparty is required',
+      label: 'Person or business',
+      placeholder: 'Select or enter a person or business',
+      requiredMessage: 'Person or business is required',
       variant: undefined,
     },
     {

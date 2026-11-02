@@ -27,7 +27,7 @@ describe('CounterpartyRowActions', () => {
     );
 
     await user.click(
-      screen.getByRole('button', { name: 'Open counterparty actions' })
+      screen.getByRole('button', { name: 'Open person or business actions' })
     );
     await user.click(screen.getByRole('menuitem', { name: 'Edit' }));
 
@@ -46,7 +46,7 @@ describe('CounterpartyRowActions', () => {
     );
 
     await user.click(
-      screen.getByRole('button', { name: 'Open counterparty actions' })
+      screen.getByRole('button', { name: 'Open person or business actions' })
     );
     const archiveAction = screen.getByRole('menuitem', { name: 'Archive' });
 
@@ -54,13 +54,13 @@ describe('CounterpartyRowActions', () => {
     await user.click(archiveAction);
 
     const dialog = screen.getByRole('alertdialog', {
-      name: 'Archive counterparty?',
+      name: 'Archive person or business?',
     });
 
     expect(onArchive).not.toHaveBeenCalled();
 
     const archiveButton = screen.getByRole('button', {
-      name: 'Archive counterparty',
+      name: 'Archive person or business',
     });
 
     expect(archiveButton).toHaveAttribute('data-variant', 'default');
@@ -82,7 +82,7 @@ describe('CounterpartyRowActions', () => {
     );
 
     await user.click(
-      screen.getByRole('button', { name: 'Open counterparty actions' })
+      screen.getByRole('button', { name: 'Open person or business actions' })
     );
 
     expect(screen.getByRole('menuitem', { name: 'Edit' })).toHaveAttribute(
@@ -116,7 +116,7 @@ describe('CounterpartyRowActions', () => {
 
     expect(onCheckDeleteEligibility).not.toHaveBeenCalled();
     await user.click(
-      screen.getByRole('button', { name: 'Open counterparty actions' })
+      screen.getByRole('button', { name: 'Open person or business actions' })
     );
 
     expect(onCheckDeleteEligibility).toHaveBeenCalledExactlyOnceWith(
@@ -125,7 +125,7 @@ describe('CounterpartyRowActions', () => {
 
     expect(
       screen.getByRole('menuitem', {
-        name: 'Checking whether this counterparty can be deleted',
+        name: 'Checking whether this person or business can be deleted',
       })
     ).toBeVisible();
 
@@ -147,13 +147,13 @@ describe('CounterpartyRowActions', () => {
     );
 
     await user.click(
-      screen.getByRole('button', { name: 'Open counterparty actions' })
+      screen.getByRole('button', { name: 'Open person or business actions' })
     );
 
     await waitFor(() => {
       expect(
         screen.queryByRole('menuitem', {
-          name: 'Checking whether this counterparty can be deleted',
+          name: 'Checking whether this person or business can be deleted',
         })
       ).not.toBeInTheDocument();
     });

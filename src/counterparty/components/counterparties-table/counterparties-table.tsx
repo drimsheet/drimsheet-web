@@ -1,4 +1,3 @@
-import { Plus } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -7,10 +6,8 @@ import { useGetCounterpartyRoleLabel } from '@/counterparty/hooks/use-get-counte
 import { useGetCounterpartyTypeLabel } from '@/counterparty/hooks/use-get-counterparty-type-label';
 import { counterpartyMapper } from '@/counterparty/lib/mappers/counterparty.mapper';
 import { Badge } from '@/shared/components/badge';
-import { Button } from '@/shared/components/button';
 import { DataTable, type ITableColumn } from '@/shared/components/data-table';
 import { FormattedDate } from '@/shared/components/date';
-import { SearchField } from '@/shared/components/search-field';
 import { StatusBadge } from '@/shared/components/status-badge';
 import {
   ECounterpartyRole,
@@ -20,7 +17,6 @@ import {
   type UCounterpartyStatus,
   type UCounterpartyType,
 } from '@/shared/lib/api/Api';
-import { cn } from '@/shared/lib/utils/cn';
 import { CounterpartyRowActions } from './parts/counterparty-row-actions';
 import type { CounterpartiesTableProps } from './types';
 
@@ -41,10 +37,7 @@ export function CounterpartiesTable({
   currentSortDirection,
   className,
   'data-testid': dataTestId = 'counterparties-table',
-  searchValue = '',
-  onSearchChange,
   filters,
-  onAddCounterparty,
   onArchiveCounterparty,
   onCheckCounterpartyDeleteEligibility,
   onDeleteCounterparty,
@@ -72,14 +65,14 @@ export function CounterpartiesTable({
     return [
       {
         dataIndex: 'name',
-        proportion: 2.5,
-        minWidth: 220,
+        proportion: 2,
+        minWidth: 210,
         title: counterparty_name_label,
         sortable: true,
         render: (value, row) =>
           getCounterpartyHref ? (
             <Link
-              className="underline-offset-4 hover:underline focus-visible:underline"
+              className="text-link underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-ring"
               to={getCounterpartyHref(row.id)}
             >
               {String(value)}
@@ -90,6 +83,8 @@ export function CounterpartiesTable({
       },
       {
         dataIndex: 'status',
+        proportion: 1,
+        minWidth: 104,
         title: status_text,
         sortable: false,
         filterable: true,
@@ -110,6 +105,8 @@ export function CounterpartiesTable({
       },
       {
         dataIndex: 'type',
+        proportion: 1.2,
+        minWidth: 128,
         title: type_label,
         sortable: false,
         filterable: true,
@@ -126,6 +123,8 @@ export function CounterpartiesTable({
       },
       {
         dataIndex: 'roles',
+        proportion: 1.5,
+        minWidth: 156,
         title: roles_label,
         sortable: false,
         filterable: true,
@@ -142,7 +141,7 @@ export function CounterpartiesTable({
           return (
             <div className="flex flex-wrap gap-1">
               {row.roles.map((role) => (
-                <Badge key={role} variant="secondary">
+                <Badge key={role} variant="neutral">
                   {getCounterpartyRoleLabel(role)}
                 </Badge>
               ))}
@@ -152,6 +151,8 @@ export function CounterpartiesTable({
       },
       {
         dataIndex: 'createdAt',
+        proportion: 1.1,
+        minWidth: 116,
         title: created_on_label,
         sortable: true,
         render: (value) => {
@@ -170,7 +171,7 @@ export function CounterpartiesTable({
       },
       {
         dataIndex: 'id',
-        width: 72,
+        width: 64,
         title: '',
         sortable: false,
         render: (_, row) => (
@@ -197,48 +198,30 @@ export function CounterpartiesTable({
     onEditCounterparty,
   ]);
 
-  const search_placeholder_text = t('counterparty:search_placeholder');
-  const add_counterparty_text = t('counterparty:add_counterparty');
-
   return (
-    <div className={cn('flex flex-col gap-4 w-full', className)}>
-      <div className="flex items-center justify-between">
-        <div className="w-full max-w-sm">
-          <SearchField
-            type="search"
-            placeholder={search_placeholder_text}
-            value={searchValue}
-            onChange={(e) => onSearchChange(e.target.value)}
-          />
-        </div>
-
-        <Button onClick={onAddCounterparty}>
-          <Plus />
-          {add_counterparty_text}
-        </Button>
-      </div>
-
-      <DataTable
-        columns={columns}
-        pagination={
-          pagination && onPageChange
-            ? { meta: pagination, onPageChange }
-            : undefined
-        }
-        data={data}
-        loading={loading}
-        selectable={selectable}
-        selectedRowIds={selectedRowIds}
-        onRowSelectionChange={onRowSelectionChange}
-        stickyHeader={stickyHeader}
-        onSortChange={onSortChange}
-        onFilterChange={onFilterChange}
-        currentSortKey={currentSortKey}
-        currentSortDirection={currentSortDirection}
-        className={className}
-        data-testid={dataTestId}
-        filters={filters}
-      />
-    </div>
+    <DataTable
+      columns={columns}
+      pagination={
+        pagination && onPageChange
+          ? {
+              meta: pagination,
+              onPageChange,
+            }
+          : undefined
+      }
+      data={data}
+      loading={loading}
+      selectable={selectable}
+      selectedRowIds={selectedRowIds}
+      onRowSelectionChange={onRowSelectionChange}
+      stickyHeader={stickyHeader}
+      onSortChange={onSortChange}
+      onFilterChange={onFilterChange}
+      currentSortKey={currentSortKey}
+      currentSortDirection={currentSortDirection}
+      className={className}
+      data-testid={dataTestId}
+      filters={filters}
+    />
   );
 }

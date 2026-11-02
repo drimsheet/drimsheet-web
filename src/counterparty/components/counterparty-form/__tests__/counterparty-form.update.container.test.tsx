@@ -199,7 +199,7 @@ it('shows a type selector skeleton while checking usage and restores the selecte
   const name = await screen.findByLabelText('Name');
   expect(
     await screen.findByRole('status', {
-      name: 'Checking whether the counterparty type can be changed…',
+      name: 'Checking whether the person or business type can be changed…',
     })
   ).toHaveAttribute('aria-busy', 'true');
   expect(
@@ -219,7 +219,7 @@ it('shows a type selector skeleton while checking usage and restores the selecte
   expect(name).toHaveValue('Retained edit');
   expect(
     screen.queryByRole('status', {
-      name: 'Checking whether the counterparty type can be changed…',
+      name: 'Checking whether the person or business type can be changed…',
     })
   ).not.toBeInTheDocument();
   client.clear();

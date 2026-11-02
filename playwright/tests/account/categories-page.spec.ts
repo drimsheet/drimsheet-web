@@ -421,8 +421,10 @@ test('renames and archives categories, then opens category details', async ({
   ).toBeVisible();
   await expect(
     page
-      .getByRole('region', { name: 'Counterparty share', exact: true })
-      .getByText('No counterparty activity in this period.', { exact: true })
+      .getByRole('region', { name: 'Share by person or business', exact: true })
+      .getByText('No person or business activity in this period.', {
+        exact: true,
+      })
   ).toBeVisible();
   await expect(page.getByRole('alert')).toHaveCount(0);
 });

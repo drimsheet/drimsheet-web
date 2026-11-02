@@ -95,22 +95,24 @@ test.describe('Counterparty Selection and Creation Flow', () => {
   }) => {
     await signInAndNavigateToCounterparties(page);
 
-    await page.getByRole('button', { name: /add counterparty/i }).click();
+    await page.getByRole('button', { name: /add person or business/i }).click();
 
     const selectionDialog = page.getByRole('dialog').filter({
-      has: page.getByRole('heading', { name: /select counterparty role/i }),
+      has: page.getByRole('heading', { name: /select a role/i }),
     });
 
     await test.step('Dismiss and reopen the role selector', async () => {
       await page.keyboard.press('Escape');
       await expect(selectionDialog).not.toBeVisible();
-      await page.getByRole('button', { name: /add counterparty/i }).click();
+      await page
+        .getByRole('button', { name: /add person or business/i })
+        .click();
     });
     await selectionDialog.getByRole('radio', { name: /default/i }).click();
     await selectionDialog.getByRole('button', { name: /continue/i }).click();
 
     const creationDialog = page.getByRole('dialog').filter({
-      has: page.getByRole('heading', { name: /^create counterparty$/i }),
+      has: page.getByRole('heading', { name: /^create person or business$/i }),
     });
 
     await expect(creationDialog).toBeVisible();
@@ -125,7 +127,9 @@ test.describe('Counterparty Selection and Creation Flow', () => {
       await expect(creationDialog).not.toBeVisible();
 
       // Reopen and verify it's clean
-      await page.getByRole('button', { name: /add counterparty/i }).click();
+      await page
+        .getByRole('button', { name: /add person or business/i })
+        .click();
       await selectionDialog.getByRole('radio', { name: /default/i }).click();
       await selectionDialog.getByRole('button', { name: /continue/i }).click();
 
@@ -179,7 +183,7 @@ test.describe('Counterparty Selection and Creation Flow', () => {
     await creationDialog.getByRole('button', { name: /create/i }).click();
 
     await expect(
-      page.getByText('Counterparty created successfully')
+      page.getByText('Person or business created successfully')
     ).toBeVisible();
     await expect(creationDialog).not.toBeVisible();
     expect(capturedBody).toEqual({
@@ -195,10 +199,10 @@ test.describe('Counterparty Selection and Creation Flow', () => {
   }) => {
     await signInAndNavigateToCounterparties(page);
 
-    await page.getByRole('button', { name: /add counterparty/i }).click();
+    await page.getByRole('button', { name: /add person or business/i }).click();
 
     const selectionDialog = page.getByRole('dialog').filter({
-      has: page.getByRole('heading', { name: /select counterparty role/i }),
+      has: page.getByRole('heading', { name: /select a role/i }),
     });
 
     await selectionDialog.getByRole('radio', { name: /vendor/i }).click();
@@ -270,10 +274,10 @@ test.describe('Counterparty Selection and Creation Flow', () => {
   test('successfully creates a contractor counterparty', async ({ page }) => {
     await signInAndNavigateToCounterparties(page);
 
-    await page.getByRole('button', { name: /add counterparty/i }).click();
+    await page.getByRole('button', { name: /add person or business/i }).click();
 
     const selectionDialog = page.getByRole('dialog').filter({
-      has: page.getByRole('heading', { name: /select counterparty role/i }),
+      has: page.getByRole('heading', { name: /select a role/i }),
     });
 
     await selectionDialog.getByRole('radio', { name: /contractor/i }).click();
@@ -344,10 +348,10 @@ test.describe('Counterparty Selection and Creation Flow', () => {
   }) => {
     await signInAndNavigateToCounterparties(page);
 
-    await page.getByRole('button', { name: /add counterparty/i }).click();
+    await page.getByRole('button', { name: /add person or business/i }).click();
 
     const selectionDialog = page.getByRole('dialog').filter({
-      has: page.getByRole('heading', { name: /select counterparty role/i }),
+      has: page.getByRole('heading', { name: /select a role/i }),
     });
 
     await selectionDialog.getByRole('radio', { name: /employer/i }).click();

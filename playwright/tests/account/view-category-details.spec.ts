@@ -353,7 +353,11 @@ test('applies the page period to totals, charts and transactions', async ({
   const headingBox = await heading.boundingBox();
   expect(headingBox!.x).toBe(breadcrumbBox!.x);
   const summary = page.getByLabel(category.name, { exact: true });
-  const share = page.getByRole('region', { name: 'Counterparty share' });
+
+  const share = page.getByRole('region', {
+    name: 'Share by person or business',
+  });
+
   await expect(
     summary.getByRole('definition').filter({ hasText: /^11$/ })
   ).toBeVisible();
@@ -397,7 +401,7 @@ test('applies the page period to totals, charts and transactions', async ({
     page.getByText('No expenses or income in this period.')
   ).toBeVisible();
   await expect(
-    share.getByText('No counterparty activity in this period.')
+    share.getByText('No person or business activity in this period.')
   ).toBeVisible();
   await expect(page.getByText('Google subscription')).toHaveCount(0);
   await period.click();

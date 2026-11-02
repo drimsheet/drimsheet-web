@@ -31,7 +31,7 @@ export const Default: Story = {
   args: {
     items: [
       {
-        title: 'Counterparties',
+        title: 'People & Businesses',
         url: '/counterparties',
         icon: <UsersRound />,
         isActive: true,

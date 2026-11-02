@@ -118,7 +118,7 @@ describe('AppSidebar', () => {
       accounting.getByRole('link', { name: 'Categories' })
     ).toHaveAttribute('aria-current', 'page');
     expect(
-      configuration.getByRole('link', { name: 'Counterparties' })
+      configuration.getByRole('link', { name: 'People & Businesses' })
     ).toHaveAttribute('href', '/counterparties');
     expect(
       configuration.queryByRole('link', { name: 'Categories' })
@@ -185,7 +185,7 @@ describe('AppSidebar', () => {
     );
 
     expect(
-      screen.getByRole('link', { name: 'Counterparties' })
+      screen.getByRole('link', { name: 'People & Businesses' })
     ).toHaveAttribute('aria-current', 'page');
     expect(
       screen.getByRole('navigation', { name: 'Configuration' })
