@@ -1,6 +1,7 @@
 import {
   CategoryTrend,
   CategoryTrendSkeleton,
+  CategoryTrendWithState,
 } from '@/account/pages/category-details/parts/category-trend';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -22,6 +23,12 @@ type TStory = StoryObj<typeof meta>;
 export const Default: TStory = {};
 export const Revenue: TStory = { args: { type: 'revenue' } };
 export const Empty: TStory = { args: { months: [] } };
+export const ZeroNetActivity: TStory = {
+  args: {
+    months: [{ month: '2026-06', amount: 0 }],
+    hasTransactions: true,
+  },
+};
 export const Refunds: TStory = {
   args: {
     months: [
@@ -32,3 +39,11 @@ export const Refunds: TStory = {
 };
 
 export const Skeleton: TStory = { render: () => <CategoryTrendSkeleton /> };
+
+export const Error: TStory = {
+  render: (args) => (
+    <CategoryTrendWithState loading={false} error>
+      <CategoryTrend {...args} />
+    </CategoryTrendWithState>
+  ),
+};

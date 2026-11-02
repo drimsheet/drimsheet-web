@@ -2,6 +2,7 @@ import { AppBody } from '@/shared/components/app';
 import { AppSection } from '@/shared/components/app-section';
 import { Badge } from '@/shared/components/badge';
 import { Button } from '@/shared/components/button';
+import { StatusBadge } from '@/shared/components/status-badge';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -50,6 +51,20 @@ export const LongTitle: Story = {
     title:
       'Operating accounts for international subsidiaries and regional offices',
     actionsSlot: <Button>Create account</Button>,
+  },
+};
+
+export const CategoryHeader: Story = {
+  args: {
+    title: 'Software & subscriptions',
+    metadataSlot: <StatusBadge label="Expense" />,
+    titleBadgeSlot: <StatusBadge variant="success" label="Active" />,
+    breadcrumbs: {
+      label: 'Categories',
+      link: '/categories',
+      next: { label: 'Software & subscriptions' },
+    },
+    actionsSlot: <Button variant="outline">Edit category</Button>,
   },
 };
 

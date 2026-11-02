@@ -1,8 +1,16 @@
-import { CategoryTransactions } from '@/account/pages/category-details/parts/category-transactions';
+import {
+  CategoryTransactions,
+  CategoryTransactionsWithState,
+} from '@/account/pages/category-details/parts/category-transactions';
 import type { ICategoryTransaction } from '@/account/pages/category-details/types';
-import { render, screen } from '@testing-library/react';
+import type { IJournalEntryListDto, TEntityId } from '@/shared/lib/api/Api';
+import { render as baseRender, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
+
+const render = (ui: import('react').ReactNode) =>
+  baseRender(ui, { wrapper: MemoryRouter });
 
 const transactions: ICategoryTransaction[] = Array.from(
   { length: 11 },
@@ -16,31 +24,54 @@ const transactions: ICategoryTransaction[] = Array.from(
   })
 );
 
+const entries: IJournalEntryListDto[] = transactions.map((row) => ({
+  id: row.id,
+  accountingEntityId: 'entity',
+  sourceType: 'expense',
+  status: 'posted',
+  memo: row.description,
+  effectiveDate: row.effectiveDate,
+  postedAt: row.effectiveDate,
+  voidedAt: null,
+  voidingEntryId: null,
+  createdBy: 'user' as TEntityId,
+  createdAt: row.effectiveDate,
+  updatedAt: row.effectiveDate,
+  attachments: [],
+  lines: [],
+}));
+
 describe('CategoryTransactions', () => {
-  it('paginates, searches beyond the visible page, and resets pagination after search', async () => {
-    const user = userEvent.setup();
-    render(
+  it('shows a view-all link only when more than ten entries exist, without search or pagination', () => {
+    const { rerender } = render(
       <CategoryTransactions
-        transactions={transactions}
+        entries={entries.slice(0, 10)}
+        total={11}
         selectedCounterparty={null}
         onClearCounterparty={() => {}}
+        transactionsHref="/transactions/list"
+      />
+    );
+
+    expect(
+      screen.getByRole('link', { name: 'View all transactions' })
+    ).toHaveAttribute('href', '/transactions/list');
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Next page' })
+    ).not.toBeInTheDocument();
+    rerender(
+      <CategoryTransactions
+        entries={entries.slice(0, 10)}
+        total={10}
+        selectedCounterparty={null}
+        onClearCounterparty={() => {}}
+        transactionsHref="/transactions/list"
       />
     );
     expect(
-      screen.queryByText('Subscription 0', { exact: true })
+      screen.queryByRole('link', { name: 'View all transactions' })
     ).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Next page' }));
-    expect(
-      screen.getByText('Subscription 0', { exact: true })
-    ).toBeInTheDocument();
-    await user.type(
-      screen.getByRole('textbox', { name: 'Search transactions…' }),
-      'Subscription 10'
-    );
-    expect(
-      screen.getByText('Subscription 10', { exact: true })
-    ).toBeInTheDocument();
-    expect(screen.getByText('1 transaction')).toBeInTheDocument();
   });
 
   it('emits a clear-filter request without changing the data itself', async () => {
@@ -48,7 +79,8 @@ describe('CategoryTransactions', () => {
     const onClear = vi.fn();
     render(
       <CategoryTransactions
-        transactions={transactions}
+        total={11}
+        entries={entries}
         selectedCounterparty="Google"
         onClearCounterparty={onClear}
       />
@@ -58,4 +90,45 @@ describe('CategoryTransactions', () => {
     );
     expect(onClear).toHaveBeenCalledOnce();
   });
+});
+
+it('hides transaction rows until loading and error states are cleared', () => {
+  const content = (
+    <CategoryTransactions
+      entries={entries}
+      total={11}
+      selectedCounterparty={null}
+      onClearCounterparty={() => {}}
+      transactionsHref="/transactions/list"
+    />
+  );
+
+  const { rerender } = render(
+    <CategoryTransactionsWithState loading error>
+      {content}
+    </CategoryTransactionsWithState>
+  );
+
+  expect(screen.getByText('Loading transactions')).toBeInTheDocument();
+  expect(screen.queryByText('Subscription 0')).not.toBeInTheDocument();
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+  rerender(
+    <CategoryTransactionsWithState loading={false} error>
+      {content}
+    </CategoryTransactionsWithState>
+  );
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    'Category details unavailable'
+  );
+  expect(screen.queryByText('Loading transactions')).not.toBeInTheDocument();
+  expect(screen.queryByText('Subscription 0')).not.toBeInTheDocument();
+
+  rerender(
+    <CategoryTransactionsWithState loading={false}>
+      {content}
+    </CategoryTransactionsWithState>
+  );
+  expect(screen.getByText('Subscription 0')).toBeInTheDocument();
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });

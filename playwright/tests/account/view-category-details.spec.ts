@@ -141,6 +141,8 @@ async function setup(page: Page, type: 'revenue' | 'expense' = 'expense') {
   await page.route('**/api/v1/journal-entries?*', (route) => {
     const params = new URL(route.request().url()).searchParams;
     expect(params.get('accountId')).toBe(accountId);
+    expect(params.get('limit')).toBe('10');
+    expect(params.get('page')).toBe('1');
     const pageNumber = Number(params.get('page'));
     const status = params.get('status');
 
@@ -148,7 +150,23 @@ async function setup(page: Page, type: 'revenue' | 'expense' = 'expense') {
       (entry) => !status || entry.status === status
     );
 
-    const data = pageNumber === 1 ? matching.slice(0, 1) : matching.slice(1);
+    const isRecent = params.get('limit') === '10';
+
+    const scoped = matching.filter(
+      (entry) =>
+        !isRecent ||
+        (entry.effectiveDate.slice(0, 10) >= params.get('effectiveDateFrom')! &&
+          entry.effectiveDate.slice(0, 10) <= params.get('effectiveDateTo')!)
+    );
+
+    let data = matching.slice(1);
+    if (pageNumber === 1) {
+      data = matching.slice(0, 1);
+    }
+
+    if (isRecent) {
+      data = scoped.slice(0, 10);
+    }
 
     return route.fulfill({
       json: {
@@ -162,12 +180,49 @@ async function setup(page: Page, type: 'revenue' | 'expense' = 'expense') {
         meta: {
           page: pageNumber,
           limit: 100,
-          totalPages: 2,
-          total: matching.length,
+          totalPages: isRecent ? 1 : 2,
+          total: isRecent ? scoped.length : matching.length,
         },
       },
     });
   });
+  await page.route(
+    `**/api/v1/reporting/ledger/accounts/${accountId}/activity?*`,
+    (route) => {
+      const params = new URL(route.request().url()).searchParams;
+      expect(params.get('bucketDays')).toBe('1');
+      const from = params.get('from')!;
+      const to = params.get('to')!;
+      const amount = from === '2025-01-01' ? 0 : 2400000;
+      const delta = { ...money, amount };
+
+      const buckets = amount
+        ? [
+            {
+              from: '2026-10-01',
+              to: '2026-10-01',
+              delta,
+              totalDebits: delta,
+              totalCredits: { ...money, amount: 0 },
+            },
+          ]
+        : [];
+
+      if (from === '2026-01-01') {
+        buckets.push({
+          from: '2026-04-01',
+          to: '2026-04-01',
+          delta: { ...money, amount: 100000 },
+          totalDebits: { ...money, amount: 100000 },
+          totalCredits: { ...money, amount: 0 },
+        });
+      }
+
+      return route.fulfill({
+        json: { accountId, currencyCode: 'NGN', period: { from, to }, buckets },
+      });
+    }
+  );
   await page.route(participationUrl, (route) =>
     route.fulfill({
       json: {
@@ -183,166 +238,220 @@ async function setup(page: Page, type: 'revenue' | 'expense' = 'expense') {
   await expect(page).toHaveURL('/dashboard');
 }
 
-test('keeps the balance visible when history fails and recovers after browser refresh', async ({
+test('applies the page period to totals, charts and transactions', async ({
   page,
 }) => {
   await setup(page);
-  let release = () => {};
 
-  const gate = new Promise<void>((resolve) => {
-    release = resolve;
-  });
+  const historical = {
+    ...journal('older', 'Older vendor', 100000),
+    effectiveDate: '2026-04-01',
+  };
 
-  await page.route('**/api/v1/journal-entries?*', async (route) => {
-    if (new URL(route.request().url()).searchParams.get('page') === '1') {
-      await route.fulfill({
-        json: {
-          data: entries.slice(0, 1),
-          meta: { page: 1, limit: 100, total: 2, totalPages: 2 },
-        },
-      });
-
-      return;
-    }
-
-    await gate;
-    await route.fulfill({ status: 503, json: { errorKey: 'unavailable' } });
-  });
-  await page.goto(`/categories/${accountId}`);
-  await expect(page.getByLabel('Loading transaction count')).toBeVisible();
-  await expect(page.getByText('₦2,400,000', { exact: true })).toBeVisible();
-  release();
-  await expect(page.getByRole('alert')).toBeVisible();
-  await expect(
-    page.getByRole('region', { name: 'Counterparty share' })
-  ).toBeVisible();
-  await expect(page.getByLabel('Loading transaction count')).toHaveCount(0);
-  await page.route('**/api/v1/journal-entries?*', (route) =>
-    route.fulfill({
-      json: {
-        data: [],
-        meta: { page: 1, limit: 100, total: 0, totalPages: 0 },
-      },
-    })
-  );
-  await expect(
-    page.getByRole('button', { name: /^(Retry|Try again)$/i })
-  ).toHaveCount(0);
-  await page.reload();
-  await expect(
-    page
-      .getByRole('region', { name: 'Counterparty share' })
-      .getByRole('button', { name: /Google/ })
-  ).toContainText('60%');
-  await expect(
-    page.getByText('No net posted activity in the last 6 months.')
-  ).toBeVisible();
-  await expect(
-    page
-      .getByRole('region', { name: 'Transactions', exact: true })
-      .getByText('0 transactions')
-  ).toBeVisible();
-});
-
-test('pages server participation while preserving the transaction filter', async ({
-  page,
-}) => {
-  await setup(page);
-  await page.route(participationUrl, (route) => {
+  const recentRequests: string[] = [];
+  await page.route('**/api/v1/journal-entries?*', (route) => {
     const params = new URL(route.request().url()).searchParams;
-    const pageNumber = Number(params.get('page'));
-    expect(params.get('limit')).toBe('5');
-    const data = [participation[pageNumber - 1]];
+    expect(params.get('limit')).toBe('10');
+    const recent = params.get('limit') === '10';
+
+    let data = [
+      ...entries.filter((entry) => entry.status === 'posted'),
+      historical,
+    ];
+
+    if (recent) {
+      expect(params.get('page')).toBe('1');
+      expect(params.get('orderBy')).toBe('effectiveDate');
+      expect(params.get('sortDirection')).toBe('desc');
+      recentRequests.push(params.get('effectiveDateFrom')!);
+      data = data.filter(
+        (entry) =>
+          entry.effectiveDate.slice(0, 10) >=
+            params.get('effectiveDateFrom')! &&
+          entry.effectiveDate.slice(0, 10) <= params.get('effectiveDateTo')!
+      );
+    }
 
     return route.fulfill({
       json: {
         data,
         meta: {
-          page: pageNumber,
-          limit: 5,
-          total: 6,
-          totalPages: 2,
+          page: 1,
+          limit: recent ? 10 : 100,
+          total: recent && data.length ? 11 : data.length,
+          totalPages: recent && data.length ? 2 : 1,
         },
       },
     });
   });
-  await page.goto(`/categories/${accountId}`);
-  await expect(
-    page.getByRole('heading', { name: category.name })
-  ).toBeVisible();
-  await expect(page.getByText('₦2,400,000', { exact: true })).toBeVisible();
+  const ranges: string[] = [];
+  await page.route(participationUrl, (route) => {
+    const params = new URL(route.request().url()).searchParams;
+    const from = params.get('from');
+    const to = params.get('to');
+    expect(params.get('page')).toBe('1');
+    expect(params.get('limit')).toBe('5');
+    expect(from).toBeTruthy();
+    expect(to).toBe(from === '2025-01-01' ? '2025-12-31' : '2026-10-15');
+    ranges.push(`${from}:${to}`);
+    let data = participation;
+    if (from === '2025-01-01') {
+      data = [];
+    }
 
+    if (from === '2026-01-01') {
+      data = [
+        ...participation,
+        {
+          ...participation[0],
+          counterparty: {
+            ...participation[0].counterparty!,
+            id: 'older',
+            name: 'Older vendor',
+          },
+        },
+      ];
+    }
+
+    return route.fulfill({
+      json: {
+        data,
+        meta: { page: 1, limit: 5, total: data.length, totalPages: 1 },
+      },
+    });
+  });
+  await page.goto(`/categories/${accountId}`);
+
+  const heading = page.getByRole('heading', {
+    name: category.name,
+    exact: true,
+  });
+
+  await expect(heading).toBeVisible();
+
+  const breadcrumb = page.getByRole('navigation', {
+    name: 'breadcrumb',
+    exact: true,
+  });
+
+  const headerLayout = await heading.evaluate((element) => {
+    const header = element.closest('header')!;
+    const rows = [...header.children];
+
+    return {
+      gap: getComputedStyle(header).rowGap,
+      rows: rows.length,
+      first: rows[0].getBoundingClientRect().x,
+      second: rows[1].getBoundingClientRect().x,
+    };
+  });
+
+  expect(headerLayout.gap).toBe('16px');
+  expect(headerLayout.rows).toBe(3);
+  expect(headerLayout.first).toBe(headerLayout.second);
+  const breadcrumbBox = await breadcrumb.boundingBox();
+  const headingBox = await heading.boundingBox();
+  expect(headingBox!.x).toBe(breadcrumbBox!.x);
+  const summary = page.getByLabel(category.name, { exact: true });
   const share = page.getByRole('region', { name: 'Counterparty share' });
-  const table = page.getByRole('region', { name: 'Transactions', exact: true });
+  await expect(
+    summary.getByRole('definition').filter({ hasText: /^11$/ })
+  ).toBeVisible();
   await expect(share.getByRole('button', { name: /Google/ })).toContainText(
     '60%'
   );
-  await share.getByRole('button', { name: 'Next counterparties' }).click();
-  await expect(share.getByRole('button', { name: /Notion/ })).toContainText(
-    '40%'
+  await expect(page.getByText('Older vendor subscription')).toHaveCount(0);
+  await expect(
+    page.getByRole('heading', { name: 'Overview', exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Recent transactions', exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('textbox', { name: 'Search transactions…' })
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('link', { name: 'View all transactions' })
+  ).toHaveAttribute(
+    'href',
+    `/transactions/list?accountId=${accountId}&effectiveDateFrom=2026-05-01&effectiveDateTo=2026-10-15`
   );
-  await expect(share.getByText('Page 2 of 2')).toBeVisible();
-  await share.getByRole('button', { name: /Notion/ }).click();
+  await expect(summary.getByText('₦2,400,000', { exact: true })).toBeVisible();
+  const period = page.getByRole('combobox', { name: 'Period' });
+  await period.click();
+  await page.getByRole('option', { name: 'This year', exact: true }).click();
   await expect(
-    table.getByRole('button', { name: 'Clear filter: Notion' })
+    summary.getByRole('definition').filter({ hasText: /^11$/ })
   ).toBeVisible();
-  await share.getByRole('button', { name: 'Previous counterparties' }).click();
-  await expect(share.getByRole('button', { name: /Google/ })).toContainText(
-    '60%'
+  await expect(summary.getByText('₦2,500,000', { exact: true })).toBeVisible();
+  await expect(page.getByText('Older vendor subscription')).toBeVisible();
+  await expect(
+    share.getByRole('button', { name: /Older vendor/ })
+  ).toBeVisible();
+  await period.click();
+  await page.getByRole('option', { name: 'Last year', exact: true }).click();
+  await expect(
+    summary.getByRole('definition').filter({ hasText: /^0$/ })
+  ).toBeVisible();
+  await expect(
+    page.getByText('No expenses or income in this period.')
+  ).toBeVisible();
+  await expect(
+    share.getByText('No counterparty activity in this period.')
+  ).toBeVisible();
+  await expect(page.getByText('Google subscription')).toHaveCount(0);
+  await period.click();
+  await page.getByRole('option', { name: 'This month', exact: true }).click();
+  await expect(page.getByText('Google subscription')).toBeVisible();
+  await expect
+    .poll(() => ranges)
+    .toEqual([
+      '2026-05-01:2026-10-15',
+      '2026-01-01:2026-10-15',
+      '2025-01-01:2025-12-31',
+      '2026-10-01:2026-10-15',
+    ]);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)
+    )
+    .toBe(true);
+});
+
+test('shows unavailable period totals on reporting failure and recovers after refresh', async ({
+  page,
+}) => {
+  await setup(page);
+  const url = `**/api/v1/reporting/ledger/accounts/${accountId}/activity?*`;
+  await page.route(url, (route) =>
+    route.fulfill({ status: 503, json: { errorKey: 'unavailable' } })
   );
-  await expect(
-    table.getByRole('button', { name: 'Clear filter: Notion' })
-  ).toBeVisible();
-  await table.getByRole('button', { name: 'Clear filter: Notion' }).click();
-  await expect(
-    table.getByText('2 transactions', { exact: true })
-  ).toBeVisible();
+  await page.goto(`/categories/${accountId}`);
+  await expect(page.getByRole('alert')).toBeVisible();
   await expect(
     page
       .getByLabel(category.name, { exact: true })
       .getByRole('definition')
-      .filter({ hasText: /^2$/ })
-  ).toBeVisible();
-  await expect(table.getByText('Figma subscription')).toHaveCount(0);
-  await table
-    .getByRole('textbox', { name: 'Search transactions…' })
-    .fill('Notion');
-  await expect(table.getByText('Notion subscription')).toBeVisible();
-  await expect(table.getByText('Google subscription')).toHaveCount(0);
-  await page.setViewportSize({ width: 390, height: 844 });
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth
-    )
-  ).toBe(true);
-});
-
-test('keeps transactions usable when participation fails and recovers after browser refresh', async ({
-  page,
-}) => {
-  await setup(page);
-  await page.route(participationUrl, (route) =>
-    route.fulfill({ status: 503, json: { errorKey: 'unavailable' } })
-  );
-  await page.goto(`/categories/${accountId}`);
-  const share = page.getByRole('region', { name: 'Counterparty share' });
-  await expect(share.getByRole('alert')).toBeVisible();
-  await expect(share.getByText('No counterparty activity yet.')).toHaveCount(0);
-  await expect(
-    page
-      .getByRole('region', { name: 'Transactions', exact: true })
-      .getByText('Google subscription')
-  ).toBeVisible();
-  await page.route(participationUrl, (route) =>
+      .filter({ hasText: '—' })
+  ).toHaveCount(1);
+  await expect(page.getByText('Google subscription')).toBeVisible();
+  await page.unroute(url);
+  await page.route(url, (route) =>
     route.fulfill({
-      json: { data: [], meta: { page: 1, limit: 5, total: 0, totalPages: 0 } },
+      json: {
+        accountId,
+        currencyCode: 'NGN',
+        period: { from: '2026-05-01', to: '2026-10-15' },
+        buckets: [],
+      },
     })
   );
-  await expect(
-    page.getByRole('button', { name: /^(Retry|Try again)$/i })
-  ).toHaveCount(0);
   await page.reload();
-  await expect(share.getByText('No counterparty activity yet.')).toBeVisible();
+  await expect(
+    page.getByText('No expenses or income in this period.')
+  ).toBeVisible();
+  await expect(page.getByText('Google subscription')).toBeVisible();
 });
 
 for (const type of ['revenue', 'expense'] as const) {

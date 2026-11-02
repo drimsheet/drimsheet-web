@@ -1,272 +1,112 @@
 import categoryDetailsHelpers from '@/account/pages/category-details/helper';
-import type {
-  IJournalEntryListDto,
-  IJournalLineListDto,
-  TEntityId,
-} from '@/shared/lib/api/Api';
+import type { IAccountActivityDto } from '@/shared/lib/api/Api';
 import { describe, expect, it } from 'vitest';
 
-const money = { amount: 10000, currencyCode: 'NGN', isMinorUnit: true };
+const money = { amount: 0, currencyCode: 'NGN', isMinorUnit: true };
 
-const account = {
-  id: 'category' as TEntityId,
-  type: 'expense' as const,
-  functionalBalance: money,
+const report: IAccountActivityDto = {
+  accountId: 'category',
+  currencyCode: 'NGN',
+  period: { from: '2026-01-01', to: '2026-03-15' },
+  buckets: [
+    {
+      from: '2026-01-01',
+      to: '2026-01-01',
+      delta: { ...money, amount: 10000 },
+      totalDebits: { ...money, amount: 10000 },
+      totalCredits: money,
+    },
+    {
+      from: '2026-01-20',
+      to: '2026-01-20',
+      delta: { ...money, amount: -2500 },
+      totalDebits: money,
+      totalCredits: { ...money, amount: 2500 },
+    },
+    {
+      from: '2026-03-15',
+      to: '2026-03-15',
+      delta: { ...money, amount: 50, isMinorUnit: false },
+      totalDebits: { ...money, amount: 50 },
+      totalCredits: money,
+    },
+  ],
 };
 
-const now = new Date(2026, 9, 15);
-
-const line: IJournalLineListDto = {
-  id: 'line',
-  entryId: 'entry',
-  account: { id: 'category', name: 'Software' },
-  counterparty: { id: 'google', name: 'Google', status: 'active' },
-  sequenceOrder: 1,
-  amount: { amount: 1, currencyCode: 'USD', isMinorUnit: false },
-  functionalAmount: money,
-  side: 'debit',
-  exchangeRate: null,
-  description: 'Subscription',
-  createdAt: '2026-10-01',
-  updatedAt: '2026-10-01',
-};
-
-const entry: IJournalEntryListDto = {
-  id: 'entry',
-  accountingEntityId: 'entity',
-  sourceType: 'expense',
-  memo: null,
-  status: 'posted',
-  effectiveDate: '2026-10-01',
-  postedAt: '2026-10-01',
-  voidedAt: null,
-  voidingEntryId: null,
-  createdBy: 'user' as TEntityId,
-  createdAt: '2026-10-01',
-  updatedAt: '2026-10-01',
-  attachments: [],
-  lines: [line],
-};
-
-describe('categoryDetailsHelpers.activity', () => {
-  it('uses only this category’s functional amounts and fills months with no activity', () => {
-    const result = categoryDetailsHelpers.activity(
-      [
-        {
-          ...entry,
-          lines: [
-            line,
-            {
-              ...line,
-              id: 'bank',
-              account: { id: 'bank', name: 'Bank' },
-              side: 'credit',
-            },
-          ],
-        },
-      ],
-      account,
-      now
-    );
-
-    expect(result.months).toEqual(
-      ['05', '06', '07', '08', '09', '10'].map((month) => ({
-        month: `2026-${month}`,
-        amount: month === '10' ? 100 : 0,
-      }))
-    );
-    expect(result.transactions[0].amount.amount).toBe(100);
-    expect(result.transactions[0].description).toBe('Subscription');
-  });
-
-  it('subtracts refunds, supports negative counterparties, and counts an entry once for multiple category lines', () => {
-    const refund = {
-      ...line,
-      id: 'refund',
-      side: 'credit' as const,
-      functionalAmount: { ...money, amount: 2500 },
-    };
-
-    const other = {
-      ...refund,
-      id: 'other',
-      counterparty: { id: 'other', name: 'Other', status: 'active' as const },
-    };
-
-    const result = categoryDetailsHelpers.activity(
-      [{ ...entry, lines: [line, refund, other] }],
-      account,
-      now
-    );
-
-    expect(result.transactions).toHaveLength(1);
-    expect(result.months[5].amount).toBe(50);
-    expect(result.transactions[0].amount.amount).toBe(50);
-  });
-
-  it.each([
-    { status: 'draft', postedAt: null },
-    { status: 'voided', voidedAt: '2026-10-02' },
-    { voidingEntryId: 'correction' },
-    { sourceType: 'opening_balance' },
-    { sourceType: 'reversal' },
-    { status: 'archived', postedAt: null },
-  ] satisfies Partial<IJournalEntryListDto>[])(
-    'keeps excluded journals in the table without inflating activity: %j',
-    (changes) => {
-      const result = categoryDetailsHelpers.activity(
-        [{ ...entry, ...changes }],
-        account,
-        now
-      );
-
-      expect(result.transactions).toHaveLength(1);
-      expect(result.months.every(({ amount }) => amount === 0)).toBe(true);
-    }
-  );
-
-  it('keeps older archived transactions outside the six-month trend', () => {
-    const result = categoryDetailsHelpers.activity(
-      [{ ...entry, status: 'archived', effectiveDate: '2025-12-01' }],
-      account,
-      now
-    );
-
-    expect(result.transactions[0].amount.amount).toBe(100);
-    expect(result.months.every(({ amount }) => amount === 0)).toBe(true);
-  });
-
-  it('uses credits less debits for revenue and attributes missing counterparties explicitly', () => {
-    const result = categoryDetailsHelpers.activity(
-      [{ ...entry, lines: [{ ...line, side: 'credit', counterparty: null }] }],
-      { ...account, type: 'revenue' },
-      now
-    );
-
-    expect(result.transactions[0]).toMatchObject({
-      counterparties: [{ id: 'unassigned', name: null }],
-      amount: { amount: 100 },
+describe('categoryDetailsHelpers', () => {
+  it('aggregates daily signed amounts into calendar months, normalizing minor units and filling empty months', () => {
+    const result = categoryDetailsHelpers.fromActivity(report);
+    expect(result.months).toEqual([
+      { month: '2026-01', amount: 75 },
+      { month: '2026-02', amount: 0 },
+      { month: '2026-03', amount: 50 },
+    ]);
+    expect(result.balance).toEqual({
+      amount: 125,
+      currencyCode: 'NGN',
+      isMinorUnit: false,
     });
+    expect(result.hasActivity).toBe(true);
   });
-
-  it('keeps a net-zero transaction in the table', () => {
-    const result = categoryDetailsHelpers.activity(
-      [{ ...entry, lines: [line, { ...line, id: 'refund', side: 'credit' }] }],
-      account,
-      now
-    );
-
-    expect(result.transactions[0].amount.amount).toBe(0);
-    expect(result.months[5].amount).toBe(0);
-  });
-
-  it('rejects mixed functional currencies rather than combining incomparable values', () => {
-    expect(() =>
-      categoryDetailsHelpers.activity(
-        [
+  it('distinguishes offsetting activity from an empty report', () => {
+    expect(
+      categoryDetailsHelpers.fromActivity({
+        ...report,
+        buckets: [
           {
-            ...entry,
-            lines: [
-              { ...line, functionalAmount: { ...money, currencyCode: 'USD' } },
-            ],
+            ...report.buckets[0],
+            delta: money,
+            totalCredits: { ...money, amount: 10000 },
           },
         ],
-        account,
-        now
+      })
+    ).toMatchObject({ balance: { amount: 0 }, hasActivity: true });
+    expect(
+      categoryDetailsHelpers.fromActivity({ ...report, buckets: [] })
+    ).toMatchObject({ balance: { amount: 0 }, hasActivity: false });
+  });
+  it('preserves a negative period total and rejects mixed currencies', () => {
+    expect(
+      categoryDetailsHelpers.fromActivity({
+        ...report,
+        buckets: [report.buckets[1]],
+      }).balance.amount
+    ).toBe(-25);
+    expect(() =>
+      categoryDetailsHelpers.fromActivity({
+        ...report,
+        buckets: [
+          { ...report.buckets[0], delta: { ...money, currencyCode: 'USD' } },
+        ],
+      })
+    ).toThrow();
+  });
+  it('builds inclusive periods across year boundaries', () => {
+    expect(
+      categoryDetailsHelpers.period(new Date(2026, 0, 15), '3')
+    ).toMatchObject({ from: '2025-11-01', to: '2026-01-15' });
+    expect(
+      categoryDetailsHelpers.period(new Date(2026, 9, 15), 'previous')
+    ).toMatchObject({ from: '2025-01-01', to: '2025-12-31', months: 12 });
+  });
+  it('limits the journal query to the first ten entries with dates and optional counterparty', () => {
+    expect(
+      categoryDetailsHelpers.recentQuery(
+        'category',
+        '2026-01-01',
+        '2026-02-01',
+        'vendor'
       )
-    ).toThrow('inconsistent functional currencies');
-  });
-});
-
-describe('categoryDetailsHelpers.filterTransactions', () => {
-  it('combines counterparty and text filtering without mutating the original rows', () => {
-    const rows = categoryDetailsHelpers.activity(
-      [
-        entry,
-        {
-          ...entry,
-          id: 'later',
-          effectiveDate: '2026-10-03',
-          memo: 'Annual renewal',
-        },
-      ],
-      account,
-      now
-    ).transactions;
-
-    expect(
-      categoryDetailsHelpers
-        .filterTransactions(rows, ' ANNUAL ', 'google', 'desc')
-        .map(({ id }) => id)
-    ).toEqual(['later']);
-    expect(
-      categoryDetailsHelpers
-        .filterTransactions(rows, 'google', null, 'desc')
-        .map(({ id }) => id)
-    ).toEqual(['later', 'entry']);
-    expect(
-      categoryDetailsHelpers.filterTransactions(rows, '', 'missing', 'asc')
-    ).toEqual([]);
-    expect(rows.map(({ id }) => id)).toEqual(['entry', 'later']);
-  });
-});
-
-describe('categoryDetailsHelpers.participationId', () => {
-  it('distinguishes named counterparties, Self transfers, and Unassigned activity', () => {
-    const participation = {
-      totalShare: null,
-      amount: money,
-      functionalAmount: money,
-    };
-
-    expect(
-      categoryDetailsHelpers.participationId({
-        counterparty: null,
-        isSelf: true,
-        participation,
-      })
-    ).toBe('self');
-    expect(
-      categoryDetailsHelpers.participationId({
-        counterparty: null,
-        isSelf: false,
-        participation,
-      })
-    ).toBe('unassigned');
-
-    const rows = categoryDetailsHelpers.activity(
-      [
-        {
-          ...entry,
-          id: 'transfer',
-          sourceType: 'transfer',
-          lines: [{ ...line, counterparty: null }],
-        },
-        {
-          ...entry,
-          id: 'unassigned',
-          lines: [{ ...line, counterparty: null }],
-        },
-        entry,
-      ],
-      account,
-      now
-    ).transactions;
-
-    expect(
-      categoryDetailsHelpers
-        .filterTransactions(rows, '', 'self', 'asc')
-        .map(({ id }) => id)
-    ).toEqual(['transfer']);
-    expect(
-      categoryDetailsHelpers
-        .filterTransactions(rows, '', 'unassigned', 'asc')
-        .map(({ id }) => id)
-    ).toEqual(['unassigned']);
-    expect(
-      categoryDetailsHelpers
-        .filterTransactions(rows, '', 'google', 'asc')
-        .map(({ id }) => id)
-    ).toEqual(['entry']);
+    ).toEqual({
+      accountId: 'category',
+      effectiveDateFrom: '2026-01-01',
+      effectiveDateTo: '2026-02-01',
+      page: 1,
+      limit: 10,
+      orderBy: 'effectiveDate',
+      sortDirection: 'desc',
+      status: 'posted',
+      counterpartyId: 'vendor',
+    });
   });
 });

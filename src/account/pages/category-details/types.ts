@@ -24,7 +24,9 @@ export interface ICategoryTransaction {
 export interface CategorySummaryProps {
   account: ILedgerAccountDto;
   transactionCount?: number | null;
-  actions?: ReactNode;
+  period?: string;
+  onPeriodChange?: (value: string) => void;
+  balance?: IMoneyDto | null;
 }
 
 export interface CategoryActionsProps {
@@ -46,6 +48,7 @@ export interface CategoryActionsContainerProps {
 }
 
 export interface CategoryTrendProps {
+  hasTransactions?: boolean;
   months: ICategoryMonth[];
   currencyCode: string;
   type: 'revenue' | 'expense';
@@ -60,7 +63,7 @@ export interface CounterpartyShareProps {
   onPageChange: (page: number) => void;
   selectedId: string | null;
   onSelect: (
-    participation: IAccountBalanceContributionsByCounterpartyDto
+    participation: CounterpartyShareProps['counterparties'][number]
   ) => void;
 }
 
@@ -69,10 +72,13 @@ export interface CounterpartyShareContainerProps extends Pick<
   'selectedId' | 'onSelect' | 'type'
 > {
   accountId: string;
+  from: string;
+  to: string;
 }
 
 export interface CategoryTransactionsProps {
-  transactions: ICategoryTransaction[];
+  total: number;
+  entries: import('@/shared/lib/api/Api').IJournalEntryListDto[];
   selectedCounterparty: string | null;
   onClearCounterparty: () => void;
   transactionsHref?: string;
@@ -81,4 +87,39 @@ export interface CategoryTransactionsProps {
 export type CategoryTransactionCountProps = Pick<
   CategorySummaryProps,
   'transactionCount'
+>;
+
+export type CategoryBalanceProps = Pick<CategorySummaryProps, 'balance'>;
+
+export interface CategoryChartsProps {
+  children: ReactNode;
+}
+
+export interface CategoryTransactionsContainerProps {
+  accountId: string;
+  from: string;
+  to: string;
+  counterpartyId: string | null;
+  selectedCounterparty: string | null;
+  onClearCounterparty: () => void;
+}
+
+export type CategoryMetadataProps = Pick<CategorySummaryProps, 'account'>;
+
+export interface CategoryPartWithStateProps {
+  loading: boolean;
+  error?: boolean;
+  children: ReactNode;
+}
+
+export interface CategorySummarySkeletonProps {
+  showPeriod?: boolean;
+}
+
+export interface CategorySummaryWithStateProps
+  extends CategoryPartWithStateProps, CategorySummarySkeletonProps {}
+
+export type CategoryChartsWithStateProps = Pick<
+  CategoryPartWithStateProps,
+  'loading' | 'children'
 >;

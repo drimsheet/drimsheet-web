@@ -93,12 +93,12 @@ describe('CounterpartyShare', () => {
       screen.getByRole('status', { name: 'Loading counterparty share' })
     ).toBeInTheDocument();
     expect(
-      screen.queryByText('No counterparty activity yet.')
+      screen.queryByText('No counterparty activity in this period.')
     ).not.toBeInTheDocument();
     rerender(<CounterpartyShare {...values} loading={false} error />);
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(
-      screen.queryByText('No counterparty activity yet.')
+      screen.queryByText('No counterparty activity in this period.')
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: /try again/i })
@@ -108,7 +108,7 @@ describe('CounterpartyShare', () => {
     const values = props({ counterparties: [] });
     render(<CounterpartyShare {...values} />);
     expect(
-      screen.getByText('No counterparty activity yet.')
+      screen.getByText('No counterparty activity in this period.')
     ).toBeInTheDocument();
   });
 });

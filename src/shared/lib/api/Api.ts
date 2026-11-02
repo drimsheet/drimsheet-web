@@ -710,6 +710,35 @@ export interface IGetAccountActivityByTypesQuery {
   types: ULedgerType[];
 }
 
+export interface IAccountActivityDto {
+  accountId: string;
+  currencyCode: string;
+  period: IDateRangeDto;
+  buckets: {
+    /** Signed movement on the selected account's normal side. */
+    delta: IMoneyDto;
+    totalCredits: IMoneyDto;
+    totalDebits: IMoneyDto;
+    /** Inclusive last calendar date, clipped to the requested period. */
+    to: string;
+    /** Inclusive first calendar date. */
+    from: string;
+  }[];
+}
+
+/** Inclusive calendar dates spanning at most 366 days. */
+export interface IGetAccountActivityQuery {
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to: string;
+  /**
+   * Positive calendar-day bucket size, anchored at from.
+   * @format double
+   */
+  bucketDays: number;
+}
+
 export interface IAddressDto {
   line1: string;
   line2?: string;
@@ -753,7 +782,8 @@ export interface IAccountBalanceContributionsByCounterpartyDto {
   isSelf: boolean;
   participation: {
     /**
-     * Percentage of the stored account balance, before filtering; null at zero.
+     * Percentage of period net activity when dates are supplied, otherwise the
+     * stored balance. Calculated before search/pagination; null at zero.
      * @format double
      */
     totalShare: number | null;
@@ -785,6 +815,10 @@ export interface IGetAccountBalanceContributionsByCounterpartyQuery {
   /** @format double */
   limit?: number;
   search?: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  from?: string;
+  /** Inclusive calendar date in YYYY-MM-DD format. */
+  to?: string;
 }
 
 export interface IAccountCashFlowBucketDto {
@@ -2573,7 +2607,37 @@ export class Api<
       }),
 
     /**
-     * @description Returns counterparty contributions to an account balance, including descendants. Shares use the full account balance before filtering and pagination; zero balances yield null shares. Self-transfers and unattributed activity remain separate.
+     * @description Returns activity for an account and its descendants in functional currency. Deltas follow the selected account's normal side. Dates are inclusive, up to 366 days; empty buckets return zeros. Opening balances and reversed activity are excluded.
+     *
+     * @tags Reporting, Ledger Reporting
+     * @name GetAccountActivity
+     * @request GET:/reporting/ledger/accounts/{accountId}/activity
+     */
+    getAccountActivity: (
+      accountId: string,
+      query: {
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        from: string;
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        to: string;
+        /**
+         * Positive calendar-day bucket size, anchored at from.
+         * @format double
+         */
+        bucketDays: number;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<IAccountActivityDto, IHttpErrorDto>({
+        path: `/reporting/ledger/accounts/${accountId}/activity`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Returns counterparty contributions to an account balance, including descendants. Optional from/to dates filter effective dates inclusively; either bound may be omitted. Shares use period net activity when dates are supplied, otherwise the stored balance, before search and pagination. Zero denominators yield null. Self and unattributed groups stay separate.
      *
      * @tags Reporting, Ledger Reporting
      * @name GetAccountBalanceContributionsByCounterparty
@@ -2587,6 +2651,10 @@ export class Api<
         /** @format double */
         limit?: number;
         search?: string;
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        from?: string;
+        /** Inclusive calendar date in YYYY-MM-DD format. */
+        to?: string;
       },
       params: RequestParams = {}
     ) =>

@@ -1,13 +1,23 @@
 import { Alert, AlertDescription } from '@/shared/components/alert';
-import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
-import { Empty, EmptyHeader, EmptyTitle } from '@/shared/components/empty';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
 import { Skeleton } from '@/shared/components/skeleton';
+import { WithTransitionState } from '@/shared/components/with-transition-state';
 import { cn } from '@/shared/lib/utils/cn';
+import { UsersRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import categoryDetailsHelpers from '../helper';
-import type { CounterpartyShareProps } from '../types';
+import type {
+  CategoryPartWithStateProps,
+  CounterpartyShareProps,
+} from '../types';
 
 export function CounterpartyShare({
   counterparties,
@@ -26,15 +36,13 @@ export function CounterpartyShare({
     maximumFractionDigits: 2,
   });
 
-  const ready = !loading && !error;
   const title = t('category_details_share_title');
-  const description = t('category_details_share_description');
 
   const empty_text = t('category_details_share_empty_text');
+  const empty_description = t('category_details_share_empty_description');
 
   const unassigned_label = t('category_details_unassigned_label');
   const self_label = t('category_details_self_label');
-  const error_text = t('details_load_error_text');
   const previous_label = t('category_details_share_previous_label');
   const next_label = t('category_details_share_next_label');
 
@@ -46,34 +54,22 @@ export function CounterpartyShare({
   const unavailable_label = t('category_details_share_unavailable_label');
   const signed_description = t('category_details_signed_share_description');
 
-  if (loading) {
-    return <CounterpartyShareSkeleton />;
-  }
-
   return (
-    <AppSection
-      title={title}
-      className="min-w-0"
-      role="region"
-      aria-label={title}
-    >
-      <p className="text-sm text-muted-foreground">{description}</p>
-
-      <div className="flex flex-col gap-3">
-        {!loading && error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error_text}</AlertDescription>
-          </Alert>
-        )}
-        {ready && counterparties.length === 0 && (
-          <Empty className="min-h-56">
-            <EmptyHeader>
-              <EmptyTitle>{empty_text}</EmptyTitle>
-            </EmptyHeader>
-          </Empty>
-        )}
-        {ready &&
-          counterparties.map((row) => {
+    <CounterpartyShareWithState loading={loading} error={error}>
+      <div className="min-w-0" role="region" aria-label={title}>
+        <div className="flex flex-col gap-3">
+          {counterparties.length === 0 && (
+            <Empty className="min-h-56 px-4 py-6">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <UsersRound aria-hidden />
+                </EmptyMedia>
+                <EmptyTitle>{empty_text}</EmptyTitle>
+                <EmptyDescription>{empty_description}</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          )}
+          {counterparties.map((row) => {
             const id = categoryDetailsHelpers.participationId(row);
             const fallback = row.isSelf ? self_label : unassigned_label;
             const name = row.counterparty?.name ?? fallback;
@@ -124,8 +120,7 @@ export function CounterpartyShare({
               </button>
             );
           })}
-        {ready &&
-          counterparties.some(
+          {counterparties.some(
             ({ participation }) =>
               participation.totalShare !== null &&
               (participation.totalShare < 0 || participation.totalShare > 100)
@@ -134,31 +129,35 @@ export function CounterpartyShare({
               {signed_description}
             </p>
           )}
-        {ready && pagination && pagination.totalPages > 1 && (
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pagination.page <= 1}
-              onClick={() => onPageChange(pagination.page - 1)}
-            >
-              {previous_label}
-            </Button>
-            <span className="text-xs text-muted-foreground" aria-live="polite">
-              {page_text}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pagination.page >= pagination.totalPages}
-              onClick={() => onPageChange(pagination.page + 1)}
-            >
-              {next_label}
-            </Button>
-          </div>
-        )}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={pagination.page <= 1}
+                onClick={() => onPageChange(pagination.page - 1)}
+              >
+                {previous_label}
+              </Button>
+              <span
+                className="text-xs text-muted-foreground"
+                aria-live="polite"
+              >
+                {page_text}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={pagination.page >= pagination.totalPages}
+                onClick={() => onPageChange(pagination.page + 1)}
+              >
+                {next_label}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
-    </AppSection>
+    </CounterpartyShareWithState>
   );
 }
 
@@ -168,21 +167,13 @@ export function CounterpartyShareSkeleton() {
 
   const category_details_share_title = t('category_details_share_title');
 
-  const category_details_share_description = t(
-    'category_details_share_description'
-  );
-
   return (
-    <AppSection
-      title={category_details_share_title}
+    <div
       className="min-w-0"
       role="region"
       aria-label={category_details_share_title}
       aria-busy="true"
     >
-      <p className="text-sm text-muted-foreground">
-        {category_details_share_description}
-      </p>
       <div className="flex min-h-56 flex-col gap-3">
         <output className="sr-only" aria-label={loading_label}>
           {loading_label}
@@ -200,6 +191,44 @@ export function CounterpartyShareSkeleton() {
           </div>
         ))}
       </div>
-    </AppSection>
+    </div>
+  );
+}
+
+export function CounterpartyShareError() {
+  const { t } = useTranslation('ledger-accounts');
+  const share_title = t('category_details_share_title');
+  const error_text = t('details_load_error_text');
+
+  return (
+    <div className="min-w-0" role="region" aria-label={share_title}>
+      <Alert variant="destructive">
+        <AlertDescription>{error_text}</AlertDescription>
+      </Alert>
+    </div>
+  );
+}
+
+export function CounterpartyShareWithState({
+  loading,
+  error,
+  children,
+}: Readonly<CategoryPartWithStateProps>) {
+  let state: 'loading' | 'error' | 'success' = 'success';
+  if (loading) {
+    state = 'loading';
+  } else if (error) {
+    state = 'error';
+  }
+
+  return (
+    <WithTransitionState
+      state={state}
+      data={true}
+      loading={<CounterpartyShareSkeleton />}
+      error={<CounterpartyShareError />}
+    >
+      {() => children}
+    </WithTransitionState>
   );
 }
