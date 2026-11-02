@@ -354,6 +354,27 @@ test('renames and archives categories, then opens category details', async ({
   ).toBeVisible();
   const requests: URLSearchParams[] = [];
   await page.route(
+    `**/api/v1/reporting/ledger/accounts/${account.accountId}/activity?*`,
+    (route) => {
+      const query = new URL(route.request().url()).searchParams;
+
+      expect(Object.fromEntries(query)).toEqual({
+        from: '2026-05-01',
+        to: '2026-10-14',
+        bucketDays: '1',
+      });
+
+      return route.fulfill({
+        json: {
+          accountId: account.accountId,
+          currencyCode: money.currencyCode,
+          period: { from: query.get('from'), to: query.get('to') },
+          buckets: [],
+        },
+      });
+    }
+  );
+  await page.route(
     `**/api/v1/reporting/ledger/accounts/${account.accountId}/balance-contributions-by-counterparty?*`,
     (route) =>
       route.fulfill({
@@ -392,5 +413,16 @@ test('renames and archives categories, then opens category details', async ({
     .toBe(account.accountId);
   await expect(page).toHaveURL(`/categories/${account.accountId}`);
   await expect(page.getByRole('heading', { name: 'Advisory' })).toBeVisible();
-  await expect(page.getByText('No counterparty activity yet.')).toBeVisible();
+  await expect(
+    page
+      .getByRole('region', { name: 'Overview', exact: true })
+      .getByRole('definition')
+      .filter({ hasText: /^₦0$/ })
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('region', { name: 'Counterparty share', exact: true })
+      .getByText('No counterparty activity in this period.', { exact: true })
+  ).toBeVisible();
+  await expect(page.getByRole('alert')).toHaveCount(0);
 });

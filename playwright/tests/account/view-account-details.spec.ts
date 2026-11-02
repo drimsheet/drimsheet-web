@@ -474,7 +474,11 @@ test('petty cash skips the bank endpoint and retains other sections when cash fl
   await plot.hover({ position: { x: 150, y: 100 } });
   await expect(plot.getByText('Money in', { exact: true })).toBeVisible();
   await expect(plot.getByText('Money out', { exact: true })).toBeVisible();
-  await expect(plot.getByText('₦0', { exact: true })).toHaveCount(2);
+  for (const label of ['Money in', 'Money out']) {
+    const tooltipRow = plot.getByText(label, { exact: true }).locator('..');
+
+    await expect(tooltipRow.getByText('₦0', { exact: true })).toBeVisible();
+  }
 });
 
 test('searches and sorts account transactions and opens the shared details drawer', async ({

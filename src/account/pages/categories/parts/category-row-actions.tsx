@@ -40,7 +40,7 @@ export function CategoryRowActions({
   const view_transactions_label = t('categories_view_transactions_label');
 
   return (
-    <DropdownMenu onOpenChange={onOpenChange}>
+    <DropdownMenu modal={false} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={row_actions_label}>
           <Ellipsis aria-hidden />
