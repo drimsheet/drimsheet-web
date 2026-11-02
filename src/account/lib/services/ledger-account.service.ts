@@ -1,6 +1,6 @@
 import { drimsheetApi } from '@/shared/lib/api';
 import {
-  ELedgerAccountSubType,
+  EAssetSubType,
   ELedgerType,
   type IGetLedgerAccountsQuery,
   type IGetPermittedPostingAccountsQuery,
@@ -20,8 +20,8 @@ async function getLedgerAccounts(
 
 function getPettyBaseCashFilters(): IGetLedgerAccountsQuery {
   return {
-    type: ELedgerType.Asset,
-    subType: ELedgerAccountSubType.CashAndCashEquivalent,
+    types: [ELedgerType.Asset],
+    subTypes: [EAssetSubType.CashAndCashEquivalent],
     isControlAccount: false,
   };
 }

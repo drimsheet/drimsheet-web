@@ -12,7 +12,6 @@ import {
   EmptyTitle,
 } from '@/shared/components/empty';
 import { Money } from '@/shared/components/money';
-import { currencyService } from '@/shared/lib/services/currency.service';
 import { ChartNoAxesCombined } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -33,16 +32,6 @@ export function BalanceTrend({ points, labels }: Readonly<BalanceTrendProps>) {
   const noHistory = points.length < 2;
   const hasActivity = data.some((point) => point.amount !== 0);
   const currencyCode = points[0]?.amount.currencyCode ?? 'NGN';
-
-  const currency = new Intl.NumberFormat(
-    currencyService.getJurisdictionLocale(currencyCode),
-    {
-      style: 'currency',
-      currency: currencyCode,
-      notation: 'compact',
-      maximumFractionDigits: 1,
-    }
-  );
 
   const config = {
     amount: {
@@ -91,12 +80,33 @@ export function BalanceTrend({ points, labels }: Readonly<BalanceTrendProps>) {
           <YAxis
             tickLine={false}
             axisLine={false}
-            width={68}
+            width="auto"
+            tickSize={0}
+            tickMargin={8}
             domain={[
               (min: number) => Math.min(0, min),
               (max: number) => Math.max(0, max),
             ]}
-            tickFormatter={(value: number) => currency.format(value)}
+            tick={({ x, y, payload }) => (
+              <foreignObject
+                x={0}
+                y={Number(y) - 8}
+                width={Number(x)}
+                height={16}
+                overflow="visible"
+              >
+                <Money
+                  value={{
+                    amount: Number(payload.value),
+                    currencyCode,
+                    isMinorUnit: false,
+                  }}
+                  notation="compact"
+                  maximumFractionDigits={1}
+                  className="recharts-cartesian-axis-tick-value ml-auto block w-max text-xs leading-4 whitespace-nowrap text-muted-foreground tabular-nums"
+                />
+              </foreignObject>
+            )}
           />
           <ReferenceLine y={0} stroke="var(--border)" />
           <ChartTooltip

@@ -33,6 +33,17 @@ const values: ICategoryCreationFormValues = {
 };
 
 describe('categoryCreationHelpers', () => {
+  it('matches names without case or surrounding whitespace and retains ancestors', () => {
+    expect(
+      categoryCreationHelpers.matchesSearch(controlAccount, '  UTILITIES ')
+    ).toBe(true);
+    expect(
+      categoryCreationHelpers.matchesSearch(postingAccount, 'missing')
+    ).toBe(false);
+    expect(categoryCreationHelpers.matchesSearch(controlAccount, '')).toBe(
+      true
+    );
+  });
   it('starts without an implied type or parent', () => {
     expect(categoryCreationHelpers.createInitialValues()).toEqual({
       type: '',

@@ -1,10 +1,11 @@
-import { CategoryActions } from '@/account/pages/category-details/parts/category-actions';
 import {
   CategorySummary,
   CategorySummarySkeleton,
+  CategorySummaryWithState,
 } from '@/account/pages/category-details/parts/category-summary';
 import type { ILedgerAccountDto, TEntityId } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { fn } from 'storybook/test';
 
 const category: ILedgerAccountDto = {
   id: 'software' as TEntityId,
@@ -39,13 +40,9 @@ const meta = {
   args: {
     account: category,
     transactionCount: 48,
-    actions: (
-      <CategoryActions
-        accountName={category.name}
-        onEdit={() => undefined}
-        onArchive={async () => undefined}
-      />
-    ),
+    period: '6',
+    onPeriodChange: fn(),
+    balance: category.functionalBalance,
   },
 } satisfies Meta<typeof CategorySummary>;
 
@@ -57,21 +54,26 @@ export const Revenue: TStory = {
     account: { ...category, type: 'revenue', name: 'Consulting income' },
   },
 };
-export const Loading: TStory = { args: { transactionCount: undefined } };
-export const Unavailable: TStory = { args: { transactionCount: null } };
+export const Loading: TStory = {
+  args: { transactionCount: undefined, balance: undefined },
+};
+export const Unavailable: TStory = {
+  args: { transactionCount: null, balance: null },
+};
 export const Archived: TStory = {
   args: {
     account: { ...category, status: 'archived' },
-    actions: (
-      <CategoryActions
-        accountName={category.name}
-        onEdit={() => undefined}
-        onArchive={async () => undefined}
-        editDisabled
-        archiveDisabled
-      />
-    ),
   },
 };
 
-export const Skeleton: TStory = { render: () => <CategorySummarySkeleton /> };
+export const Skeleton: TStory = {
+  render: () => <CategorySummarySkeleton showPeriod />,
+};
+
+export const Error: TStory = {
+  render: (args) => (
+    <CategorySummaryWithState loading={false} error showPeriod>
+      <CategorySummary {...args} />
+    </CategorySummaryWithState>
+  ),
+};

@@ -2,6 +2,7 @@ import { drimsheetApi } from '@/shared/lib/api';
 import type {
   IDateRangeDto,
   IGetAccountActivityByTypesQuery,
+  IGetAccountActivityQuery,
   IGetAccountBalanceContributionsByCounterpartyQuery,
   IGetAccountCashFlowQuery,
   IGetBalanceHistoryByAccountQuery,
@@ -13,6 +14,18 @@ import type {
   IGetLedgerTotalDebitsAndCreditsByCurrencyQuery,
   IGetRevenueExpenseAndSuspenseAccountBalancesQuery,
 } from '@/shared/lib/api/Api';
+
+async function getAccountActivity(
+  accountId: string,
+  query: IGetAccountActivityQuery,
+  signal?: AbortSignal
+) {
+  return (
+    await drimsheetApi.reporting.getAccountActivity(accountId, query, {
+      signal,
+    })
+  ).data;
+}
 
 async function getAccountCashFlow(
   accountId: string,
@@ -146,6 +159,7 @@ async function getCurrentTotalBalanceByType(
 }
 
 export const ledgerReportingService = Object.freeze({
+  getAccountActivity,
   getAccountActivityByTypes,
   getCurrentTotalBalanceByType,
   getAccountCashFlow,

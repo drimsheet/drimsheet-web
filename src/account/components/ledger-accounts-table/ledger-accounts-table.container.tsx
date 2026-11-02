@@ -51,7 +51,7 @@ export function LedgerAccountsTableContainer({
 
     return {
       ...baseFilters,
-      status,
+      statuses: status ? [status] : undefined,
       search: debouncedSearchQuery || undefined,
       orderBy,
       sortDirection: tableQuery.sortDirection || undefined,

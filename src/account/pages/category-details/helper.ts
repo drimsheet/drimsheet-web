@@ -1,14 +1,18 @@
 import currencies from '@/shared/configs/currencies.json';
 import type {
+  IAccountActivityDto,
   IAccountBalanceContributionsByCounterpartyDto,
-  IJournalEntryListDto,
-  ILedgerAccountDto,
   IMoneyDto,
 } from '@/shared/lib/api/Api';
-import { format, startOfMonth, subMonths } from 'date-fns';
-import type { ICategoryMonth, ICategoryTransaction } from './types';
-
-const unassignedId = 'unassigned';
+import {
+  eachMonthOfInterval,
+  endOfYear,
+  format,
+  parseISO,
+  startOfMonth,
+  startOfYear,
+  subMonths,
+} from 'date-fns';
 
 function majorUnits(money: IMoneyDto) {
   if (!money.isMinorUnit) {
@@ -16,141 +20,102 @@ function majorUnits(money: IMoneyDto) {
   }
 
   const currency = currencies.find(
-    ({ code }) => code.toUpperCase() === money.currencyCode.toUpperCase()
+    (row) => row.code.toUpperCase() === money.currencyCode.toUpperCase()
   );
 
   return money.amount / 10 ** (currency?.minorUnit ?? 0);
 }
 
-function activity(
-  entries: IJournalEntryListDto[],
-  account: Pick<ILedgerAccountDto, 'id' | 'type' | 'functionalBalance'>,
-  now: Date
-) {
-  const currencyCode = account.functionalBalance.currencyCode;
-  const normalSide = account.type === 'revenue' ? 'credit' : 'debit';
-
-  const months: ICategoryMonth[] = Array.from({ length: 6 }, (_, index) => ({
-    month: format(subMonths(startOfMonth(now), 5 - index), 'yyyy-MM'),
-    amount: 0,
-  }));
-
-  const transactions: ICategoryTransaction[] = [];
-
-  for (const entry of entries) {
-    const lines = entry.lines.filter((line) => line.account.id === account.id);
-
-    if (!lines.length) {
-      continue;
-    }
-
-    const counterparties = new Map<
-      string,
-      { id: string; name: string | null }
-    >();
-
-    let amount = 0;
-
-    const isActivity =
-      entry.postedAt !== null &&
-      entry.voidedAt === null &&
-      entry.voidingEntryId === null &&
-      (entry.status === 'posted' || entry.status === 'archived') &&
-      entry.sourceType !== 'opening_balance' &&
-      entry.sourceType !== 'reversal';
-
-    for (const line of lines) {
-      // Functional amounts keep foreign-currency postings comparable to the category balance.
-      if (
-        line.functionalAmount.currencyCode.toUpperCase() !==
-        currencyCode.toUpperCase()
-      ) {
-        throw new Error(
-          'Category activity contains inconsistent functional currencies'
-        );
-      }
-
-      const value =
-        majorUnits(line.functionalAmount) * (line.side === normalSide ? 1 : -1);
-
-      const counterparty = line.counterparty ?? {
-        id: entry.sourceType === 'transfer' ? 'self' : unassignedId,
-        name: null,
-      };
-
-      counterparties.set(counterparty.id, {
-        id: counterparty.id,
-        name: counterparty.name,
-      });
-      amount += value;
-    }
-
-    transactions.push({
-      id: entry.id,
-      effectiveDate: entry.effectiveDate,
-      description:
-        entry.memo ??
-        lines.find((line) => line.description)?.description ??
-        null,
-      counterparties: [...counterparties.values()],
-      amount: { amount, currencyCode, isMinorUnit: false },
-      status: entry.status,
-    });
-
-    const month = months.find(
-      (bucket) => bucket.month === entry.effectiveDate.slice(0, 7)
-    );
-
-    if (isActivity && month) {
-      month.amount += amount;
-    }
+function period(now: Date, value: string) {
+  let end = now;
+  let start = subMonths(startOfMonth(now), Number(value) - 1);
+  if (value === 'year') {
+    start = startOfYear(now);
   }
 
-  return { months, transactions };
-}
+  if (value === 'previous') {
+    const previous = new Date(now.getFullYear() - 1, 0, 1);
+    start = startOfYear(previous);
+    end = endOfYear(previous);
+  }
 
-function filterTransactions(
-  transactions: ICategoryTransaction[],
-  search: string,
-  counterpartyId: string | null,
-  direction: 'asc' | 'desc'
-) {
-  const query = search.trim().toLocaleLowerCase();
-
-  return transactions
-    .filter((row) => {
-      const matchesCounterparty =
-        counterpartyId === null ||
-        row.counterparties.some(({ id }) => id === counterpartyId);
-
-      const matchesSearch =
-        `${row.description ?? ''} ${row.counterparties.map(({ name }) => name ?? '').join(' ')}`
-          .toLocaleLowerCase()
-          .includes(query);
-
-      return matchesCounterparty && matchesSearch;
-    })
-    .sort((a, b) => {
-      const order =
-        a.effectiveDate.localeCompare(b.effectiveDate) ||
-        a.id.localeCompare(b.id);
-
-      return direction === 'asc' ? order : -order;
-    });
+  return {
+    from: format(start, 'yyyy-MM-dd'),
+    to: format(end, 'yyyy-MM-dd'),
+    months:
+      (end.getFullYear() - start.getFullYear()) * 12 +
+      end.getMonth() -
+      start.getMonth() +
+      1,
+    end,
+  };
 }
 
 function participationId(row: IAccountBalanceContributionsByCounterpartyDto) {
-  if (row.counterparty) {
-    return row.counterparty.id;
+  return row.counterparty?.id ?? (row.isSelf ? 'self' : 'unassigned');
+}
+
+function recentQuery(
+  accountId: string,
+  from: string,
+  to: string,
+  counterpartyId?: string | null
+) {
+  return {
+    accountId,
+    effectiveDateFrom: from,
+    effectiveDateTo: to,
+    page: 1,
+    limit: 10,
+    orderBy: 'effectiveDate',
+    sortDirection: 'desc',
+    status: 'posted',
+    ...(counterpartyId &&
+    counterpartyId !== 'self' &&
+    counterpartyId !== 'unassigned'
+      ? { counterpartyId }
+      : {}),
+  } as const;
+}
+
+function fromActivity(report: IAccountActivityDto) {
+  const months = eachMonthOfInterval({
+    start: parseISO(report.period.from),
+    end: parseISO(report.period.to),
+  }).map((date) => ({ month: format(date, 'yyyy-MM'), amount: 0 }));
+
+  let hasActivity = false;
+  for (const bucket of report.buckets) {
+    if (bucket.delta.currencyCode !== report.currencyCode) {
+      throw new Error('Activity currency mismatch');
+    }
+
+    const month = months.find((row) => row.month === bucket.from.slice(0, 7));
+    if (month) {
+      month.amount += majorUnits(bucket.delta);
+    }
+
+    if (bucket.totalDebits.amount !== 0 || bucket.totalCredits.amount !== 0) {
+      hasActivity = true;
+    }
   }
 
-  return row.isSelf ? 'self' : unassignedId;
+  return {
+    months,
+    hasActivity,
+    balance: {
+      amount: months.reduce((sum, month) => sum + month.amount, 0),
+      currencyCode: report.currencyCode,
+      isMinorUnit: false,
+    },
+  };
 }
 
 const categoryDetailsHelpers = Object.freeze({
-  activity,
-  filterTransactions,
+  period,
   participationId,
+  recentQuery,
+  fromActivity,
 });
 
 export default categoryDetailsHelpers;

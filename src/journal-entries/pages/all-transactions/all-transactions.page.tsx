@@ -18,14 +18,22 @@ import type {
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTransactionFilterOptions } from './hooks/use-transaction-filter-options';
 
 export function AllTransactionsPage() {
   const { t } = useTranslation('journal-entries');
   const navigate = useNavigate();
 
-  const [filters, setFilters] = useState<IJournalEntryTableFilters>({});
+  const [params] = useSearchParams();
+
+  const [filters, setFilters] = useState<IJournalEntryTableFilters>(() => ({
+    accountId: params.get('accountId') ?? undefined,
+    effectiveDateFrom: params.get('effectiveDateFrom') ?? undefined,
+    effectiveDateTo: params.get('effectiveDateTo') ?? undefined,
+    counterpartyId: params.get('counterpartyId') ?? undefined,
+  }));
+
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 

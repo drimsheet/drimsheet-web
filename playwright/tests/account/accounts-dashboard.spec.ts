@@ -137,6 +137,11 @@ test('combines account behavior tabs and search while keeping overview queries i
     .toBe(true);
 
   expect(state.accountQueries).toHaveLength(accountQueryCount);
+  expect(state.accountQueries.at(-1)?.getAll('types[]')).toEqual(['asset']);
+  expect(state.accountQueries.at(-1)?.getAll('subTypes[]')).toEqual([
+    'cash_and_cash_equivalent',
+  ]);
+  expect(state.accountQueries.at(-1)?.get('isControlAccount')).toBe('false');
   expect(state.summaryQueries.at(-1)?.get('type')).toBe('asset');
 
   await table.getByRole('button', { name: 'Account 24', exact: true }).click();

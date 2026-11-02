@@ -1,17 +1,32 @@
 import { CategoryTable } from '@/account/pages/categories/parts/category-table';
-import type { IRevenueExpenseAndSuspenseAccountBalanceDto } from '@/shared/lib/api/Api';
+import type { ILedgerAccountDto } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-const categoryAccount: IRevenueExpenseAndSuspenseAccountBalanceDto = {
-  accountId: 'services',
-  accountName: 'Consulting services',
+const categoryAccount: ILedgerAccountDto = {
+  id: 'services',
+  materializedPath: '40001',
+  accountingEntityId: 'entity',
+  normalBalance: 'credit',
+  behavior: 'services',
+  isControlAccount: false,
+  contraAccountRule: 'contra_not_applicable',
+  adjunctAccountRule: 'adjunct_not_applicable',
+  openingBalanceDate: null,
+  createdBy: 'user',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+  balance: { amount: 100, currencyCode: 'USD', isMinorUnit: false },
+
+  name: 'Consulting services',
   code: '40001',
   type: 'revenue',
-  subType: 'operating_revenue',
+  subType: 'services',
   status: 'active',
-  amount: { amount: 840000000, currencyCode: 'NGN', isMinorUnit: true },
-  sharePercentage: 70,
-  transactionCount: 128,
+  functionalBalance: {
+    amount: 840000000,
+    currencyCode: 'NGN',
+    isMinorUnit: true,
+  },
 };
 
 const meta = {
@@ -24,21 +39,23 @@ const meta = {
         categoryAccount,
         {
           ...categoryAccount,
-          accountId: 'rent',
-          accountName: 'Rent',
+          id: 'rent',
+          name: 'Rent',
           type: 'expense',
+          subType: 'rent_and_utilities',
+          behavior: 'rent_and_utilities',
           status: 'archived',
-          amount: { ...categoryAccount.amount, amount: 0 },
-          sharePercentage: null,
-          transactionCount: 0,
+          functionalBalance: {
+            ...categoryAccount.functionalBalance,
+            amount: 0,
+          },
         },
         {
           ...categoryAccount,
-          accountId: 'suspense',
-          accountName: 'Uncategorized receipts',
-          type: 'liability',
+          id: 'suspense',
+          name: 'Uncategorized receipts',
+          type: 'asset',
           subType: 'suspense',
-          sharePercentage: null,
         },
       ],
       meta: { page: 1, totalPages: 1, total: 3, limit: 10 },

@@ -26,7 +26,10 @@ describe('LedgerAccountsTableContainer', () => {
     );
     expect(useLedgerAccounts).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        status: 'archived',
+        statuses: ['archived'],
+        types: ['asset'],
+        subTypes: ['cash_and_cash_equivalent'],
+        isControlAccount: false,
         page: 2,
         orderBy: 'accountName',
         sortDirection: 'asc',
@@ -43,7 +46,7 @@ describe('LedgerAccountsTableContainer', () => {
     await waitFor(() =>
       expect(useLedgerAccounts).toHaveBeenLastCalledWith(
         expect.objectContaining({
-          status: 'active',
+          statuses: ['active'],
           page: 1,
           orderBy: 'accountName',
           sortDirection: 'asc',

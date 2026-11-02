@@ -1,15 +1,33 @@
 import { ledgerReportingService } from '@/reporting/lib/services/ledger-reporting.service';
-import type { IDateRangeDto } from '@/shared/lib/api/Api';
 import { useQuery } from '@tanstack/react-query';
 
-export function useCategorySummary(query: IDateRangeDto) {
+export function useCategorySummary() {
   return useQuery({
     queryKey: [
       'ledgerReportingService',
-      'getRevenueAndExpenseActivitySummary',
-      query,
+      'getRevenueExpenseAndSuspenseAccountBalances',
+      'totals',
     ],
-    queryFn: ({ signal }) =>
-      ledgerReportingService.getRevenueAndExpenseActivitySummary(query, signal),
+    queryFn: async ({ signal }) => {
+      const first =
+        await ledgerReportingService.getRevenueExpenseAndSuspenseAccountBalances(
+          { page: 1, limit: 100 },
+          signal
+        );
+
+      const accounts = [...first.data];
+
+      for (let page = 2; page <= first.meta.totalPages; page += 1) {
+        const result =
+          await ledgerReportingService.getRevenueExpenseAndSuspenseAccountBalances(
+            { page, limit: 100 },
+            signal
+          );
+
+        accounts.push(...result.data);
+      }
+
+      return accounts;
+    },
   });
 }

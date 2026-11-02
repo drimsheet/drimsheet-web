@@ -5,8 +5,10 @@ import type { AppBodyProps } from './types';
 export function AppBody({
   title,
   titleSlot,
+  titleBadgeSlot,
   breadcrumbs,
   actionsSlot,
+  metadataSlot,
   children,
 }: Readonly<AppBodyProps>) {
   const heading = titleSlot ?? title;
@@ -19,7 +21,7 @@ export function AppBody({
     typeof actionsSlot !== 'boolean' &&
     actionsSlot !== '';
 
-  const hasHeader = !!breadcrumbs || hasHeading || hasActions;
+  const hasHeader = !!breadcrumbs || hasHeading || hasActions || !!metadataSlot;
 
   return (
     <div className="flex w-full min-w-0 max-w-full flex-col">
@@ -30,12 +32,16 @@ export function AppBody({
               <PageBreadcrumbs breadcrumb={breadcrumbs} />
             </div>
           )}
+          {metadataSlot}
           {(hasHeading || hasActions) && (
             <div className="flex min-h-10 min-w-0 flex-wrap items-center justify-between gap-4">
               {hasHeading && (
-                <PageTitle className="flex min-w-0 flex-wrap items-center gap-3 wrap-anywhere">
-                  {heading}
-                </PageTitle>
+                <div className="flex min-w-0 flex-wrap items-center gap-3">
+                  <PageTitle className="flex min-w-0 flex-wrap items-center gap-3 wrap-anywhere">
+                    {heading}
+                  </PageTitle>
+                  {titleBadgeSlot}
+                </div>
               )}
               {hasActions && (
                 <div className="ml-auto flex max-w-full flex-wrap items-center gap-2">

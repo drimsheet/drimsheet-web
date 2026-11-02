@@ -1,6 +1,7 @@
 import currencies from '@/shared/configs/currencies.json';
 import type {
   IDateRangeDto,
+  ILedgerAccountDto,
   IMoneyDto,
   IRevenueExpenseAndSuspenseAccountBalanceDto,
   IRevenueExpenseSectionDto,
@@ -14,10 +15,38 @@ import {
 } from 'date-fns';
 import type { ICategoryTableRow } from './types';
 
-function tableRows(
-  accounts: IRevenueExpenseAndSuspenseAccountBalanceDto[]
-): ICategoryTableRow[] {
-  return accounts.map((account) => ({ ...account, id: account.accountId }));
+function totals(accounts: IRevenueExpenseAndSuspenseAccountBalanceDto[]) {
+  const currencyCode = accounts[0]?.amount.currencyCode;
+  if (!currencyCode) {
+    return null;
+  }
+
+  const result = {
+    revenue: { amount: 0, currencyCode, isMinorUnit: false },
+    expenses: { amount: 0, currencyCode, isMinorUnit: false },
+    uncategorized: { amount: 0, currencyCode, isMinorUnit: false },
+  };
+
+  for (const account of accounts) {
+    const key = account.type === 'revenue' ? 'revenue' : 'uncategorized';
+    const total = account.type === 'expense' ? result.expenses : result[key];
+    total.amount += toMajorUnits(account.amount);
+  }
+
+  return result;
+}
+
+function tableRows(accounts: ILedgerAccountDto[]): ICategoryTableRow[] {
+  return accounts.map((account) => ({
+    id: account.id,
+    accountId: account.id,
+    accountName: account.name,
+    code: account.code,
+    type: account.type,
+    subType: account.subType,
+    status: account.status,
+    amount: account.functionalBalance,
+  }));
 }
 
 function periodOptions(now: Date, locale: string) {
@@ -97,6 +126,7 @@ function formatPercentage(
 }
 
 const categoriesHelpers = Object.freeze({
+  totals,
   tableRows,
   periodOptions,
   periodQuery,

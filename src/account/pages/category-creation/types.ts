@@ -48,6 +48,7 @@ export interface CategoryParentPickerProps {
 
 export interface AccountTreeNodeProps {
   account: TCategoryAccount;
+  search?: string;
 }
 
 export interface PromotionPreviewProps {

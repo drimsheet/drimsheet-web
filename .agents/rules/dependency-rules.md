@@ -46,12 +46,24 @@ It may also compose `AccountCashFlowChart` and its skeleton through
 and account counterparty participation. Reporting transport stays in the
 reporting feature and must not import account-owned code.
 
+### Category details reporting hooks exception
+
+`src/account/pages/category-details/` may import `useAccountActivity` from
+`@/reporting/hooks/use-account-activity` and
+`useAccountBalanceContributionsByCounterparty` from
+`@/reporting/hooks/use-account-balance-contributions-by-counterparty`.
+The page supplies report inputs; query definitions and transport remain reporting-owned.
+
 ### Account transaction data access exception
 
-Account details page-private parts may use `useJournalEntries` from
-`@/journal-entries/hooks/use-journal-entries`. The existing account-owned
-`useCategoryHistory` hook may call `journalEntryService.getJournalEntries`
-to aggregate category history across pages.
+Account details and category details page-private parts may use `useJournalEntries` from
+`@/journal-entries/hooks/use-journal-entries`.
+
+### Category detail composition exception
+
+`src/account/pages/category-details/` may compose the public `TransactionsTable`
+from `@/journal-entries/components/transactions-table`. The page supplies journal
+entries and presentation callbacks; private journal entry modules remain private.
 
 ### Counterparty detail composition exception
 

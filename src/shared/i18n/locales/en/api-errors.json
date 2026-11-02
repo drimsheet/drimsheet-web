@@ -2,7 +2,6 @@
   "accounting_error_accounting_entity_access_forbidden": "Accounting entity access denied.",
   "accounting_error_accounting_entity_history_action_invalid": "Invalid history action.",
   "accounting_error_accounting_entity_jurisdiction_code_invalid": "Invalid jurisdiction code.",
-  "accounting_error_accounting_entity_only_one_individual_accounting_entity_allowed_conflict": "Only one individual account is allowed.",
   "accounting_error_accounting_entity_type_invalid": "Invalid accounting entity type.",
   "accounting_error_accounting_standard_code_invalid": "Invalid accounting standard code.",
   "accounting_error_action_invalid": "Invalid action.",
@@ -434,5 +433,6 @@
   "app_error_reporting_sub_types_invalid": "Invalid account sub type.",
   "app_error_reporting_types_invalid": "Invalid account type.",
   "app_error_ledger_balance_missing_unexpected": "An error occurred while fetching the account balance.",
-  "user_error_waitlist_feature_invalid": "Unknown feature."
+  "user_error_waitlist_feature_invalid": "Unknown feature.",
+  "accounting_error_accounting_entity_individual_already_exists_in_jurisdiction_conflict": "A similar accounting entity already exists."
 }

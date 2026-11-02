@@ -1,10 +1,10 @@
-import { CategoryDeleteConfirmation } from '@/account/pages/category-details/parts/category-delete-confirmation';
+import { CategoryDeleteConfirmation } from '@/account/components/category-delete-confirmation';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { fn } from 'storybook/test';
 
 const meta = {
-  title: 'Account/Category details/Delete confirmation',
+  title: 'Ledger Accounts/CategoryDeleteConfirmation',
   component: CategoryDeleteConfirmation,
   tags: ['autodocs'],
   args: {

@@ -62,3 +62,5 @@ export const LongName: Story = {
 };
 
 export const Skeleton: Story = { render: () => <AccountTreeNodeSkeleton /> };
+
+export const SearchMatch: Story = { args: { search: 'utilities' } };

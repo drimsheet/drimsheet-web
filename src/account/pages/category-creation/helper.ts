@@ -35,6 +35,15 @@ function findParent(
   return null;
 }
 
+function matchesSearch(account: TCategoryAccount, search: string): boolean {
+  const query = search.trim().toLocaleLowerCase();
+
+  return (
+    account.name.toLocaleLowerCase().includes(query) ||
+    account.children.some((child) => matchesSearch(child, query))
+  );
+}
+
 function promotionNames(
   values: ICategoryCreationFormValues,
   parent: TCategoryAccount
@@ -80,6 +89,7 @@ function toExpense(
 const categoryCreationHelpers = Object.freeze({
   createInitialValues,
   findParent,
+  matchesSearch,
   toRevenue,
   toExpense,
 });

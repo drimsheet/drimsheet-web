@@ -1,43 +1,33 @@
 import { CategoryEditorDialog } from '@/account/dialogs/category-editor';
-import { useCategoryAccounts } from '@/account/hooks/use-category-accounts';
+import { useLedgerAccounts } from '@/account/hooks/use-ledger-accounts';
 import { categoryService } from '@/account/lib/services/category.service';
 import { AppBody } from '@/shared/components/app';
 import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
-import type { IRevenueExpenseAndSuspenseAccountBalanceDto } from '@/shared/lib/api/Api';
+import { EExpenseSubType, ERevenueSubType } from '@/shared/lib/api/Api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import categoriesHelpers from './helper';
 import { CategoryArchiveConfirmation } from './parts/archive-confirmation';
 import { CategoryOverviewContainer } from './parts/category-overview.container';
-import { CategoryPeriod } from './parts/category-period';
 import { CategoryTable } from './parts/category-table';
 import { CategorySectionError } from './parts/section-error';
-import type { UCategoryTypeFilter } from './types';
+import type { TCategoryAccount, UCategoryTypeFilter } from './types';
 
 export function CategoriesPage() {
-  const { t, i18n } = useTranslation(['ledger-accounts', 'shared']);
+  const { t } = useTranslation(['ledger-accounts', 'shared']);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [now] = useState(() => new Date());
 
-  const periods = categoriesHelpers.periodOptions(
-    now,
-    i18n.resolvedLanguage ?? 'en'
+  const [editor, setEditor] = useState<TCategoryAccount | null>(null);
+
+  const [archiveAccount, setArchiveAccount] = useState<TCategoryAccount | null>(
+    null
   );
-
-  const [period, setPeriod] = useState(periods[0].value);
-
-  const [editor, setEditor] =
-    useState<IRevenueExpenseAndSuspenseAccountBalanceDto | null>(null);
-
-  const [archiveAccount, setArchiveAccount] =
-    useState<IRevenueExpenseAndSuspenseAccountBalanceDto | null>(null);
 
   const table = useTableQueryParams<string, 'type'>({ filterKeys: ['type'] });
   const search = useDebounce(table.searchQuery, 300);
@@ -46,11 +36,17 @@ export function CategoriesPage() {
   const type: UCategoryTypeFilter =
     filter === 'revenue' || filter === 'expense' ? filter : 'all';
 
-  const accounts = useCategoryAccounts({
+  const accounts = useLedgerAccounts({
     page: Math.max(1, table.page),
     limit: 10,
     search: search || undefined,
-    type: type === 'all' ? undefined : type,
+    types: type === 'all' ? ['revenue', 'expense', 'asset'] : [type],
+    subTypes: [
+      'suspense',
+      ...Object.values(ERevenueSubType),
+      ...Object.values(EExpenseSubType),
+    ],
+    isControlAccount: false,
   });
 
   const archive = useMutation({
@@ -59,7 +55,7 @@ export function CategoriesPage() {
   });
 
   const handleViewAccount = (id: string) => {
-    const account = accounts.data?.data.find((item) => item.accountId === id);
+    const account = accounts.data?.data.find((item) => item.id === id);
 
     const isSuspense =
       account && account.type !== 'revenue' && account.type !== 'expense';
@@ -75,9 +71,7 @@ export function CategoriesPage() {
     table.handleFilterChange({ type: value === 'all' ? [] : [value] });
   };
 
-  const handleArchiveSelected = (
-    account: IRevenueExpenseAndSuspenseAccountBalanceDto
-  ) => {
+  const handleArchiveSelected = (account: TCategoryAccount) => {
     archive.reset();
     setArchiveAccount(account);
   };
@@ -91,6 +85,7 @@ export function CategoriesPage() {
       await archive.mutateAsync(archiveAccount.accountId);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['categoryService'] }),
+        queryClient.invalidateQueries({ queryKey: ['ledgerAccountService'] }),
         queryClient.invalidateQueries({ queryKey: ['ledgerReportingService'] }),
       ]);
       setArchiveAccount(null);
@@ -115,20 +110,10 @@ export function CategoriesPage() {
           </Button>
         }
       >
-        <div className="flex min-w-0 flex-col">
-          <AppSection title={overview_title}>
-            <div className="flex flex-wrap justify-end">
-              <CategoryPeriod
-                period={period}
-                periods={periods}
-                onPeriodChange={setPeriod}
-              />
-            </div>
-            <CategoryOverviewContainer
-              query={categoriesHelpers.periodQuery(period, now)}
-              onViewAccount={handleViewAccount}
-            />
-          </AppSection>
+        <AppSection title={overview_title}>
+          <CategoryOverviewContainer />
+        </AppSection>
+        <AppSection title={table_title}>
           {accounts.isError && <CategorySectionError title={table_title} />}
           <CategoryTable
             accounts={accounts.data}
@@ -142,20 +127,25 @@ export function CategoriesPage() {
             onEditAccount={setEditor}
             onArchiveAccount={handleArchiveSelected}
           />
-          {editor !== null && (
+        </AppSection>
+        {editor !== null &&
+          (editor.type === 'revenue' || editor.type === 'expense') && (
             <CategoryEditorDialog
-              account={editor}
+              account={{
+                accountId: editor.accountId,
+                accountName: editor.accountName,
+                type: editor.type,
+              }}
               onClose={() => setEditor(null)}
             />
           )}
-          <CategoryArchiveConfirmation
-            account={archiveAccount}
-            pending={archive.isPending}
-            error={archive.isError}
-            onClose={() => setArchiveAccount(null)}
-            onConfirm={() => void handleArchive()}
-          />
-        </div>
+        <CategoryArchiveConfirmation
+          account={archiveAccount}
+          pending={archive.isPending}
+          error={archive.isError}
+          onClose={() => setArchiveAccount(null)}
+          onConfirm={() => void handleArchive()}
+        />
       </AppBody>
     </>
   );

@@ -5,6 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/components/dropdown-menu';
+import { Money } from '@/shared/components/money';
 import { Ellipsis } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { EntryOverviewProps } from './types';
@@ -26,7 +27,7 @@ export function EntryOverview({
           <p className="truncate text-sm text-muted-foreground">{subtitle}</p>
         )}
       </div>
-      <span className="font-semibold tabular-nums">{amount}</span>
+      <Money value={amount} className="font-semibold tabular-nums" />
       {menuItems.length > 0 && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

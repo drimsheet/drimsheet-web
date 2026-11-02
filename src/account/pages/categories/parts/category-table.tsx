@@ -1,4 +1,3 @@
-import { AppSection } from '@/shared/components/app-section';
 import { DataTable, type ITableColumn } from '@/shared/components/data-table';
 import {
   Empty,
@@ -17,8 +16,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import categoriesHelpers from '../helper';
 import type { CategoryTableProps, ICategoryTableRow } from '../types';
-import { CategoryHelp } from './category-help';
-import { CategoryRowActions } from './category-row-actions';
+import { CategoryRowActionsContainer } from './category-row-actions.container';
 
 export function CategoryTable({
   accounts,
@@ -32,8 +30,7 @@ export function CategoryTable({
   onEditAccount,
   onArchiveAccount,
 }: Readonly<CategoryTableProps>) {
-  const { t, i18n } = useTranslation('ledger-accounts');
-  const locale = i18n.resolvedLanguage ?? 'en';
+  const { t } = useTranslation('ledger-accounts');
 
   const rows = useMemo(
     () => categoriesHelpers.tableRows(accounts?.data ?? []),
@@ -44,8 +41,6 @@ export function CategoryTable({
     const name_label = t('categories_name_label');
     const type_label = t('categories_type_label');
     const balance_label = t('categories_balance_label');
-    const share_label = t('categories_share_label');
-    const transactions_label = t('categories_transactions_label');
     const status_label = t('categories_status_label');
     const actions_label = t('categories_actions_label');
 
@@ -78,6 +73,7 @@ export function CategoryTable({
       },
       {
         dataIndex: 'amount',
+        align: 'right',
         width: 160,
         title: balance_label,
         render: (_, account) => (
@@ -85,29 +81,6 @@ export function CategoryTable({
             value={account.amount}
             className="text-foreground text-sm font-heading tabular-nums"
           />
-        ),
-      },
-      {
-        dataIndex: 'sharePercentage',
-        width: 180,
-        title: share_label,
-        render: (_, account) => (
-          <span className="tabular-nums">
-            {categoriesHelpers.formatPercentage(
-              account.sharePercentage,
-              locale
-            )}
-          </span>
-        ),
-      },
-      {
-        dataIndex: 'transactionCount',
-        width: 132,
-        title: transactions_label,
-        render: (_, account) => (
-          <span className="tabular-nums">
-            {account.transactionCount.toLocaleString(locale)}
-          </span>
         ),
       },
       {
@@ -127,7 +100,7 @@ export function CategoryTable({
         align: 'right',
         headerRender: () => <span className="sr-only">{actions_label}</span>,
         render: (_, account) => (
-          <CategoryRowActions
+          <CategoryRowActionsContainer
             account={account}
             onViewAccount={onViewAccount}
             onEditAccount={onEditAccount}
@@ -136,12 +109,8 @@ export function CategoryTable({
         ),
       },
     ];
-  }, [t, locale, onViewAccount, onEditAccount, onArchiveAccount]);
+  }, [t, onViewAccount, onEditAccount, onArchiveAccount]);
 
-  const title = t('categories_table_title');
-  const description = t('categories_table_description');
-  const details_text = t('categories_table_details');
-  const table_help_label = t('categories_table_help_label');
   const search_label = t('categories_search_label');
   const filter_label = t('categories_type_filter_label');
   const empty_title = t('categories_empty_title');
@@ -155,20 +124,14 @@ export function CategoryTable({
   ];
 
   return (
-    <AppSection title={title}>
+    <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <Tabs
-            ariaLabel={filter_label}
-            value={type}
-            onValueChange={onTypeChange}
-            items={tabs}
-          />
-          <CategoryHelp label={table_help_label}>
-            <p>{description}</p>
-            <p>{details_text}</p>
-          </CategoryHelp>
-        </div>
+        <Tabs
+          ariaLabel={filter_label}
+          value={type}
+          onValueChange={onTypeChange}
+          items={tabs}
+        />
         <div className="w-full max-w-sm">
           <SearchField
             type="search"
@@ -201,6 +164,6 @@ export function CategoryTable({
       {accounts && !loading && (
         <TablePagination meta={accounts.meta} onPageChange={onPageChange} />
       )}
-    </AppSection>
+    </>
   );
 }

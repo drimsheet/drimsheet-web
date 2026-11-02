@@ -14,12 +14,16 @@ const meta = {
       subType: 'operating_revenue',
       status: 'active',
       amount: { amount: 100000, currencyCode: 'NGN', isMinorUnit: false },
-      sharePercentage: 80,
-      transactionCount: 12,
     },
     onViewAccount: () => {},
     onEditAccount: () => {},
     onArchiveAccount: () => {},
+    checking: false,
+    eligibilityFailed: false,
+    canDelete: false,
+    deleting: false,
+    onOpenChange: () => {},
+    onDelete: () => {},
   },
 } satisfies Meta<typeof CategoryRowActions>;
 
@@ -29,6 +33,9 @@ export const Default: Story = {};
 export const Archived: Story = {
   args: { account: { ...meta.args.account, status: 'archived' } },
 };
+export const Deletable: Story = {
+  args: { canDelete: true },
+};
 export const Uncategorized: Story = {
   args: {
     account: {
@@ -36,7 +43,6 @@ export const Uncategorized: Story = {
       type: 'asset',
       subType: 'suspense',
       accountName: 'Uncategorized payments',
-      sharePercentage: null,
     },
   },
 };

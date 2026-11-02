@@ -1,32 +1,23 @@
-import { ledgerReportingService } from '@/reporting/lib/services/ledger-reporting.service';
-import { useQuery } from '@tanstack/react-query';
+import { useAccountBalanceContributionsByCounterparty } from '@/reporting/hooks/use-account-balance-contributions-by-counterparty';
 import { useState } from 'react';
 import type { CounterpartyShareContainerProps } from '../types';
 import { CounterpartyShare } from './counterparty-share';
 
 export function CounterpartyShareContainer({
   accountId,
+  from,
+  to,
   type,
   selectedId,
   onSelect,
 }: Readonly<CounterpartyShareContainerProps>) {
   const [page, setPage] = useState(1);
-  const query = { page, limit: 5 };
+  const query = { page, limit: 5, from, to };
 
-  const participation = useQuery({
-    queryKey: [
-      'ledgerReportingService',
-      'getAccountBalanceContributionsByCounterparty',
-      accountId,
-      query,
-    ],
-    queryFn: ({ signal }) =>
-      ledgerReportingService.getAccountBalanceContributionsByCounterparty(
-        accountId,
-        query,
-        signal
-      ),
-  });
+  const participation = useAccountBalanceContributionsByCounterparty(
+    accountId,
+    query
+  );
 
   return (
     <CounterpartyShare

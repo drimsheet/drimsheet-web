@@ -4,9 +4,11 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuItemSkeleton,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/shared/components/dropdown-menu';
-import { Archive, Ellipsis, List, Pencil } from 'lucide-react';
+import { Archive, Ellipsis, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { CategoryRowActionsProps } from '../types';
 
@@ -15,6 +17,12 @@ export function CategoryRowActions({
   onViewAccount,
   onEditAccount,
   onArchiveAccount,
+  checking,
+  eligibilityFailed,
+  canDelete,
+  deleting,
+  onOpenChange,
+  onDelete,
 }: Readonly<CategoryRowActionsProps>) {
   const { t } = useTranslation('ledger-accounts');
   const isCategory = account.type === 'revenue' || account.type === 'expense';
@@ -24,17 +32,15 @@ export function CategoryRowActions({
     name: account.accountName,
   });
 
-  const view_label = t(
-    isCategory
-      ? 'category_details_view_label'
-      : 'categories_view_transactions_label'
-  );
-
   const edit_label = t('categories_edit_label');
   const archive_label = t('categories_archive_label');
+  const delete_label = t('details_delete_label');
+  const checking_label = t('checking_deletion_eligibility_text');
+  const eligibility_error_text = t('deletion_eligibility_error_text');
+  const view_transactions_label = t('categories_view_transactions_label');
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={row_actions_label}>
           <Ellipsis aria-hidden />
@@ -42,10 +48,11 @@ export function CategoryRowActions({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
-          <DropdownMenuItem onSelect={() => onViewAccount(account.accountId)}>
-            <List aria-hidden />
-            {view_label}
-          </DropdownMenuItem>
+          {!isCategory && (
+            <DropdownMenuItem onSelect={() => onViewAccount(account.accountId)}>
+              {view_transactions_label}
+            </DropdownMenuItem>
+          )}
           {canManage && (
             <>
               <DropdownMenuItem onSelect={() => onEditAccount(account)}>
@@ -57,6 +64,22 @@ export function CategoryRowActions({
                 {archive_label}
               </DropdownMenuItem>
             </>
+          )}
+          {checking && <DropdownMenuItemSkeleton aria-label={checking_label} />}
+          {!checking && eligibilityFailed && (
+            <DropdownMenuLabel className="whitespace-normal">
+              {eligibility_error_text}
+            </DropdownMenuLabel>
+          )}
+          {!checking && !eligibilityFailed && canDelete && (
+            <DropdownMenuItem
+              variant="destructive"
+              disabled={deleting}
+              onSelect={onDelete}
+            >
+              <Trash2 aria-hidden />
+              {delete_label}
+            </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
       </DropdownMenuContent>
