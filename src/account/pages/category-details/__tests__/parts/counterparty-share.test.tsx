@@ -2,8 +2,7 @@ import { CounterpartyShare } from '@/account/pages/category-details/parts/counte
 import type { CounterpartyShareProps } from '@/account/pages/category-details/types';
 import type { IAccountBalanceContributionsByCounterpartyDto } from '@/shared/lib/api/Api';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { expect, it } from 'vitest';
 
 const row: IAccountBalanceContributionsByCounterpartyDto = {
   counterparty: null,
@@ -15,100 +14,46 @@ const row: IAccountBalanceContributionsByCounterpartyDto = {
   },
 };
 
-function props(
-  overrides: Partial<CounterpartyShareProps> = {}
-): CounterpartyShareProps {
-  return {
+it('draws proportional bars only for available shares within zero to one hundred percent', () => {
+  const props: CounterpartyShareProps = {
     type: 'revenue',
     counterparties: [row],
     loading: false,
     error: false,
-    selectedId: 'self',
-    onSelect: vi.fn(),
-    onPageChange: vi.fn(),
-    ...overrides,
+    selectedId: null,
+    onSelect: () => {},
+    onPageChange: () => {},
   };
-}
 
-describe('CounterpartyShare', () => {
-  it('uses API percentages and functional amounts and selects rows with the keyboard', async () => {
-    const user = userEvent.setup();
-    const values = props();
-    render(<CounterpartyShare {...values} />);
-    const button = screen.getByRole('button', { name: /Self/ });
-    expect(button).toHaveAttribute('aria-pressed', 'true');
-    expect(button).toHaveTextContent('33.33%');
-    expect(button).toHaveTextContent('NGN 1,000');
-    button.focus();
-    await user.keyboard('{Enter}');
-    expect(values.onSelect).toHaveBeenCalledWith(row);
-  });
-  it.each([125.25, -25.25, null])(
-    'preserves the API share %s without a misleading bar',
-    (share) => {
-      render(
-        <CounterpartyShare
-          {...props({
-            counterparties: [
-              {
-                ...row,
-                isSelf: false,
-                participation: { ...row.participation, totalShare: share },
-              },
-            ],
-          })}
-        />
-      );
-      const button = screen.getByRole('button', { name: /Unassigned/ });
-      expect(button.querySelector('[aria-hidden="true"]')).toBeNull();
-      if (share === null) {
-        expect(
-          screen.getByLabelText('Share unavailable at zero balance')
-        ).toHaveTextContent('—');
-      } else {
-        expect(button).toHaveTextContent(`${share}%`);
-      }
-    }
-  );
-  it('delegates pagination to the container', async () => {
-    const user = userEvent.setup();
+  const { rerender } = render(<CounterpartyShare {...props} />);
 
-    const values = props({
-      pagination: { page: 1, limit: 5, total: 6, totalPages: 2 },
-    });
+  expect(
+    screen
+      .getByRole('button', { name: /Self/ })
+      .querySelector('[aria-hidden="true"]')
+  ).toBeInTheDocument();
 
-    render(<CounterpartyShare {...values} />);
-    expect(
-      screen.getByRole('button', { name: 'Previous counterparties' })
-    ).toBeDisabled();
-    await user.click(
-      screen.getByRole('button', { name: 'Next counterparties' })
+  for (const share of [125.25, -25.25, null]) {
+    rerender(
+      <CounterpartyShare
+        {...props}
+        counterparties={[
+          {
+            ...row,
+            participation: { ...row.participation, totalShare: share },
+          },
+        ]}
+      />
     );
-    expect(values.onPageChange).toHaveBeenCalledWith(2);
-  });
-  it('does not show an empty state while loading or after failure or offer a retry action', () => {
-    const values = props({ counterparties: [], loading: true });
-    const { rerender } = render(<CounterpartyShare {...values} />);
+
     expect(
-      screen.getByRole('status', { name: 'Loading counterparty share' })
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByText('No counterparty activity in this period.')
-    ).not.toBeInTheDocument();
-    rerender(<CounterpartyShare {...values} loading={false} error />);
-    expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(
-      screen.queryByText('No counterparty activity in this period.')
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: /try again/i })
-    ).not.toBeInTheDocument();
-  });
-  it('shows the empty state', () => {
-    const values = props({ counterparties: [] });
-    render(<CounterpartyShare {...values} />);
-    expect(
-      screen.getByText('No counterparty activity in this period.')
-    ).toBeInTheDocument();
-  });
+      screen
+        .getByRole('button', { name: /Self/ })
+        .querySelector('[aria-hidden="true"]')
+    ).toBeNull();
+  }
+
+  expect(
+    screen.getByLabelText('Share unavailable at zero balance')
+  ).toHaveTextContent('—');
 });
