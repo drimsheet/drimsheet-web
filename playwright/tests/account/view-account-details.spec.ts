@@ -9,6 +9,7 @@ import {
   authenticatedUser,
   registerAuthenticatedAppRoutes,
 } from '@integration/mocks/authenticated-app';
+import { registerReportingIntervalRoutes } from '@integration/mocks/reporting-interval';
 import type { Page } from '@playwright/test';
 
 const accountId = '00000000-0000-4000-8000-000000000020' as TEntityId;
@@ -109,6 +110,7 @@ async function setup(
   options: { bank?: boolean; children?: boolean; pettyCash?: boolean } = {}
 ) {
   await registerAuthenticatedAppRoutes(page);
+  await registerReportingIntervalRoutes(page);
   await page.route('**/api/v1/currencies', (route) =>
     route.fulfill({
       json: [
@@ -361,17 +363,22 @@ test('loads account sections, changes the cash-flow period, pages transactions, 
     await flowGate;
     await route.fallback();
   });
-  const periodSelector = page.getByRole('combobox', { name: 'Period' });
-  await periodSelector.focus();
-  await page.keyboard.press('Enter');
-  const selectedMonth = await page.getByRole('option').nth(1).textContent();
+
+  const periodSelector = page.getByRole('button', {
+    name: 'Interval',
+    exact: true,
+  });
+
+  await periodSelector.click();
+  await page
+    .getByRole('radio', { name: 'September 2026', exact: true })
+    .click();
 
   const request = page.waitForRequest((req) =>
     req.url().includes('/cash-flow?')
   );
 
-  await page.keyboard.press('ArrowDown');
-  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Apply', exact: true }).click();
   await expect(
     page.getByRole('status', { name: 'Loading transactions chart' })
   ).toBeVisible();
@@ -382,11 +389,10 @@ test('loads account sections, changes the cash-flow period, pages transactions, 
   ).toHaveCount(0);
   await expect(periodSelector).toBeFocused();
   const query = new URL((await request).url()).searchParams;
-  expect(query.get('from')).toMatch(/^\d{4}-\d{2}-01$/);
-  expect(query.get('bucketDays')).toBe('7');
-  await expect(page.getByRole('combobox', { name: 'Period' })).toHaveText(
-    selectedMonth!
-  );
+  expect(query.get('from')).toBe('2026-09-01');
+  expect(query.get('to')).toBe('2026-09-30');
+  expect(query.get('bucketDays')).toBe('3');
+  await expect(periodSelector).toHaveText(/September 2026/);
   await page.getByRole('button', { name: 'Next page', exact: true }).click();
   await expect(page.getByText('Earlier sales')).toBeVisible();
   await expect(page.getByText('Sales', { exact: true })).toHaveCount(0);

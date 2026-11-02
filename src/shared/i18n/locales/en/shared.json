@@ -99,6 +99,7 @@
   "table_next_page_label": "Next page",
   "table_pagination_label": "Table pagination",
   "interval_select_label": "Interval",
+  "interval_select_loading_label": "Loading reporting periods",
   "interval_select_all_time_label": "All time",
   "interval_select_custom_label": "Custom",
   "interval_select_range_label": "Custom date range",

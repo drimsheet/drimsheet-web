@@ -61,7 +61,7 @@ test('combines account behavior tabs and search while keeping overview queries i
         .getByText('Approximate balance in functional currency')
         .locator('..')
         .locator('..')
-    ).toContainText('since Apr 23, 2026');
+    ).toContainText('since Oct 1, 2026');
     await expect(
       overview.getByRole('heading', { name: 'Balance growth' }).locator('..')
     ).not.toContainText('since');
@@ -124,14 +124,18 @@ test('combines account behavior tabs and search while keeping overview queries i
   await expect(table).toContainText('Account 24');
 
   const accountQueryCount = state.accountQueries.length;
-  await page.getByRole('tab', { name: '1M', exact: true }).click();
+  await page.getByRole('button', { name: 'Interval', exact: true }).click();
+  await page
+    .getByRole('radio', { name: 'September 2026', exact: true })
+    .click();
+  await page.getByRole('button', { name: 'Apply', exact: true }).click();
   await expect
     .poll(() =>
       state.historyQueries.some(
         (query) =>
-          query.get('from') === '2026-09-23' &&
-          query.get('to') === '2026-10-23' &&
-          query.get('bucketDays') === '5'
+          query.get('from') === '2026-09-01' &&
+          query.get('to') === '2026-09-30' &&
+          query.get('bucketDays') === '3'
       )
     )
     .toBe(true);

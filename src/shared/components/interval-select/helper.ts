@@ -124,12 +124,9 @@ function withRange(
   return { type: 'custom', startDate: range.startDate, endDate: range.endDate };
 }
 
-function pickerKey(
-  selection: UIntervalSelection,
-  interval?: IInterval
-): string {
+function pickerKey(interval?: IInterval): string {
+  // Applied selections keep the trigger mounted so closing the popover restores keyboard focus.
   return JSON.stringify([
-    key(selection),
     interval?.startDate?.getTime(),
     interval?.endDate?.getTime(),
     interval?.currentPeriodOrdinal,

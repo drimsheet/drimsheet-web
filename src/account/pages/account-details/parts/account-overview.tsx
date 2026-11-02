@@ -1,4 +1,5 @@
 import { AccountCashFlowChartSkeleton } from '@/reporting/components/account-cash-flow-chart';
+import { ReportingIntervalSelectSkeleton } from '@/reporting/components/reporting-interval-select';
 import { cn } from '@/shared/lib/utils/cn';
 import { useTranslation } from 'react-i18next';
 import type { AccountOverviewProps } from '../types';
@@ -13,7 +14,6 @@ import {
 } from './account-summary';
 import { BankDetailsSkeleton } from './bank-details';
 import { BankDetailsContainer } from './bank-details.container';
-import { CashFlowPeriodSkeleton } from './cash-flow-period';
 import { SubAccountsSkeleton } from './sub-accounts';
 import { SubAccountsContainer } from './sub-accounts.container';
 
@@ -97,7 +97,7 @@ export function AccountOverviewSkeleton() {
           <div className="flex min-w-0 flex-col gap-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <AccountCashFlowChartRangeSkeleton />
-              <CashFlowPeriodSkeleton />
+              <ReportingIntervalSelectSkeleton />
             </div>
             <AccountCashFlowChartSkeleton aria-label={loading_label} />
           </div>

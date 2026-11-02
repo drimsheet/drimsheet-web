@@ -24,8 +24,8 @@ export interface ICategoryTransaction {
 export interface CategorySummaryProps {
   account: ILedgerAccountDto;
   transactionCount?: number | null;
-  period?: string;
-  onPeriodChange?: (value: string) => void;
+  intervalSlot?: ReactNode;
+  rangeError?: string;
   balance?: IMoneyDto | null;
 }
 

@@ -4,7 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 
 export function useAccountCashFlow(
   accountId: string,
-  query: IGetAccountCashFlowQuery
+  query: IGetAccountCashFlowQuery,
+  enabled = true
 ) {
   return useQuery({
     queryKey: [
@@ -15,5 +16,6 @@ export function useAccountCashFlow(
     ],
     queryFn: ({ signal }) =>
       ledgerReportingService.getAccountCashFlow(accountId, query, signal),
+    enabled,
   });
 }

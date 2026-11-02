@@ -14,6 +14,19 @@ Make imports predictable so the agent can change one part of the app without cau
 - `src/<feature>/routes/` may import pages only.
 - `src/shared/` must not import from any feature folder.
 
+### Reporting interval selection composition exception
+
+`src/account/pages/account-dashboard/`, `src/account/pages/account-details/`, and
+`src/account/pages/category-details/` may compose `ReportingIntervalSelect` and
+its skeleton through `@/reporting/components/reporting-interval-select`, and use
+`useReportingInterval` from `@/reporting/hooks/use-reporting-interval`.
+Selection and report queries stay with their page/container owners.
+
+`src/reporting/hooks/use-reporting-interval.ts` may call `accountingService`
+from `@/accounting/lib/services/accounting.service` to load the current fiscal
+year and its reporting interval. Accounting transport remains in that service;
+the reporting selector remains presentational and does not fetch data.
+
 ### Account dashboard reporting composition exception
 
 `src/account/pages/account-dashboard/` may import

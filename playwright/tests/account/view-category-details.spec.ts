@@ -11,6 +11,7 @@ import {
   authenticatedUser,
   registerAuthenticatedAppRoutes,
 } from '@integration/mocks/authenticated-app';
+import { registerReportingIntervalRoutes } from '@integration/mocks/reporting-interval';
 import type { Page } from '@playwright/test';
 
 const accountId = '00000000-0000-4000-8000-000000000040' as TEntityId;
@@ -119,6 +120,7 @@ const participationUrl = `**/api/v1/reporting/ledger/accounts/${accountId}/balan
 async function setup(page: Page, type: 'revenue' | 'expense' = 'expense') {
   await page.clock.setFixedTime(new Date('2026-10-15T12:00:00Z'));
   await registerAuthenticatedAppRoutes(page);
+  await registerReportingIntervalRoutes(page);
   for (const auth of ['login-with-email', 'refresh-access-token']) {
     await page.route(`**/api/v1/auth/${auth}`, (route) =>
       route.fulfill({ json: { accessToken: 'integration-test-token' } })
@@ -193,7 +195,7 @@ async function setup(page: Page, type: 'revenue' | 'expense' = 'expense') {
       expect(params.get('bucketDays')).toBe('1');
       const from = params.get('from')!;
       const to = params.get('to')!;
-      const amount = from === '2025-01-01' ? 0 : 2400000;
+      const amount = from === '2026-09-01' ? 0 : 2400000;
       const delta = { ...money, amount };
 
       const buckets = amount
@@ -292,10 +294,17 @@ test('applies the page period to totals, charts and transactions', async ({
     expect(params.get('page')).toBe('1');
     expect(params.get('limit')).toBe('5');
     expect(from).toBeTruthy();
-    expect(to).toBe(from === '2025-01-01' ? '2025-12-31' : '2026-10-15');
+
+    const expectedEnds: Record<string, string> = {
+      '2026-09-01': '2026-09-30',
+      '2026-01-01': '2026-12-31',
+      '2026-10-01': '2026-10-31',
+    };
+
+    expect(to).toBe(expectedEnds[from!]);
     ranges.push(`${from}:${to}`);
     let data = participation;
-    if (from === '2025-01-01') {
+    if (from === '2026-09-01') {
       data = [];
     }
 
@@ -378,12 +387,13 @@ test('applies the page period to totals, charts and transactions', async ({
     page.getByRole('link', { name: 'View all transactions' })
   ).toHaveAttribute(
     'href',
-    `/transactions/list?accountId=${accountId}&effectiveDateFrom=2026-05-01&effectiveDateTo=2026-10-15`
+    `/transactions/list?accountId=${accountId}&effectiveDateFrom=2026-10-01&effectiveDateTo=2026-10-31`
   );
   await expect(summary.getByText('₦2,400,000', { exact: true })).toBeVisible();
-  const period = page.getByRole('combobox', { name: 'Period' });
+  const period = page.getByRole('button', { name: 'Interval', exact: true });
   await period.click();
-  await page.getByRole('option', { name: 'This year', exact: true }).click();
+  await page.getByRole('radio', { name: 'All time', exact: true }).click();
+  await page.getByRole('button', { name: 'Apply', exact: true }).click();
   await expect(
     summary.getByRole('definition').filter({ hasText: /^11$/ })
   ).toBeVisible();
@@ -393,7 +403,10 @@ test('applies the page period to totals, charts and transactions', async ({
     share.getByRole('button', { name: /Older vendor/ })
   ).toBeVisible();
   await period.click();
-  await page.getByRole('option', { name: 'Last year', exact: true }).click();
+  await page
+    .getByRole('radio', { name: 'September 2026', exact: true })
+    .click();
+  await page.getByRole('button', { name: 'Apply', exact: true }).click();
   await expect(
     summary.getByRole('definition').filter({ hasText: /^0$/ })
   ).toBeVisible();
@@ -405,15 +418,16 @@ test('applies the page period to totals, charts and transactions', async ({
   ).toBeVisible();
   await expect(page.getByText('Google subscription')).toHaveCount(0);
   await period.click();
-  await page.getByRole('option', { name: 'This month', exact: true }).click();
+  await page.getByRole('radio', { name: 'October 2026', exact: true }).click();
+  await page.getByRole('button', { name: 'Apply', exact: true }).click();
   await expect(page.getByText('Google subscription')).toBeVisible();
   await expect
     .poll(() => ranges)
     .toEqual([
-      '2026-05-01:2026-10-15',
-      '2026-01-01:2026-10-15',
-      '2025-01-01:2025-12-31',
-      '2026-10-01:2026-10-15',
+      '2026-10-01:2026-10-31',
+      '2026-01-01:2026-12-31',
+      '2026-09-01:2026-09-30',
+      '2026-10-01:2026-10-31',
     ]);
   await page.setViewportSize({ width: 390, height: 844 });
   await expect

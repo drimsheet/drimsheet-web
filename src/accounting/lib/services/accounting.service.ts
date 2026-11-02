@@ -28,6 +28,13 @@ export const accountingService = {
     return (await drimsheetApi.accounting.getCurrentFiscalYear({ signal }))
       .data;
   },
+  async getReportingInterval(fiscalYearId: string, signal?: AbortSignal) {
+    return (
+      await drimsheetApi.accounting.getReportingInterval(fiscalYearId, {
+        signal,
+      })
+    ).data;
+  },
   async getEntityDetails(entityId: string) {
     return (
       await drimsheetApi.accounting.getActiveAccountingEntity({

@@ -1,4 +1,5 @@
 import { BalanceHistory } from '@/account/pages/account-dashboard/parts/balance-history';
+import { ReportingIntervalSelect } from '@/reporting/components/reporting-interval-select';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
@@ -6,8 +7,7 @@ const meta = {
   component: BalanceHistory,
   tags: ['autodocs'],
   args: {
-    period: '6M',
-    onPeriodChange: () => {},
+    intervalSlot: <ReportingIntervalSelect onChange={() => {}} />,
     history: {
       period: { from: '2026-04-24', to: '2026-10-23' },
       points: [

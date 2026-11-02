@@ -56,7 +56,7 @@ export function IntervalSelectView({
 
   return (
     <DateRangePicker
-      key={intervalSelectHelpers.pickerKey(selection, interval)}
+      key={intervalSelectHelpers.pickerKey(interval)}
       value={range}
       onChange={handleApply}
       minDate={interval?.startDate}

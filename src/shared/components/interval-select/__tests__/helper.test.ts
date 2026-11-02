@@ -223,31 +223,30 @@ describe('intervalSelectHelpers', () => {
   });
 
   it('keeps picker identity stable for equivalent inputs and resets it when options or bounds change', () => {
-    const selection = intervalSelectHelpers.initial(interval);
-    const original = intervalSelectHelpers.pickerKey(selection, interval);
+    const original = intervalSelectHelpers.pickerKey(interval);
     expect(
-      intervalSelectHelpers.pickerKey(selection, {
+      intervalSelectHelpers.pickerKey({
         ...interval,
         periods: [{ ...period, startDate: new Date(startDate) }],
       })
     ).toBe(original);
     expect(
-      intervalSelectHelpers.pickerKey(selection, { ...interval, periods: [] })
+      intervalSelectHelpers.pickerKey({ ...interval, periods: [] })
     ).not.toBe(original);
     expect(
-      intervalSelectHelpers.pickerKey(selection, {
+      intervalSelectHelpers.pickerKey({
         ...interval,
         periods: [{ ...period, endDate: new Date(2026, 0, 30) }],
       })
     ).not.toBe(original);
     expect(
-      intervalSelectHelpers.pickerKey(selection, {
+      intervalSelectHelpers.pickerKey({
         ...interval,
         endDate: new Date(2026, 1, 1),
       })
     ).not.toBe(original);
-    expect(intervalSelectHelpers.pickerKey({ type: 'custom' })).toBe(
-      intervalSelectHelpers.pickerKey({ type: 'custom' }, undefined)
+    expect(intervalSelectHelpers.pickerKey()).toBe(
+      intervalSelectHelpers.pickerKey(undefined)
     );
   });
 });

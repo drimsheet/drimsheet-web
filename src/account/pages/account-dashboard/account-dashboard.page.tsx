@@ -6,8 +6,13 @@ import { AccountTypeSelectionDialog } from '@/account/dialogs/account-type-selec
 import { PettyCashAccountCreationDialog } from '@/account/dialogs/petty-cash-account-creation';
 import { useLedgerAccounts } from '@/account/hooks/use-ledger-accounts';
 import accountDashboardMapper from '@/account/lib/mappers/account-dashboard.mapper';
+import {
+  ReportingIntervalSelect,
+  ReportingIntervalSelectSkeleton,
+} from '@/reporting/components/reporting-interval-select';
 import { useAssetAndLiabilityBalancesByCurrency } from '@/reporting/hooks/use-asset-and-liability-balances-by-currency';
 import { useBalancesBySubType } from '@/reporting/hooks/use-balances-by-sub-type';
+import { useReportingInterval } from '@/reporting/hooks/use-reporting-interval';
 import { AppBody } from '@/shared/components/app';
 import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
@@ -29,13 +34,12 @@ import { AccountsSummaryWithState } from './parts/account-summary';
 import { BalanceHistory } from './parts/balance-history';
 import { EmptyAccountDashboard } from './parts/empty-account-dashboard';
 import { DashboardError } from './parts/section-error';
-import type { UBalancePeriod } from './types';
 
 export function AccountsDashboardPage() {
   const { t } = useTranslation(['ledger-accounts', 'shared']);
   const navigate = useNavigate();
-  const [now] = useState(() => new Date());
-  const [period, setPeriod] = useState<UBalancePeriod>('6M');
+  const reporting = useReportingInterval();
+  const range = reporting.range;
 
   const [showAccountTypeSelection, setShowAccountTypeSelection] =
     useState(false);
@@ -70,11 +74,12 @@ export function AccountsDashboardPage() {
 
   const history = useBalancesBySubType(
     {
-      ...dashboardHelpers.periodQuery(period, now),
-      bucketDays: dashboardHelpers.bucketDays(period),
+      from: range?.from ?? '',
+      to: range?.to ?? '',
+      bucketDays: reporting.bucketDays,
       subTypes: [EAssetSubType.CashAndCashEquivalent],
     },
-    { select: accountDashboardMapper.toHistory }
+    { select: accountDashboardMapper.toHistory, enabled: !!range }
   );
 
   const balanceChange = history.data
@@ -90,7 +95,7 @@ export function AccountsDashboardPage() {
   const pageError =
     accounts.isError &&
     summary.isError &&
-    history.isError &&
+    (history.isError || reporting.isError) &&
     !accounts.data &&
     !summary.data &&
     !history.data;
@@ -125,6 +130,10 @@ export function AccountsDashboardPage() {
 
   const table_title = t('ledger-accounts:dashboard_table_title');
   const page_error_title = t('ledger-accounts:dashboard_page_error_title');
+
+  const range_error_description = t(
+    'ledger-accounts:reporting_range_too_long_error'
+  );
 
   const addActionNode = (
     <Button size="lg" onClick={handleAddAccount}>
@@ -188,11 +197,29 @@ export function AccountsDashboardPage() {
           />
 
           <BalanceHistory
-            period={period}
-            onPeriodChange={setPeriod}
+            intervalSlot={
+              <>
+                {reporting.isPending && <ReportingIntervalSelectSkeleton />}
+                {reporting.interval && !reporting.isPending && (
+                  <ReportingIntervalSelect
+                    interval={reporting.interval}
+                    onChange={reporting.onChange}
+                  />
+                )}
+              </>
+            }
             history={history.data}
-            loading={history.isPending}
-            error={history.isError}
+            loading={
+              !reporting.isError &&
+              !reporting.isRangeTooLong &&
+              (reporting.isPending || history.isPending)
+            }
+            error={
+              history.isError || reporting.isError || reporting.isRangeTooLong
+            }
+            errorDescription={
+              reporting.isRangeTooLong ? range_error_description : undefined
+            }
           />
         </AppSection>
 

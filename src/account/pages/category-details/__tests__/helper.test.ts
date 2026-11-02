@@ -81,14 +81,6 @@ describe('categoryDetailsHelpers', () => {
       })
     ).toThrow();
   });
-  it('builds inclusive periods across year boundaries', () => {
-    expect(
-      categoryDetailsHelpers.period(new Date(2026, 0, 15), '3')
-    ).toMatchObject({ from: '2025-11-01', to: '2026-01-15' });
-    expect(
-      categoryDetailsHelpers.period(new Date(2026, 9, 15), 'previous')
-    ).toMatchObject({ from: '2025-01-01', to: '2025-12-31', months: 12 });
-  });
   it('limits the journal query to the first ten entries with dates and optional counterparty', () => {
     expect(
       categoryDetailsHelpers.recentQuery(

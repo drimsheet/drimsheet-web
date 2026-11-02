@@ -1,8 +1,14 @@
 import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
+import {
+  ReportingIntervalSelect,
+  ReportingIntervalSelectSkeleton,
+} from '@/reporting/components/reporting-interval-select';
 import { useAccountActivity } from '@/reporting/hooks/use-account-activity';
+import { useReportingInterval } from '@/reporting/hooks/use-reporting-interval';
 import { AppBody } from '@/shared/components/app';
 import { AppSection } from '@/shared/components/app-section';
+import type { UIntervalSelection } from '@/shared/components/interval-select';
 import { StatusBadge } from '@/shared/components/status-badge';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,8 +30,6 @@ import type { CounterpartyShareProps } from './types';
 export function CategoryDetailsPage() {
   const { accountId = '' } = useParams();
   const { t } = useTranslation(['ledger-accounts', 'shared']);
-  const [period, setPeriod] = useState('6');
-  const [now] = useState(() => new Date());
 
   const [selected, setSelected] = useState<{
     accountId: string;
@@ -41,14 +45,23 @@ export function CategoryDetailsPage() {
     !account.isControlAccount &&
     (account.type === 'revenue' || account.type === 'expense');
 
-  const range = categoryDetailsHelpers.period(now, period);
-  const query = { from: range.from, to: range.to, bucketDays: 1 };
+  const reporting = useReportingInterval(isCategory);
+  const range = reporting.range;
+  const query = { from: range?.from ?? '', to: range?.to ?? '', bucketDays: 1 };
 
-  const activityQuery = useAccountActivity(accountId, query, isCategory);
+  const activityQuery = useAccountActivity(
+    accountId,
+    query,
+    isCategory && !!range
+  );
 
   const recent = useJournalEntries(
-    categoryDetailsHelpers.recentQuery(accountId, range.from, range.to),
-    { enabled: isCategory, throwOnError: false }
+    categoryDetailsHelpers.recentQuery(
+      accountId,
+      range?.from ?? '',
+      range?.to ?? ''
+    ),
+    { enabled: isCategory && !!range, throwOnError: false }
   );
 
   const activity = useMemo(() => {
@@ -66,9 +79,15 @@ export function CategoryDetailsPage() {
   const selectedId =
     selected?.accountId === accountId ? selected.counterpartyId : null;
 
-  const transactionCount = recent.isPending
-    ? undefined
-    : (recent.data?.meta.total ?? null);
+  const transactionCount =
+    !reporting.isRangeTooLong && (reporting.isPending || recent.isPending)
+      ? undefined
+      : (recent.data?.meta.total ?? null);
+
+  const handleIntervalChange = (selection: UIntervalSelection) => {
+    reporting.onChange(selection);
+    setSelected(null);
+  };
 
   const handleSelect = (
     participation: CounterpartyShareProps['counterparties'][number]
@@ -101,10 +120,15 @@ export function CategoryDetailsPage() {
     selectedId === 'self' ? self_label : (selected?.name ?? unassigned_label);
 
   const show_detail_sections =
-    !accountQuery.isError && (accountQuery.isPending || isCategory);
+    !accountQuery.isError &&
+    !reporting.isError &&
+    !reporting.isRangeTooLong &&
+    (accountQuery.isPending ||
+      (isCategory && (reporting.isPending || !!range)));
 
   const breadcrumb_label = t('categories_table_breadcrumb');
   const overview_title = t('details_overview_title');
+  const range_error_text = t('reporting_range_too_long_error');
   const status_label = account ? t(`categories_status_${account.status}`) : '';
 
   const recent_transactions_title = t(
@@ -141,19 +165,32 @@ export function CategoryDetailsPage() {
       <AppSection title={accountQuery.isError ? undefined : overview_title}>
         <CategorySummaryWithState
           loading={accountQuery.isPending}
-          error={accountQuery.isError}
+          error={accountQuery.isError || reporting.isError}
           showPeriod
         >
           {account && isCategory && (
             <CategorySummary
               account={account}
               balance={
-                activityQuery.isPending
+                !reporting.isRangeTooLong &&
+                (reporting.isPending || activityQuery.isPending)
                   ? undefined
                   : (activity?.balance ?? null)
               }
-              period={period}
-              onPeriodChange={setPeriod}
+              intervalSlot={
+                <>
+                  {reporting.isPending && <ReportingIntervalSelectSkeleton />}
+                  {reporting.interval && !reporting.isPending && (
+                    <ReportingIntervalSelect
+                      interval={reporting.interval}
+                      onChange={handleIntervalChange}
+                    />
+                  )}
+                </>
+              }
+              rangeError={
+                reporting.isRangeTooLong ? range_error_text : undefined
+              }
               transactionCount={transactionCount}
             />
           )}
@@ -162,8 +199,10 @@ export function CategoryDetailsPage() {
       {show_detail_sections && (
         <>
           <AppSection>
-            <CategoryChartsWithState loading={accountQuery.isPending}>
-              {account && isCategory && (
+            <CategoryChartsWithState
+              loading={accountQuery.isPending || reporting.isPending}
+            >
+              {account && isCategory && range && (
                 <>
                   <CategoryTrendWithState
                     loading={activityQuery.isPending}
@@ -197,8 +236,10 @@ export function CategoryDetailsPage() {
             </CategoryChartsWithState>
           </AppSection>
           <AppSection title={recent_transactions_title}>
-            <CategoryTransactionsWithState loading={accountQuery.isPending}>
-              {account && isCategory && (
+            <CategoryTransactionsWithState
+              loading={accountQuery.isPending || reporting.isPending}
+            >
+              {account && isCategory && range && (
                 <CategoryTransactionsContainer
                   accountId={accountId}
                   from={range.from}
