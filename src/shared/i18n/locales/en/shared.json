@@ -97,5 +97,21 @@
   "table_pagination_filtered": "filtered from {{total}}",
   "table_previous_page_label": "Previous page",
   "table_next_page_label": "Next page",
-  "table_pagination_label": "Table pagination"
+  "table_pagination_label": "Table pagination",
+  "interval_select_label": "Interval",
+  "interval_select_all_time_label": "All time",
+  "interval_select_custom_label": "Custom",
+  "interval_select_range_label": "Custom date range",
+  "interval_select_range_placeholder": "Select date range",
+  "interval_select_range_value": "{{start}} – {{end}}",
+  "date_range_picker_label": "Date range",
+  "date_range_picker_placeholder": "Select date range",
+  "date_range_picker_value": "{{start}} – {{end}}",
+  "date_range_picker_start_label": "Start date",
+  "date_range_picker_end_label": "End date",
+  "date_range_picker_apply_label": "Apply",
+  "date_range_picker_incomplete_error": "Select a start and end date.",
+  "date_range_picker_invalid_date_error": "Enter valid dates.",
+  "date_range_picker_order_error": "The start date must be on or before the end date.",
+  "date_range_picker_bounds_error": "Choose dates within the allowed range."
 }
