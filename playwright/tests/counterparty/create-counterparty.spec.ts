@@ -258,7 +258,7 @@ test.describe('Counterparty Selection and Creation Flow', () => {
       name: 'Acme Supplies',
       type: 'organization',
       status: 'active',
-      meta: {
+      roleDetails: {
         vendor: {
           address: {
             line1: '123 Vendor Rd',
@@ -331,7 +331,7 @@ test.describe('Counterparty Selection and Creation Flow', () => {
       name: 'Jane Smith',
       type: 'individual',
       status: 'active',
-      meta: {
+      roleDetails: {
         contractor: {
           address: {
             line1: '456 Contractor Way',
@@ -406,7 +406,7 @@ test.describe('Counterparty Selection and Creation Flow', () => {
       name: 'MegaCorp International',
       type: 'organization',
       status: 'active',
-      meta: {
+      roleDetails: {
         employer: {
           displayName: 'MegaCorp',
           address: {
