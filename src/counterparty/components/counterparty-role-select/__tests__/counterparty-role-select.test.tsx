@@ -9,7 +9,7 @@ describe('CounterpartyRoleSelect', () => {
     render(<CounterpartyRoleSelect onSubmit={vi.fn()} />);
 
     expect(
-      screen.getByRole('heading', { name: /select counterparty role/i })
+      screen.getByRole('heading', { name: /select a role/i })
     ).toBeInTheDocument();
 
     const defaultRadio = screen.getByRole('radio', { name: /default/i });

@@ -30,7 +30,7 @@ it('fetches by ID and PATCHes changes instead of creating', async () => {
     type: 'organization',
     status: 'active',
     roles: ['vendor'],
-    meta: {
+    roleDetails: {
       vendor: {
         address: {
           line1: '14 Marina Road',

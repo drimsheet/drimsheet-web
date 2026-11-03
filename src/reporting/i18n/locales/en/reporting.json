@@ -1,0 +1,4 @@
+{
+  "interval_select_load_error": "Unable to load reporting periods. Refresh the page to try again.",
+  "interval_select_range_too_long_error": "Select a date range of 366 days or fewer."
+}

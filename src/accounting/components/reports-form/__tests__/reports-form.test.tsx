@@ -74,10 +74,10 @@ describe('ReportsForm', () => {
         </button>
       </>
     );
-    await user.type(
-      screen.getByRole('textbox', { name: 'Reporting setup name' }),
-      'Board pack'
+    await user.click(
+      screen.getByRole('textbox', { name: 'Reporting setup name' })
     );
+    await user.paste('Board pack');
     await user.click(
       screen.getByRole('combobox', { name: 'Currency for your reports' })
     );
@@ -95,10 +95,7 @@ describe('ReportsForm', () => {
     await user.clear(
       screen.getByRole('textbox', { name: 'Whole financial year' })
     );
-    await user.type(
-      screen.getByRole('textbox', { name: 'Whole financial year' }),
-      'Annual report'
-    );
+    await user.paste('Annual report');
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() =>
       expect(onSubmit).toHaveBeenCalledWith({

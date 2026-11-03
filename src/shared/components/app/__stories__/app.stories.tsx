@@ -30,6 +30,14 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
+export const WithDescription: Story = {
+  args: {
+    title: 'People & Businesses',
+    description: 'The people and businesses you transact with.',
+    actionsSlot: <Button>Add person or business</Button>,
+  },
+};
+
 export const WithSlots: Story = {
   args: {
     titleSlot: (

@@ -12,7 +12,7 @@ const counterparty: ICounterpartyDto = {
   status: 'active',
   type: 'organization',
   roles: ['vendor'],
-  meta: {},
+  roleDetails: {},
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
 };
@@ -27,7 +27,7 @@ describe('CounterpartyRowActions', () => {
     );
 
     await user.click(
-      screen.getByRole('button', { name: 'Open counterparty actions' })
+      screen.getByRole('button', { name: 'Open person or business actions' })
     );
     await user.click(screen.getByRole('menuitem', { name: 'Edit' }));
 
@@ -46,7 +46,7 @@ describe('CounterpartyRowActions', () => {
     );
 
     await user.click(
-      screen.getByRole('button', { name: 'Open counterparty actions' })
+      screen.getByRole('button', { name: 'Open person or business actions' })
     );
     const archiveAction = screen.getByRole('menuitem', { name: 'Archive' });
 
@@ -54,13 +54,13 @@ describe('CounterpartyRowActions', () => {
     await user.click(archiveAction);
 
     const dialog = screen.getByRole('alertdialog', {
-      name: 'Archive counterparty?',
+      name: 'Archive person or business?',
     });
 
     expect(onArchive).not.toHaveBeenCalled();
 
     const archiveButton = screen.getByRole('button', {
-      name: 'Archive counterparty',
+      name: 'Archive person or business',
     });
 
     expect(archiveButton).toHaveAttribute('data-variant', 'default');
@@ -82,7 +82,7 @@ describe('CounterpartyRowActions', () => {
     );
 
     await user.click(
-      screen.getByRole('button', { name: 'Open counterparty actions' })
+      screen.getByRole('button', { name: 'Open person or business actions' })
     );
 
     expect(screen.getByRole('menuitem', { name: 'Edit' })).toHaveAttribute(
@@ -93,7 +93,7 @@ describe('CounterpartyRowActions', () => {
     );
   });
 
-  it('checks deletion eligibility only after opening the menu', async () => {
+  it('rechecks eligibility on each menu open and hides the previous result while checking', async () => {
     let resolveEligibility!: (canDelete: boolean) => void;
 
     const onCheckDeleteEligibility = vi.fn(
@@ -116,7 +116,7 @@ describe('CounterpartyRowActions', () => {
 
     expect(onCheckDeleteEligibility).not.toHaveBeenCalled();
     await user.click(
-      screen.getByRole('button', { name: 'Open counterparty actions' })
+      screen.getByRole('button', { name: 'Open person or business actions' })
     );
 
     expect(onCheckDeleteEligibility).toHaveBeenCalledExactlyOnceWith(
@@ -125,7 +125,7 @@ describe('CounterpartyRowActions', () => {
 
     expect(
       screen.getByRole('menuitem', {
-        name: 'Checking whether this counterparty can be deleted',
+        name: 'Checking whether this person or business can be deleted',
       })
     ).toBeVisible();
 
@@ -133,6 +133,29 @@ describe('CounterpartyRowActions', () => {
 
     await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     expect(onDelete).toHaveBeenCalledExactlyOnceWith(counterparty);
+
+    await user.click(
+      screen.getByRole('button', { name: 'Open person or business actions' })
+    );
+    expect(onCheckDeleteEligibility).toHaveBeenCalledTimes(2);
+    expect(
+      screen.queryByRole('menuitem', { name: 'Delete' })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', {
+        name: 'Checking whether this person or business can be deleted',
+      })
+    ).toBeVisible();
+
+    await act(async () => resolveEligibility(false));
+    expect(
+      screen.queryByRole('menuitem', { name: 'Delete' })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', {
+        name: 'Checking whether this person or business can be deleted',
+      })
+    ).not.toBeInTheDocument();
   });
 
   it('hides delete when the counterparty is ineligible', async () => {
@@ -147,13 +170,13 @@ describe('CounterpartyRowActions', () => {
     );
 
     await user.click(
-      screen.getByRole('button', { name: 'Open counterparty actions' })
+      screen.getByRole('button', { name: 'Open person or business actions' })
     );
 
     await waitFor(() => {
       expect(
         screen.queryByRole('menuitem', {
-          name: 'Checking whether this counterparty can be deleted',
+          name: 'Checking whether this person or business can be deleted',
         })
       ).not.toBeInTheDocument();
     });

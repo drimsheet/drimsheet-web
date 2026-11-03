@@ -23,10 +23,7 @@ export interface CounterpartiesTableProps {
   currentSortDirection?: 'asc' | 'desc' | null;
   className?: string;
   'data-testid'?: string;
-  searchValue?: string;
-  onSearchChange: (value: string) => void;
   filters: Record<string, (string | number)[]>;
-  onAddCounterparty: () => void;
   onArchiveCounterparty?: (counterparty: ICounterpartyDto) => Promise<void>;
   onCheckCounterpartyDeleteEligibility?: (
     counterparty: ICounterpartyDto

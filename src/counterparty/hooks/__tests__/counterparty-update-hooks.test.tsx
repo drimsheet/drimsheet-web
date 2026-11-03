@@ -3,11 +3,16 @@ import { useCounterpartyFormUpdate } from '@/counterparty/hooks/use-counterparty
 import { useCounterpartyTransactionUsage } from '@/counterparty/hooks/use-counterparty-transaction-usage';
 import { useUpdateCounterparty } from '@/counterparty/hooks/use-update-counterparty';
 import { counterpartyService } from '@/counterparty/lib/services/counterparty.service';
+import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import type { ICounterpartyDto } from '@/shared/lib/api/Api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
+import { toast } from 'sonner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('@/shared/hooks/use-api-error-handler');
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 vi.mock('@/counterparty/lib/services/counterparty.service', () => ({
   counterpartyService: {
@@ -42,12 +47,15 @@ const party: ICounterpartyDto = {
   type: 'organization',
   status: 'active',
   roles: [],
-  meta: {},
+  roleDetails: {},
   createdAt: '2026-01-01',
   updatedAt: '2026-01-01',
 };
 
-beforeEach(() => vi.resetAllMocks());
+beforeEach(() => {
+  vi.resetAllMocks();
+  vi.mocked(useApiErrorHandler).mockReturnValue(vi.fn());
+});
 
 describe('counterparty update hooks', () => {
   it('captures only a ready edit baseline and preserves it until the counterparty ID changes', () => {
@@ -76,6 +84,68 @@ describe('counterparty update hooks', () => {
       counterpartyService.getCounterpartyTransactions
     ).not.toHaveBeenCalled();
   });
+
+  it('completes an unchanged edit without sending a mutation', async () => {
+    const onSuccess = vi.fn();
+
+    const { result } = renderHook(
+      () =>
+        useCounterpartyFormUpdate({
+          counterpartyId: party.id,
+          counterparty: party,
+          ready: true,
+          onSuccess,
+        }),
+      setup()
+    );
+
+    await act(async () => {
+      await result.current.handleUpdate({});
+    });
+    expect(onSuccess).toHaveBeenCalledOnce();
+    expect(counterpartyService.updateCounterparty).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['counterparty_error_update_invalid', 'Invalid person or business update.'],
+    [
+      'untranslated_unknown_failure',
+      'Unable to update this person or business. Reload the page and try again.',
+    ],
+  ])(
+    'translates update failure %s without exposing raw validation text',
+    async (errorKey, message) => {
+      const failure = new Error('raw internal error');
+      vi.mocked(counterpartyService.updateCounterparty).mockRejectedValue(
+        failure
+      );
+      vi.mocked(useApiErrorHandler).mockReturnValue(
+        vi.fn().mockReturnValue({
+          errorKey,
+          validationErrors: [{ field: 'name', message: 'raw internal error' }],
+        })
+      );
+      const onSuccess = vi.fn();
+
+      const { result } = renderHook(
+        () =>
+          useCounterpartyFormUpdate({
+            counterpartyId: party.id,
+            counterparty: party,
+            ready: true,
+            onSuccess,
+          }),
+        setup()
+      );
+
+      await act(async () => {
+        await result.current.handleUpdate({ name: 'Changed' });
+      });
+      expect(toast.error).toHaveBeenCalledExactlyOnceWith(message);
+      expect(onSuccess).not.toHaveBeenCalled();
+      expect(result.current.saving).toBe(false);
+    }
+  );
 
   it('uses cached role information only as a placeholder while reading a fresh edit baseline', async () => {
     const { client, wrapper } = setup();

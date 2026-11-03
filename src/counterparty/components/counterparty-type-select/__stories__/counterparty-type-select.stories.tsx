@@ -56,7 +56,7 @@ export const TransactionRestricted: Story = {
     value: 'organization',
     disabled: true,
     description:
-      'This counterparty’s type cannot be changed because it has been used in a transaction. Create a new counterparty if a different type is required.',
+      'This person or business’s type cannot be changed because it has been used in a transaction. Create a new person or business if a different type is required.',
   },
 };
 

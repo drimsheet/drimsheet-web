@@ -3,6 +3,7 @@ import {
   CategorySummarySkeleton,
   CategorySummaryWithState,
 } from '@/account/pages/category-details/parts/category-summary';
+import { ReportingIntervalSelect } from '@/reporting/components/reporting-interval-select';
 import type { ILedgerAccountDto, TEntityId } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
@@ -40,8 +41,7 @@ const meta = {
   args: {
     account: category,
     transactionCount: 48,
-    period: '6',
-    onPeriodChange: fn(),
+    intervalSlot: <ReportingIntervalSelect onChange={fn()} />,
     balance: category.functionalBalance,
   },
 } satisfies Meta<typeof CategorySummary>;

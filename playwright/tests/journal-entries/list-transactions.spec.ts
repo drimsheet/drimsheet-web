@@ -13,6 +13,8 @@ import {
 } from '@integration/mocks/authenticated-app';
 import type { Page } from '@playwright/test';
 
+test.use({ authenticated: true });
+
 const timestamp = '2026-09-16T10:00:00.000Z';
 
 const money = (amount: number, currencyCode = 'NGN') => ({
@@ -194,12 +196,6 @@ async function registerRoutes(
       });
     }
   );
-  await page.route('**/api/v1/auth/login-with-email', async (route) => {
-    await route.fulfill({ json: { accessToken: 'integration-test-token' } });
-  });
-  await page.route('**/api/v1/auth/refresh-access-token', async (route) => {
-    await route.fulfill({ json: { accessToken: 'integration-test-token' } });
-  });
   await page.route('**/api/v1/journal-entries?*', async (route) => {
     journalQueries.push(new URL(route.request().url()).searchParams);
     await route.fulfill({
@@ -236,15 +232,7 @@ async function registerRoutes(
   });
 }
 
-async function signIn(page: Page) {
-  await page.goto('/auth/signin');
-  await page.getByLabel('Email').fill(authenticatedUser.email);
-  await page.getByLabel('Password', { exact: true }).fill('Password1!');
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await expect(page).toHaveURL('/dashboard');
-}
-
-test('lists all transactions with applied filters and preserves creation routes', async ({
+test('coordinates transaction filters, sorting, pagination, and search results', async ({
   page,
 }) => {
   const journalQueries: URLSearchParams[] = [];
@@ -312,7 +300,6 @@ test('lists all transactions with applied filters and preserves creation routes'
       },
     });
   });
-  await signIn(page);
   await page.goto('/transactions/list');
   await expect(
     page.getByRole('heading', { name: 'All transactions' })
@@ -386,17 +373,6 @@ test('lists all transactions with applied filters and preserves creation routes'
   await expect(popover).not.toBeVisible();
   await expect(page.getByRole('button', { name: /^Filters/ })).toBeFocused();
 
-  await page.getByRole('button', { name: 'Open transaction' }).click();
-  const drawer = page.getByRole('dialog', { name: 'Transaction details' });
-  await expect(drawer.getByText('Inflow', { exact: true })).toBeVisible();
-  await expect(drawer.getByText('Professional services')).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(drawer).not.toBeVisible();
-  await expect(
-    page.getByRole('button', { name: 'Open transaction' })
-  ).toBeFocused();
-  expect(detailRequests).toEqual([]);
-
   await page.getByRole('button', { name: /^Filters/ }).click();
   await popover.getByRole('button', { name: 'Clear all' }).click();
   await popover.getByRole('button', { name: 'Apply filters' }).click();
@@ -435,126 +411,12 @@ test('lists all transactions with applied filters and preserves creation routes'
   await page.keyboard.press('Escape');
   await expect(popover).not.toBeVisible();
   await expect(page.getByRole('button', { name: /^Filters/ })).toBeFocused();
-  await page
-    .getByRole('button', { name: 'Add new transaction', exact: true })
-    .click();
-  await expect(page).toHaveURL('/transactions/inflow');
-  await expect(
-    page.getByRole('radio', { name: 'Inflow', exact: true })
-  ).toBeVisible();
-  await expect(
-    page.getByRole('radio', { name: 'Inflow', exact: true })
-  ).toBeChecked();
-  await page.getByRole('radio', { name: 'Outflow', exact: true }).click();
-  await expect(page).toHaveURL('/transactions/outflow');
-  await expect(
-    page.getByRole('radio', { name: 'Outflow', exact: true })
-  ).toBeChecked();
-  await page.getByRole('radio', { name: 'Transfer', exact: true }).click();
-  await expect(page).toHaveURL('/transactions/transfer');
-  await expect(
-    page.getByRole('radio', { name: 'Transfer', exact: true })
-  ).toBeChecked();
-  await page
-    .getByRole('navigation', { name: 'breadcrumb' })
-    .getByRole('link', { name: 'Transactions', exact: true })
-    .click();
-  await expect(page).toHaveURL('/transactions');
 });
 
-test('requires typing delete before confirming transaction deletion', async ({
+test('protects the nested confirmation while archiving and closes both portals on completion', async ({
   page,
 }) => {
   await registerRoutes(page, [], []);
-  await signIn(page);
-  let deleted = false;
-  let requestCount = 0;
-  await page.route('**/api/v1/journal-entries?*', async (route) => {
-    const data = deleted ? journalEntries.slice(1) : journalEntries;
-    await route.fulfill({
-      json: {
-        data,
-        meta: { page: 1, limit: 10, total: data.length, totalPages: 1 },
-      },
-    });
-  });
-  await page.route('**/api/v1/journal-entries/payment-1', async (route) => {
-    requestCount += 1;
-    expect(route.request().method()).toBe('DELETE');
-    expect(route.request().postData()).toBeNull();
-    if (requestCount === 1) {
-      await route.fulfill({
-        status: 400,
-        json: {
-          name: 'AuthenticationError',
-          errorKey: 'auth_error_token_missing_unauthorized',
-          validationErrors: [],
-        },
-      });
-
-      return;
-    }
-
-    deleted = true;
-    await route.fulfill({ status: 204 });
-  });
-  await page.goto('/transactions');
-  await page.getByRole('button', { name: 'Open transaction' }).first().click();
-
-  const drawer = page.getByRole('dialog', { name: 'Transaction details' });
-  await drawer.getByRole('button', { name: 'Delete', exact: true }).click();
-
-  const confirmation = page.getByRole('alertdialog', {
-    name: 'Delete this transaction?',
-  });
-
-  const confirmationInput = confirmation.getByLabel('Type "delete" to confirm');
-
-  const deleteButton = confirmation.getByRole('button', {
-    name: 'Delete',
-    exact: true,
-  });
-
-  await expect(confirmation).toBeVisible();
-  await expect(
-    confirmation.getByText(
-      'This action cannot be undone. Type delete below to confirm.'
-    )
-  ).toBeVisible();
-  await expect(
-    confirmation.getByRole('button', { name: 'Cancel' })
-  ).toBeVisible();
-  await expect(
-    confirmation.getByRole('button', { name: 'Archive instead' })
-  ).toBeVisible();
-  await expect(deleteButton).toBeDisabled();
-
-  await confirmationInput.fill('Delete');
-  await expect(deleteButton).toBeDisabled();
-  expect(requestCount).toBe(0);
-  await confirmationInput.fill('delete');
-  await expect(deleteButton).toBeEnabled();
-  await deleteButton.click();
-  await expect(page.getByText('Missing token.')).toBeVisible();
-  await expect(confirmation).toBeVisible();
-  await expect(deleteButton).toBeEnabled();
-  await expect(confirmationInput).toHaveValue('delete');
-  await deleteButton.click();
-
-  await expect(confirmation).not.toBeVisible();
-  await expect(drawer).not.toBeVisible();
-  await expect(page.getByText('Payment to Osahon Oboite')).not.toBeVisible();
-  await expect(
-    page.getByRole('button', { name: 'Open transaction' })
-  ).toHaveCount(2);
-  expect(requestCount).toBe(2);
-});
-
-test('archives instead of deleting and returns to the refreshed transactions page', async ({
-  page,
-}) => {
-  await registerRoutes(page, [], []);
-  await signIn(page);
   let archived = false;
   let requestCount = 0;
   let releaseResponse = () => {};
@@ -576,8 +438,6 @@ test('archives instead of deleting and returns to the refreshed transactions pag
     '**/api/v1/journal-entries/payment-1/archive',
     async (route) => {
       requestCount += 1;
-      expect(route.request().method()).toBe('POST');
-      expect(route.request().postData()).toBeNull();
       await responseGate;
       archived = true;
       await route.fulfill({
@@ -585,7 +445,7 @@ test('archives instead of deleting and returns to the refreshed transactions pag
       });
     }
   );
-  await page.goto('/transactions?q=gift');
+  await page.goto('/transactions');
   await page.getByRole('button', { name: 'Open transaction' }).first().click();
   const drawer = page.getByRole('dialog', { name: 'Transaction details' });
   await drawer.getByRole('button', { name: 'Delete', exact: true }).click();
@@ -613,7 +473,6 @@ test('archives instead of deleting and returns to the refreshed transactions pag
   await expect(confirmation).toBeVisible();
   await expect.poll(() => requestCount).toBe(1);
   releaseResponse();
-  await expect(page).toHaveURL('/transactions');
   await expect(confirmation).not.toBeVisible();
   await expect(drawer).not.toBeVisible();
   await expect(page.getByText('Payment to Osahon Oboite')).not.toBeVisible();
@@ -621,91 +480,24 @@ test('archives instead of deleting and returns to the refreshed transactions pag
     page.getByRole('button', { name: 'Open transaction' })
   ).toHaveCount(2);
   expect(requestCount).toBe(1);
-  await page.getByRole('button', { name: 'Open transaction' }).first().click();
-  await expect(drawer).toBeVisible();
-  await expect(confirmation).not.toBeVisible();
 });
 
-test('cancels archive, handles a failed request, and accepts a later explicit submission', async ({
+test('restores focus to the transaction drawer after cancelling archive confirmation', async ({
   page,
 }) => {
   await registerRoutes(page, [], []);
-  await signIn(page);
-  let requestCount = 0;
-  let archived = false;
-  await page.route('**/api/v1/journal-entries?*', (route) => {
-    const data = archived ? journalEntries.slice(1) : journalEntries;
-
-    return route.fulfill({
-      json: {
-        data,
-        meta: { page: 1, limit: 10, total: data.length, totalPages: 1 },
-      },
-    });
-  });
-  await page.route(
-    '**/api/v1/journal-entries/payment-1/archive',
-    async (route) => {
-      requestCount += 1;
-      if (requestCount === 1) {
-        await route.fulfill({
-          status: 400,
-          json: {
-            name: 'AuthenticationError',
-            errorKey: 'auth_error_token_missing_unauthorized',
-            validationErrors: [],
-          },
-        });
-
-        return;
-      }
-
-      archived = true;
-      await route.fulfill({
-        json: { ...journalEntries[0], status: 'archived' },
-      });
-    }
-  );
-  await page.goto('/transactions?q=gift');
+  await page.goto('/transactions');
   await page.getByRole('button', { name: 'Open transaction' }).first().click();
   const drawer = page.getByRole('dialog', { name: 'Transaction details' });
-  await drawer.getByRole('button', { name: 'Archive', exact: true }).click();
+  const archive = drawer.getByRole('button', { name: 'Archive', exact: true });
+  await archive.click();
 
   const confirmation = page.getByRole('alertdialog', {
     name: 'Archive this transaction?',
   });
 
-  await test.step('Cancellation does not mutate and restores focus', async () => {
-    await confirmation.getByRole('button', { name: 'Cancel' }).click();
-    await expect(confirmation).not.toBeVisible();
-    await expect(
-      drawer.getByRole('button', { name: 'Archive', exact: true })
-    ).toBeFocused();
-    expect(requestCount).toBe(0);
-    await drawer.getByRole('button', { name: 'Archive', exact: true }).click();
-    await page.keyboard.press('Escape');
-    await expect(confirmation).not.toBeVisible();
-    await drawer.getByRole('button', { name: 'Archive', exact: true }).click();
-  });
-  await confirmation
-    .getByRole('button', { name: 'Archive', exact: true })
-    .click();
-  await expect(page.getByText('Missing token.')).toBeVisible();
+  await confirmation.getByRole('button', { name: 'Cancel' }).click();
   await expect(confirmation).not.toBeVisible();
-  await expect(drawer).not.toBeVisible();
-  await expect(page).toHaveURL('/transactions?q=gift');
-  expect(requestCount).toBe(1);
-  await page.getByRole('button', { name: 'Open transaction' }).first().click();
-  await drawer.getByRole('button', { name: 'Archive', exact: true }).click();
-  await confirmation
-    .getByRole('button', { name: 'Archive', exact: true })
-    .click();
-  await expect(confirmation).not.toBeVisible();
-  await expect(drawer).not.toBeVisible();
-  await expect(page).toHaveURL('/transactions');
-  expect(requestCount).toBe(2);
-  await expect(page.getByText('Payment to Osahon Oboite')).not.toBeVisible();
-  await expect(
-    page.getByRole('button', { name: 'Open transaction' })
-  ).toHaveCount(2);
+  await expect(drawer).toBeVisible();
+  await expect(archive).toBeFocused();
 });

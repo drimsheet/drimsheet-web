@@ -6,6 +6,8 @@ import { AccountTypeSelectionDialog } from '@/account/dialogs/account-type-selec
 import { PettyCashAccountCreationDialog } from '@/account/dialogs/petty-cash-account-creation';
 import { useLedgerAccounts } from '@/account/hooks/use-ledger-accounts';
 import accountDashboardMapper from '@/account/lib/mappers/account-dashboard.mapper';
+import reportRangeUtils from '@/account/lib/utils/report-range';
+import { ReportingIntervalSelectContainer } from '@/reporting/components/reporting-interval-select';
 import { useAssetAndLiabilityBalancesByCurrency } from '@/reporting/hooks/use-asset-and-liability-balances-by-currency';
 import { useBalancesBySubType } from '@/reporting/hooks/use-balances-by-sub-type';
 import { AppBody } from '@/shared/components/app';
@@ -13,6 +15,7 @@ import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
+import type { IDateRangeDto } from '@/shared/lib/api/Api';
 import {
   EAssetSubType,
   ELedgerAccountBehavior,
@@ -29,13 +32,12 @@ import { AccountsSummaryWithState } from './parts/account-summary';
 import { BalanceHistory } from './parts/balance-history';
 import { EmptyAccountDashboard } from './parts/empty-account-dashboard';
 import { DashboardError } from './parts/section-error';
-import type { UBalancePeriod } from './types';
 
 export function AccountsDashboardPage() {
   const { t } = useTranslation(['ledger-accounts', 'shared']);
   const navigate = useNavigate();
-  const [now] = useState(() => new Date());
-  const [period, setPeriod] = useState<UBalancePeriod>('6M');
+
+  const [range, setRange] = useState<IDateRangeDto>();
 
   const [showAccountTypeSelection, setShowAccountTypeSelection] =
     useState(false);
@@ -70,11 +72,12 @@ export function AccountsDashboardPage() {
 
   const history = useBalancesBySubType(
     {
-      ...dashboardHelpers.periodQuery(period, now),
-      bucketDays: dashboardHelpers.bucketDays(period),
+      from: range?.from ?? '',
+      to: range?.to ?? '',
+      bucketDays: reportRangeUtils.bucketDays(range),
       subTypes: [EAssetSubType.CashAndCashEquivalent],
     },
-    { select: accountDashboardMapper.toHistory }
+    { select: accountDashboardMapper.toHistory, enabled: !!range }
   );
 
   const balanceChange = history.data
@@ -188,8 +191,10 @@ export function AccountsDashboardPage() {
           />
 
           <BalanceHistory
-            period={period}
-            onPeriodChange={setPeriod}
+            showHistory={!!range}
+            intervalSlot={
+              <ReportingIntervalSelectContainer onChange={setRange} />
+            }
             history={history.data}
             loading={history.isPending}
             error={history.isError}

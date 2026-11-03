@@ -1,11 +1,4 @@
 import { Money } from '@/shared/components/money';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/select';
 import { Skeleton } from '@/shared/components/skeleton';
 import { WithTransitionState } from '@/shared/components/with-transition-state';
 import { useTranslation } from 'react-i18next';
@@ -24,32 +17,19 @@ import { CategoryDetailsError } from './section-error';
 export function CategorySummary({
   account,
   transactionCount,
-  period,
-  onPeriodChange,
+  intervalSlot,
   balance,
 }: Readonly<CategorySummaryProps>) {
   const { t } = useTranslation('ledger-accounts');
 
   const balance_label = t('category_details_balance_label');
-  const period_label = t('details_period_label');
 
   return (
     <div className="flex min-w-0 flex-col gap-8" aria-label={account.name}>
       <div className="flex flex-col gap-6">
-        {period && (
+        {intervalSlot && (
           <div className="flex items-center justify-start gap-3">
-            <Select value={period} onValueChange={onPeriodChange}>
-              <SelectTrigger aria-label={period_label} className="w-44">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(['6', '3', '1', 'year', 'previous'] as const).map((value) => (
-                  <SelectItem key={value} value={value}>
-                    {t(`category_details_period_${value}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {intervalSlot}
           </div>
         )}
         <dl className="flex flex-wrap items-start gap-x-24 gap-y-6">
@@ -58,7 +38,7 @@ export function CategorySummary({
             <dd>
               <CategoryBalance
                 balance={
-                  balance === undefined && !period
+                  balance === undefined && !intervalSlot
                     ? account.functionalBalance
                     : balance
                 }
@@ -86,7 +66,7 @@ export function CategorySummarySkeleton({
       <div className="flex flex-col gap-6">
         {showPeriod && (
           <div className="flex items-center justify-start gap-3">
-            <Skeleton className="h-9 w-44" />
+            <Skeleton className="h-9 w-48" />
           </div>
         )}
         <dl className="flex flex-wrap items-start gap-x-24 gap-y-6">

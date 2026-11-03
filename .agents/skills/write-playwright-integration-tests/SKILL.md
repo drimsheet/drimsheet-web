@@ -1,13 +1,14 @@
 ---
 name: write-playwright-integration-tests
-description: Create, refactor, debug, or review Playwright browser integration tests in this repository. Use for playwright.config.ts, playwright/**/*.spec.ts, Playwright fixtures, network mocks, test-data factories, page objects, browser routing or dialog coverage, and deciding whether a user journey belongs in frontend integration or the separate system E2E suite.
+description: Create, refactor, debug, or review Playwright integration tests in this repository. Use for page/dialog component composition and state transitions, Playwright configuration and support code, and deciding whether coverage belongs in Vitest, page/dialog integration, or the separate E2E suite.
 ---
 
 # Write Playwright Integration Tests
 
-Protect frontend integration with the smallest adequate set of coherent browser
-journeys. Every separate case must justify its execution and maintenance cost.
-Do not depend on a live backend or duplicate the separate system E2E suite.
+Protect component integration within one page or dialog: rendered components,
+visible states, and state transitions. Every separate case must justify its
+execution and maintenance cost. Do not test cross-page journeys or depend on
+a live backend.
 
 ## Read the rules
 
@@ -24,15 +25,20 @@ Before editing integration tests or configuration:
 
 ## Select the boundary
 
-- Write Playwright coverage only when the regression depends on the running
-  frontend or a browser/page/dialog composition boundary. Before adding a case
+- Write Playwright coverage only when the regression depends on components
+  composing within one page or dialog. Before adding a case
   or assertion, determine whether a component, container, hook, mapper,
   service, or validation test can detect it. If so, add or retain the coverage
   there and omit it from Playwright. Rendering that owner inside a page or
   dialog does not make its isolated behavior an integration concern.
-- Use Playwright here for routes, pages, dialogs, portals, focus, navigation,
-  browser APIs, and composed frontend behavior with controlled first-party API
-  responses.
+- Name the owning page/dialog and follow the rules'
+  [page/dialog boundary](../../rules/testing-rules.md#pagedialog-boundary).
+  Use controlled first-party API responses. Portals, focus, browser APIs, and
+  same-page URL state qualify only through their effect on that owner's UI.
+- Direct route entry and fixture prerequisites are setup. A dialog may open
+  from and update its host page. Exclude cross-page navigation, redirect
+  destination assertions, and subsequent page/dialog workflows even with
+  mocked APIs. Do not replay login/onboarding to reach the owner.
 - Keep components, containers, hooks, mappers, services, and validation in
   Vitest unless browser composition is material to the outcome.
 - Keep journeys involving the real API, database, email delivery, identity
@@ -44,22 +50,24 @@ Before editing integration tests or configuration:
 2. Apply the browser-case admission requirements in
    [Testing Rules](../../rules/testing-rules.md#browser-integration). Identify
    the concrete regression; inspect the route, page/dialog, API contract,
-   translations, existing journeys, and lower-level coverage. Reject the
+   translations, existing cases for that owner, and lower-level coverage. Reject the
    Playwright assertion when a lower-level owner can adequately protect it.
-3. Default to extending an existing journey or lower-level test. Justify any
+3. Extend an existing case for the same owner when states naturally connect,
+   or extend a lower-level test. Justify any
    new browser case and each matrix variant by the uncovered integration risk
    and reason it cannot reasonably join an existing lifecycle. Record that
    reasoning in the change summary, not per-assertion boilerplate.
 4. Follow [Testing Workflow](../../workflow/testing.md#browser-integration-tests)
-   to consolidate compatible states using `test.step`. Extend the owning spec
-   under `playwright/tests/<feature>/<user-outcome>.spec.ts`. Loading, failure,
-   retention, dismissal, and success do not each deserve a separate case;
-   unrelated workflows must not be chained to meet a test-count target.
+   to group naturally connected transitions using `test.step`. Extend the
+   owning spec under `playwright/tests/<feature>/<user-outcome>.spec.ts`.
+   Do not force failure-then-success or dismissal/reopening sequences merely
+   to reuse setup; never chain unrelated workflows to meet a test-count target.
 5. Import `test` and `expect` from `@integration/fixtures/test` so the spec
    participates in opt-in code coverage.
 6. Register network interception before navigation or the interaction that can
    issue the request.
-7. Navigate through the public route and use the real application composition.
+7. Navigate directly to the owner's public route and use real application
+   composition. Open the dialog from its host page when needed.
 8. Prefer role, label, text, placeholder, alt text, and title locators. Use a
    test ID only when no user-facing contract is stable.
 9. Use awaited web-first assertions and Playwright auto-waiting. Do not use
@@ -68,14 +76,17 @@ Before editing integration tests or configuration:
     distinguishable query results and exact relevant combined parameters,
     gate the request actually under test, and exercise claimed browser behavior.
     Do not accept pre-existing values or static visibility as proof of a
-    completed operation.
-11. Review repeated navigation/login, parameter matrices, and artifacts for
-    unnecessary cost. Preserve distinct financial/security protections and
-    independently wired containers. Verify using the scoped guidance below.
+    completed operation. Assert requests only in support of the owner's UI
+    outcome, and stop without asserting a subsequent page's state.
+11. Review prerequisite setup, parameter matrices, and artifacts for
+    unnecessary cost. Preserve distinct financial/security protections at the
+    appropriate layer and independently wired containers within the page/dialog
+    boundary. Verify using the scoped guidance below.
 
 For audits, account for every case in scope with a reasoned keep, consolidate,
 move, or remove disposition and a destination for preserved coverage. Flag
-ineffective assertions as well as redundant cases. A passing test or lower
+cross-page cases, coverage gaps, ineffective assertions, and redundant cases.
+A passing test or lower
 case count does not establish useful coverage. Honor read-only audit requests.
 
 Keep one-off locators and route responses in the owning spec. Extract a fixture,
@@ -116,8 +127,10 @@ count reductions, and preserve configured failure diagnostics and CI checks.
 ## Completion checklist
 
 - Each added case and variant passes the admission requirements; existing
-  journeys and lower-level owners were considered first.
-- Compatible states share a coherent lifecycle with readable steps; distinct
+  cases for the same page/dialog and lower-level owners were considered first.
+- One page/dialog owns the test; no cross-page journey or destination-page
+  assertion is included. Dialog-to-host updates stay within the stated boundary.
+- Naturally connected states share readable steps; distinct
   integration protections remain covered.
 - The spec is feature-owned and independently runnable.
 - Expected API calls are intercepted before they can fire.

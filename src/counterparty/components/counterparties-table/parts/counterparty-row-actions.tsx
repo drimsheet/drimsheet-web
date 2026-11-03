@@ -93,7 +93,11 @@ export function CounterpartyRowActions({
 
   return (
     <>
-      <DropdownMenu open={menuOpen} onOpenChange={handleMenuOpenChange}>
+      <DropdownMenu
+        modal={false}
+        open={menuOpen}
+        onOpenChange={handleMenuOpenChange}
+      >
         <DropdownMenuTrigger asChild>
           <Button
             aria-label={actions_menu_aria_label}

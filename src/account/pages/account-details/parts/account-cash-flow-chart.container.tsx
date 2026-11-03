@@ -1,31 +1,31 @@
+import reportRangeUtils from '@/account/lib/utils/report-range';
 import { AccountCashFlowChartWithState } from '@/reporting/components/account-cash-flow-chart';
+import { ReportingIntervalSelectContainer } from '@/reporting/components/reporting-interval-select';
 import { useAccountCashFlow } from '@/reporting/hooks/use-account-cash-flow';
+import type { IDateRangeDto } from '@/shared/lib/api/Api';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import accountDetailsHelpers from '../helper';
 import type { AccountSectionProps } from '../types';
 import {
   AccountCashFlowChartRange,
   AccountCashFlowChartRangeSkeleton,
 } from './account-cash-flow-chart-range';
-import { CashFlowPeriod } from './cash-flow-period';
 
 export function AccountCashFlowChartContainer({
   accountId,
 }: Readonly<AccountSectionProps>) {
-  const { t, i18n } = useTranslation('ledger-accounts');
-  const now = new Date();
+  const { t } = useTranslation('ledger-accounts');
 
-  const periods = accountDetailsHelpers.periodOptions(
-    now,
-    i18n.resolvedLanguage ?? 'en-GB'
-  );
-
-  const [period, setPeriod] = useState(periods[0].value);
+  const [range, setRange] = useState<IDateRangeDto>();
 
   const flow = useAccountCashFlow(
     accountId,
-    accountDetailsHelpers.periodQuery(period, now)
+    {
+      from: range?.from ?? '',
+      to: range?.to ?? '',
+      bucketDays: reportRangeUtils.bucketDays(range),
+    },
+    !!range
   );
 
   const labels = {
@@ -40,29 +40,30 @@ export function AccountCashFlowChartContainer({
     chartLabel: t('details_chart_aria_label'),
   };
 
+  const loading = !!range && flow.isPending;
+  const state = flow.isError ? 'error' : 'success';
+
   return (
     <div className="flex min-w-0 flex-col gap-5">
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-4">
-        {flow.isPending && <AccountCashFlowChartRangeSkeleton />}
-        {flow.isSuccess && flow.data && (
+        {loading && <AccountCashFlowChartRangeSkeleton />}
+        {range && flow.isSuccess && flow.data && (
           <AccountCashFlowChartRange
             period={flow.data.period}
             currencyCode={flow.data.currencyCode}
           />
         )}
         <div className="ml-auto w-full sm:w-auto">
-          <CashFlowPeriod
-            period={period}
-            periods={periods}
-            onPeriodChange={setPeriod}
-          />
+          <ReportingIntervalSelectContainer onChange={setRange} />
         </div>
       </div>
-      <AccountCashFlowChartWithState
-        state={flow.isPending ? 'loading' : flow.status}
-        cashFlow={flow.data}
-        labels={labels}
-      />
+      {range && (
+        <AccountCashFlowChartWithState
+          state={loading ? 'loading' : state}
+          cashFlow={flow.data}
+          labels={labels}
+        />
+      )}
     </div>
   );
 }

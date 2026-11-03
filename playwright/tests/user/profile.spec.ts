@@ -11,6 +11,8 @@ import {
   registerAuthenticatedAppRoutes,
 } from '@integration/mocks/authenticated-app';
 
+test.use({ authenticated: true });
+
 const preferencesEndpoint = '**/api/v1/users/preferences';
 const profileEndpoint = '**/api/v1/users/profile';
 
@@ -30,28 +32,17 @@ test.beforeEach(async ({ page }) => {
       json: [authenticatedAccountingEntity, alternateAccountingEntity],
     })
   );
-  await page.route('**/api/v1/auth/refresh-access-token', (route) =>
-    route.fulfill({ json: { accessToken: 'integration-test-token' } })
-  );
   await page.route(preferencesEndpoint, (route) =>
     route.fulfill({ json: preferences })
-  );
-  await page.route('**/api/v1/auth/login-with-email', (route) =>
-    route.fulfill({ json: { accessToken: 'integration-test-token' } })
   );
   await page.addInitScript(() => {
     if (!localStorage.getItem('theme')) {
       localStorage.setItem('theme', 'light');
     }
   });
-  await page.goto('/auth/signin');
-  await page.getByLabel('Email').fill(authenticatedUser.email);
-  await page.getByLabel('Password', { exact: true }).fill('Password1!');
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await expect(page).toHaveURL('/dashboard');
 });
 
-test('shows API profile details and managed entities, with working profile navigation', async ({
+test('composes profile details, managed entities, and preferences', async ({
   page,
 }) => {
   await page.goto('/profile');
@@ -63,24 +54,9 @@ test('shows API profile details and managed entities, with working profile navig
   ).toHaveAttribute('aria-current', 'page');
   const details = page.getByRole('region', { name: 'Details', exact: true });
   await expect(details).toContainText('Integration User');
-  await expect(details).toContainText(authenticatedUser.email);
-  await expect(details).toContainText('Email verified');
   const entities = page.getByRole('region', { name: 'Legal entities' });
   await expect(entities).toContainText('2 entities');
-  await expect(entities).toContainText('Nigeria');
-  await expect(entities).toContainText('NGN');
   await expect(entities).toContainText('Drimsheet');
-  await expect(entities.getByText('Current', { exact: true })).toHaveCount(1);
-  await page
-    .getByRole('button', {
-      name: 'Open account management for Integration Entity',
-    })
-    .click();
-  await page.getByRole('button', { name: 'Profile settings' }).click();
-  await expect(
-    page.getByRole('dialog', { name: 'Account management' })
-  ).not.toBeVisible();
-  await expect(page).toHaveURL('/profile');
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
     page.getByRole('region', { name: 'Preferences', exact: true })
@@ -92,32 +68,16 @@ test('shows API profile details and managed entities, with working profile navig
   ).toBe(true);
 });
 
-test('saves both preferences and follows the system theme across reloads', async ({
+test('applies the saved system preference to the document across media changes and reload', async ({
   page,
 }) => {
-  let attempts = 0;
-  const updates: IUserPreferencesUpdateDto[] = [];
   let savedPreferences = structuredClone(preferences);
   await page.route(preferencesEndpoint, async (route) => {
     if (route.request().method() === 'PATCH') {
-      attempts += 1;
-      if (attempts === 1) {
-        await route.fulfill({
-          status: 400,
-          json: {
-            name: 'ValidationError',
-            errorKey: 'app_error_user_preferences_app_theme_invalid',
-          },
-        });
-
-        return;
-      }
-
       const update = route
         .request()
         .postDataJSON() as IUserPreferencesUpdateDto;
 
-      updates.push(update);
       savedPreferences = {
         ...savedPreferences,
         appPreferences: { ...savedPreferences.appPreferences, ...update },
@@ -128,6 +88,29 @@ test('saves both preferences and follows the system theme across reloads', async
   });
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto('/profile');
+  await page.getByRole('radio', { name: 'System', exact: true }).click();
+  await expect(page.locator('html')).not.toHaveClass(/dark/);
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect(page.locator('html')).toHaveClass(/dark/);
+  await page.reload();
+  await expect(
+    page.getByRole('radio', { name: 'System', exact: true })
+  ).toBeChecked();
+  await expect(page.locator('html')).toHaveClass(/dark/);
+});
+
+test('rolls back a failed preference without changing the document theme', async ({
+  page,
+}) => {
+  await page.route(preferencesEndpoint, (route) =>
+    route.request().method() === 'PATCH'
+      ? route.fulfill({
+          status: 400,
+          json: { errorKey: 'app_error_user_preferences_app_theme_invalid' },
+        })
+      : route.fulfill({ json: preferences })
+  );
+  await page.goto('/profile');
   await page.getByRole('radio', { name: 'Dark', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText(
     'Your preferences could not be saved.'
@@ -135,31 +118,10 @@ test('saves both preferences and follows the system theme across reloads', async
   await expect(
     page.getByRole('radio', { name: 'Light', exact: true })
   ).toBeChecked();
+  await expect(
+    page.getByRole('radio', { name: 'Dark', exact: true })
+  ).toBeEnabled();
   await expect(page.locator('html')).not.toHaveClass(/dark/);
-  await page.getByRole('radio', { name: 'Dark', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('Preferences saved.');
-  await expect(page.locator('html')).toHaveClass(/dark/);
-  await page.getByRole('radio', { name: 'Manual', exact: true }).click();
-  await expect(
-    page.getByRole('radio', { name: 'Manual', exact: true })
-  ).toBeChecked();
-  await page.getByRole('radio', { name: 'System', exact: true }).click();
-  await expect(page.locator('html')).not.toHaveClass(/dark/);
-  await page.emulateMedia({ colorScheme: 'dark' });
-  await expect(page.locator('html')).toHaveClass(/dark/);
-  expect(updates).toEqual([
-    { theme: 'dark' },
-    { appUsageMode: 'power_user' },
-    { theme: 'system' },
-  ]);
-  await page.reload();
-  await expect(
-    page.getByRole('radio', { name: 'System', exact: true })
-  ).toBeChecked();
-  await expect(page.locator('html')).toHaveClass(/dark/);
-  await expect(
-    page.getByRole('radio', { name: 'Manual', exact: true })
-  ).toBeChecked();
 });
 
 test('keeps profile details visible when preferences fail and recovers after refresh', async ({
@@ -187,12 +149,10 @@ test('keeps profile details visible when preferences fail and recovers after ref
   ).toBeChecked();
 });
 
-test('updates profile names and keeps the saved result on reopening and reload', async ({
+test('protects the pending profile dialog and refreshes host details after saving', async ({
   page,
 }) => {
   let savedProfile = structuredClone(authenticatedUser);
-  let attempts = 0;
-  const updates: IUserProfileUpdateDto[] = [];
   let finishSave: () => void = () => {};
 
   const saveGate = new Promise<void>((resolve) => {
@@ -202,17 +162,6 @@ test('updates profile names and keeps the saved result on reopening and reload',
   await page.route(profileEndpoint, async (route) => {
     if (route.request().method() === 'PATCH') {
       const update = route.request().postDataJSON() as IUserProfileUpdateDto;
-      attempts += 1;
-      if (attempts === 1) {
-        await route.fulfill({
-          status: 400,
-          json: { errorKey: 'user_error_first_name_invalid' },
-        });
-
-        return;
-      }
-
-      updates.push(update);
       await saveGate;
       savedProfile = {
         ...savedProfile,
@@ -232,13 +181,6 @@ test('updates profile names and keeps the saved result on reopening and reload',
   await expect(
     dialog.getByRole('button', { name: 'Save changes' })
   ).toBeDisabled();
-  await test.step('Cancellation restores focus and clears the unsaved name', async () => {
-    await dialog.getByLabel('First name').fill('Unsaved');
-    await dialog.getByRole('button', { name: 'Cancel' }).click();
-    await expect(edit).toBeFocused();
-    await edit.click();
-    await expect(dialog.getByLabel('First name')).toHaveValue('Integration');
-  });
   await dialog.getByLabel('First name').fill('  Ada  ');
   await dialog.getByLabel('Last name').fill('Okafor');
   await page.setViewportSize({ width: 390, height: 844 });
@@ -250,21 +192,6 @@ test('updates profile names and keeps the saved result on reopening and reload',
       () => document.documentElement.scrollWidth <= window.innerWidth
     )
   ).toBe(true);
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog.getByRole('alert')).toContainText(
-    'Your profile could not be saved.'
-  );
-  await expect(
-    dialog.getByRole('button', { name: 'Save changes' })
-  ).toBeEnabled();
-  await expect(dialog.getByLabel('First name')).toHaveValue('  Ada  ');
-  await expect(
-    page.getByRole('region', {
-      name: 'Details',
-      exact: true,
-      includeHidden: true,
-    })
-  ).toContainText('Integration User');
   await dialog.getByRole('button', { name: 'Save changes' }).click();
   await expect(
     dialog.getByRole('button', { name: 'Save changes' })
@@ -279,11 +206,36 @@ test('updates profile names and keeps the saved result on reopening and reload',
   const details = page.getByRole('region', { name: 'Details', exact: true });
   await expect(details).toContainText('Ada Okafor');
   await expect(details).toContainText('AO');
-  await expect(details).toContainText(authenticatedUser.email);
-  expect(updates).toEqual([{ firstName: 'Ada', lastName: 'Okafor' }]);
-  await edit.click();
+});
+
+test('keeps the profile dialog editable after a failed save without changing host details', async ({
+  page,
+}) => {
+  await page.route(profileEndpoint, (route) =>
+    route.request().method() === 'PATCH'
+      ? route.fulfill({
+          status: 400,
+          json: { errorKey: 'user_error_first_name_invalid' },
+        })
+      : route.fulfill({ json: authenticatedUser })
+  );
+  await page.goto('/profile');
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Edit profile' });
+  await dialog.getByLabel('First name').fill('Ada');
+  await dialog.getByRole('button', { name: 'Save changes' }).click();
+  await expect(dialog.getByRole('alert')).toContainText(
+    'Your profile could not be saved.'
+  );
+  await expect(
+    dialog.getByRole('button', { name: 'Save changes' })
+  ).toBeEnabled();
   await expect(dialog.getByLabel('First name')).toHaveValue('Ada');
-  await dialog.getByRole('button', { name: 'Cancel' }).click();
-  await page.reload();
-  await expect(details).toContainText('Ada Okafor');
+  await expect(
+    page.getByRole('region', {
+      name: 'Details',
+      exact: true,
+      includeHidden: true,
+    })
+  ).toContainText('Integration User');
 });

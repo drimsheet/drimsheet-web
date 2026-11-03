@@ -14,6 +14,20 @@ Make imports predictable so the agent can change one part of the app without cau
 - `src/<feature>/routes/` may import pages only.
 - `src/shared/` must not import from any feature folder.
 
+### Reporting interval selection composition exception
+
+`src/account/pages/account-dashboard/`, `src/account/pages/account-details/`, and
+`src/account/pages/category-details/` may compose `ReportingIntervalSelectContainer`
+and consume its selected date range through
+`@/reporting/components/reporting-interval-select`.
+Report queries stay with their page/container owners.
+
+`src/reporting/components/reporting-interval-select/reporting-interval-select.container.tsx`
+may call `accountingService` from `@/accounting/lib/services/accounting.service`
+to load the current fiscal year and its reporting interval. Accounting transport
+remains in that service. The selector container owns fetching, selection, range
+checks, and loading/error presentation; the selector view remains presentational.
+
 ### Account dashboard reporting composition exception
 
 `src/account/pages/account-dashboard/` may import
@@ -65,9 +79,17 @@ Account details and category details page-private parts may use `useJournalEntri
 from `@/journal-entries/components/transactions-table`. The page supplies journal
 entries and presentation callbacks; private journal entry modules remain private.
 
+### Counterparty detail reporting access exception
+
+`src/counterparty/pages/counterparty-details/` may use
+`accountingService` from `@/accounting/lib/services/accounting.service` to
+resolve the current fiscal year and `ledgerReportingService` from
+`@/reporting/lib/services/ledger-reporting.service` for counterparty account-type
+participation. Transport remains in its owning feature service.
+
 ### Counterparty detail composition exception
 
-`src/counterparty/pages/counterparty-details/counterparty-details.page.tsx` may import the public
+`src/counterparty/pages/counterparty-details/` may import the public
 `TransactionsTable` from `@/journal-entries/components/transactions-table`.
 The page supplies data and presentation props; it must not import the transaction
 container or private helpers. This exception does not extend to feature hooks,

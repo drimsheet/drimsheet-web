@@ -5,6 +5,8 @@ import { expect, it } from 'vitest';
 it('announces that the counterparty form is loading', () => {
   render(<CounterpartyFormSkeleton />);
   expect(
-    screen.getByRole('status', { name: 'Loading counterparty for editing' })
+    screen.getByRole('status', {
+      name: 'Loading person or business for editing',
+    })
   ).toBeVisible();
 });

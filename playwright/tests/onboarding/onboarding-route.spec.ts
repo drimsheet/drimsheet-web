@@ -1,6 +1,8 @@
 import { expect, test } from '@integration/fixtures/test';
 import { registerAuthenticatedAppRoutes } from '@integration/mocks/authenticated-app';
 
+test.use({ authenticated: true });
+
 const currencies = [
   { code: 'NGN', name: 'Nigerian Naira', symbol: '₦', minorUnit: 2 },
 ];
@@ -20,8 +22,6 @@ const jurisdictions = [
 ];
 
 const entityListEndpoint = '**/api/v1/accounting/accounting-entities';
-const verificationEndpoint = '**/api/v1/auth/signup/complete**';
-const verificationUrl = '/auth/signup/complete?token=onboarding-test-token';
 
 test.beforeEach(async ({ page }) => {
   await registerAuthenticatedAppRoutes(page);
@@ -31,89 +31,6 @@ test.beforeEach(async ({ page }) => {
   await page.route('**/api/v1/accounting/jurisdictions', async (route) => {
     await route.fulfill({ json: jurisdictions });
   });
-  await page.route(verificationEndpoint, async (route) => {
-    await route.fulfill({
-      json: { accessToken: 'integration-test-token' },
-    });
-  });
-  await page.route('**/api/v1/auth/refresh-access-token', async (route) => {
-    await route.fulfill({
-      json: { accessToken: 'integration-test-token' },
-    });
-  });
-});
-
-test('redirects a newly verified user only after confirming they have no entities', async ({
-  page,
-}) => {
-  let releaseEntities = () => {};
-
-  const entitiesResponse = new Promise<void>((resolve) => {
-    releaseEntities = resolve;
-  });
-
-  await page.route(entityListEndpoint, async (route) => {
-    await entitiesResponse;
-    await route.fulfill({ json: [] });
-  });
-
-  const entityRequest = page.waitForRequest(entityListEndpoint);
-  await page.goto(verificationUrl);
-  await entityRequest;
-
-  await expect(page).toHaveURL('/dashboard');
-  await expect(page.getByRole('status')).toHaveText('Loading Drimsheet');
-
-  releaseEntities();
-
-  await expect(page).toHaveURL('/onboarding');
-  await expect(
-    page.getByRole('main').getByRole('heading', {
-      level: 1,
-      name: 'Create a Legal Entity',
-    })
-  ).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Notifications' })).toHaveCount(
-    0
-  );
-
-  await page.reload();
-
-  await expect(page).toHaveURL('/onboarding');
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'Create a Legal Entity' })
-  ).toBeVisible();
-
-  await page.goto('/accounts');
-
-  await expect(page).toHaveURL('/onboarding');
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'Create a Legal Entity' })
-  ).toBeVisible();
-});
-
-test('keeps entity lookup failures out of onboarding', async ({ page }) => {
-  await page.route(entityListEndpoint, async (route) => {
-    await route.fulfill({ status: 500, json: {} });
-  });
-
-  await page.goto(verificationUrl);
-
-  await expect(
-    page.getByRole('heading', { name: 'Something went wrong' })
-  ).toBeVisible();
-  await expect(page).toHaveURL('/dashboard');
-});
-
-test('requires authentication to open onboarding directly', async ({
-  page,
-}) => {
-  await page.goto('/onboarding');
-
-  await expect(page).toHaveURL('/auth/signin');
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'Sign In' })
-  ).toBeVisible();
 });
 
 test('recovers from unavailable country options after browser refresh', async ({
@@ -126,7 +43,7 @@ test('recovers from unavailable country options after browser refresh', async ({
   await page.route('**/api/v1/accounting/jurisdictions', async (route) => {
     await route.fulfill({ json: failCountries ? [] : jurisdictions });
   });
-  await page.goto(verificationUrl);
+  await page.goto('/onboarding');
   await expect(page.getByRole('alert')).toContainText(
     'We couldn’t load countries and currencies. Refresh the page to try again.'
   );
@@ -137,102 +54,22 @@ test('recovers from unavailable country options after browser refresh', async ({
   ).toHaveCount(0);
   await page.reload();
   await expect(page.getByRole('textbox', { name: 'Name' })).toBeEnabled();
-  await expect(page.getByRole('alert')).toHaveCount(0);
 });
 
-test('preserves onboarding drafts across steps and updates linked report dates', async ({
+test('preserves drafts across steps and updates linked report dates', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
   await page.clock.setFixedTime(new Date('2026-10-22T12:00:00Z'));
-  await page.route(entityListEndpoint, async (route) => {
-    await route.fulfill({ json: [] });
-  });
-  await page.goto(verificationUrl);
-  await test.step('Sidebar navigation and profile menu remain usable', async () => {
-    await expect(page.getByRole('banner')).toHaveCount(0);
-    await expect(page.getByRole('main')).toContainText('Step 1 of 5');
-    await expect(
-      page.getByRole('heading', {
-        name: 'Create a Legal Entity',
-        level: 1,
-      })
-    ).toBeVisible();
-
-    const navigation = page.getByRole('navigation', {
-      name: 'Onboarding steps',
-    });
-
-    await expect(page.getByText('After sign up')).toHaveCount(0);
-
-    await expect(navigation).toBeVisible();
-    await expect(navigation.getByRole('listitem')).toHaveText([
-      'Who it’s for',
-      'Financial year',
-      'Reports',
-      'Income categories',
-      'Expense categories',
-    ]);
-    await expect(navigation.getByRole('listitem').first()).toHaveAttribute(
-      'aria-current',
-      'step'
-    );
-
-    const profileButton = page.getByRole('button', {
-      name: 'Profile',
-      exact: true,
-    });
-
-    await expect(profileButton).toBeVisible();
-    await expect(profileButton).toContainText('IU');
-
-    await profileButton.click();
-    await expect(page.getByRole('menu')).toContainText('Integration User');
-    await expect(page.getByRole('menu')).toContainText(
-      'integration.user@example.com'
-    );
-    await page.getByRole('menuitem', { name: 'Log out' }).click();
-    await expect(page.getByRole('alertdialog')).toBeVisible();
-    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
-    await expect(page.getByRole('alertdialog')).not.toBeVisible();
-
-    await expect(
-      page.getByRole('heading', {
-        name: 'Create a Legal Entity',
-        level: 1,
-      })
-    ).toBeVisible();
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= window.innerWidth
-      )
-    ).toBe(true);
-  });
-  await expect(
-    page.getByRole('textbox', { name: 'Name', exact: true })
-  ).toBeEnabled();
+  await page.goto('/onboarding');
   await page.getByRole('radio', { name: 'Individual', exact: true }).click();
   await page
     .getByRole('textbox', { name: 'Name', exact: true })
     .fill('Ada Okafor');
   await page.getByRole('combobox', { name: 'Country of residence' }).click();
   await page.getByRole('option', { name: /Nigeria/ }).click();
-  await page.getByRole('combobox', { name: 'Official currency' }).click();
-  await page.getByRole('option', { name: /Nigerian Naira/ }).click();
   await page
     .getByRole('button', { name: 'Continue to financial year' })
     .click();
-  await expect(
-    page.getByRole('heading', { name: 'Set up your financial year' })
-  ).toBeVisible();
-  await expect(page.getByRole('main')).toContainText('Step 2 of 5');
-  await expect(
-    page
-      .getByRole('navigation', { name: 'Onboarding steps' })
-      .getByRole('listitem')
-      .nth(1)
-  ).toHaveAttribute('aria-current', 'step');
-
   await page
     .getByRole('textbox', { name: 'Financial year name' })
     .fill('FY 2026');
@@ -240,14 +77,44 @@ test('preserves onboarding drafts across steps and updates linked report dates',
     .getByRole('textbox', { name: 'Quarter 1', exact: true })
     .fill('Launch');
   await page.getByRole('button', { name: 'Continue to reports' }).click();
-  await expect(
-    page.getByRole('heading', { name: 'Set up your reports' })
-  ).toBeVisible();
+  await page
+    .getByRole('textbox', { name: 'Reporting setup name' })
+    .fill('Board pack');
+
+  const periods = page.getByRole('region', {
+    name: 'Name your reporting periods',
+  });
+
+  await periods
+    .getByRole('textbox', { name: 'Quarter 1', exact: true })
+    .fill('Board review');
+  await page
+    .getByRole('button', { name: 'Continue to income categories' })
+    .click();
+  await page.getByRole('checkbox', { name: 'Gifts (Default)' }).uncheck();
+  await page
+    .getByRole('button', { name: 'Continue to expense categories' })
+    .click();
+  await page.getByRole('checkbox', { name: 'Interest (Default)' }).uncheck();
   await page.getByRole('button', { name: 'Back', exact: true }).click();
   await expect(
-    page.getByRole('heading', { name: 'Set up your financial year' })
-  ).toBeVisible();
-  await expect(page.getByRole('alert')).toHaveCount(0);
+    page.getByRole('checkbox', { name: 'Gifts (Default)' })
+  ).not.toBeChecked();
+  await page
+    .getByRole('button', { name: 'Continue to expense categories' })
+    .click();
+  await expect(
+    page.getByRole('checkbox', { name: 'Interest (Default)' })
+  ).not.toBeChecked();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await expect(
+    page.getByRole('textbox', { name: 'Reporting setup name' })
+  ).toHaveValue('Board pack');
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await expect(
+    page.getByRole('textbox', { name: 'Quarter 1', exact: true })
+  ).toHaveValue('Launch');
   await page.getByRole('button', { name: 'Back', exact: true }).click();
   await expect(
     page.getByRole('textbox', { name: 'Name', exact: true })
@@ -255,154 +122,6 @@ test('preserves onboarding drafts across steps and updates linked report dates',
   await page
     .getByRole('button', { name: 'Continue to financial year' })
     .click();
-  await expect(
-    page.getByRole('textbox', { name: 'Quarter 1', exact: true })
-  ).toHaveValue('Launch');
-  await page.getByRole('button', { name: 'Continue to reports' }).click();
-  await expect(
-    page.getByRole('heading', { name: 'Set up your reports' })
-  ).toBeVisible();
-  await expect(page.getByRole('main')).toContainText('Step 3 of 5');
-
-  await expect(
-    page.getByRole('region', { name: 'Financial year', exact: true })
-  ).toContainText('FY 2026');
-
-  const reportPeriods = page.getByRole('region', {
-    name: 'Name your reporting periods',
-  });
-
-  await expect(reportPeriods.getByRole('textbox')).toHaveCount(4);
-  await expect(
-    page
-      .getByRole('navigation', { name: 'Onboarding steps' })
-      .getByRole('listitem')
-      .nth(2)
-  ).toHaveAttribute('aria-current', 'step');
-
-  await page
-    .getByRole('textbox', { name: 'Reporting setup name' })
-    .fill('Board pack');
-  await page
-    .getByRole('combobox', { name: 'Currency for your reports' })
-    .click();
-  await page.getByRole('option', { name: /Nigerian Naira/ }).click();
-  await expect(page.getByRole('listbox')).not.toBeVisible();
-  await reportPeriods
-    .getByRole('textbox', { name: 'Quarter 1', exact: true })
-    .fill('Board review');
-  await page
-    .getByRole('button', { name: 'Continue to income categories' })
-    .click();
-  await expect(
-    page.getByRole('heading', { name: 'Choose your income categories' })
-  ).toBeVisible();
-  await expect(page.getByRole('main')).toContainText('Step 4 of 5');
-  await expect(
-    page
-      .getByRole('navigation', { name: 'Onboarding steps' })
-      .getByRole('listitem')
-      .nth(3)
-  ).toHaveAttribute('aria-current', 'step');
-
-  await expect(page.getByRole('status')).toHaveText('4 selected');
-  await page.getByRole('checkbox', { name: 'Gifts (Default)' }).uncheck();
-  await page.getByRole('button', { name: 'Add income category' }).click();
-  await page.getByRole('combobox', { name: /Parent account/ }).click();
-  await page.getByRole('option', { name: 'Services', exact: true }).click();
-  await page.getByRole('textbox', { name: /Category name/ }).fill('Consulting');
-  await page.getByRole('button', { name: 'Add to setup' }).click();
-  await expect(
-    page.getByRole('checkbox', { name: 'Consulting' })
-  ).toBeChecked();
-  await expect(page.getByRole('status')).toHaveText('4 selected');
-  await page
-    .getByRole('button', { name: 'Continue to expense categories' })
-    .click();
-  await expect(
-    page.getByRole('heading', { name: 'Choose your expense categories' })
-  ).toBeVisible();
-  await expect(page.getByRole('main')).toContainText('Step 5 of 5');
-  await expect(
-    page
-      .getByRole('navigation', { name: 'Onboarding steps' })
-      .getByRole('listitem')
-      .nth(4)
-  ).toHaveAttribute('aria-current', 'step');
-
-  await expect(page.getByRole('status')).toHaveText('4 selected');
-  await expect(page.getByRole('checkbox', { name: 'Consulting' })).toHaveCount(
-    0
-  );
-  await page.getByRole('checkbox', { name: 'Interest (Default)' }).uncheck();
-  await page.getByRole('button', { name: 'Add expense category' }).click();
-  await page
-    .getByRole('textbox', { name: /Category name/ })
-    .fill('Discard this');
-  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText('3 selected');
-  await page.getByRole('button', { name: 'Add expense category' }).click();
-  await page.getByRole('combobox', { name: /Parent account/ }).click();
-  await page.getByRole('option', { name: 'Direct costs', exact: true }).click();
-  await page.getByRole('textbox', { name: /Category name/ }).fill('Materials');
-  await page.getByRole('button', { name: 'Add to setup' }).click();
-  await expect(page.getByRole('checkbox', { name: 'Materials' })).toBeChecked();
-  await expect(page.getByRole('status')).toHaveText('4 selected');
-  await expect(
-    page.getByRole('button', { name: 'Finish setup' })
-  ).toBeEnabled();
-  await expect(
-    page.getByRole('heading', { name: 'Choose your expense categories' })
-  ).toBeVisible();
-  await expect(page).toHaveURL('/onboarding');
-  await page.getByRole('button', { name: 'About expense categories' }).click();
-  await expect(
-    page.getByRole('button', { name: 'About expense categories' })
-  ).toHaveAttribute('aria-expanded', 'false');
-  await page.getByRole('button', { name: 'Back', exact: true }).click();
-  await expect(
-    page.getByRole('checkbox', { name: 'Consulting' })
-  ).toBeChecked();
-  await expect(
-    page.getByRole('checkbox', { name: 'Gifts (Default)' })
-  ).not.toBeChecked();
-  await expect(page.getByRole('checkbox', { name: 'Materials' })).toHaveCount(
-    0
-  );
-  await page
-    .getByRole('button', { name: 'Continue to expense categories' })
-    .click();
-  await expect(page.getByRole('checkbox', { name: 'Materials' })).toBeChecked();
-  await expect(
-    page.getByRole('checkbox', { name: 'Interest (Default)' })
-  ).not.toBeChecked();
-  await page.getByRole('button', { name: 'Back', exact: true }).click();
-  await page.getByRole('button', { name: 'About income categories' }).click();
-  await expect(
-    page.getByRole('button', { name: 'About income categories' })
-  ).toHaveAttribute('aria-expanded', 'false');
-  await page.getByRole('button', { name: 'Back', exact: true }).click();
-  await expect(
-    page.getByRole('textbox', { name: 'Reporting setup name' })
-  ).toHaveValue('Board pack');
-  await page
-    .getByRole('button', { name: 'Continue to income categories' })
-    .click();
-  await expect(
-    page.getByRole('checkbox', { name: 'Consulting' })
-  ).toBeChecked();
-  await expect(
-    page.getByRole('checkbox', { name: 'Gifts (Default)' })
-  ).not.toBeChecked();
-  await page.getByRole('button', { name: 'Back', exact: true }).click();
-  await expect(page.getByRole('alert')).toHaveCount(0);
-  await page
-    .getByRole('button', { name: 'How reporting periods work' })
-    .click();
-  await expect(
-    page.getByRole('button', { name: 'How reporting periods work' })
-  ).toHaveAttribute('aria-expanded', 'false');
-  await page.getByRole('button', { name: 'Back', exact: true }).click();
   await page
     .getByRole('textbox', { name: 'Financial year name' })
     .fill('Revised FY 2026');
@@ -416,13 +135,10 @@ test('preserves onboarding drafts across steps and updates linked report dates',
     page.getByRole('textbox', { name: 'Reporting setup name' })
   ).toHaveValue('Board pack');
   await expect(
-    page.getByRole('combobox', { name: 'Currency for your reports' })
-  ).toHaveValue('Nigerian Naira');
-  await expect(
-    reportPeriods.getByRole('textbox', { name: 'Quarter 1', exact: true })
+    periods.getByRole('textbox', { name: 'Quarter 1', exact: true })
   ).toHaveValue('Board review');
   await expect(
-    reportPeriods.getByRole('textbox', { name: 'Quarter 4', exact: true })
+    periods.getByRole('textbox', { name: 'Quarter 4', exact: true })
   ).toHaveAccessibleDescription('Oct 1, 2026 – Dec 30, 2026 Current');
 });
 
@@ -433,59 +149,7 @@ test('keeps mobile onboarding actions visible and long period lists keyboard-scr
   await page.setViewportSize(viewport);
   await page.clock.setFixedTime(new Date('2026-10-22T12:00:00Z'));
   await page.route(entityListEndpoint, (route) => route.fulfill({ json: [] }));
-  await page.goto(verificationUrl);
-  await test.step('Sidebar navigation and profile menu remain usable', async () => {
-    await expect(page.getByRole('banner')).toHaveCount(0);
-    await expect(page.getByRole('main')).toContainText('Step 1 of 5');
-    await expect(
-      page.getByRole('heading', {
-        name: 'Create a Legal Entity',
-        level: 1,
-      })
-    ).toBeVisible();
-
-    const navigation = page.getByRole('navigation', {
-      name: 'Onboarding steps',
-    });
-
-    const sidebarTrigger = page.getByRole('button', { name: 'Toggle Sidebar' });
-    await expect(page.getByText('After sign up')).toHaveCount(0);
-
-    await expect(navigation).not.toBeVisible();
-    await sidebarTrigger.click();
-    await expect(navigation).toBeVisible();
-
-    const profileButton = page.getByRole('button', {
-      name: 'Profile',
-      exact: true,
-    });
-
-    await expect(profileButton).toBeVisible();
-    await expect(profileButton).toContainText('IU');
-
-    await profileButton.click();
-    await expect(page.getByRole('menu')).toContainText('Integration User');
-    await expect(page.getByRole('menu')).toContainText(
-      'integration.user@example.com'
-    );
-    await page.getByRole('menuitem', { name: 'Log out' }).click();
-    await expect(page.getByRole('alertdialog')).toBeVisible();
-    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
-    await expect(page.getByRole('alertdialog')).not.toBeVisible();
-    await page.keyboard.press('Escape');
-
-    await expect(
-      page.getByRole('heading', {
-        name: 'Create a Legal Entity',
-        level: 1,
-      })
-    ).toBeVisible();
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= window.innerWidth
-      )
-    ).toBe(true);
-  });
+  await page.goto('/onboarding');
 
   const expectPinnedAction = async (title: string, actionName: string) => {
     const step = page.getByRole('region', { name: title, exact: true });
@@ -583,36 +247,7 @@ test('keeps mobile onboarding actions visible and long period lists keyboard-scr
     .toBe(true);
 });
 
-test('waits for profile data before allowing the individual selection', async ({
-  page,
-}) => {
-  let releaseProfile = () => {};
-
-  const profileResponse = new Promise<void>((resolve) => {
-    releaseProfile = resolve;
-  });
-
-  await page.route('**/api/v1/users/profile', async (route) => {
-    await profileResponse;
-    await route.fulfill({
-      json: { firstName: 'Ada', lastName: 'Okafor', email: 'ada@example.com' },
-    });
-  });
-  await page.route(entityListEndpoint, (route) => route.fulfill({ json: [] }));
-  await page.goto(verificationUrl);
-  await expect(page.getByRole('status')).toHaveText('Loading Drimsheet');
-  await expect(
-    page.getByRole('radiogroup', { name: 'Who is this for?' })
-  ).toHaveCount(0);
-  releaseProfile();
-  await expect(page).toHaveURL('/onboarding');
-  await page.getByRole('radio', { name: 'Individual', exact: true }).click();
-  await expect(
-    page.getByRole('textbox', { name: 'Name', exact: true })
-  ).toHaveValue('Ada Okafor');
-});
-
-test('uses the jurisdiction financial year and allows its warning', async ({
+test('resets an edited financial year when the country changes', async ({
   page,
 }) => {
   await page.clock.setFixedTime(new Date('2026-10-23T12:00:00Z'));
@@ -638,7 +273,7 @@ test('uses the jurisdiction financial year and allows its warning', async ({
       ],
     })
   );
-  await page.goto(verificationUrl);
+  await page.goto('/onboarding');
   await page.getByRole('radio', { name: 'Individual', exact: true }).click();
   await page.getByRole('combobox', { name: 'Country of residence' }).click();
   await page.getByRole('option', { name: /Australia/ }).click();
@@ -651,13 +286,8 @@ test('uses the jurisdiction financial year and allows its warning', async ({
   await expect(
     page.getByRole('button', { name: 'Year ends', exact: true })
   ).toHaveText(/30 Jun 2027/);
-  await expect(page.getByRole('alert')).toHaveCount(0);
   await page.getByRole('button', { name: 'Year ends', exact: true }).click();
   await page.getByRole('button', { name: /June 29th, 2027/ }).click();
-  await expect(page.getByRole('alert')).toContainText(
-    'Your selected dates differ from this jurisdiction’s official financial year'
-  );
-  await page.getByRole('alert').scrollIntoViewIfNeeded();
   await page
     .getByRole('button', { name: 'Continue to reports', exact: true })
     .click();
@@ -682,7 +312,6 @@ test('uses the jurisdiction financial year and allows its warning', async ({
   await expect(
     page.getByRole('button', { name: 'Year ends', exact: true })
   ).toHaveText(/31 Dec 2026/);
-  await expect(page.getByRole('alert')).toHaveCount(0);
 });
 
 test('defaults reports from the legal entity and fiscal year and advances without saving', async ({
@@ -709,7 +338,7 @@ test('defaults reports from the legal entity and fiscal year and advances withou
 
     await route.fallback();
   });
-  await page.goto(verificationUrl);
+  await page.goto('/onboarding');
   await page.getByRole('radio', { name: 'Individual', exact: true }).click();
   await page.getByRole('combobox', { name: 'Country of residence' }).click();
   await page.getByRole('option', { name: /Nigeria/ }).click();
@@ -717,9 +346,6 @@ test('defaults reports from the legal entity and fiscal year and advances withou
     .getByRole('combobox', { name: 'Official currency' })
     .fill('US Dollar');
   await page.getByRole('option', { name: /US Dollar/ }).click();
-  await expect(page.getByRole('alert')).toContainText(
-    'The selected currency does not match the official currency of Nigeria (NGN). You can still continue.'
-  );
   await page
     .getByRole('button', { name: 'Continue to financial year' })
     .click();

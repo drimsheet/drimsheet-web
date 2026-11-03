@@ -9,6 +9,7 @@ import type {
   IGetBalanceHistoryByBehaviorQuery,
   IGetBalanceHistoryBySubTypeQuery,
   IGetBalanceHistoryByTypeQuery,
+  IGetCounterpartyAccountTypeParticipationQuery,
   IGetCurrentAssetAndLiabilityBalancesByCurrencyQuery,
   IGetCurrentTotalBalanceByTypeQuery,
   IGetLedgerTotalDebitsAndCreditsByCurrencyQuery,
@@ -158,7 +159,22 @@ async function getCurrentTotalBalanceByType(
   ).data;
 }
 
+async function getCounterpartyAccountTypeParticipation(
+  counterpartyId: string,
+  query: IGetCounterpartyAccountTypeParticipationQuery,
+  signal?: AbortSignal
+) {
+  return (
+    await drimsheetApi.reporting.getCounterpartyAccountTypeParticipation(
+      counterpartyId,
+      query,
+      { signal }
+    )
+  ).data;
+}
+
 export const ledgerReportingService = Object.freeze({
+  getCounterpartyAccountTypeParticipation,
   getAccountActivity,
   getAccountActivityByTypes,
   getCurrentTotalBalanceByType,

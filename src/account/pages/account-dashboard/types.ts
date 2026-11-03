@@ -5,8 +5,7 @@ import type {
   IAccountDashboardSummary,
 } from '@/account/lib/types/account-dashboard.types';
 import type { UTransitionState } from '@/shared/components/with-transition-state';
-
-export type UBalancePeriod = '1M' | '6M' | '1Y';
+import type { ReactNode } from 'react';
 
 export interface IAccountBalanceChange {
   amount: IAccountDashboardMoney;
@@ -28,8 +27,8 @@ export interface AccountsSummaryWithStateProps extends Pick<
 }
 
 export interface BalanceHistoryProps {
-  period: UBalancePeriod;
-  onPeriodChange: (period: UBalancePeriod) => void;
+  showHistory?: boolean;
+  intervalSlot?: ReactNode;
   history?: IAccountDashboardHistory;
   loading: boolean;
   error: boolean;

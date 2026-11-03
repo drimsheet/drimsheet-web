@@ -9,6 +9,7 @@ export function useBalancesBySubType<TData = IBalanceHistoryBySubTypeDto>(
   query: IGetBalanceHistoryBySubTypeQuery,
   options?: {
     select?: (data: IBalanceHistoryBySubTypeDto) => TData;
+    enabled?: boolean;
   }
 ) {
   return useQuery({
@@ -16,5 +17,6 @@ export function useBalancesBySubType<TData = IBalanceHistoryBySubTypeDto>(
     queryFn: ({ signal }) =>
       ledgerReportingService.getBalanceHistoryBySubType(query, signal),
     select: options?.select,
+    enabled: options?.enabled,
   });
 }

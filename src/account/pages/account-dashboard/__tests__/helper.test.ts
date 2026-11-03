@@ -2,25 +2,6 @@ import helpers from '@/account/pages/account-dashboard/helper';
 import { describe, expect, it } from 'vitest';
 
 describe('account dashboard reporting', () => {
-  it('anchors ranges on the same calendar day as the selected period', () => {
-    expect(helpers.periodQuery('6M', new Date(2026, 9, 23))).toEqual({
-      from: '2026-04-23',
-      to: '2026-10-23',
-    });
-    expect(helpers.periodQuery('1Y', new Date(2024, 1, 29))).toEqual({
-      from: '2023-03-01',
-      to: '2024-02-29',
-    });
-    expect(helpers.periodQuery('1M', new Date(2026, 2, 31))).toEqual({
-      from: '2026-02-28',
-      to: '2026-03-31',
-    });
-  });
-  it('uses readable chart bucket sizes for each supported period', () => {
-    expect(helpers.bucketDays('1M')).toBe(5);
-    expect(helpers.bucketDays('6M')).toBe(30);
-    expect(helpers.bucketDays('1Y')).toBe(61);
-  });
   it('calculates balance growth from the first and last chart buckets', () => {
     const points = [
       {

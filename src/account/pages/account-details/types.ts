@@ -48,17 +48,6 @@ export interface SubAccountsProps {
   onOpenAccount: (id: string) => void;
 }
 
-export interface IPeriodOption {
-  value: string;
-  label: string;
-}
-
-export interface CashFlowPeriodProps {
-  period: string;
-  periods: IPeriodOption[];
-  onPeriodChange: (period: string) => void;
-}
-
 export interface RecentTransactionsContainerProps {
   accountId?: string;
   loading?: boolean;

@@ -19,7 +19,7 @@ const mockCounterparties: ICounterpartyDto[] = [
     status: ECounterpartyStatus.Active,
     type: ECounterpartyType.Individual,
     roles: [ECounterpartyRole.Contractor],
-    meta: {},
+    roleDetails: {},
     createdAt: '2026-05-01T08:00:00Z',
     updatedAt: '2026-05-01T08:00:00Z',
   },
@@ -31,7 +31,7 @@ const mockCounterparties: ICounterpartyDto[] = [
     status: ECounterpartyStatus.Active,
     type: ECounterpartyType.Organization,
     roles: [ECounterpartyRole.Vendor],
-    meta: {},
+    roleDetails: {},
     createdAt: '2026-05-10T12:30:00Z',
     updatedAt: '2026-05-10T12:30:00Z',
   },
@@ -43,7 +43,7 @@ const mockCounterparties: ICounterpartyDto[] = [
     status: ECounterpartyStatus.Active,
     type: ECounterpartyType.Organization,
     roles: [ECounterpartyRole.Employer, ECounterpartyRole.Vendor],
-    meta: {},
+    roleDetails: {},
     createdAt: '2026-05-15T09:15:00Z',
     updatedAt: '2026-05-15T09:15:00Z',
   },
@@ -55,7 +55,7 @@ const mockCounterparties: ICounterpartyDto[] = [
     status: ECounterpartyStatus.Archived,
     type: ECounterpartyType.Individual,
     roles: [],
-    meta: {},
+    roleDetails: {},
     createdAt: '2026-04-01T00:00:00Z',
     updatedAt: '2026-05-20T10:00:00Z',
   },
@@ -69,9 +69,9 @@ const meta = {
     onSortChange: (key, direction) =>
       console.log('Sort changed:', key, direction),
     onFilterChange: (filters) => console.log('Filter changed:', filters),
-    onAddCounterparty: () => console.log('Add counterparty clicked'),
-    onSearchChange: (value) => console.log('Search changed:', value),
     filters: {},
+    onPageChange: () => {},
+    pagination: { page: 1, limit: 10, total: 24, totalPages: 3 },
   },
   decorators: [
     (Story) => (
@@ -92,7 +92,6 @@ export const Default: Story = {
     data: mockCounterparties,
     selectable: true,
     stickyHeader: true,
-    searchValue: '',
   },
 };
 

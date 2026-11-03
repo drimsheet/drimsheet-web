@@ -34,7 +34,8 @@ playwright/
 - `mocks/` contains feature-specific network route registration and
   representative API responses.
 - `factories/` contains deterministic test-data builders.
-- `pages/` contains repeated locator groups or user workflows.
+- `pages/` contains repeated locator groups or interactions scoped to one page
+  or dialog; do not encode cross-page workflows.
 - `reporters/` contains Playwright reporter integrations such as coverage
   aggregation.
 - Create a support directory only when it has a real consumer.
@@ -125,7 +126,8 @@ pages/<page>/
 - Mirror part tests and stories under `__tests__/parts/` and `__stories__/parts/`.
   Hook tests belong in `hooks/__tests__/`; helper tests in `__tests__/helper.test.ts`.
 - Pure UI parts require stories. Page entries and containers are exempt.
-  Test complete page journeys with Playwright, and private modules with Vitest.
+  Test page composition and state transitions with Playwright, and private
+  modules with Vitest. Keep browser tests within one page/dialog boundary.
 - Only files within the page owner may import its private implementations. Do
   not create private barrels or export private support files from the page API.
 - Promote UI to feature `components/` and logic to feature `hooks/` or `lib/`
@@ -177,7 +179,8 @@ dialogs/<dialog>/
 - Mirror part tests and stories under `__tests__/parts/` and `__stories__/parts/`.
   Hook tests belong in `hooks/__tests__/`; helper tests in `__tests__/helper.test.ts`.
 - Pure UI parts require stories. Dialog entries and containers are exempt.
-  Test complete dialog journeys with Playwright, and private modules with Vitest.
+  Test dialog composition and state transitions with Playwright, and private
+  modules with Vitest. Do not continue into subsequent pages or workflows.
 - Only files within the dialog owner may import its private implementations. Do
   not create private barrels or export private support files from the dialog API.
 - Promote UI to feature `components/` and logic to feature `hooks/` or `lib/`

@@ -98,7 +98,7 @@ export const counterpartyMapper = {
       name: values.name,
       type: values.type,
       status: ECounterpartyStatus.Active,
-      meta: {
+      roleDetails: {
         vendor: {
           address: hasAddress
             ? {
@@ -119,7 +119,7 @@ export const counterpartyMapper = {
       name: values.name,
       type: values.type,
       status: ECounterpartyStatus.Active,
-      meta: {
+      roleDetails: {
         contractor: {
           address: {
             line1: values.address.line1,
@@ -138,7 +138,7 @@ export const counterpartyMapper = {
       name: values.name,
       type: values.type,
       status: ECounterpartyStatus.Active,
-      meta: {
+      roleDetails: {
         employer: {
           displayName: values.displayName || null,
           address: {

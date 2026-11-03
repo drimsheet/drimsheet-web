@@ -11,7 +11,7 @@ export function getCounterpartyFormRole(
   return (
     party.roles[0] ??
     (['employer', 'vendor', 'contractor'] as const).find((role) =>
-      Boolean(party.meta[role])
+      Boolean(party.roleDetails[role])
     ) ??
     'default'
   );
@@ -21,7 +21,7 @@ export function hasCounterpartyChanges(request: ICounterpartyUpdateReq) {
   return (
     request.name !== undefined ||
     request.type !== undefined ||
-    request.meta !== undefined
+    request.roleDetails !== undefined
   );
 }
 

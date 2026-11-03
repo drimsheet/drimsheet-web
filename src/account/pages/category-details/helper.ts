@@ -4,15 +4,7 @@ import type {
   IAccountBalanceContributionsByCounterpartyDto,
   IMoneyDto,
 } from '@/shared/lib/api/Api';
-import {
-  eachMonthOfInterval,
-  endOfYear,
-  format,
-  parseISO,
-  startOfMonth,
-  startOfYear,
-  subMonths,
-} from 'date-fns';
+import { eachMonthOfInterval, format, parseISO } from 'date-fns';
 
 function majorUnits(money: IMoneyDto) {
   if (!money.isMinorUnit) {
@@ -24,31 +16,6 @@ function majorUnits(money: IMoneyDto) {
   );
 
   return money.amount / 10 ** (currency?.minorUnit ?? 0);
-}
-
-function period(now: Date, value: string) {
-  let end = now;
-  let start = subMonths(startOfMonth(now), Number(value) - 1);
-  if (value === 'year') {
-    start = startOfYear(now);
-  }
-
-  if (value === 'previous') {
-    const previous = new Date(now.getFullYear() - 1, 0, 1);
-    start = startOfYear(previous);
-    end = endOfYear(previous);
-  }
-
-  return {
-    from: format(start, 'yyyy-MM-dd'),
-    to: format(end, 'yyyy-MM-dd'),
-    months:
-      (end.getFullYear() - start.getFullYear()) * 12 +
-      end.getMonth() -
-      start.getMonth() +
-      1,
-    end,
-  };
 }
 
 function participationId(row: IAccountBalanceContributionsByCounterpartyDto) {
@@ -112,7 +79,6 @@ function fromActivity(report: IAccountActivityDto) {
 }
 
 const categoryDetailsHelpers = Object.freeze({
-  period,
   participationId,
   recentQuery,
   fromActivity,

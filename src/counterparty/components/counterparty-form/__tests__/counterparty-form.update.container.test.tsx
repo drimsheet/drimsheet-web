@@ -29,7 +29,7 @@ const created: ICounterpartyDto = {
   type: 'individual',
   status: 'active',
   roles: [],
-  meta: {},
+  roleDetails: {},
   createdBy: 'user',
   accountingEntityId: 'entity',
   createdAt: '2026-10-05T00:00:00Z',
@@ -45,7 +45,7 @@ it('fetches by ID and PATCHes changes instead of creating', async () => {
     type: 'organization',
     status: 'active',
     roles: [],
-    meta: {},
+    roleDetails: {},
     createdBy: 'user',
     accountingEntityId: 'entity',
     createdAt: '2026-01-01',
@@ -199,7 +199,7 @@ it('shows a type selector skeleton while checking usage and restores the selecte
   const name = await screen.findByLabelText('Name');
   expect(
     await screen.findByRole('status', {
-      name: 'Checking whether the counterparty type can be changed…',
+      name: 'Checking whether the person or business type can be changed…',
     })
   ).toHaveAttribute('aria-busy', 'true');
   expect(
@@ -219,7 +219,7 @@ it('shows a type selector skeleton while checking usage and restores the selecte
   expect(name).toHaveValue('Retained edit');
   expect(
     screen.queryByRole('status', {
-      name: 'Checking whether the counterparty type can be changed…',
+      name: 'Checking whether the person or business type can be changed…',
     })
   ).not.toBeInTheDocument();
   client.clear();

@@ -158,7 +158,7 @@ describe('counterparty.mapper', () => {
         name: 'Acme Corp',
         type: 'organization',
         status: ECounterpartyStatus.Active,
-        meta: {
+        roleDetails: {
           vendor: {
             address: undefined,
           },
@@ -183,7 +183,7 @@ describe('counterparty.mapper', () => {
         name: 'Acme Corp',
         type: 'organization',
         status: ECounterpartyStatus.Active,
-        meta: {
+        roleDetails: {
           vendor: {
             address: {
               line1: '123 Main St',
@@ -216,7 +216,7 @@ describe('counterparty.mapper', () => {
         name: 'Jane Smith',
         type: 'individual',
         status: ECounterpartyStatus.Active,
-        meta: {
+        roleDetails: {
           contractor: {
             address: {
               line1: '456 side road',
@@ -249,7 +249,7 @@ describe('counterparty.mapper', () => {
         name: 'Tech Inc',
         type: 'organization',
         status: ECounterpartyStatus.Active,
-        meta: {
+        roleDetails: {
           employer: {
             displayName: 'Tech LLC',
             address: {
@@ -280,7 +280,7 @@ describe('counterparty.mapper', () => {
         name: 'Tech Inc',
         type: 'organization',
         status: ECounterpartyStatus.Active,
-        meta: {
+        roleDetails: {
           employer: {
             displayName: null,
             address: {

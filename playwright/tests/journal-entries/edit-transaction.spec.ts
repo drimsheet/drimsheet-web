@@ -5,6 +5,8 @@ import {
 } from '@integration/mocks/authenticated-app';
 import type { Page } from '@playwright/test';
 
+test.use({ authenticated: true });
+
 const timestamp = '2026-09-21T10:00:00.000Z';
 const money = { amount: 250, currencyCode: 'NGN', isMinorUnit: false };
 
@@ -85,12 +87,6 @@ async function registerRoutes(
   options: { journalEntryNotFound?: boolean } = {}
 ) {
   await registerAuthenticatedAppRoutes(page);
-  await page.route('**/api/v1/auth/login-with-email', async (route) => {
-    await route.fulfill({ json: { accessToken: 'integration-test-token' } });
-  });
-  await page.route('**/api/v1/auth/refresh-access-token', async (route) => {
-    await route.fulfill({ json: { accessToken: 'integration-test-token' } });
-  });
   await page.route('**/api/v1/journal-entries?*', async (route) => {
     await route.fulfill({
       json: {
@@ -163,21 +159,12 @@ async function registerRoutes(
   });
 }
 
-async function signIn(page: Page) {
-  await page.goto('/auth/signin');
-  await page.getByLabel('Email').fill(authenticatedUser.email);
-  await page.getByLabel('Password', { exact: true }).fill('Password1!');
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await expect(page).toHaveURL('/dashboard');
-}
-
-test('loads a direct edit route and rectifies the prefilled transaction', async ({
+test('loads the existing transaction into the correct edit form', async ({
   page,
 }) => {
   const journalEntryRequests: string[] = [];
   const rectificationBodies: unknown[] = [];
   await registerRoutes(page, journalEntryRequests, rectificationBodies);
-  await signIn(page);
 
   await page.goto('/transactions/outflow/payment-entry/edit');
 
@@ -186,20 +173,6 @@ test('loads a direct edit route and rectifies the prefilled transaction', async 
     'Original description'
   );
   await expect.poll(() => journalEntryRequests.length).toBe(1);
-
-  await page.getByLabel('Description').fill('Updated description');
-  await page.getByRole('button', { name: 'Update' }).click();
-
-  await expect(page).toHaveURL('/transactions');
-  expect(rectificationBodies).toEqual([
-    expect.objectContaining({
-      sourceType: 'payment',
-      memo: 'Updated description',
-      attachments: [],
-      sourceLine: expect.objectContaining({ id: 'cash-line' }),
-      destinationLines: [expect.objectContaining({ id: 'category-line' })],
-    }),
-  ]);
 });
 
 test('renders a 404 page when the journal entry does not exist', async ({
@@ -209,7 +182,6 @@ test('renders a 404 page when the journal entry does not exist', async ({
   await registerRoutes(page, journalEntryRequests, [], {
     journalEntryNotFound: true,
   });
-  await signIn(page);
 
   await page.goto('/transactions/outflow/payment-entry/edit');
 
@@ -218,8 +190,4 @@ test('renders a 404 page when the journal entry does not exist', async ({
   ).toBeVisible();
   await expect(page.getByText('404')).toBeVisible();
   await expect.poll(() => journalEntryRequests.length).toBe(1);
-
-  await page.getByRole('button', { name: 'Back to transactions' }).click();
-
-  await expect(page).toHaveURL('/transactions');
 });

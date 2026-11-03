@@ -3,7 +3,20 @@ import type { ICounterpartyDto } from '@/shared/lib/api/Api';
 import { describe, expect, it } from 'vitest';
 
 const id = '00000000-0000-4000-8000-000000000100';
-const party = { roles: [], meta: {} } as unknown as ICounterpartyDto;
+
+const party: ICounterpartyDto = {
+  id: '00000000-0000-4000-8000-000000000100',
+  accountingEntityId: 'entity',
+  createdBy: 'user',
+  name: 'Example',
+  type: 'organization',
+  status: 'active',
+  roles: [],
+  roleDetails: {},
+  createdAt: '2026-01-01T00:00:00Z',
+  updatedAt: '2026-01-01T00:00:00Z',
+};
+
 describe('counterparty update helpers', () => {
   it('uses the edit flag for prop-driven dialogs and query parameters for fallback callers', () => {
     expect(helpers.isOpen(new URLSearchParams('edit=true'), id)).toBe(true);

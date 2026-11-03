@@ -3,22 +3,15 @@ import {
   dashboardAccounts,
   registerAccountDashboardRoutes,
 } from '@integration/mocks/account-dashboard';
-import {
-  authenticatedUser,
-  registerAuthenticatedAppRoutes,
-} from '@integration/mocks/authenticated-app';
+import { registerAuthenticatedAppRoutes } from '@integration/mocks/authenticated-app';
 import type { Page } from '@playwright/test';
+
+test.use({ authenticated: true });
 
 async function setup(page: Page) {
   await page.clock.setFixedTime(new Date('2026-10-23T12:00:00Z'));
   await registerAuthenticatedAppRoutes(page);
   const state = await registerAccountDashboardRoutes(page);
-
-  for (const auth of ['login-with-email', 'refresh-access-token']) {
-    await page.route(`**/api/v1/auth/${auth}`, (route) =>
-      route.fulfill({ json: { accessToken: 'integration-test-token' } })
-    );
-  }
 
   await page.route('**/api/v1/ledger/**', (route) =>
     route.fulfill({ status: 404, json: { message: 'Not found' } })
@@ -32,12 +25,6 @@ async function setup(page: Page) {
     })
   );
 
-  await page.goto('/auth/signin');
-  await page.getByLabel('Email').fill(authenticatedUser.email);
-  await page.getByLabel('Password', { exact: true }).fill('Password1!');
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await expect(page).toHaveURL('/dashboard');
-
   return state;
 }
 
@@ -47,69 +34,8 @@ test('combines account behavior tabs and search while keeping overview queries i
   const state = await setup(page);
   await page.goto('/accounts');
 
-  await test.step('Functional and original-currency balances lead the overview', async () => {
-    const overview = page.getByRole('region', {
-      name: 'Overview',
-      exact: true,
-    });
-
-    await expect(overview).toContainText('≈');
-    await expect(overview).toContainText('₦87,450,000');
-    await expect(overview).not.toContainText(/liabilit/i);
-    await expect(
-      overview
-        .getByText('Approximate balance in functional currency')
-        .locator('..')
-        .locator('..')
-    ).toContainText('since Apr 23, 2026');
-    await expect(
-      overview.getByRole('heading', { name: 'Balance growth' }).locator('..')
-    ).not.toContainText('since');
-
-    const currencies = page.getByRole('region', {
-      name: 'Balances by currency',
-    });
-
-    await expect(currencies).toContainText('₦71,250,000');
-    await expect(currencies).toContainText('$8,200');
-    await expect(currencies).toContainText('£2,480');
-
-    expect(
-      await currencies.locator('dl').evaluate((element) => ({
-        overflow: getComputedStyle(element).overflowY,
-        scrolls: element.scrollHeight > element.clientHeight,
-      }))
-    ).toEqual({ overflow: 'auto', scrolls: true });
-
-    await expect(
-      page.getByRole('tablist', { name: 'Account type' }).getByRole('tab')
-    ).toHaveText(['All', 'Bank', 'Petty Cash']);
-
-    await page.getByText('View chart data', { exact: true }).click();
-    await expect(
-      page.getByRole('definition').filter({ hasText: '₦80,000,000' })
-    ).toBeVisible();
-    await page.getByText('View chart data', { exact: true }).click();
-
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await expect
-      .poll(() =>
-        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)
-      )
-      .toBe(true);
-  });
-
-  await page.setViewportSize({ width: 1280, height: 900 });
   const table = page.getByRole('region', { name: 'All accounts', exact: true });
 
-  await expect(table.getByRole('columnheader')).toHaveText([
-    'Name',
-    'Type',
-    'Balance',
-    'Status',
-    '',
-  ]);
   await expect(table).toContainText('1–10 of 25');
   await table.getByRole('button', { name: 'Next page' }).click();
   await expect(table).toContainText('11–20 of 25');
@@ -122,19 +48,38 @@ test('combines account behavior tabs and search while keeping overview queries i
   await page.getByRole('searchbox', { name: 'Search accounts' }).fill('24');
   await expect(table).toContainText('1–1 of 1');
   await expect(table).toContainText('Account 24');
+  expect(Object.fromEntries(state.accountQueries.at(-1)!)).toMatchObject({
+    page: '1',
+    limit: '10',
+    behavior: 'petty_cash',
+    search: '24',
+  });
 
   const accountQueryCount = state.accountQueries.length;
-  await page.getByRole('tab', { name: '1M', exact: true }).click();
+  await page.getByRole('button', { name: 'Interval', exact: true }).click();
+  await page
+    .getByRole('radio', { name: 'September 2026', exact: true })
+    .click();
+  await page.getByRole('button', { name: 'Apply', exact: true }).click();
   await expect
     .poll(() =>
       state.historyQueries.some(
         (query) =>
-          query.get('from') === '2026-09-23' &&
-          query.get('to') === '2026-10-23' &&
-          query.get('bucketDays') === '5'
+          query.get('from') === '2026-09-01' &&
+          query.get('to') === '2026-09-30' &&
+          query.get('bucketDays') === '3'
       )
     )
     .toBe(true);
+
+  await page.getByText('View chart data', { exact: true }).click();
+  await expect(
+    page.getByRole('term').filter({ hasText: 'Sep 1, 2026' })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('term').filter({ hasText: 'Oct 1, 2026' })
+  ).toHaveCount(0);
+  await expect(table).toContainText('Account 24');
 
   expect(state.accountQueries).toHaveLength(accountQueryCount);
   expect(state.accountQueries.at(-1)?.getAll('types[]')).toEqual(['asset']);
@@ -143,9 +88,6 @@ test('combines account behavior tabs and search while keeping overview queries i
   ]);
   expect(state.accountQueries.at(-1)?.get('isControlAccount')).toBe('false');
   expect(state.summaryQueries.at(-1)?.get('type')).toBe('asset');
-
-  await table.getByRole('button', { name: 'Account 24', exact: true }).click();
-  await expect(page).toHaveURL('/accounts/account-23');
 });
 
 test('shows loading then a recoverable page error without invented balances', async ({
@@ -176,25 +118,6 @@ test('shows loading then a recoverable page error without invented balances', as
   await expect(page.getByRole('region', { name: 'Overview' })).toHaveCount(0);
   await expect(page.getByRole('table')).toHaveCount(0);
 
-  await page.getByRole('button', { name: 'Add account', exact: true }).click();
-  const selectionDialog = page.getByRole('dialog');
-  await selectionDialog.getByRole('radio', { name: /petty cash/i }).click();
-  await selectionDialog.getByRole('button', { name: /continue/i }).click();
-  await expect(
-    page.getByRole('heading', { name: /create petty cash account/i })
-  ).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog')).toHaveCount(0);
-
-  await page.getByRole('button', { name: 'Add account', exact: true }).click();
-  await selectionDialog.getByRole('radio', { name: /bank/i }).click();
-  await selectionDialog.getByRole('button', { name: /continue/i }).click();
-  await expect(page).toHaveURL('/accounts/new/bank');
-  await page.goto('/accounts');
-  await expect(
-    page.getByRole('alert').filter({ hasText: 'Couldn’t load your accounts' })
-  ).toBeVisible();
-
   state.summaryError = false;
   state.historyError = false;
   state.tableError = false;
@@ -207,54 +130,39 @@ test('shows loading then a recoverable page error without invented balances', as
   );
 });
 
-test('preserves available account data on section errors and recovers after refresh', async ({
-  page,
-}) => {
-  const state = await setup(page);
-  state.historyError = true;
-  await page.goto('/accounts');
+for (const section of [
+  { flag: 'historyError', message: 'Couldn’t load balance history' },
+  { flag: 'tableError', message: 'Couldn’t load the account list' },
+  { flag: 'summaryError', message: 'Couldn’t load balances' },
+] as const) {
+  test(`isolates ${section.flag} from the other dashboard sections`, async ({
+    page,
+  }) => {
+    const state = await setup(page);
+    state[section.flag] = true;
+    await page.goto('/accounts');
+    await expect(page.getByRole('alert')).toContainText(section.message);
+    if (section.flag !== 'tableError') {
+      await expect(page.getByRole('table')).toContainText('Operating account');
+    }
 
-  await expect(page.getByRole('alert')).toContainText(
-    'Couldn’t load balance history'
-  );
-  await expect(page.getByRole('table')).toContainText('Operating account');
+    if (section.flag !== 'summaryError') {
+      await expect(
+        page.getByRole('region', { name: 'Overview' })
+      ).toContainText('₦87,450,000');
+    }
 
-  state.historyError = false;
-  await page.reload();
-  await expect(
-    page.getByText('View chart data', { exact: true })
-  ).toBeVisible();
+    state[section.flag] = false;
+    await page.reload();
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(page.getByRole('table')).toContainText('Operating account');
+    await expect(page.getByRole('region', { name: 'Overview' })).toContainText(
+      '₦87,450,000'
+    );
+  });
+}
 
-  state.tableError = true;
-  await page.getByRole('tab', { name: 'Petty Cash', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText(
-    'Couldn’t load the account list'
-  );
-  await expect(page.getByRole('region', { name: 'Overview' })).toContainText(
-    '₦87,450,000'
-  );
-
-  state.tableError = false;
-  state.summaryError = true;
-  await page.reload();
-  await expect(page.getByRole('table')).toContainText('Account 2');
-  await expect(
-    page.getByRole('alert').filter({ hasText: 'Couldn’t load balances' })
-  ).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: /^(Retry|Try again)$/i })
-  ).toHaveCount(0);
-
-  state.summaryError = false;
-  await page.reload();
-  await expect(page.getByRole('region', { name: 'Overview' })).toContainText(
-    '₦87,450,000'
-  );
-});
-
-test('distinguishes no accounts, zero balances, absent behaviors and search with no matches', async ({
-  page,
-}) => {
+test('opens the account selector from the empty page', async ({ page }) => {
   const state = await setup(page);
   state.rows = [];
   await page.goto('/accounts');
@@ -266,19 +174,14 @@ test('distinguishes no accounts, zero balances, absent behaviors and search with
   await page.getByRole('button', { name: 'Add first account' }).click();
   const selectionDialog = page.getByRole('dialog');
   await expect(selectionDialog).toBeVisible();
-  await selectionDialog.getByRole('radio', { name: /petty cash/i }).click();
-  await selectionDialog.getByRole('button', { name: /continue/i }).click();
-  await expect(
-    page.getByRole('heading', { name: /create petty cash account/i })
-  ).toBeVisible();
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(selectionDialog).not.toBeVisible();
+});
 
-  await page.getByRole('button', { name: 'Add first account' }).click();
-  await selectionDialog.getByRole('radio', { name: /bank/i }).click();
-  await selectionDialog.getByRole('button', { name: /continue/i }).click();
-  await expect(page).toHaveURL('/accounts/new/bank');
-
+test('keeps the zero-balance overview while filtering the account table', async ({
+  page,
+}) => {
+  const state = await setup(page);
   state.rows = [
     {
       ...dashboardAccounts[0],

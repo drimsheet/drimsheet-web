@@ -748,7 +748,7 @@ export interface IAddressDto {
   countryCode: string;
 }
 
-export interface ICounterpartyMetaDto {
+export interface ICounterpartyRoleDetailsDto {
   employer?: {
     address: IAddressDto;
     displayName: string | null;
@@ -769,7 +769,7 @@ export interface ICounterpartyDto {
   status: UCounterpartyStatus;
   type: UCounterpartyType;
   roles: UCounterpartyRole[];
-  meta: ICounterpartyMetaDto;
+  roleDetails: ICounterpartyRoleDetailsDto;
   /** @format date-time */
   createdAt: string;
   /** @format date-time */
@@ -1886,6 +1886,21 @@ export interface IExchangeRateQueryParam {
   asOf?: string;
 }
 
+export interface ICounterpartyAccountTypeParticipationDto {
+  counterpartyId: string;
+  fiscalYearId: string;
+  /** Full fiscal year, with inclusive effective-date boundaries. */
+  period: IDateRangeDto;
+  /** Credits minus debits, in the entity's functional currency. */
+  revenue: IMoneyDto;
+  /** Debits minus credits, in the entity's functional currency. */
+  expense: IMoneyDto;
+}
+
+export interface IGetCounterpartyAccountTypeParticipationQuery {
+  fiscalYearId: string;
+}
+
 export interface IPaginatedResponseICounterpartyDto {
   data: ICounterpartyDto[];
   meta: IPaginationResponseMeta;
@@ -1908,7 +1923,7 @@ export interface ICounterpartyDeletionEligibilityDto {
   canDelete: boolean;
 }
 
-export interface ICounterpartyCreateMetaReq {
+export interface ICounterpartyCreateRoleDetailsReq {
   employer?: {
     address: IAddressDto;
     displayName?: string | null;
@@ -1925,7 +1940,7 @@ export interface ICounterpartyCreateReq {
   name: string;
   status: UCounterpartyStatus;
   type: UCounterpartyType;
-  meta?: ICounterpartyCreateMetaReq;
+  roleDetails?: ICounterpartyCreateRoleDetailsReq;
 }
 
 export interface ICounterpartyUpdateReq {
@@ -1934,7 +1949,7 @@ export interface ICounterpartyUpdateReq {
   /** Omit for ordinary edits; Active explicitly requests Draft activation. */
   status?: 'active';
   /** Complete role replacement when supplied; {} clears all roles. */
-  meta?: ICounterpartyCreateMetaReq;
+  roleDetails?: ICounterpartyCreateRoleDetailsReq;
 }
 
 export interface IBankDirectoryDto {
@@ -2944,6 +2959,28 @@ export class Api<
         format: 'json',
         ...params,
       }),
+
+    /**
+     * @description Returns net revenue and expense participation for the full fiscal year in functional currency. Counts only lines attributed to this party. Includes posted opening balances and archived records; originals and reversals retain their own effective dates. Missing activity returns zero.
+     *
+     * @tags Reporting, Counterparty Reporting
+     * @name GetCounterpartyAccountTypeParticipation
+     * @request GET:/reporting/counterparties/{counterpartyId}/participation-by-account-type
+     */
+    getCounterpartyAccountTypeParticipation: (
+      counterpartyId: string,
+      query: {
+        fiscalYearId: string;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<ICounterpartyAccountTypeParticipationDto, IHttpErrorDto>({
+        path: `/reporting/counterparties/${counterpartyId}/participation-by-account-type`,
+        method: 'GET',
+        query: query,
+        format: 'json',
+        ...params,
+      }),
   };
   ledger = {
     /**
@@ -3899,7 +3936,7 @@ export class Api<
       }),
 
     /**
-     * @description Update details and optionally activate a Draft. Supplied metadata replaces all roles. A type change after transaction use returns 409 with field=type, reason=transaction_usage and nextAction=create_counterparty. This counterparty's type cannot be changed because it has been used in a transaction. Create a new counterparty if a different type is required.
+     * @description Update details and optionally activate a Draft. Supplied role details replace all roles. A type change after transaction use returns 409 with field=type, reason=transaction_usage and nextAction=create_counterparty. This counterparty's type cannot be changed because it has been used in a transaction. Create a new counterparty if a different type is required.
      *
      * @tags Counterparty
      * @name UpdateCounterparty

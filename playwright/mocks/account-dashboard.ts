@@ -3,6 +3,7 @@ import type {
   ICurrentAssetAndLiabilityBalancesByCurrencyDto,
   ILedgerAccountDto,
 } from '@/shared/lib/api/Api';
+import { registerReportingIntervalRoutes } from '@integration/mocks/reporting-interval';
 import type { Page } from '@playwright/test';
 import { addDays, format, parseISO } from 'date-fns';
 
@@ -41,6 +42,8 @@ export const dashboardAccounts = Array.from({ length: 25 }, (_, index) =>
 );
 
 export async function registerAccountDashboardRoutes(page: Page) {
+  await registerReportingIntervalRoutes(page);
+
   const state = {
     rows: [...dashboardAccounts],
     zero: false,

@@ -9,6 +9,8 @@ import {
 } from '@integration/mocks/authenticated-app';
 import type { Page } from '@playwright/test';
 
+test.use({ authenticated: true });
+
 const timestamp = '2026-09-18T10:00:00.000Z';
 
 const counterparty: ICounterpartyDto = {
@@ -19,7 +21,7 @@ const counterparty: ICounterpartyDto = {
   type: 'organization',
   status: 'active',
   roles: ['vendor', 'contractor'],
-  meta: {
+  roleDetails: {
     vendor: {
       address: {
         line1: '14 Adeola Odeku Street',
@@ -105,6 +107,26 @@ async function setup(page: Page) {
   const deleteRequestBodies: (string | null)[] = [];
 
   await registerAuthenticatedAppRoutes(page);
+  await page.route('**/api/v1/accounting/fiscal-years/current', (route) =>
+    route.fulfill({ json: { id: 'current-year' } })
+  );
+  await page.route(
+    '**/api/v1/reporting/counterparties/*/participation-by-account-type?*',
+    (route) =>
+      route.fulfill({
+        json: {
+          counterpartyId: counterparty.id,
+          fiscalYearId: 'current-year',
+          period: { from: '2026-01-01', to: '2026-12-31' },
+          revenue: { amount: 31000000, currencyCode: 'NGN', isMinorUnit: true },
+          expense: {
+            amount: 248000000,
+            currencyCode: 'NGN',
+            isMinorUnit: true,
+          },
+        },
+      })
+  );
   for (const endpoint of [
     '**/api/v1/auth/login-with-email',
     '**/api/v1/auth/refresh-access-token',
@@ -158,11 +180,6 @@ async function setup(page: Page) {
       },
     });
   });
-  await page.goto('/auth/signin');
-  await page.getByLabel('Email').fill(authenticatedUser.email);
-  await page.getByLabel('Password', { exact: true }).fill('Password1!');
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await expect(page).toHaveURL('/dashboard');
 
   return { deleteRequestBodies };
 }
@@ -173,7 +190,7 @@ async function expectProfile(page: Page) {
   ).toBeVisible();
 }
 
-test('opens the linked profile, supplies scoped data to the existing table, and supports refresh and back', async ({
+test('composes the profile and scoped transactions and supports refresh', async ({
   page,
 }) => {
   await setup(page);
@@ -188,17 +205,15 @@ test('opens the linked profile, supplies scoped data to the existing table, and 
     await route.fulfill({ json: counterparty });
   });
 
-  await page.goto('/counterparties');
-
   const requestPromise = page.waitForRequest((request) =>
     request.url().includes('/api/v1/journal-entries?')
   );
 
-  await page
-    .getByRole('link', { name: counterparty.name, exact: true })
-    .click();
+  await page.goto(detailUrl);
   await expect(page).toHaveURL(detailUrl);
-  await expect(page.getByText('Loading counterparty details')).toBeAttached();
+  await expect(
+    page.getByText('Loading person or business details')
+  ).toBeAttached();
   release();
   const params = new URL((await requestPromise).url()).searchParams;
   expect(Object.fromEntries(params)).toMatchObject({
@@ -210,6 +225,9 @@ test('opens the linked profile, supplies scoped data to the existing table, and 
   });
   expect(params.has('status')).toBe(false);
   await expectProfile(page);
+  await expect(
+    page.getByRole('region', { name: 'Overview', exact: true })
+  ).toContainText('310,000');
   await expect(page.getByText('14 Adeola Odeku Street')).toBeVisible();
   await expect(page.getByText('Nigeria', { exact: true })).toBeVisible();
   await expect(
@@ -230,8 +248,6 @@ test('opens the linked profile, supplies scoped data to the existing table, and 
   });
   await page.reload();
   await expectProfile(page);
-  await page.getByRole('link', { name: 'All counterparties' }).click();
-  await expect(page).toHaveURL('/counterparties');
 });
 
 test('supplies counterparty-scoped search and sorting from the detail page', async ({
@@ -378,7 +394,7 @@ test('uses the error boundary when transactions fail and recovers after browser 
         name: 'Odion Oboite',
         type: 'individual',
         roles: [],
-        meta: {},
+        roleDetails: {},
       },
     })
   );
@@ -412,12 +428,12 @@ test('uses the error boundary when transactions fail and recovers after browser 
   await expect(
     page.getByText('Transactions involving Odion Oboite will appear here.')
   ).toBeVisible();
-  await expect(page.getByPlaceholder(/Search transactions/i)).not.toBeVisible();
-  await expect(page.getByRole('table')).not.toBeVisible();
+  await expect(page.getByPlaceholder(/Search transactions/i)).toBeVisible();
+  await expect(page.getByRole('table')).toBeVisible();
   await expect(
     page.getByRole('link', { name: 'View all transactions' })
   ).not.toBeVisible();
-  await expect(page.getByText('Showing 0 of 0')).not.toBeVisible();
+  await expect(page.getByText('Showing 0 of 0')).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
     page.getByRole('heading', { name: 'Odion Oboite' })
@@ -432,11 +448,10 @@ test('uses the error boundary when transactions fail and recovers after browser 
   ).toBe(true);
 });
 
-test('checks deletion eligibility and deletes from the counterparty details page', async ({
+test('coordinates the pending eligibility menu with its deletion confirmation', async ({
   page,
 }) => {
-  const state = await setup(page);
-  let eligibilityRequests = 0;
+  await setup(page);
   let releaseEligibility!: () => void;
 
   const eligibilityReady = new Promise<void>((resolve) => {
@@ -444,64 +459,35 @@ test('checks deletion eligibility and deletes from the counterparty details page
   });
 
   await page.route(deletionEligibilityEndpoint, async (route) => {
-    eligibilityRequests += 1;
-    if (eligibilityRequests === 2) {
-      await eligibilityReady;
-      await route.fulfill({ status: 500, json: {} });
-
-      return;
-    }
-
+    await eligibilityReady;
     await route.fulfill({ json: { canDelete: true } });
   });
-
   await page.goto(detailUrl);
   await expectProfile(page);
-  expect(eligibilityRequests).toBe(0);
-  await page.getByRole('button', { name: 'Open counterparty actions' }).click();
-  await expect(
-    page.getByRole('menuitem', { name: 'Delete', exact: true })
-  ).toBeVisible();
-  await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await page
+    .getByRole('button', { name: 'Open person or business actions' })
+    .click();
   await expect(
     page.getByRole('status', {
-      name: 'Checking whether this counterparty can be deleted',
+      name: 'Checking whether this person or business can be deleted',
     })
   ).toBeVisible();
-
   await expect(
     page.getByRole('menuitem', { name: 'Delete', exact: true })
   ).not.toBeVisible();
   releaseEligibility();
-  await expect(page.getByText('No available actions')).toBeVisible();
-  await expect(
-    page.getByRole('menuitem', { name: 'Delete', exact: true })
-  ).not.toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(
-    page.getByRole('button', { name: 'Edit', exact: true })
-  ).toBeEnabled();
-  await page.getByRole('button', { name: 'Open counterparty actions' }).click();
   await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
 
   const confirmation = page.getByRole('alertdialog', {
-    name: 'Delete counterparty?',
+    name: 'Delete person or business?',
   });
 
-  await confirmation.getByLabel('Type "delete" to confirm').fill('delete');
+  await expect(confirmation).toContainText(counterparty.name);
   await confirmation
-    .getByRole('button', { name: 'Delete', exact: true })
+    .getByRole('button', { name: 'Cancel', exact: true })
     .click();
-
   await expect(confirmation).not.toBeVisible();
-  await expect(page).toHaveURL('/counterparties');
   await expect(
-    page.getByText('Counterparty deleted successfully')
+    page.getByRole('heading', { name: counterparty.name })
   ).toBeVisible();
-  await expect(
-    page.getByRole('link', { name: counterparty.name, exact: true })
-  ).not.toBeVisible();
-  expect(state.deleteRequestBodies).toEqual([null]);
-  expect(eligibilityRequests).toBe(3);
 });

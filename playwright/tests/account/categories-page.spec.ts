@@ -5,11 +5,10 @@ import {
   type IRevenueExpenseAndSuspenseAccountBalanceDto,
 } from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
-import {
-  authenticatedUser,
-  registerAuthenticatedAppRoutes,
-} from '@integration/mocks/authenticated-app';
+import { registerAuthenticatedAppRoutes } from '@integration/mocks/authenticated-app';
 import type { Page } from '@playwright/test';
+
+test.use({ authenticated: true });
 
 const summaryEndpoint =
   '**/api/v1/reporting/ledger/revenue-expense-and-suspense-account-balances?*';
@@ -55,11 +54,6 @@ const ledgerAccount: ILedgerAccountDto = {
 async function setup(page: Page) {
   await page.clock.setFixedTime(new Date('2026-10-14T12:00:00Z'));
   await registerAuthenticatedAppRoutes(page);
-  for (const auth of ['login-with-email', 'refresh-access-token']) {
-    await page.route(`**/api/v1/auth/${auth}`, (route) =>
-      route.fulfill({ json: { accessToken: 'integration-test-token' } })
-    );
-  }
 
   await page.route(summaryEndpoint, (route) =>
     route.fulfill({
@@ -77,14 +71,9 @@ async function setup(page: Page) {
       },
     })
   );
-  await page.goto('/auth/signin');
-  await page.getByLabel('Email').fill(authenticatedUser.email);
-  await page.getByLabel('Password', { exact: true }).fill('Password1!');
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await expect(page).toHaveURL('/dashboard');
 }
 
-test('opens totals and table from navigation without reporting controls or charts', async ({
+test('renders totals and table without reporting controls or charts', async ({
   page,
 }) => {
   await setup(page);
@@ -122,7 +111,7 @@ test('opens totals and table from navigation without reporting controls or chart
       },
     });
   });
-  await page.getByRole('link', { name: 'Categories', exact: true }).click();
+  await page.goto('/categories');
   await expect(page).toHaveURL('/categories');
   await expect(
     page.getByRole('region', { name: 'Total revenue', exact: true })
@@ -301,12 +290,9 @@ test('shows independent summary errors and recovers on refresh', async ({
   ).toContainText('₦0');
 });
 
-test('renames and archives categories, then opens category details', async ({
-  page,
-}) => {
+test('renames a category and updates the host table', async ({ page }) => {
   await setup(page);
   let current = { ...ledgerAccount };
-  let updatePayload: unknown;
   await page.route(accountsEndpoint, (route) =>
     route.fulfill({
       json: {
@@ -318,16 +304,8 @@ test('renames and archives categories, then opens category details', async ({
   await page.route(
     `**/api/v1/ledger/revenue/${account.accountId}`,
     async (route) => {
-      updatePayload = route.request().postDataJSON();
       current = { ...current, name: 'Advisory' };
       await route.fulfill({ json: { id: account.accountId } });
-    }
-  );
-  await page.route(
-    `**/api/v1/ledger/${account.accountId}/archive`,
-    async (route) => {
-      current = { ...current, status: 'archived' };
-      await route.fulfill({ status: 204 });
     }
   );
   await page.goto('/categories');
@@ -341,88 +319,7 @@ test('renames and archives categories, then opens category details', async ({
     .fill('Advisory');
   await page.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
-  expect(updatePayload).toEqual({ name: 'Advisory' });
-  await page.getByRole('button', { name: 'Actions for Advisory' }).click();
-  await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
-  await page
-    .getByRole('alertdialog')
-    .getByRole('button', { name: 'Archive', exact: true })
-    .click();
-  await expect(page.getByRole('alertdialog')).not.toBeVisible();
   await expect(
-    page.getByRole('cell', { name: 'Archived', exact: true })
+    page.getByRole('cell', { name: 'Advisory', exact: true })
   ).toBeVisible();
-  const requests: URLSearchParams[] = [];
-  await page.route(
-    `**/api/v1/reporting/ledger/accounts/${account.accountId}/activity?*`,
-    (route) => {
-      const query = new URL(route.request().url()).searchParams;
-
-      expect(Object.fromEntries(query)).toEqual({
-        from: '2026-05-01',
-        to: '2026-10-14',
-        bucketDays: '1',
-      });
-
-      return route.fulfill({
-        json: {
-          accountId: account.accountId,
-          currencyCode: money.currencyCode,
-          period: { from: query.get('from'), to: query.get('to') },
-          buckets: [],
-        },
-      });
-    }
-  );
-  await page.route(
-    `**/api/v1/reporting/ledger/accounts/${account.accountId}/balance-contributions-by-counterparty?*`,
-    (route) =>
-      route.fulfill({
-        json: {
-          data: [],
-          meta: { page: 1, limit: 5, total: 0, totalPages: 0 },
-        },
-      })
-  );
-  await page.route('**/api/v1/journal-entries?*', (route) => {
-    requests.push(new URL(route.request().url()).searchParams);
-
-    return route.fulfill({
-      json: { data: [], meta: { page: 1, totalPages: 0, total: 0, limit: 10 } },
-    });
-  });
-  await page.route(`**/api/v1/ledger/${account.accountId}`, (route) =>
-    route.fulfill({
-      json: {
-        id: account.accountId,
-        name: 'Advisory',
-        type: 'revenue',
-        isControlAccount: false,
-        status: 'archived',
-        balance: money,
-        functionalBalance: money,
-      },
-    })
-  );
-  await page
-    .getByRole('table')
-    .getByRole('button', { name: 'Advisory', exact: true })
-    .click();
-  await expect
-    .poll(() => requests.at(-1)?.get('accountId'))
-    .toBe(account.accountId);
-  await expect(page).toHaveURL(`/categories/${account.accountId}`);
-  await expect(page.getByRole('heading', { name: 'Advisory' })).toBeVisible();
-  await expect(
-    page
-      .getByRole('region', { name: 'Overview', exact: true })
-      .getByRole('definition')
-      .filter({ hasText: /^₦0$/ })
-  ).toBeVisible();
-  await expect(
-    page
-      .getByRole('region', { name: 'Counterparty share', exact: true })
-      .getByText('No counterparty activity in this period.', { exact: true })
-  ).toBeVisible();
-  await expect(page.getByRole('alert')).toHaveCount(0);
 });

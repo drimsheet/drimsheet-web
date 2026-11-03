@@ -26,7 +26,7 @@ const created: ICounterpartyDto = {
   type: 'individual',
   status: 'active',
   roles: [],
-  meta: {},
+  roleDetails: {},
   createdBy: 'user',
   accountingEntityId: 'entity',
   createdAt: '2026-10-05T00:00:00Z',
@@ -75,7 +75,7 @@ it('waits for persistence before completing and prevents another submit while sa
   await act(async () => resolve(created));
   await waitFor(() => expect(onSuccess).toHaveBeenCalledOnce());
   expect(toast.success).toHaveBeenCalledWith(
-    'Counterparty created successfully'
+    'Person or business created successfully'
   );
   client.clear();
 });

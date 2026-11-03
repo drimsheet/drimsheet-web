@@ -114,7 +114,7 @@ export const MultipleChips: Story = {
                     ))
                   }
                 </ComboboxValue>
-                <ComboboxChipsInput aria-label="Counterparty roles" />
+                <ComboboxChipsInput aria-label="Person or business roles" />
               </ComboboxChips>
               <ComboboxContent>
                 <ComboboxList>

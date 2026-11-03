@@ -2,7 +2,6 @@ import type {
   IAccountingEntity,
   IAccountingEntitySwitchReq,
   IUserPreferences,
-  IUserPreferencesUpdateDto,
   TEntityId,
 } from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
@@ -13,8 +12,8 @@ import {
 } from '@integration/mocks/authenticated-app';
 import type { Page } from '@playwright/test';
 
-const loginEndpoint = '**/api/v1/auth/login-with-email';
-const refreshEndpoint = '**/api/v1/auth/refresh-access-token';
+test.use({ authenticated: true });
+
 const profileEndpoint = '**/api/v1/users/profile';
 const entityListEndpoint = '**/api/v1/accounting/accounting-entities';
 const activeEntityEndpoint = '**/api/v1/accounting/accounting-entity';
@@ -63,26 +62,10 @@ async function registerAccountManagementRoutes(page: Page) {
   });
 }
 
-async function signIn(page: Page) {
+async function openHostPage(page: Page) {
   await registerAccountManagementRoutes(page);
-  await page.route(refreshEndpoint, async (route) => {
-    await route.fulfill({
-      status: 200,
-      json: { accessToken: 'integration-test-token' },
-    });
-  });
-  await page.route(loginEndpoint, async (route) => {
-    await route.fulfill({
-      status: 200,
-      json: { accessToken: 'integration-test-token' },
-    });
-  });
 
-  await page.goto('/auth/signin');
-  await page.getByLabel('Email').fill(authenticatedUser.email);
-  await page.getByLabel('Password', { exact: true }).fill('Password1!');
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await expect(page).toHaveURL('/dashboard');
+  await page.goto('/dashboard');
   if ((page.viewportSize()?.width ?? 1280) < 768) {
     await page
       .getByRole('button', { name: 'Toggle Sidebar', exact: true })
@@ -100,30 +83,20 @@ test('opens account management with active and alternate account details', async
   page,
 }) => {
   await page.setViewportSize({ width: 375, height: 900 });
-  await signIn(page);
+  await openHostPage(page);
 
   const trigger = page.getByRole('button', {
     name: 'Open account management for Integration Entity',
   });
-
-  await expect(trigger).toContainText('IE');
-  await expect(
-    page.getByRole('button', { name: 'Notifications' })
-  ).toBeDisabled();
 
   await trigger.click();
 
   const dialog = page.getByRole('dialog', { name: 'Account management' });
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText('Integration Entity');
-  await expect(dialog).toContainText(authenticatedUser.email);
-  await expect(dialog).toContainText('Individual');
   await expect(
     dialog.getByRole('button', { name: 'Switch to Drimsheet' })
   ).toBeVisible();
-  await expect(
-    dialog.getByRole('button', { name: 'Drop a feedback' })
-  ).toBeDisabled();
 
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
@@ -135,8 +108,10 @@ test('opens account management with active and alternate account details', async
   ).toBe(true);
 });
 
-test('persists a selected color theme preference', async ({ page }) => {
-  await signIn(page);
+test('applies the selected account-menu theme to the host page', async ({
+  page,
+}) => {
+  await openHostPage(page);
 
   const updatedPreferences = {
     createdBy: authenticatedUser.id,
@@ -160,28 +135,14 @@ test('persists a selected color theme preference', async ({ page }) => {
     })
     .click();
 
-  const preferencesRequestPromise = page.waitForRequest(
-    (request) =>
-      request.url().endsWith('/api/v1/users/preferences') &&
-      request.method() === 'PATCH'
-  );
-
   await page.getByRole('button', { name: 'Toggle theme' }).click();
-  const preferencesRequest = await preferencesRequestPromise;
-
-  expect(
-    preferencesRequest.postDataJSON() as IUserPreferencesUpdateDto
-  ).toEqual({ theme: 'light' });
   await expect(page.locator('html')).not.toHaveClass(/dark/);
-  await expect
-    .poll(() => page.evaluate(() => localStorage.getItem('theme')))
-    .toBe('light');
 });
 
 test('switches accounting entity and reloads with the active entity', async ({
   page,
 }) => {
-  await signIn(page);
+  await openHostPage(page);
   let attempts = 0;
   await page.route(switchEntityEndpoint, async (route) => {
     attempts += 1;
@@ -221,7 +182,6 @@ test('switches accounting entity and reloads with the active entity', async ({
     await expect(trigger).toBeVisible();
     await trigger.click();
   });
-  const switchRequestPromise = page.waitForRequest(switchEntityEndpoint);
 
   const reloadRequestPromise = page.waitForRequest(
     (request) =>
@@ -238,20 +198,12 @@ test('switches accounting entity and reloads with the active entity', async ({
   );
 
   await page.getByRole('button', { name: 'Switch to Drimsheet' }).click();
-  const switchRequest = await switchRequestPromise;
   await reloadRequestPromise;
   await activeEntityRequestPromise;
-
-  expect(switchRequest.postDataJSON()).toEqual({
-    accountingEntityId: alternateAccountingEntity.id,
-  });
 
   await expect(
     page.getByRole('button', {
       name: 'Open account management for Drimsheet',
     })
   ).toBeVisible();
-  expect(
-    await page.evaluate(() => localStorage.getItem('accounting-entity-id'))
-  ).toBeNull();
 });

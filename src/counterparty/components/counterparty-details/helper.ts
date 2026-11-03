@@ -4,7 +4,7 @@ import type { ICounterpartyDto, UCounterpartyRole } from '@/shared/lib/api/Api';
 function getAddresses(counterparty: ICounterpartyDto) {
   const addresses: { lines: string[]; roles: UCounterpartyRole[] }[] = [];
   for (const role of counterparty.roles) {
-    const address = counterparty.meta[role]?.address;
+    const address = counterparty.roleDetails[role]?.address;
     if (!address) {
       continue;
     }

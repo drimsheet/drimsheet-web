@@ -5,6 +5,7 @@ import { useCheckCounterpartyDeletionEligibility } from '@/counterparty/hooks/us
 import { useCounterparties } from '@/counterparty/hooks/use-counterparties';
 import { counterpartyMapper } from '@/counterparty/lib/mappers/counterparty.mapper';
 import { getCounterpartyFormRole } from '@/counterparty/lib/utils/counterparty-form';
+import { SearchField } from '@/shared/components/search-field';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
@@ -14,14 +15,9 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CounterpartiesTable } from './counterparties-table';
+import { CounterpartiesTableError } from './state';
 
-interface CounterpartiesTableContainerProps {
-  onAddCounterparty: () => void;
-}
-
-export function CounterpartiesTableContainer({
-  onAddCounterparty,
-}: Readonly<CounterpartiesTableContainerProps>) {
+export function CounterpartiesTableContainer() {
   const { t } = useTranslation('counterparty');
   const [, setSearchParams] = useSearchParams();
   const handleApiError = useApiErrorHandler();
@@ -74,7 +70,12 @@ export function CounterpartiesTableContainer({
     ]
   );
 
-  const { data: counterpartiesData, isLoading } = useCounterparties(query);
+  const {
+    data: counterpartiesData,
+    isLoading,
+    isError,
+    isFetching,
+  } = useCounterparties(query);
 
   const handleFilterChange = useCallback(
     (nextFilters: Record<string, (string | number)[]>) => {
@@ -147,35 +148,48 @@ export function CounterpartiesTableContainer({
     );
   };
 
+  const search_placeholder = t('search_placeholder');
+
   return (
     <>
-      <CounterpartiesTable
-        archiving={archiving}
-        getCounterpartyHref={(id) =>
-          `/counterparties/${encodeURIComponent(id)}`
-        }
-        onAddCounterparty={onAddCounterparty}
-        onArchiveCounterparty={handleArchiveCounterparty}
-        onCheckCounterpartyDeleteEligibility={
-          handleCheckCounterpartyDeleteEligibility
-        }
-        onDeleteCounterparty={setCounterpartyToDelete}
-        onEditCounterparty={handleEditCounterparty}
-        data={counterpartiesData?.data ?? []}
-        loading={isLoading}
-        selectable
-        selectedRowIds={selectedRowIds}
-        onRowSelectionChange={setSelectedRowIds}
-        onSortChange={tableQuery.handleSortChange}
-        onFilterChange={handleFilterChange}
-        currentSortKey={tableQuery.sortKey as string}
-        currentSortDirection={tableQuery.sortDirection}
-        searchValue={tableQuery.searchQuery}
-        onSearchChange={tableQuery.handleSearchChange}
-        filters={filters}
-        pagination={counterpartiesData?.meta}
-        onPageChange={tableQuery.handlePageChange}
-      />
+      <div className="w-full max-w-sm">
+        <SearchField
+          type="search"
+          aria-label={search_placeholder}
+          placeholder={search_placeholder}
+          value={tableQuery.searchQuery}
+          onChange={(event) =>
+            tableQuery.handleSearchChange(event.target.value)
+          }
+        />
+      </div>
+      {isError && <CounterpartiesTableError />}
+      {!isError && (
+        <CounterpartiesTable
+          archiving={archiving}
+          getCounterpartyHref={(id) =>
+            `/counterparties/${encodeURIComponent(id)}`
+          }
+          onArchiveCounterparty={handleArchiveCounterparty}
+          onCheckCounterpartyDeleteEligibility={
+            handleCheckCounterpartyDeleteEligibility
+          }
+          onDeleteCounterparty={setCounterpartyToDelete}
+          onEditCounterparty={handleEditCounterparty}
+          data={counterpartiesData?.data ?? []}
+          loading={isLoading || isFetching}
+          selectable
+          selectedRowIds={selectedRowIds}
+          onRowSelectionChange={setSelectedRowIds}
+          onSortChange={tableQuery.handleSortChange}
+          onFilterChange={handleFilterChange}
+          currentSortKey={tableQuery.sortKey as string}
+          currentSortDirection={tableQuery.sortDirection}
+          filters={filters}
+          pagination={counterpartiesData?.meta}
+          onPageChange={tableQuery.handlePageChange}
+        />
+      )}
 
       <CounterpartyUpdateDialog onClose={handleCloseEdit} />
       <CounterpartyDeletionDialog

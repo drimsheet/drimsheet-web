@@ -1,32 +1,7 @@
 import type { IAccountDashboardBalancePoint } from '@/account/lib/types/account-dashboard.types';
 import { toMajorUnits } from '@/shared/lib/utils/money';
-import {
-  addDays,
-  differenceInCalendarDays,
-  format,
-  parseISO,
-  subMonths,
-} from 'date-fns';
-import type { IAccountBalanceChange, UBalancePeriod } from './types';
-
-function periodQuery(period: UBalancePeriod, now: Date) {
-  const months = { '1M': 1, '6M': 6, '1Y': 12 }[period];
-  const candidate = subMonths(now, months);
-
-  const from =
-    differenceInCalendarDays(now, candidate) > 365
-      ? addDays(candidate, 1)
-      : candidate;
-
-  return {
-    from: format(from, 'yyyy-MM-dd'),
-    to: format(now, 'yyyy-MM-dd'),
-  };
-}
-
-function bucketDays(period: UBalancePeriod) {
-  return { '1M': 5, '6M': 30, '1Y': 61 }[period];
-}
+import { parseISO } from 'date-fns';
+import type { IAccountBalanceChange } from './types';
 
 function formatDate(value: string, locale: string) {
   return new Intl.DateTimeFormat(locale, {
@@ -67,8 +42,6 @@ function balanceChange(
 }
 
 const accountDashboardHelpers = Object.freeze({
-  periodQuery,
-  bucketDays,
   formatDate,
   balanceChange,
 });

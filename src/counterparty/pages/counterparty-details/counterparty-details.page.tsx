@@ -2,31 +2,30 @@ import {
   CounterpartyDetails,
   CounterpartyDetailsSkeleton,
 } from '@/counterparty/components/counterparty-details';
+import { CounterpartyProfileActions } from '@/counterparty/components/counterparty-profile-actions';
 import { CounterpartyDeletionDialog } from '@/counterparty/dialogs/counterparty-deletion';
 import { CounterpartyUpdateDialog } from '@/counterparty/dialogs/counterparty-update';
 import { useCounterparty } from '@/counterparty/hooks/use-counterparty';
 import { useCounterpartyDeletionEligibility } from '@/counterparty/hooks/use-counterparty-deletion-eligibility';
 import { useCounterpartyTransactions } from '@/counterparty/hooks/use-counterparty-transactions';
 import { getCounterpartyFormRole } from '@/counterparty/lib/utils/counterparty-form';
-import { TransactionsTable } from '@/journal-entries/components/transactions-table';
 import { AppBody } from '@/shared/components/app';
-import { Button } from '@/shared/components/button';
-import { SearchField } from '@/shared/components/search-field';
+import { AppSection } from '@/shared/components/app-section';
+import { StatusBadge } from '@/shared/components/status-badge';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import {
   EJournalEntrySortBy,
   EPaginationSortDirection,
 } from '@/shared/lib/api/Api';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Link,
   Navigate,
   useNavigate,
   useParams,
   useSearchParams,
 } from 'react-router-dom';
+import { OverviewContainer } from './parts/overview.container';
 import { RecentTransactions } from './parts/recent-transactions';
 
 export function CounterpartyDetailsPage() {
@@ -97,44 +96,22 @@ export function CounterpartyDetailsPage() {
     setSortDirection(direction ?? EPaginationSortDirection.Asc);
   };
 
-  const all_counterparties_label = t('all_counterparties_label');
+  const overview_title = t('overview_title');
+  const transactions_title = t('recent_transactions_title');
+  const people_label = t('shared:counterparties');
+  const loading_title = t('details_title');
 
-  if (!counterpartyId) {
-    return <Navigate replace to="/counterparties" />;
-  }
+  const breadcrumbs = {
+    label: people_label,
+    link: '/counterparties',
+    next: counterparty ? { label: counterparty.name } : undefined,
+  };
 
-  if (isPending) {
-    return (
-      <AppBody>
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-          <Button
-            variant="link"
-            asChild
-            className="w-fit px-0 text-muted-foreground"
-          >
-            <Link to="/counterparties">
-              <ArrowLeft data-icon="inline-start" aria-hidden="true" />
-              {all_counterparties_label}
-            </Link>
-          </Button>
-          <CounterpartyDetailsSkeleton />
-        </div>
-      </AppBody>
-    );
-  }
-
-  // TODO: create a shared 404 component
-  if (!counterparty) {
+  if (!counterpartyId || (!isPending && !counterparty)) {
     return <Navigate replace to="/counterparties" />;
   }
 
   const transactionsHref = `/transactions?${new URLSearchParams({ counterpartyId })}`;
-
-  const view_transactions_label = t('view_transactions_label');
-
-  const search_placeholder = t(
-    'journal-entries:transactions_table_search_placeholder'
-  );
 
   const hasNoTransactions =
     transactions.isSuccess &&
@@ -143,84 +120,88 @@ export function CounterpartyDetailsPage() {
     !search &&
     !debouncedSearch;
 
-  const count_text = t('transactions_count_text', {
-    count: transactions.data?.data.length ?? 0,
-    total: transactions.data?.meta.total ?? 0,
-  });
+  const status_label = counterparty ? t(`shared:${counterparty.status}`) : '';
+  const type_label = counterparty ? t(`${counterparty.type}_label`) : undefined;
 
   return (
     <>
-      <AppBody>
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-          <Button
-            variant="link"
-            asChild
-            className="w-fit px-0 text-muted-foreground"
-          >
-            <Link to="/counterparties">
-              <ArrowLeft data-icon="inline-start" aria-hidden="true" />
-              {all_counterparties_label}
-            </Link>
-          </Button>
-          <CounterpartyDetails
-            counterparty={counterparty}
-            deleteEligibilityChecking={
-              deletionEligibility.isPending || deletionEligibility.isFetching
+      <AppBody
+        breadcrumbs={breadcrumbs}
+        title={counterparty?.name ?? loading_title}
+        description={type_label}
+        titleBadgeSlot={
+          counterparty && (
+            <StatusBadge
+              label={status_label}
+              variant={counterparty.status === 'active' ? 'success' : 'neutral'}
+            />
+          )
+        }
+        actionsSlot={
+          counterparty && (
+            <CounterpartyProfileActions
+              deleteEligibilityChecking={
+                deletionEligibility.isPending || deletionEligibility.isFetching
+              }
+              deletable={
+                deletionEligibility.isSuccess &&
+                deletionEligibility.data.canDelete
+              }
+              onActionsOpenChange={setActionsOpen}
+              onDelete={() => setDeleteOpen(true)}
+              onEdit={handleEdit}
+              editDisabled={counterparty.status === 'archived'}
+            />
+          )
+        }
+      >
+        <AppSection>
+          {isPending ? (
+            <CounterpartyDetailsSkeleton />
+          ) : (
+            counterparty && <CounterpartyDetails counterparty={counterparty} />
+          )}
+        </AppSection>
+        <AppSection title={overview_title}>
+          <OverviewContainer
+            key={counterpartyId}
+            counterpartyId={counterparty?.id}
+          />
+        </AppSection>
+        <AppSection title={transactions_title}>
+          <RecentTransactions
+            counterpartyName={counterparty?.name ?? ''}
+            empty={hasNoTransactions}
+            transactions={transactions.data?.data ?? []}
+            loading={isPending || transactions.isPending}
+            search={search}
+            onSearchChange={setSearch}
+            sortDirection={sortDirection}
+            onSortChange={handleSortChange}
+            transactionsHref={transactionsHref}
+            total={
+              transactions.isSuccess && !transactions.isPlaceholderData
+                ? transactions.data.meta.total
+                : undefined
             }
-            deletable={
-              deletionEligibility.isSuccess &&
-              deletionEligibility.data.canDelete
-            }
-            onActionsOpenChange={setActionsOpen}
-            onDelete={() => setDeleteOpen(true)}
-            onEdit={handleEdit}
-            editDisabled={counterparty.status === 'archived'}
-          >
-            <RecentTransactions
-              counterpartyName={counterparty.name}
-              empty={hasNoTransactions}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="w-full max-w-sm">
-                  <SearchField
-                    type="search"
-                    aria-label={search_placeholder}
-                    placeholder={search_placeholder}
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                  />
-                </div>
-                <Button variant="link" asChild className="px-0">
-                  <Link to={transactionsHref}>
-                    {view_transactions_label}
-                    <ArrowRight data-icon="inline-end" aria-hidden="true" />
-                  </Link>
-                </Button>
-              </div>
-              <TransactionsTable
-                data={transactions.data?.data ?? []}
-                loading={transactions.isPending}
-                currentSortDirection={sortDirection}
-                onSortChange={handleSortChange}
-              />
-              {transactions.isSuccess && !transactions.isPlaceholderData && (
-                <p className="text-sm text-muted-foreground">{count_text}</p>
-              )}
-            </RecentTransactions>
-          </CounterpartyDetails>
-        </div>
+          />
+        </AppSection>
       </AppBody>
-      <CounterpartyUpdateDialog
-        counterpartyId={counterpartyId}
-        type={counterparty.type}
-        role={getCounterpartyFormRole(counterparty)}
-        onClose={handleCloseEdit}
-      />
-      <CounterpartyDeletionDialog
-        counterparty={deleteOpen ? counterparty : null}
-        onClose={() => setDeleteOpen(false)}
-        onDeleted={() => navigate('/counterparties')}
-      />
+      {counterparty && (
+        <>
+          <CounterpartyUpdateDialog
+            counterpartyId={counterpartyId}
+            type={counterparty.type}
+            role={getCounterpartyFormRole(counterparty)}
+            onClose={handleCloseEdit}
+          />
+          <CounterpartyDeletionDialog
+            counterparty={deleteOpen ? counterparty : null}
+            onClose={() => setDeleteOpen(false)}
+            onDeleted={() => navigate('/counterparties')}
+          />
+        </>
+      )}
     </>
   );
 }

@@ -1,7 +1,4 @@
-import {
-  CategoryCharts,
-  CategoryChartsSkeleton,
-} from '@/account/pages/category-details/parts/category-charts';
+import { CategoryCharts } from '@/account/pages/category-details/parts/category-charts';
 import { CategoryTrendSkeleton } from '@/account/pages/category-details/parts/category-trend';
 import { CounterpartyShareSkeleton } from '@/account/pages/category-details/parts/counterparty-share';
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -22,4 +19,4 @@ const meta = {
 
 export default meta;
 type TStory = StoryObj<typeof meta>;
-export const Loading: TStory = { render: () => <CategoryChartsSkeleton /> };
+export const Loading: TStory = {};

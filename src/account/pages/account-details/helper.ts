@@ -1,11 +1,4 @@
-import type { IGetAccountCashFlowQuery } from '@/shared/lib/api/Api';
-import {
-  endOfMonth,
-  format,
-  parseISO,
-  startOfMonth,
-  subMonths,
-} from 'date-fns';
+import { parseISO } from 'date-fns';
 
 function formatDate(
   value: string | Date,
@@ -21,32 +14,6 @@ function formatDate(
   return new Intl.DateTimeFormat(locale, options).format(date);
 }
 
-function periodQuery(period: string, now: Date): IGetAccountCashFlowQuery {
-  const start = parseISO(`${period}-01`);
-  const end = endOfMonth(start);
-
-  return {
-    from: format(start, 'yyyy-MM-dd'),
-    to: format(end > now ? now : end, 'yyyy-MM-dd'),
-    bucketDays: 7,
-  };
-}
-
-function periodOptions(now: Date, locale: string) {
-  return Array.from({ length: 12 }, (_, index) => {
-    const date = subMonths(startOfMonth(now), index);
-
-    return {
-      value: format(date, 'yyyy-MM'),
-      label: formatDate(date, locale, { month: 'long', year: 'numeric' }),
-    };
-  });
-}
-
-const accountDetailsHelpers = Object.freeze({
-  formatDate,
-  periodQuery,
-  periodOptions,
-});
+const accountDetailsHelpers = Object.freeze({ formatDate });
 
 export default accountDetailsHelpers;

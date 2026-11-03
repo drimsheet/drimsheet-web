@@ -1,21 +1,22 @@
 import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
+import { ReportingIntervalSelectContainer } from '@/reporting/components/reporting-interval-select';
 import { useAccountActivity } from '@/reporting/hooks/use-account-activity';
 import { AppBody } from '@/shared/components/app';
 import { AppSection } from '@/shared/components/app-section';
 import { StatusBadge } from '@/shared/components/status-badge';
+import type { IDateRangeDto } from '@/shared/lib/api/Api';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
 import categoryDetailsHelpers from './helper';
 import { CategoryActionsContainer } from './parts/category-actions.container';
-import { CategoryChartsWithState } from './parts/category-charts';
+import { CategoryCharts } from './parts/category-charts';
 import { CategoryMetadata } from './parts/category-metadata';
 import {
   CategorySummary,
   CategorySummaryWithState,
 } from './parts/category-summary';
-import { CategoryTransactionsWithState } from './parts/category-transactions';
 import { CategoryTransactionsContainer } from './parts/category-transactions.container';
 import { CategoryTrend, CategoryTrendWithState } from './parts/category-trend';
 import { CounterpartyShareContainer } from './parts/counterparty-share.container';
@@ -24,8 +25,6 @@ import type { CounterpartyShareProps } from './types';
 export function CategoryDetailsPage() {
   const { accountId = '' } = useParams();
   const { t } = useTranslation(['ledger-accounts', 'shared']);
-  const [period, setPeriod] = useState('6');
-  const [now] = useState(() => new Date());
 
   const [selected, setSelected] = useState<{
     accountId: string;
@@ -41,14 +40,22 @@ export function CategoryDetailsPage() {
     !account.isControlAccount &&
     (account.type === 'revenue' || account.type === 'expense');
 
-  const range = categoryDetailsHelpers.period(now, period);
-  const query = { from: range.from, to: range.to, bucketDays: 1 };
+  const [range, setRange] = useState<IDateRangeDto>();
+  const query = { from: range?.from ?? '', to: range?.to ?? '', bucketDays: 1 };
 
-  const activityQuery = useAccountActivity(accountId, query, isCategory);
+  const activityQuery = useAccountActivity(
+    accountId,
+    query,
+    isCategory && !!range
+  );
 
   const recent = useJournalEntries(
-    categoryDetailsHelpers.recentQuery(accountId, range.from, range.to),
-    { enabled: isCategory, throwOnError: false }
+    categoryDetailsHelpers.recentQuery(
+      accountId,
+      range?.from ?? '',
+      range?.to ?? ''
+    ),
+    { enabled: isCategory && !!range, throwOnError: false }
   );
 
   const activity = useMemo(() => {
@@ -66,9 +73,14 @@ export function CategoryDetailsPage() {
   const selectedId =
     selected?.accountId === accountId ? selected.counterpartyId : null;
 
-  const transactionCount = recent.isPending
-    ? undefined
-    : (recent.data?.meta.total ?? null);
+  const recentCount = range ? (recent.data?.meta.total ?? null) : null;
+  const transactionCount = range && recent.isPending ? undefined : recentCount;
+  const balance = range ? (activity?.balance ?? null) : null;
+
+  const handleIntervalChange = (next: IDateRangeDto | undefined) => {
+    setRange(next);
+    setSelected(null);
+  };
 
   const handleSelect = (
     participation: CounterpartyShareProps['counterparties'][number]
@@ -99,9 +111,6 @@ export function CategoryDetailsPage() {
 
   const selectedName =
     selectedId === 'self' ? self_label : (selected?.name ?? unassigned_label);
-
-  const show_detail_sections =
-    !accountQuery.isError && (accountQuery.isPending || isCategory);
 
   const breadcrumb_label = t('categories_table_breadcrumb');
   const overview_title = t('details_overview_title');
@@ -147,70 +156,57 @@ export function CategoryDetailsPage() {
           {account && isCategory && (
             <CategorySummary
               account={account}
-              balance={
-                activityQuery.isPending
-                  ? undefined
-                  : (activity?.balance ?? null)
+              balance={range && activityQuery.isPending ? undefined : balance}
+              intervalSlot={
+                <ReportingIntervalSelectContainer
+                  onChange={handleIntervalChange}
+                />
               }
-              period={period}
-              onPeriodChange={setPeriod}
               transactionCount={transactionCount}
             />
           )}
         </CategorySummaryWithState>
       </AppSection>
-      {show_detail_sections && (
+      {!accountQuery.isError && account && isCategory && range && (
         <>
           <AppSection>
-            <CategoryChartsWithState loading={accountQuery.isPending}>
-              {account && isCategory && (
-                <>
-                  <CategoryTrendWithState
-                    loading={activityQuery.isPending}
-                    error={
-                      activityQuery.isError ||
-                      (activityQuery.isSuccess && activity === null)
-                    }
-                  >
-                    {activityQuery.isSuccess && activity && (
-                      <CategoryTrend
-                        months={activity.months}
-                        hasTransactions={activity.hasActivity}
-                        currencyCode={account.functionalBalance.currencyCode}
-                        type={
-                          account.type === 'revenue' ? 'revenue' : 'expense'
-                        }
-                      />
-                    )}
-                  </CategoryTrendWithState>
-                  <CounterpartyShareContainer
-                    key={`${accountId}:${range.from}:${range.to}`}
-                    accountId={accountId}
-                    from={range.from}
-                    to={range.to}
+            <CategoryCharts>
+              <CategoryTrendWithState
+                loading={activityQuery.isPending}
+                error={
+                  activityQuery.isError ||
+                  (activityQuery.isSuccess && activity === null)
+                }
+              >
+                {activityQuery.isSuccess && activity && (
+                  <CategoryTrend
+                    months={activity.months}
+                    hasTransactions={activity.hasActivity}
+                    currencyCode={account.functionalBalance.currencyCode}
                     type={account.type === 'revenue' ? 'revenue' : 'expense'}
-                    selectedId={selectedId}
-                    onSelect={handleSelect}
                   />
-                </>
-              )}
-            </CategoryChartsWithState>
+                )}
+              </CategoryTrendWithState>
+              <CounterpartyShareContainer
+                key={`${accountId}:${range.from}:${range.to}`}
+                accountId={accountId}
+                from={range.from}
+                to={range.to}
+                type={account.type === 'revenue' ? 'revenue' : 'expense'}
+                selectedId={selectedId}
+                onSelect={handleSelect}
+              />
+            </CategoryCharts>
           </AppSection>
           <AppSection title={recent_transactions_title}>
-            <CategoryTransactionsWithState loading={accountQuery.isPending}>
-              {account && isCategory && (
-                <CategoryTransactionsContainer
-                  accountId={accountId}
-                  from={range.from}
-                  to={range.to}
-                  counterpartyId={selectedId}
-                  selectedCounterparty={
-                    selectedId === null ? null : selectedName
-                  }
-                  onClearCounterparty={() => setSelected(null)}
-                />
-              )}
-            </CategoryTransactionsWithState>
+            <CategoryTransactionsContainer
+              accountId={accountId}
+              from={range.from}
+              to={range.to}
+              counterpartyId={selectedId}
+              selectedCounterparty={selectedId === null ? null : selectedName}
+              onClearCounterparty={() => setSelected(null)}
+            />
           </AppSection>
         </>
       )}

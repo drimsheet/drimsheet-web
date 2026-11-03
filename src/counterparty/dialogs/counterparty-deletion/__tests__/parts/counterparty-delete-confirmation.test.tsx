@@ -18,7 +18,7 @@ describe('CounterpartyDeleteConfirmation', () => {
     );
 
     const dialog = screen.getByRole('alertdialog', {
-      name: 'Delete counterparty?',
+      name: 'Delete person or business?',
     });
 
     const confirmationInput = within(dialog).getByLabelText(

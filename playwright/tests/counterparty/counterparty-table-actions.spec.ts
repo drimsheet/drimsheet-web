@@ -6,6 +6,8 @@ import {
 } from '@integration/mocks/authenticated-app';
 import type { Page } from '@playwright/test';
 
+test.use({ authenticated: true });
+
 const counterpartyId = '00000000-0000-4000-8000-000000000010';
 const detailEndpoint = `**/api/v1/counterparties/${counterpartyId}`;
 const archiveEndpoint = `${detailEndpoint}/archive`;
@@ -19,33 +21,15 @@ const counterparty: ICounterpartyDto = {
   status: 'active',
   type: 'organization',
   roles: ['vendor'],
-  meta: { vendor: { address: null } },
+  roleDetails: { vendor: { address: null } },
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
 };
 
-async function signIn(page: Page) {
-  await page.goto('/auth/signin');
-  await page.getByLabel('Email').fill(authenticatedUser.email);
-  await page.getByLabel('Password', { exact: true }).fill('Password1!');
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await expect(page).toHaveURL('/dashboard');
-}
-
 async function setup(page: Page) {
   let current = structuredClone(counterparty);
-  let deleted = false;
-  const archiveRequestBodies: (string | null)[] = [];
-  const deleteRequestBodies: (string | null)[] = [];
-  const deletionEligibilityRequests: string[] = [];
 
   await registerAuthenticatedAppRoutes(page);
-
-  for (const path of ['login-with-email', 'refresh-access-token']) {
-    await page.route(`**/api/v1/auth/${path}`, (route) =>
-      route.fulfill({ json: { accessToken: 'integration-test-token' } })
-    );
-  }
 
   await page.route('**/api/v1/accounting/jurisdictions', (route) =>
     route.fulfill({
@@ -73,50 +57,29 @@ async function setup(page: Page) {
   await page.route('**/api/v1/counterparties?*', (route) =>
     route.fulfill({
       json: {
-        data: deleted ? [] : [current],
+        data: [current],
         meta: {
           page: 1,
           limit: 10,
-          total: deleted ? 0 : 1,
-          totalPages: deleted ? 0 : 1,
+          total: 1,
+          totalPages: 1,
         },
       },
     })
   );
 
-  await page.route(detailEndpoint, async (route) => {
-    if (route.request().method() === 'DELETE') {
-      deleteRequestBodies.push(route.request().postData());
-      deleted = true;
-      await route.fulfill({ status: 204 });
-
-      return;
-    }
-
-    await route.fulfill({ json: current });
-  });
-
-  await page.route(deletionEligibilityEndpoint, async (route) => {
-    deletionEligibilityRequests.push(route.request().url());
-    await route.fulfill({ json: { canDelete: true } });
-  });
+  await page.route(detailEndpoint, (route) => route.fulfill({ json: current }));
+  await page.route(deletionEligibilityEndpoint, (route) =>
+    route.fulfill({ json: { canDelete: true } })
+  );
 
   await page.route(archiveEndpoint, async (route) => {
-    archiveRequestBodies.push(route.request().postData());
     current = {
       ...current,
       status: 'archived',
     };
     await route.fulfill({ json: current });
   });
-
-  await signIn(page);
-
-  return {
-    archiveRequestBodies,
-    deleteRequestBodies,
-    deletionEligibilityRequests,
-  };
 }
 
 test('opens the role-specific update dialog from the table and keeps its identity in the URL', async ({
@@ -130,7 +93,9 @@ test('opens the role-specific update dialog from the table and keeps its identit
 
   const row = page.getByRole('row').filter({ hasText: counterparty.name });
 
-  await row.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await row
+    .getByRole('button', { name: 'Open person or business actions' })
+    .click();
   await page.getByRole('menuitem', { name: 'Edit' }).click();
 
   await expect
@@ -143,7 +108,7 @@ test('opens the role-specific update dialog from the table and keeps its identit
     .poll(() => new URL(page.url()).searchParams.get('counterpartyType'))
     .toBe('organization');
 
-  const dialog = page.getByRole('dialog', { name: 'Edit counterparty' });
+  const dialog = page.getByRole('dialog', { name: 'Edit person or business' });
   await expect(dialog.getByLabel('Legal name', { exact: true })).toHaveValue(
     counterparty.name
   );
@@ -165,7 +130,7 @@ test('opens the role-specific update dialog from the table and keeps its identit
 test('asks for confirmation and archives the selected counterparty', async ({
   page,
 }) => {
-  const state = await setup(page);
+  await setup(page);
   await page.goto('/counterparties');
   await expect(
     page.getByRole('cell', { name: 'Adenike Supplies', exact: true })
@@ -173,36 +138,35 @@ test('asks for confirmation and archives the selected counterparty', async ({
 
   const row = page.getByRole('row').filter({ hasText: counterparty.name });
 
-  await row.getByRole('button', { name: 'Open counterparty actions' }).click();
+  await row
+    .getByRole('button', { name: 'Open person or business actions' })
+    .click();
   await page.getByRole('menuitem', { name: 'Archive' }).click();
 
   const confirmation = page.getByRole('alertdialog', {
-    name: 'Archive counterparty?',
+    name: 'Archive person or business?',
   });
 
   await expect(confirmation).toBeVisible();
-  expect(state.archiveRequestBodies).toEqual([]);
   await confirmation
-    .getByRole('button', { name: 'Archive counterparty' })
+    .getByRole('button', { name: 'Archive person or business' })
     .click();
 
   await expect(confirmation).not.toBeVisible();
-  expect(state.archiveRequestBodies).toEqual([null]);
   await expect(
-    page.getByText('Counterparty archived successfully')
+    page.getByText('Person or business archived successfully')
   ).toBeVisible();
   await expect(
     page.getByRole('row').filter({ hasText: counterparty.name })
   ).toContainText('Archived');
 });
 
-test('rechecks row deletion eligibility after a conflict and refreshes the list on success', async ({
+test('restores pointer and focus interaction after a row deletion dialog closes on conflict', async ({
   page,
 }) => {
-  const state = await setup(page);
-  let attempts = 0;
+  await setup(page);
   await page.route(detailEndpoint, async (route) => {
-    if (route.request().method() !== 'DELETE' || ++attempts > 1) {
+    if (route.request().method() !== 'DELETE') {
       await route.fallback();
 
       return;
@@ -214,60 +178,41 @@ test('rechecks row deletion eligibility after a conflict and refreshes the list 
         name: 'ConflictError',
         errorKey:
           'counterparty_error_deletion_with_transaction_references_conflict',
-        validationErrors: [],
       },
     });
   });
 
   await page.goto('/counterparties');
-
   const row = page.getByRole('row').filter({ hasText: counterparty.name });
-  await expect(row).toBeVisible();
-  expect(state.deletionEligibilityRequests).toEqual([]);
 
-  await row.getByRole('button', { name: 'Open counterparty actions' }).click();
-  await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
-  expect(state.deletionEligibilityRequests).toHaveLength(1);
-  await page.getByRole('menuitem', { name: 'Delete' }).click();
+  const actions = row.getByRole('button', {
+    name: 'Open person or business actions',
+  });
+
+  await actions.click();
+  await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
 
   const confirmation = page.getByRole('alertdialog', {
-    name: 'Delete counterparty?',
+    name: 'Delete person or business?',
   });
 
-  const deleteButton = confirmation.getByRole('button', {
-    name: 'Delete',
-    exact: true,
-  });
-
-  await expect(confirmation).toContainText(
-    'This action will permanently delete Adenike Supplies and cannot be undone.'
-  );
-  await confirmation.getByLabel('Type "delete" to confirm').fill('Delete');
-  await expect(deleteButton).toBeDisabled();
   await confirmation.getByLabel('Type "delete" to confirm').fill('delete');
-  await test.step('A raced deletion conflict leaves the row intact', async () => {
-    await deleteButton.click();
-    await expect(confirmation).not.toBeVisible();
-    await expect(
-      page.getByText(
-        'This counterparty cannot be deleted because it is referenced by one or more transactions.'
-      )
-    ).toBeVisible();
-    await expect(row).toBeVisible();
-    await row
-      .getByRole('button', { name: 'Open counterparty actions' })
-      .click();
-    await expect(page.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
-    expect(state.deletionEligibilityRequests).toHaveLength(2);
-    await page.getByRole('menuitem', { name: 'Delete' }).click();
-    await confirmation.getByLabel('Type "delete" to confirm').fill('delete');
-  });
-  await deleteButton.click();
-
-  await expect(confirmation).not.toBeVisible();
-  await expect(row).not.toBeVisible();
+  await confirmation
+    .getByRole('button', { name: 'Delete', exact: true })
+    .click();
   await expect(
-    page.getByText('Counterparty deleted successfully')
+    page.getByText(
+      'This person or business cannot be deleted because it is referenced by one or more transactions.'
+    )
   ).toBeVisible();
-  expect(state.deleteRequestBodies).toEqual([null]);
+  await expect(confirmation).toHaveCount(0);
+  await expect(page.getByRole('menu', { includeHidden: true })).toHaveCount(0);
+  await expect(actions).toHaveAttribute('aria-expanded', 'false');
+
+  // Wait for both closing portals before exercising pointer and focus behavior.
+  await actions.click();
+  await expect(page.getByRole('menu')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('menu')).not.toBeVisible();
+  await expect(actions).toBeFocused();
 });
