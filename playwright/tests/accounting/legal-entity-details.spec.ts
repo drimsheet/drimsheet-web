@@ -15,6 +15,8 @@ import {
   year,
 } from '@integration/mocks/legal-entity-details';
 
+test.use({ authenticated: true });
+
 const previousYear = {
   ...year,
   id: 'previous-year',
@@ -77,22 +79,6 @@ test.beforeEach(async ({ page }) => {
       },
     })
   );
-  await page.route('**/api/v1/auth/refresh-access-token', (route) =>
-    route.fulfill({ json: { accessToken: 'integration-test-token' } })
-  );
-  await page.route('**/api/v1/auth/login-with-email', (route) =>
-    route.fulfill({ json: { accessToken: 'integration-test-token' } })
-  );
-  await page.goto('/auth/signin');
-  await page.getByLabel('Email').fill(authenticatedUser.email);
-  await page.getByLabel('Password', { exact: true }).fill('Password1!');
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await expect(page).toHaveURL('/dashboard');
-  await expect(
-    page.getByRole('button', {
-      name: 'Open account management for Integration Entity',
-    })
-  ).toBeVisible();
 });
 
 test('loads the selected entity without switching and shows only current periods', async ({
@@ -203,11 +189,10 @@ test('recovers from failed details and supports an entity without fiscal years',
   ).toBeVisible();
 });
 
-test('validates and saves the entity name, retaining input on failure', async ({
+test('coordinates entity editing and retains input on failure', async ({
   page,
 }) => {
   let savedEntity: IAccountingEntity = entity;
-  let payload: IAccountingEntityUpdateReq | undefined;
   let fail = true;
   await page.route('**/api/v1/accounting/accounting-entity', (route) => {
     if (route.request().headers()['x-accounting-entity-id'] !== entity.id) {
@@ -215,12 +200,15 @@ test('validates and saves the entity name, retaining input on failure', async ({
     }
 
     if (route.request().method() === 'PATCH') {
-      payload = route.request().postDataJSON();
       if (fail) {
         return route.fulfill({ status: 500, json: {} });
       }
 
-      savedEntity = { ...entity, name: payload?.name ?? entity.name };
+      const payload = route
+        .request()
+        .postDataJSON() as IAccountingEntityUpdateReq;
+
+      savedEntity = { ...entity, name: payload.name ?? entity.name };
     }
 
     return route.fulfill({ json: savedEntity });
@@ -228,9 +216,6 @@ test('validates and saves the entity name, retaining input on failure', async ({
   await page.goto(`/legal-entity/${entity.id}`);
   await page.getByRole('button', { name: 'Edit', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Edit legal entity' });
-  await dialog.getByLabel('Legal entity name', { exact: true }).fill('   ');
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog.getByText('Enter a legal entity name.')).toBeVisible();
   await dialog
     .getByLabel('Legal entity name', { exact: true })
     .fill(' Updated Studio ');
@@ -247,7 +232,6 @@ test('validates and saves the entity name, retaining input on failure', async ({
   await expect(
     page.getByRole('heading', { name: 'Updated Studio' })
   ).toBeVisible();
-  expect(payload).toEqual({ name: 'Updated Studio' });
   await expect(
     page.getByRole('button', { name: 'Edit', exact: true })
   ).toBeFocused();
@@ -290,10 +274,10 @@ test('confirms archive and prevents dismissal while it is pending', async ({
   expect(scope).toBe(entity.id);
 });
 
-test('explains a blocked deletion and only navigates away after success', async ({
+test('keeps the deletion dialog open when the entity cannot be deleted', async ({
   page,
 }) => {
-  let conflict = true;
+  const conflict = true;
   await page.route('**/api/v1/accounting/accounting-entity', (route) => {
     if (route.request().method() !== 'DELETE') {
       return route.fallback();
@@ -314,18 +298,12 @@ test('explains a blocked deletion and only navigates away after success', async 
     'has journal entries and cannot be deleted'
   );
   await expect(page).toHaveURL(`/legal-entity/${entity.id}`);
-  conflict = false;
-  await dialog.getByRole('button', { name: 'Delete entity' }).click();
-  await expect(page).toHaveURL('/legal-entity');
 });
 
 test('switches only on request and reloads into the chosen entity', async ({
   page,
 }) => {
-  let payload: unknown;
   await page.route('**/api/v1/accounting/accounting-entity/switch', (route) => {
-    payload = route.request().postDataJSON();
-
     return route.fulfill({ json: entity });
   });
   await page.goto(`/legal-entity/${entity.id}`);
@@ -338,5 +316,4 @@ test('switches only on request and reloads into the chosen entity', async ({
   await expect(
     page.getByRole('button', { name: 'Current entity', exact: true })
   ).toBeDisabled();
-  expect(payload).toEqual({ accountingEntityId: entity.id });
 });

@@ -4,24 +4,30 @@
 
 Choose the least expensive adequate runner and isolation boundary for the
 behavior under test. Default to extending existing coverage before adding
-another browser journey.
+another page/dialog integration case.
 
 ## Test Matrix
 
-| Layer                    | Runner                   | Boundary                                          | Location                       |
-| ------------------------ | ------------------------ | ------------------------------------------------- | ------------------------------ |
-| Component                | Vitest + Testing Library | Real owned component tree                         | Owner `__tests__/*.test.tsx`   |
-| Component container      | Vitest + Testing Library | Real presentation with external boundaries mocked | Owner `__tests__/*.test.tsx`   |
-| Hook, mapper, validation | Vitest                   | Deterministic module contract                     | Owner `__tests__/*.test.ts(x)` |
-| Browser integration      | Playwright               | Running frontend with controlled first-party APIs | `playwright/tests/<feature>/`  |
-| System end-to-end        | External E2E suite       | Deployed frontend and real test-system boundaries | Separate repository            |
+| Layer                    | Runner                   | Boundary                                                            | Location                       |
+| ------------------------ | ------------------------ | ------------------------------------------------------------------- | ------------------------------ |
+| Component                | Vitest + Testing Library | Real owned component tree                                           | Owner `__tests__/*.test.tsx`   |
+| Component container      | Vitest + Testing Library | Real presentation with external boundaries mocked                   | Owner `__tests__/*.test.tsx`   |
+| Hook, mapper, validation | Vitest                   | Deterministic module contract                                       | Owner `__tests__/*.test.ts(x)` |
+| Browser integration      | Playwright               | One page/dialog's component composition and states; controlled APIs | `playwright/tests/<feature>/`  |
+| System end-to-end        | External E2E suite       | Deployed frontend and real test-system boundaries                   | Separate repository            |
 
 ## Select the Layer
 
 - Use Vitest for components, containers, hooks, mappers, services, validation,
   and other module-owned contracts.
-- Use Playwright in this repository when browser composition, routing, portals,
-  focus, navigation, or browser APIs are material to the outcome.
+- Use Playwright for interacting components, visible states, and state
+  transitions within one page or dialog when lower-level tests are inadequate.
+  Portals, focus, browser APIs, and same-page URL state qualify only when
+  material to that composed UI behavior.
+- Exclude cross-page navigation and business journeys even with mocked APIs.
+  Direct route entry is setup. A dialog may open from and update its host page;
+  do not continue into another page or dialog workflow. Follow the
+  [page/dialog boundary](../rules/testing-rules.md#pagedialog-boundary).
 - Use the external E2E suite when the behavior under test includes the real API,
   database, email delivery, identity provider, or another deployed service.
 - Do not duplicate lower-level component assertions in Playwright unless the
@@ -60,7 +66,8 @@ above. Place their tests in `pages/<page>/__tests__/parts/`, hook tests in
 `pages/<page>/__tests__/helper.test.ts`. Import private modules through explicit
 implementation paths. Pure part stories mirror `parts/` under the page owner's
 `__stories__/`; page entries and containers are exempt from required stories.
-Keep complete page and route journeys in Playwright.
+Keep page composition and state transitions in Playwright within one
+page/dialog boundary.
 
 ## Browser Integration Tests
 
@@ -70,45 +77,53 @@ Apply the admission, consolidation, assertion, and execution-cost requirements
 in [Testing Rules](../rules/testing-rules.md#browser-integration) before writing
 or retaining browser coverage in an audit.
 
-1. Identify the concrete regression and the composed frontend boundary that
-   needs protection. Inspect the route, page/dialog, API contract, and existing
-   lower-level tests; do not infer value from a test's title.
-2. Find the existing journey that can own the check. Prefer extending it, or
-   extending lower-level coverage when browser composition is not material.
+1. Name the owning page/dialog, interacting components, and rendered state or
+   transition that needs protection. Inspect the route, page/dialog, API
+   contract, and existing lower-level tests; do not infer value from a title.
+2. Find an existing case within that owner that can naturally include the
+   check. Prefer extending lower-level coverage when page/dialog composition
+   is not material. Reject cross-page cases before considering consolidation.
 3. Add a separate browser case only when it passes the admission requirements.
    Record the regression, lower-level gap, and reason it cannot reasonably
-   join an existing journey in the change summary. Do not create a separate
+   join an existing case for that owner in the change summary. Do not create a separate
    justification document or boilerplate comments for each assertion.
 4. For an audit, account for every case in the requested scope, including
    expanded matrix variants. Give a reasoned keep/consolidate/move/remove
-   disposition and identify the destination journey or lower-level owner.
+   disposition and identify the destination case, lower-level owner, or E2E
+   coverage need. Call out routing coverage gaps that fit neither suite.
    Flag weak assertions even when the case should remain. Apply edits only
    within the user's requested scope.
 
-### Build the chosen journey
+### Build the page/dialog case
 
 1. Extend the owning spec under
    `playwright/tests/<feature>/<user-outcome>.spec.ts`; create a file only when
    no appropriate owner exists.
-2. Group compatible stages with `test.step`. A form may fail, show the settled
-   error, preserve input, accept another normal submission, block duplicate
-   submits while pending, and finish successfully in one test. Include
-   cancel/reopen/reset or responsive interaction in that flow when relevant.
+2. Group naturally connected state transitions with `test.step`, such as
+   submission, pending controls, and success; or submission, settled error,
+   and retained input. Include dismissal/reopening only when their composed
+   behavior is under test. Do not force failure, success, and reset sequences
+   into one case to save setup.
 3. Keep distinct outcomes or dependencies separate when they cannot share a
    coherent lifecycle. Do not combine unrelated work into a giant CRUD test.
 4. Import `test` and `expect` from `@integration/fixtures/test`.
 5. Register deterministic first-party API routes before navigation or the
    interaction that can issue them.
-6. Navigate through the public application route.
+6. Use fixtures for prerequisites and navigate directly to the owner's public
+   route. Open the dialog from its host page if applicable. Do not complete
+   another page's workflow to reach the owner.
 7. Use the real page, dialog, forms, providers, router, and portal behavior.
 8. Interact through accessible roles, labels, and visible text.
-9. Assert the completed visible outcome and relevant frontend request contract.
+9. Assert the owner's completed visible outcome. Assert relevant frontend
+   requests only where they support that composed outcome.
    Make mocks distinguish query states, hold each relevant pending request,
-   and exercise actual history/focus/scrolling behavior where claimed.
+   and exercise actual same-page history/focus/scrolling behavior where claimed.
+   Stop at the owner's outcome; do not follow navigation to assert another
+   page's state or continue a business journey.
 10. Review each assertion against a plausible regression: could it still pass
     if submission did nothing, the error never settled, stale data remained,
     or the request used the wrong scope? Strengthen or remove ineffective
-    checks before treating the journey as coverage.
+    checks before treating the case as coverage.
 
 Do not call live first-party services. Integration mode points
 `VITE_API_URL` at the local Vite origin so a missed intercept cannot reach a
@@ -122,8 +137,9 @@ developer, staging, or production API.
 - Add a factory when multiple tests need deterministic variants of the same
   entity.
 - Add a fixture when setup is reusable and belongs in the Playwright lifecycle.
-- Add a page object only when a locator group or workflow has more than one
-  consumer.
+- Add a page object only when a locator group or page/dialog interaction has
+  more than one consumer. Keep its methods within that owner; do not encode
+  cross-page journeys.
 - Do not add a base page class or generic helper bucket.
 
 ### Locators and waiting
@@ -146,7 +162,7 @@ npm run test:integration:report
 ### Code coverage
 
 Generate Chromium runtime coverage for application modules exercised by the
-browser journeys:
+page/dialog integration cases:
 
 ```bash
 npm run test:integration:coverage
@@ -158,7 +174,7 @@ run writes `coverage/playwright/lcov.info`,
 
 Coverage collection is opt-in and does not run during the normal integration
 command. It includes Vite-served modules under `src/` that were loaded during
-the tested journeys. Keep this report separate from Vitest coverage because the
+the tested cases. Keep this report separate from Vitest coverage because the
 two suites exercise different boundaries.
 
 ## CI Requirements
@@ -227,4 +243,5 @@ capability is unavailable.
 
 Apply the page-owned support layout to `dialogs/<dialog>/`: private UI tests
 under `__tests__/parts/`, hook tests under `hooks/__tests__/`, and helper tests
-under `__tests__/helper.test.ts`. Test dialog entries through Playwright.
+under `__tests__/helper.test.ts`. Test dialog composition and state transitions
+through Playwright within the page/dialog boundary.

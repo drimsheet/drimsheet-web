@@ -2,6 +2,7 @@ import { useArchiveJournalEntry } from '@/journal-entries/hooks/use-archive-jour
 import { useDeleteJournalEntry } from '@/journal-entries/hooks/use-delete-journal-entry';
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
 import { RecentTransactionsTableContainer } from '@/journal-entries/pages/transactions/parts/recent-transactions-table.container';
+import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import {
   ECounterpartyStatus,
   EJournalEntrySourceType,
@@ -16,6 +17,7 @@ import { MemoryRouter, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/journal-entries/hooks/use-journal-entries');
+vi.mock('@/shared/hooks/use-api-error-handler');
 vi.mock('@/journal-entries/hooks/use-archive-journal-entry');
 vi.mock('@/journal-entries/hooks/use-delete-journal-entry');
 
@@ -96,6 +98,7 @@ function renderContainer(initialEntry = '/transactions') {
 describe('RecentTransactionsTableContainer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(useApiErrorHandler).mockReturnValue(vi.fn());
     vi.mocked(useArchiveJournalEntry).mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false,
@@ -224,6 +227,95 @@ describe('RecentTransactionsTableContainer', () => {
       expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
+  });
+
+  it('archives the selected entry and clears the same-page search only on success', async () => {
+    const user = userEvent.setup();
+    const archive = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(useArchiveJournalEntry).mockReturnValue({
+      mutateAsync: archive,
+      isPending: false,
+    } as never);
+    renderContainer('/transactions?q=gift');
+    await user.click(screen.getByRole('button', { name: 'Open transaction' }));
+    await user.click(screen.getByRole('button', { name: 'Archive' }));
+
+    const confirmation = screen.getByRole('alertdialog', {
+      name: 'Archive this transaction?',
+    });
+
+    await user.click(
+      within(confirmation).getByRole('button', { name: 'Archive' })
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    );
+    expect(archive).toHaveBeenCalledExactlyOnceWith('payment-entry');
+    expect(screen.getByLabelText('Location search')).toBeEmptyDOMElement();
+  });
+
+  it('reports a failed archive without clearing the current search', async () => {
+    const user = userEvent.setup();
+    const error = new Error('unavailable');
+    const handleError = vi.fn();
+    vi.mocked(useApiErrorHandler).mockReturnValue(handleError);
+    vi.mocked(useArchiveJournalEntry).mockReturnValue({
+      mutateAsync: vi.fn().mockRejectedValue(error),
+      isPending: false,
+    } as never);
+    renderContainer('/transactions?q=gift');
+    await user.click(screen.getByRole('button', { name: 'Open transaction' }));
+    await user.click(screen.getByRole('button', { name: 'Archive' }));
+    await user.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', {
+        name: 'Archive',
+      })
+    );
+    await waitFor(() =>
+      expect(handleError).toHaveBeenCalledWith(error, { showToast: true })
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    );
+    expect(screen.getByLabelText('Location search')).toHaveTextContent(
+      '?q=gift'
+    );
+  });
+
+  it('keeps the delete confirmation and entered confirmation text after deletion fails', async () => {
+    const user = userEvent.setup();
+    const error = new Error('unavailable');
+    const handleError = vi.fn();
+    vi.mocked(useApiErrorHandler).mockReturnValue(handleError);
+    vi.mocked(useDeleteJournalEntry).mockReturnValue({
+      mutateAsync: vi.fn().mockRejectedValue(error),
+      isPending: false,
+    } as never);
+    renderContainer();
+    await user.click(screen.getByRole('button', { name: 'Open transaction' }));
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    const confirmation = screen.getByRole('alertdialog', {
+      name: 'Delete this transaction?',
+    });
+
+    await user.type(
+      within(confirmation).getByLabelText('Type "delete" to confirm'),
+      'delete'
+    );
+    await user.click(
+      within(confirmation).getByRole('button', { name: 'Delete' })
+    );
+    await waitFor(() =>
+      expect(handleError).toHaveBeenCalledWith(error, { showToast: true })
+    );
+    expect(confirmation).toBeInTheDocument();
+    expect(
+      within(confirmation).getByLabelText('Type "delete" to confirm')
+    ).toHaveValue('delete');
+    expect(
+      within(confirmation).getByRole('button', { name: 'Delete' })
+    ).toBeEnabled();
   });
 
   it('keeps the skeleton visible until journal entries are ready', () => {

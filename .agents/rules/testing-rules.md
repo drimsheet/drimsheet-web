@@ -34,26 +34,26 @@ that must be justified by the additional assurance.
 - Mirror part tests under the page owner's `__tests__/parts/` directory.
 - Keep page hook tests in `hooks/__tests__/` and deterministic helper tests in
   the page's `__tests__/helper.test.ts`.
-- Test page entries and complete journeys with Playwright; moving a container
-  into a page does not change the container's unit-test boundary.
+- Test page composition and state transitions with Playwright; moving a
+  container into a page does not change the container's unit-test boundary.
 
 ## Browser Integration
 
-- Write Playwright tests only for behavior whose regression requires the
-  running frontend, browser, route, page, dialog, portal, or composed boundary.
+- Playwright integration tests protect how real components interact within
+  one page or dialog: which components render, their visible states, and the
+  transitions caused by user interaction or controlled API responses.
+- Write Playwright tests only for regressions in that page/dialog composition.
   If a component, container, hook, mapper, service, or validation test can
   adequately detect the regression, that lower layer owns the coverage and it
   must not be duplicated in Playwright.
-- Test dialogs, pages, and frontend route behavior with Playwright integration
-  tests.
 - Exercise the running application, real composed components, browser portals,
-  focus behavior, navigation, and user interaction.
+  focus behavior, and user interaction within the owning page/dialog.
 - Control first-party API outcomes with Playwright network interception.
-- Register network interception before navigation or the interaction that can
-  issue the request.
+- Register network interception before initial navigation or the interaction
+  that can issue the request.
 - Cover loading, success, failure, retained input, dismissal, and reopening
-  behavior when relevant within an existing coherent journey. These states
-  do not each warrant a separate test.
+  behavior when relevant to the composed boundary. Group naturally connected
+  transitions; do not force every outcome into one long test.
 - Do not replace owned forms or components with mocks.
 - Do not add Testing Library unit tests for dialogs or pages.
 - Keep every test independently runnable without shared cookies, local storage,
@@ -68,15 +68,49 @@ that must be justified by the additional assurance.
 - Import `test` and `expect` from `@integration/fixtures/test` so normal and
   coverage runs share the same lifecycle.
 
+### Page/dialog boundary
+
+- Identify one page or dialog as the owner of each test. Navigate directly to
+  its public route with deterministic fixture setup; do not reach it by
+  completing login, onboarding, or another page's workflow.
+- A page may open its dialog, and a dialog test may use its real host page.
+  Assert opening, dismissal, focus restoration, and an immediate update to the
+  host page when these are the integration under test. Do not continue into
+  another dialog's workflow or a subsequent page.
+- Cross-page navigation, redirect destinations, and multi-page business
+  journeys are outside this suite, even with mocked APIs. Test navigation
+  intent at a lower layer where adequate; complete journeys belong in the
+  separate E2E suite. If a routing concern fits neither boundary, call out the
+  coverage gap rather than expanding a page/dialog test.
+- Same-page URL state, such as filters or pagination, may support assertions
+  about the owning page's rendered state. Browser history or browser APIs are
+  relevant only when they change that page/dialog's composition or state;
+  they are not independent reasons to add browser coverage.
+- Stop at the owner's observable outcome. If success leaves the page, do not
+  assert the destination page or continue its workflow.
+- Assert behavior and state transitions, not just static visibility. Request
+  assertions may support the rendered outcome but must not duplicate isolated
+  service, mapper, validation, or business-rule coverage.
+
+| Behavior                                                                          | Owner                             |
+| --------------------------------------------------------------------------------- | --------------------------------- |
+| Form validation, callback payloads, or a component with its owned children        | Vitest component/validation tests |
+| A container maps an external hook result to its presentation                      | Vitest container test             |
+| A page filter changes the table results while preserving other controls           | Playwright page integration       |
+| A dialog coordinates pending/error controls or closes and refreshes its host page | Playwright dialog integration     |
+| Login, onboarding, then navigation to another page to continue work               | Separate E2E suite                |
+
 ### Admission of browser cases
 
 Every browser case must earn its cost, including cases retained during an
 audit. Before adding a case, establish all of the following:
 
-- **Concrete regression:** identify the frontend integration or browser
-  behavior that would break, such as route ownership, request scope, cache
-  refresh, coordinated writes, focus, or history. Rendering a page is not
-  sufficient justification for testing its individual fields in a browser.
+- **Concrete regression:** name the owning page/dialog, the interacting
+  components, and the composed state or transition that would break, such as
+  coordinated pending controls, refreshed table results, or focus restoration.
+  Request scope, cache refresh, or coordinated writes qualify only through
+  their effect on that owner's UI. Rendering a page is not sufficient
+  justification for testing its individual fields in a browser.
 - **Lower-level gap:** inspect existing component, container, hook, mapper,
   service, and validation coverage. If one of those layers can adequately
   detect the regression, use or extend that coverage and do not add the
@@ -84,7 +118,8 @@ audit. Before adding a case, establish all of the following:
   not move its owned behavior into the browser-test boundary. Keep whole
   page/dialog composition in Playwright; do not move it into Testing Library to
   reduce the browser count.
-- **Separate-case necessity:** extend an existing journey by default. A new
+- **Separate-case necessity:** extend an existing case within the same
+  page/dialog boundary when the states naturally connect. A new
   case needs materially different setup, an incompatible terminal outcome,
   a distinct integration boundary, or a concrete isolation/diagnosis reason.
   Another assertion, UI state, or test title is not a justification.
@@ -94,28 +129,31 @@ audit. Before adding a case, establish all of the following:
   Prefer representative states; retain separate containers/endpoints where
   their own integration can fail independently.
 
-State the justification for new cases in the change summary. During a scoped
-audit, give every case a keep, consolidate, move to lower-level coverage, or
-remove disposition with its reason. Existing tests and passing runs are not
-evidence that the coverage is worth retaining.
+State the owner and justification for new cases in the change summary. During
+a scoped audit, give every case a keep, consolidate, move to lower-level
+coverage, or remove disposition with its reason. Flag cross-page cases as
+outside this suite; identify the appropriate owner or coverage gap. Existing
+tests and passing runs are not evidence that the coverage is worth retaining.
 
 ### Consolidation boundaries
 
-- Combine compatible stages of one lifecycle using named `test.step` blocks.
-  For example, a form journey may cover cancel/reset, settled failure,
-  retained edits, explicit submission, pending controls, success, and refreshed
-  data without repeating navigation and login for each state. Include only
-  stages relevant to that workflow.
+- Combine naturally connected transitions within one page/dialog using named
+  `test.step` blocks: for example, submission, coordinated pending controls,
+  and success with refreshed host-page data; or submission, settled error,
+  and retained input. Do not require a failure-then-success sequence or chain
+  cancel/reset/reopen into every test merely to reuse setup.
 - Exercise only recovery that the existing UI supports: normal submission or
   browser refresh where appropriate. Do not introduce retry/replay mechanisms
-  to make a consolidated journey possible.
+  to make a consolidated case possible.
 - Keep each case independent. Do not share mutable state across tests, or
   chain unrelated CRUD operations merely to lower the count. Split when
   consolidation would obscure diagnosis or prevent unrelated integration
   checks from running after an early failure.
 - Preserve distinct security, financial, fail-closed, and write-ordering
-  protections. Consolidate their compatible states; do not discard their
-  integration coverage because a shared helper is unit-tested.
+  protections at the appropriate layer. Within the page/dialog boundary,
+  consolidate their compatible states; do not discard their integration
+  coverage because a shared helper is unit-tested. These concerns do not
+  exempt a test from the page/dialog scope.
 
 ### Assertions must detect the claimed regression
 
@@ -130,16 +168,17 @@ evidence that the coverage is worth retaining.
   different rows or ordering; a truthy direction or any matching request is
   insufficient. Check interaction between controls where state must persist
   or reset.
-- Exercise the browser behavior named by the test: use Back for history
-  protection, actual keyboard interaction for keyboard access, and scrolling
+- Exercise the browser behavior named by the test: use Back for same-page
+  history state, actual keyboard interaction for keyboard access, and scrolling
   for pinned actions. A URL, CSS class, or static visibility assertion alone
   does not establish those behaviors.
 
 ### Execution cost
 
-- Avoid repeated setup and login when existing fixtures and direct navigation
-  can reach the behavior without bypassing the boundary being tested. Keep
-  authentication and entrypoint journeys where those connections matter.
+- Use existing fixtures and direct navigation to establish the owning
+  page/dialog's prerequisites. Login is setup for other owners, not a journey
+  to replay in their tests. Authentication pages may have their own composed
+  state tests under the same page/dialog boundary.
 - Do not add unconditional screenshots, traces, or videos that assert nothing.
   Retain configured failure diagnostics; visual assertions or explicitly
   requested manual evidence need a concrete purpose.
@@ -155,7 +194,7 @@ evidence that the coverage is worth retaining.
 - Run Playwright code coverage only through
   `npm run test:integration:coverage`.
 - Treat the report as Chromium runtime coverage for application modules loaded
-  during the tested journeys, not as a replacement for Vitest coverage.
+  during the tested page/dialog cases, not as a replacement for Vitest coverage.
 - Keep Playwright coverage output separate under `coverage/playwright/`.
 - Do not enable coverage collection during normal integration runs.
 
@@ -164,8 +203,10 @@ evidence that the coverage is worth retaining.
 - Keep complete journeys across the deployed frontend, API, database, email,
   and other real test-system boundaries in the separate E2E repository.
 - Do not recreate system E2E coverage in this repository.
-- A frontend route alone does not make a test E2E; select the layer according to
-  the external boundaries exercised.
+- Cross-page frontend navigation is not inherently system E2E, but this
+  repository deliberately excludes it from page/dialog integration coverage,
+  including when APIs are mocked. Do not use that distinction to admit
+  cross-page tests here.
 
 ## Placement and Commands
 
@@ -179,5 +220,6 @@ must not discover `src/**/__tests__/**/*.test.ts` or
 ## Dialog-Owned Support Files
 
 - Apply page-owned support-file test placement and isolation to dialog owners.
-- Test complete `.dialog.tsx` workflows with Playwright; test private parts,
-  containers, hooks, and helpers with Vitest.
+- Test `.dialog.tsx` composition and state transitions with Playwright within
+  the page/dialog boundary above; test private parts, containers, hooks, and
+  helpers with Vitest.

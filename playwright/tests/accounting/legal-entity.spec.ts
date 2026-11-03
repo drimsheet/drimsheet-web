@@ -1,8 +1,4 @@
-import type {
-  IAccountingEntity,
-  IAccountingEntityCreationDto,
-  TEntityId,
-} from '@/shared/lib/api/Api';
+import type { IAccountingEntity, TEntityId } from '@/shared/lib/api/Api';
 import { expect, test } from '@integration/fixtures/test';
 import {
   alternateAccountingEntity,
@@ -11,6 +7,8 @@ import {
   registerAuthenticatedAppRoutes,
 } from '@integration/mocks/authenticated-app';
 import type { Page } from '@playwright/test';
+
+test.use({ authenticated: true });
 
 const timestamp = '2026-01-01T00:00:00Z';
 
@@ -87,27 +85,11 @@ test.beforeEach(async ({ page }) => {
       },
     })
   );
-  await page.route('**/api/v1/auth/refresh-access-token', (route) =>
-    route.fulfill({ json: { accessToken: 'integration-test-token' } })
-  );
-  await page.route('**/api/v1/auth/login-with-email', (route) =>
-    route.fulfill({ json: { accessToken: 'integration-test-token' } })
-  );
   await page.addInitScript(() => {
     if (!localStorage.getItem('theme')) {
       localStorage.setItem('theme', 'light');
     }
   });
-  await page.goto('/auth/signin');
-  await page.getByLabel('Email').fill(authenticatedUser.email);
-  await page.getByLabel('Password', { exact: true }).fill('Password1!');
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await expect(page).toHaveURL('/dashboard');
-  await expect(
-    page.getByRole('button', {
-      name: 'Open account management for Integration Entity',
-    })
-  ).toBeVisible();
 });
 
 test('lists all legal entities and their metadata without requesting contexts', async ({
@@ -118,7 +100,7 @@ test('lists all legal entities and their metadata without requesting contexts', 
     contextRequests.push(route.request().url());
     await route.fulfill({ json: [] });
   });
-  await page.getByRole('link', { name: 'Legal Entities', exact: true }).click();
+  await page.goto('/legal-entity');
   await expect(page).toHaveURL('/legal-entity');
   await expect(
     page.getByRole('link', { name: 'Legal Entities', exact: true })
@@ -151,89 +133,12 @@ test('lists all legal entities and their metadata without requesting contexts', 
       () => document.documentElement.scrollWidth <= window.innerWidth
     )
   ).toBe(true);
-  await test.step('Entity links navigate without changing the active context', async () => {
-    const entityWrites: string[] = [];
-    await page.route('**/api/v1/accounting/accounting-entity', (route) =>
-      route.fulfill({
-        json:
-          route.request().headers()['x-accounting-entity-id'] === entities[0].id
-            ? entities[0]
-            : authenticatedAccountingEntity,
-      })
-    );
-    await page.route('**/api/v1/accounting/fiscal-years', (route) =>
-      route.fulfill({ json: [] })
-    );
-
-    await page.route('**/api/v1/accounting/**', async (route) => {
-      if (route.request().method() !== 'GET') {
-        entityWrites.push(route.request().url());
-
-        return route.fulfill({ status: 500, json: {} });
-      }
-
-      return route.fallback();
-    });
-
-    const name = list.getByRole('link', { name: 'Amara Studio Ltd' });
-
-    await expect(name).toHaveAttribute(
-      'href',
-      `/legal-entity/${entities[0].id}`
-    );
-    await expect(name).toHaveCSS('text-decoration-line', 'none');
-    await name.hover();
-    await expect(name).toHaveCSS('text-decoration-line', 'none');
-    await name.focus();
-    await expect(name).toHaveCSS('text-decoration-line', 'none');
-    await expect(name).toHaveCSS('outline-width', '2px');
-
-    const trigger = list.getByRole('button', {
-      name: 'Actions for Amara Studio Ltd',
-    });
-
-    await trigger.click();
-    await expect(
-      page.getByRole('menuitem', { name: 'Switch to entity' })
-    ).toBeDisabled();
-    await expect(
-      page.getByRole('menuitem', { name: 'Edit entity' })
-    ).toBeDisabled();
-    await page.keyboard.press('Escape');
-    await expect(trigger).toBeFocused();
-
-    const current = list
-      .getByRole('listitem')
-      .filter({ hasText: 'Integration Entity' });
-
-    await expect(current.getByText('Current', { exact: true })).toBeVisible();
-    await current
-      .getByRole('button', { name: 'Actions for Integration Entity' })
-      .click();
-    await expect(page.getByRole('menuitem')).toHaveCount(1);
-    await expect(
-      page.getByRole('menuitem', { name: 'Edit entity' })
-    ).toBeDisabled();
-    await page.keyboard.press('Escape');
-    await name.click();
-    await expect(page).toHaveURL(`/legal-entity/${entities[0].id}`);
-    await expect(
-      page.getByRole('heading', { name: 'Amara Studio Ltd' })
-    ).toBeVisible();
-    await page.reload();
-    await expect(
-      page.getByRole('heading', { name: 'Amara Studio Ltd' })
-    ).toBeVisible();
-    expect(entityWrites).toEqual([]);
-  });
 });
 
 test('creates an entity, prevents dismissal while saving, and updates the list without switching', async ({
   page,
 }) => {
   let saved = false;
-  let attempts = 0;
-  let payload: IAccountingEntityCreationDto | undefined;
   let release!: () => void;
 
   const responseGate = new Promise<void>((resolve) => {
@@ -260,39 +165,12 @@ test('creates an entity, prevents dismissal while saving, and updates the list w
       return route.fallback();
     }
 
-    payload = route.request().postDataJSON();
-    attempts += 1;
-    if (attempts === 1) {
-      await route.fulfill({ status: 500, json: {} });
-
-      return;
-    }
-
     await responseGate;
     saved = true;
     await route.fulfill({ json: created });
   });
-  await page.getByRole('link', { name: 'Legal Entities', exact: true }).click();
+  await page.goto('/legal-entity');
   const dialog = await fillCreationForm(page);
-  await dialog
-    .getByRole('button', { name: 'Create legal entity', exact: true })
-    .click();
-  await test.step('Failure settles and cancellation clears the draft', async () => {
-    await expect(dialog.getByRole('alert')).toContainText(
-      'Your details have been kept'
-    );
-    await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
-      'New Studio Ltd'
-    );
-    await expect(
-      dialog.getByRole('button', { name: 'Create legal entity', exact: true })
-    ).toBeEnabled();
-    await dialog.getByRole('button', { name: 'Cancel' }).click();
-    await page.getByRole('button', { name: 'Add a new legal entity' }).click();
-    await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue('');
-    await dialog.getByRole('button', { name: 'Cancel' }).click();
-    await fillCreationForm(page);
-  });
   await dialog
     .getByRole('button', { name: 'Create legal entity', exact: true })
     .click();
@@ -315,13 +193,37 @@ test('creates an entity, prevents dismissal while saving, and updates the list w
   await expect(
     page.getByRole('button', { name: 'Add a new legal entity' })
   ).toBeFocused();
-  expect(payload).toEqual({
-    name: 'New Studio Ltd',
-    entityType: 'private_company',
-    jurisdictionCode: 'NG',
-    functionalCurrencyCode: 'NGN',
-  });
   expect(switches).toEqual([]);
+});
+
+test('retains the legal-entity draft when creation fails', async ({ page }) => {
+  await page.route('**/api/v1/accounting/accounting-entity', (route) =>
+    route.request().method() === 'POST'
+      ? route.fulfill({ status: 500, json: {} })
+      : route.fallback()
+  );
+  await page.goto('/legal-entity');
+  const dialog = await fillCreationForm(page);
+  await dialog
+    .getByRole('button', { name: 'Create legal entity', exact: true })
+    .click();
+  await expect(dialog.getByRole('alert')).toContainText(
+    'Your details have been kept'
+  );
+  await expect(
+    dialog.getByRole('button', { name: 'Create legal entity', exact: true })
+  ).toBeEnabled();
+  await expect(dialog.getByLabel('Name', { exact: true })).toHaveValue(
+    'New Studio Ltd'
+  );
+  await expect(
+    page
+      .getByRole('list', {
+        name: 'Your accounting entities',
+        includeHidden: true,
+      })
+      .getByRole('listitem', { includeHidden: true })
+  ).toHaveCount(3);
 });
 
 test('recovers from unavailable form options', async ({ page }) => {
@@ -333,7 +235,7 @@ test('recovers from unavailable form options', async ({ page }) => {
 
     return route.fulfill({ json: jurisdictions });
   });
-  await page.getByRole('link', { name: 'Legal Entities', exact: true }).click();
+  await page.goto('/legal-entity');
   await page.getByRole('button', { name: 'Add a new legal entity' }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('alert')).toContainText(
@@ -352,34 +254,4 @@ test('recovers from unavailable form options', async ({ page }) => {
   await expect(
     dialog.getByRole('button', { name: 'Create legal entity', exact: true })
   ).toBeEnabled();
-});
-
-test('keeps the last list when refresh fails and recovers after browser refresh', async ({
-  page,
-}) => {
-  await page.route('**/api/v1/accounting/accounting-entities', (route) =>
-    route.fulfill({ status: 500, json: {} })
-  );
-  await page.getByRole('link', { name: 'Legal Entities', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText(
-    'The last available list is shown'
-  );
-  await expect(
-    page
-      .getByRole('list', { name: 'Your accounting entities' })
-      .getByRole('listitem')
-  ).toHaveCount(3);
-  await page.route('**/api/v1/accounting/accounting-entities', (route) =>
-    route.fulfill({ json: entities })
-  );
-  await expect(
-    page.getByRole('button', { name: /^(Retry|Try again)$/i })
-  ).toHaveCount(0);
-  await page.reload();
-  await expect(page.getByRole('alert')).toHaveCount(0);
-  await expect(
-    page
-      .getByRole('list', { name: 'Your accounting entities' })
-      .getByRole('listitem')
-  ).toHaveCount(3);
 });

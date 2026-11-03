@@ -1,4 +1,4 @@
 interface:
   display_name: 'Write Playwright Integration Tests'
   short_description: 'Write resilient Playwright integration tests'
-  default_prompt: 'Use $write-playwright-integration-tests to add focused browser integration coverage for a frontend-owned user outcome.'
+  default_prompt: 'Use $write-playwright-integration-tests to test component composition and state transitions within one page or dialog, using controlled API responses.'

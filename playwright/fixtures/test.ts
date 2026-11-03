@@ -9,18 +9,29 @@ import path from 'node:path';
 
 const applicationSourcePathPrefix = '/src/';
 
-interface IFeatureFlagFixtures {
+interface IIntegrationFixtures {
   launchDarklyFlagValues: TLaunchDarklyFlagValues;
+  authenticated: boolean;
 }
 
-export const test = base.extend<IFeatureFlagFixtures>({
+export const test = base.extend<IIntegrationFixtures>({
   launchDarklyFlagValues: [defaultLaunchDarklyFlagValues, { option: true }],
+  authenticated: [false, { option: true }],
   page: async (
-    { browserName, launchDarklyFlagValues, page },
+    { authenticated, browserName, launchDarklyFlagValues, page },
     use,
     testInfo
   ) => {
     await registerLaunchDarklyRoutes(page, launchDarklyFlagValues);
+
+    if (authenticated) {
+      await page.addInitScript(() => {
+        localStorage.setItem('isLoggedIn', 'true');
+      });
+      await page.route('**/api/v1/auth/refresh-access-token', (route) =>
+        route.fulfill({ json: { accessToken: 'integration-test-token' } })
+      );
+    }
 
     const collectCoverage = testInfo.config.metadata.collectCoverage === true;
 

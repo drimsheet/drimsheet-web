@@ -85,8 +85,9 @@ Every form component must keep its types outside the component file:
 - Test containers separately when their orchestration adds behavior worth
   protecting. Render the real presentational component and mock only necessary
   external boundaries.
-- Test dialogs and pages under `playwright/tests/<feature>/`, not through
-  component Testing Library tests. Use
+- Test page/dialog component composition and state transitions under
+  `playwright/tests/<feature>/` within one page/dialog boundary, not through
+  component Testing Library tests. Exclude cross-page journeys. Use
   `$write-playwright-integration-tests` for that coverage.
 - Page-private parts and containers follow the same Vitest contracts above;
   mirror their tests under the page's `__tests__/parts/`. Page hook tests belong
@@ -96,4 +97,6 @@ Every form component must keep its types outside the component file:
 
 Dialog-private presentation parts require mirrored stories and follow the same
 Vitest boundaries as page-private parts. Dialog entries and containers are
-exempt from stories. Test complete dialog workflows with Playwright.
+exempt from stories. Test dialog composition and state transitions with
+Playwright; opening from and updating the host page is allowed, but continuing
+into subsequent page/dialog workflows is outside this suite.
