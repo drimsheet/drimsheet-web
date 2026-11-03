@@ -311,7 +311,6 @@
   "journal_entry_error_rectification_line_id_invalid": "Invalid rectification line.",
   "journal_entry_error_rectification_not_permitted_invalid": "You are not allowed to update this resource.",
   "journal_entry_error_deletion_not_permitted_invalid": "You are not allowed to delete this resource.",
-  "counterparty_error_meta_invalid": "Invalid person or business details.",
   "accounting_error_accounting_entity_created_by_invalid": "Invalid accounting entity creator.",
   "accounting_error_created_by_invalid": "Invalid accounting creator.",
   "accounting_error_period_created_by_invalid": "Invalid accounting period creator.",
@@ -434,5 +433,6 @@
   "app_error_reporting_types_invalid": "Invalid account type.",
   "app_error_ledger_balance_missing_unexpected": "An error occurred while fetching the account balance.",
   "user_error_waitlist_feature_invalid": "Unknown feature.",
-  "accounting_error_accounting_entity_individual_already_exists_in_jurisdiction_conflict": "A similar accounting entity already exists."
+  "accounting_error_accounting_entity_individual_already_exists_in_jurisdiction_conflict": "A similar accounting entity already exists.",
+  "counterparty_error_role_details_invalid": "Invalid counterparty details."
 }
