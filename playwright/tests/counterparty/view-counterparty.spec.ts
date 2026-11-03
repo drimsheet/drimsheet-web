@@ -19,7 +19,7 @@ const counterparty: ICounterpartyDto = {
   type: 'organization',
   status: 'active',
   roles: ['vendor', 'contractor'],
-  meta: {
+  roleDetails: {
     vendor: {
       address: {
         line1: '14 Adeola Odeku Street',
@@ -105,6 +105,26 @@ async function setup(page: Page) {
   const deleteRequestBodies: (string | null)[] = [];
 
   await registerAuthenticatedAppRoutes(page);
+  await page.route('**/api/v1/accounting/fiscal-years/current', (route) =>
+    route.fulfill({ json: { id: 'current-year' } })
+  );
+  await page.route(
+    '**/api/v1/reporting/counterparties/*/participation-by-account-type?*',
+    (route) =>
+      route.fulfill({
+        json: {
+          counterpartyId: counterparty.id,
+          fiscalYearId: 'current-year',
+          period: { from: '2026-01-01', to: '2026-12-31' },
+          revenue: { amount: 31000000, currencyCode: 'NGN', isMinorUnit: true },
+          expense: {
+            amount: 248000000,
+            currencyCode: 'NGN',
+            isMinorUnit: true,
+          },
+        },
+      })
+  );
   for (const endpoint of [
     '**/api/v1/auth/login-with-email',
     '**/api/v1/auth/refresh-access-token',
@@ -212,6 +232,9 @@ test('opens the linked profile, supplies scoped data to the existing table, and 
   });
   expect(params.has('status')).toBe(false);
   await expectProfile(page);
+  await expect(
+    page.getByRole('region', { name: 'Overview', exact: true })
+  ).toContainText('310,000');
   await expect(page.getByText('14 Adeola Odeku Street')).toBeVisible();
   await expect(page.getByText('Nigeria', { exact: true })).toBeVisible();
   await expect(
@@ -232,7 +255,7 @@ test('opens the linked profile, supplies scoped data to the existing table, and 
   });
   await page.reload();
   await expectProfile(page);
-  await page.getByRole('link', { name: 'All people & businesses' }).click();
+  await page.getByRole('link', { name: 'People & Businesses' }).click();
   await expect(page).toHaveURL('/counterparties');
 });
 
@@ -380,7 +403,7 @@ test('uses the error boundary when transactions fail and recovers after browser 
         name: 'Odion Oboite',
         type: 'individual',
         roles: [],
-        meta: {},
+        roleDetails: {},
       },
     })
   );
@@ -414,12 +437,12 @@ test('uses the error boundary when transactions fail and recovers after browser 
   await expect(
     page.getByText('Transactions involving Odion Oboite will appear here.')
   ).toBeVisible();
-  await expect(page.getByPlaceholder(/Search transactions/i)).not.toBeVisible();
-  await expect(page.getByRole('table')).not.toBeVisible();
+  await expect(page.getByPlaceholder(/Search transactions/i)).toBeVisible();
+  await expect(page.getByRole('table')).toBeVisible();
   await expect(
     page.getByRole('link', { name: 'View all transactions' })
   ).not.toBeVisible();
-  await expect(page.getByText('Showing 0 of 0')).not.toBeVisible();
+  await expect(page.getByText('Showing 0 of 0')).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
     page.getByRole('heading', { name: 'Odion Oboite' })

@@ -13,9 +13,6 @@ const meta = {
   component: CounterpartyDetails,
   tags: ['autodocs'],
   args: {
-    deletable: true,
-    onDelete: () => {},
-    onEdit: () => {},
     counterparty: {
       id: 'counterparty-1',
       accountingEntityId: 'entity-1',
@@ -24,7 +21,7 @@ const meta = {
       type: 'organization',
       status: 'active',
       roles: ['vendor', 'contractor'],
-      meta: { vendor: { address }, contractor: { address } },
+      roleDetails: { vendor: { address }, contractor: { address } },
       createdAt: '2026-01-12T00:00:00Z',
       updatedAt: '2026-09-18T00:00:00Z',
     },
@@ -34,14 +31,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
-export const CheckingDeletionEligibility: Story = {
-  args: { deleteEligibilityChecking: true },
-};
 export const WithoutAddress: Story = {
   args: {
     counterparty: {
       ...meta.args.counterparty,
-      meta: {},
+      roleDetails: {},
       roles: [],
       type: 'individual',
     },
@@ -51,7 +45,7 @@ export const DistinctAddresses: Story = {
   args: {
     counterparty: {
       ...meta.args.counterparty,
-      meta: {
+      roleDetails: {
         vendor: { address },
         contractor: { address: { ...address, line1: '24 Marina Road' } },
       },
@@ -60,7 +54,6 @@ export const DistinctAddresses: Story = {
 };
 export const Archived: Story = {
   args: {
-    editDisabled: true,
     counterparty: { ...meta.args.counterparty, status: 'archived' },
   },
 };

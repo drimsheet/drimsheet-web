@@ -10,7 +10,7 @@ import {
 } from '@/shared/components/dropdown-menu';
 import { MoreHorizontal, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { CounterpartyProfileActionsProps } from '../types';
+import type { CounterpartyProfileActionsProps } from './types';
 
 export function CounterpartyProfileActions({
   deleteEligibilityChecking = false,

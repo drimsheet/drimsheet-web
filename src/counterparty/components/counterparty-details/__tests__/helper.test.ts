@@ -17,7 +17,7 @@ const party: ICounterpartyDto = {
   type: 'organization',
   status: 'active',
   roles: ['vendor', 'contractor'],
-  meta: {},
+  roleDetails: {},
   createdAt: '',
   updatedAt: '',
 };
@@ -27,7 +27,7 @@ describe('counterpartyDetailsHelpers', () => {
     expect(
       counterpartyDetailsHelpers.getAddresses({
         ...party,
-        meta: { vendor: { address }, contractor: { address } },
+        roleDetails: { vendor: { address }, contractor: { address } },
       })
     ).toEqual([
       {
@@ -40,7 +40,7 @@ describe('counterpartyDetailsHelpers', () => {
     expect(
       counterpartyDetailsHelpers.getAddresses({
         ...party,
-        meta: {
+        roleDetails: {
           vendor: { address },
           contractor: { address: { ...address, line1: 'Other address' } },
         },
@@ -51,7 +51,7 @@ describe('counterpartyDetailsHelpers', () => {
     expect(
       counterpartyDetailsHelpers.getAddresses({
         ...party,
-        meta: { vendor: { address: null } },
+        roleDetails: { vendor: { address: null } },
       })
     ).toEqual([]);
   });
@@ -59,7 +59,7 @@ describe('counterpartyDetailsHelpers', () => {
     expect(
       counterpartyDetailsHelpers.getAddresses({
         ...party,
-        meta: {
+        roleDetails: {
           vendor: {
             address: {
               ...address,

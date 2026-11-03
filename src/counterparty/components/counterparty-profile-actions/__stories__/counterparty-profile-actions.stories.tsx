@@ -1,8 +1,8 @@
-import { CounterpartyProfileActions } from '@/counterparty/components/counterparty-details/parts/profile-actions';
+import { CounterpartyProfileActions } from '@/counterparty/components/counterparty-profile-actions';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
-  title: 'Counterparty/CounterpartyDetails/Parts/ProfileActions',
+  title: 'Counterparty/CounterpartyProfileActions',
   component: CounterpartyProfileActions,
   tags: ['autodocs'],
   args: { onEdit: () => {}, onDelete: () => {}, deletable: true },

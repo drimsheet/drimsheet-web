@@ -78,9 +78,17 @@ Account details and category details page-private parts may use `useJournalEntri
 from `@/journal-entries/components/transactions-table`. The page supplies journal
 entries and presentation callbacks; private journal entry modules remain private.
 
+### Counterparty detail reporting access exception
+
+`src/counterparty/pages/counterparty-details/` may use
+`accountingService` from `@/accounting/lib/services/accounting.service` to
+resolve the current fiscal year and `ledgerReportingService` from
+`@/reporting/lib/services/ledger-reporting.service` for counterparty account-type
+participation. Transport remains in its owning feature service.
+
 ### Counterparty detail composition exception
 
-`src/counterparty/pages/counterparty-details/counterparty-details.page.tsx` may import the public
+`src/counterparty/pages/counterparty-details/` may import the public
 `TransactionsTable` from `@/journal-entries/components/transactions-table`.
 The page supplies data and presentation props; it must not import the transaction
 container or private helpers. This exception does not extend to feature hooks,

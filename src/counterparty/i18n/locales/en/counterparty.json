@@ -102,5 +102,9 @@
   "total_contractors_label": "Total contractors",
   "overview_loading_text": "Loading people and businesses overview",
   "overview_load_error_text": "Unable to load people and business totals. Refresh the page to try again.",
-  "table_load_error_text": "Unable to load people and businesses. Refresh the page to try again."
+  "table_load_error_text": "Unable to load people and businesses. Refresh the page to try again.",
+  "details_total_income_label": "Total income",
+  "details_total_expenses_label": "Total expenses",
+  "details_overview_loading_text": "Loading counterparty overview",
+  "details_overview_error_text": "Unable to load income and expenses. Refresh the page to try again."
 }
