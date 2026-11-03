@@ -19,7 +19,7 @@ const party: ICounterpartyDto = {
   type: 'organization',
   status: 'draft',
   roles: ['vendor', 'employer', 'contractor'],
-  meta: {
+  roleDetails: {
     vendor: { address },
     employer: { displayName: 'Employer', address },
     contractor: { address },
@@ -29,7 +29,7 @@ const party: ICounterpartyDto = {
 };
 
 describe('counterparty update mapper', () => {
-  it('maps unchanged core values without metadata, status, or a type change', () => {
+  it('maps unchanged core values without role details, status, or a type change', () => {
     expect(
       mapper.toCounterpartyUpdateReq(
         mapper.toCounterpartyValues(party),
@@ -39,7 +39,7 @@ describe('counterparty update mapper', () => {
     ).toEqual({
       name: undefined,
       type: undefined,
-      meta: undefined,
+      roleDetails: undefined,
     });
   });
   it('includes allowed type edits and omits a locked type', () => {
@@ -47,15 +47,15 @@ describe('counterparty update mapper', () => {
     expect(mapper.toCounterpartyUpdateReq(values, party, true)).toEqual({
       name: 'Changed',
       type: 'individual',
-      meta: undefined,
+      roleDetails: undefined,
     });
     expect(mapper.toCounterpartyUpdateReq(values, party, false)).toEqual({
       name: 'Changed',
       type: undefined,
-      meta: undefined,
+      roleDetails: undefined,
     });
   });
-  it('round trips each role without sending unchanged metadata', () => {
+  it('round trips each role without sending unchanged role details', () => {
     expect(mapper.toVendorValues(party).address).toEqual(address);
     expect(mapper.toEmployerValues(party).displayName).toBe('Employer');
     expect(mapper.toContractorValues(party).address).toEqual(address);
@@ -63,7 +63,7 @@ describe('counterparty update mapper', () => {
     const unchanged = {
       name: undefined,
       type: undefined,
-      meta: undefined,
+      roleDetails: undefined,
     };
 
     expect(
@@ -80,16 +80,16 @@ describe('counterparty update mapper', () => {
       )
     ).toEqual(unchanged);
   });
-  it('updates one role and retains complete metadata for the others', () => {
+  it('updates one role and retains complete role details for the others', () => {
     const values = mapper.toVendorValues(party);
     values.address.city = 'Abuja';
     expect(mapper.toVendorUpdateReq(values, party, false)).toEqual({
       name: undefined,
       type: undefined,
-      meta: {
+      roleDetails: {
         vendor: { address: { ...address, city: 'Abuja' } },
-        employer: party.meta.employer,
-        contractor: party.meta.contractor,
+        employer: party.roleDetails.employer,
+        contractor: party.roleDetails.contractor,
       },
     });
   });
@@ -99,17 +99,17 @@ describe('counterparty update mapper', () => {
     expect(mapper.toVendorUpdateReq(values, party, true)).toEqual({
       name: undefined,
       type: undefined,
-      meta: {
+      roleDetails: {
         vendor: { address: null },
-        employer: party.meta.employer,
-        contractor: party.meta.contractor,
+        employer: party.roleDetails.employer,
+        contractor: party.roleDetails.contractor,
       },
     });
   });
   it('preserves an untouched null vendor address', () => {
     const baseline = {
       ...party,
-      meta: { vendor: { address: null } },
+      roleDetails: { vendor: { address: null } },
       roles: ['vendor' as const],
     };
 
@@ -118,13 +118,13 @@ describe('counterparty update mapper', () => {
     ).toEqual({
       name: undefined,
       type: undefined,
-      meta: undefined,
+      roleDetails: undefined,
     });
   });
   it('retains untouched null and empty optional values in a full replacement', () => {
     const baseline: ICounterpartyDto = {
       ...party,
-      meta: {
+      roleDetails: {
         employer: { displayName: '', address: { ...address, line2: '' } },
         vendor: { address: null },
         contractor: { address },
@@ -136,9 +136,9 @@ describe('counterparty update mapper', () => {
     expect(mapper.toContractorUpdateReq(values, baseline, false)).toEqual({
       name: undefined,
       type: undefined,
-      meta: {
-        employer: baseline.meta.employer,
-        vendor: baseline.meta.vendor,
+      roleDetails: {
+        employer: baseline.roleDetails.employer,
+        vendor: baseline.roleDetails.vendor,
         contractor: { address: { ...address, city: 'Abuja' } },
       },
     });
@@ -149,10 +149,10 @@ describe('counterparty update mapper', () => {
     expect(mapper.toEmployerUpdateReq(values, party, true)).toEqual({
       name: undefined,
       type: undefined,
-      meta: {
+      roleDetails: {
         employer: { displayName: null, address },
-        vendor: party.meta.vendor,
-        contractor: party.meta.contractor,
+        vendor: party.roleDetails.vendor,
+        contractor: party.roleDetails.contractor,
       },
     });
     const contractor = mapper.toContractorValues(party);
@@ -160,9 +160,9 @@ describe('counterparty update mapper', () => {
     expect(mapper.toContractorUpdateReq(contractor, party, true)).toEqual({
       name: undefined,
       type: undefined,
-      meta: {
-        employer: party.meta.employer,
-        vendor: party.meta.vendor,
+      roleDetails: {
+        employer: party.roleDetails.employer,
+        vendor: party.roleDetails.vendor,
         contractor: { address: { ...address, line1: 'New street' } },
       },
     });

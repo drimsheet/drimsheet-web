@@ -1,4 +1,3 @@
-import { FieldError } from '@/shared/components/field';
 import { Money } from '@/shared/components/money';
 import { Skeleton } from '@/shared/components/skeleton';
 import { WithTransitionState } from '@/shared/components/with-transition-state';
@@ -19,7 +18,6 @@ export function CategorySummary({
   account,
   transactionCount,
   intervalSlot,
-  rangeError,
   balance,
 }: Readonly<CategorySummaryProps>) {
   const { t } = useTranslation('ledger-accounts');
@@ -34,7 +32,6 @@ export function CategorySummary({
             {intervalSlot}
           </div>
         )}
-        <FieldError>{rangeError}</FieldError>
         <dl className="flex flex-wrap items-start gap-x-24 gap-y-6">
           <div className="flex min-w-0 flex-col gap-2">
             <dt className="text-sm text-muted-foreground">{balance_label}</dt>

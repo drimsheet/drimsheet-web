@@ -5,7 +5,7 @@ import type { IEmployerFormValues } from '@/counterparty/components/employer-for
 import type { IVendorFormValues } from '@/counterparty/components/vendor-form';
 import type {
   IAddressDto,
-  ICounterpartyCreateMetaReq,
+  ICounterpartyCreateRoleDetailsReq,
   ICounterpartyDto,
   ICounterpartyUpdateReq,
 } from '@/shared/lib/api/Api';
@@ -36,28 +36,32 @@ function toVendorAddress(values: IAddressValues): IAddressDto | null {
   return Object.values(values).some(Boolean) ? toAddress(values) : null;
 }
 
-function toMeta(party: ICounterpartyDto): ICounterpartyCreateMetaReq {
-  const meta: ICounterpartyCreateMetaReq = {};
-  if (party.meta.employer) {
-    meta.employer = {
-      displayName: party.meta.employer.displayName || null,
-      address: toAddress(toAddressValues(party.meta.employer.address)),
+function toRoleDetails(
+  party: ICounterpartyDto
+): ICounterpartyCreateRoleDetailsReq {
+  const roleDetails: ICounterpartyCreateRoleDetailsReq = {};
+  if (party.roleDetails.employer) {
+    roleDetails.employer = {
+      displayName: party.roleDetails.employer.displayName || null,
+      address: toAddress(toAddressValues(party.roleDetails.employer.address)),
     };
   }
 
-  if (party.meta.vendor) {
-    meta.vendor = {
-      address: toVendorAddress(toAddressValues(party.meta.vendor.address)),
+  if (party.roleDetails.vendor) {
+    roleDetails.vendor = {
+      address: toVendorAddress(
+        toAddressValues(party.roleDetails.vendor.address)
+      ),
     };
   }
 
-  if (party.meta.contractor) {
-    meta.contractor = {
-      address: toAddress(toAddressValues(party.meta.contractor.address)),
+  if (party.roleDetails.contractor) {
+    roleDetails.contractor = {
+      address: toAddress(toAddressValues(party.roleDetails.contractor.address)),
     };
   }
 
-  return meta;
+  return roleDetails;
 }
 
 function toPreservedAddress(address: IAddressDto): IAddressDto {
@@ -71,36 +75,36 @@ function toPreservedAddress(address: IAddressDto): IAddressDto {
   };
 }
 
-function toReplacementMeta(
-  edited: ICounterpartyCreateMetaReq,
-  initial: ICounterpartyCreateMetaReq,
+function toReplacementRoleDetails(
+  edited: ICounterpartyCreateRoleDetailsReq,
+  initial: ICounterpartyCreateRoleDetailsReq,
   baseline: ICounterpartyDto
-): ICounterpartyCreateMetaReq {
+): ICounterpartyCreateRoleDetailsReq {
   const employer =
     JSON.stringify(edited.employer) === JSON.stringify(initial.employer)
-      ? baseline.meta.employer
+      ? baseline.roleDetails.employer
       : edited.employer;
 
   const vendor =
     JSON.stringify(edited.vendor) === JSON.stringify(initial.vendor)
-      ? baseline.meta.vendor
+      ? baseline.roleDetails.vendor
       : edited.vendor;
 
   const contractor =
     JSON.stringify(edited.contractor) === JSON.stringify(initial.contractor)
-      ? baseline.meta.contractor
+      ? baseline.roleDetails.contractor
       : edited.contractor;
 
-  const meta: ICounterpartyCreateMetaReq = {};
+  const roleDetails: ICounterpartyCreateRoleDetailsReq = {};
   if (employer) {
-    meta.employer = {
+    roleDetails.employer = {
       displayName: employer.displayName,
       address: toPreservedAddress(employer.address),
     };
   }
 
   if (vendor) {
-    meta.vendor = {
+    roleDetails.vendor = {
       address: vendor.address
         ? toPreservedAddress(vendor.address)
         : vendor.address,
@@ -108,27 +112,30 @@ function toReplacementMeta(
   }
 
   if (contractor) {
-    meta.contractor = { address: toPreservedAddress(contractor.address) };
+    roleDetails.contractor = {
+      address: toPreservedAddress(contractor.address),
+    };
   }
 
-  return meta;
+  return roleDetails;
 }
 
 function toUpdateReq(
   values: ICounterpartyFormValues,
   baseline: ICounterpartyDto,
   canChangeType: boolean,
-  meta?: ICounterpartyCreateMetaReq
+  roleDetails?: ICounterpartyCreateRoleDetailsReq
 ): ICounterpartyUpdateReq {
-  const initialMeta = toMeta(baseline);
+  const initialRoleDetails = toRoleDetails(baseline);
 
   return {
     name: values.name !== baseline.name ? values.name : undefined,
     type:
       canChangeType && values.type !== baseline.type ? values.type : undefined,
-    meta:
-      meta && JSON.stringify(meta) !== JSON.stringify(initialMeta)
-        ? toReplacementMeta(meta, initialMeta, baseline)
+    roleDetails:
+      roleDetails &&
+      JSON.stringify(roleDetails) !== JSON.stringify(initialRoleDetails)
+        ? toReplacementRoleDetails(roleDetails, initialRoleDetails, baseline)
         : undefined,
   };
 }
@@ -142,21 +149,21 @@ export const counterpartyUpdateMapper = {
       name: party.name,
       type: party.type,
       displayName: '',
-      address: toAddressValues(party.meta.vendor?.address),
+      address: toAddressValues(party.roleDetails.vendor?.address),
     };
   },
   toEmployerValues(party: ICounterpartyDto): IEmployerFormValues {
-    const address = toAddress(party.meta.employer?.address ?? {});
+    const address = toAddress(party.roleDetails.employer?.address ?? {});
 
     return {
       name: party.name,
       type: party.type,
-      displayName: party.meta.employer?.displayName ?? '',
+      displayName: party.roleDetails.employer?.displayName ?? '',
       address,
     };
   },
   toContractorValues(party: ICounterpartyDto): IContractorFormValues {
-    const address = toAddress(party.meta.contractor?.address ?? {});
+    const address = toAddress(party.roleDetails.contractor?.address ?? {});
 
     return { name: party.name, type: party.type, address };
   },
@@ -166,32 +173,32 @@ export const counterpartyUpdateMapper = {
     baseline: ICounterpartyDto,
     canChangeType: boolean
   ): ICounterpartyUpdateReq {
-    const meta = toMeta(baseline);
-    meta.vendor = { address: toVendorAddress(values.address) };
+    const roleDetails = toRoleDetails(baseline);
+    roleDetails.vendor = { address: toVendorAddress(values.address) };
 
-    return toUpdateReq(values, baseline, canChangeType, meta);
+    return toUpdateReq(values, baseline, canChangeType, roleDetails);
   },
   toEmployerUpdateReq(
     values: IEmployerFormValues,
     baseline: ICounterpartyDto,
     canChangeType: boolean
   ): ICounterpartyUpdateReq {
-    const meta = toMeta(baseline);
-    meta.employer = {
+    const roleDetails = toRoleDetails(baseline);
+    roleDetails.employer = {
       displayName: values.displayName || null,
       address: toAddress(values.address),
     };
 
-    return toUpdateReq(values, baseline, canChangeType, meta);
+    return toUpdateReq(values, baseline, canChangeType, roleDetails);
   },
   toContractorUpdateReq(
     values: IContractorFormValues,
     baseline: ICounterpartyDto,
     canChangeType: boolean
   ): ICounterpartyUpdateReq {
-    const meta = toMeta(baseline);
-    meta.contractor = { address: toAddress(values.address) };
+    const roleDetails = toRoleDetails(baseline);
+    roleDetails.contractor = { address: toAddress(values.address) };
 
-    return toUpdateReq(values, baseline, canChangeType, meta);
+    return toUpdateReq(values, baseline, canChangeType, roleDetails);
   },
 };

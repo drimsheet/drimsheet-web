@@ -16,7 +16,7 @@ const counterparties: IAccountBalanceContributionsByCounterpartyDto[] = [
     status: 'active',
     type: 'organization',
     roles: ['vendor'],
-    meta: {},
+    roleDetails: {},
     createdAt: '2026-10-01',
     updatedAt: '2026-10-01',
   },

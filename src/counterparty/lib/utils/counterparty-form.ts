@@ -21,7 +21,7 @@ export function hasCounterpartyChanges(request: ICounterpartyUpdateReq) {
   return (
     request.name !== undefined ||
     request.type !== undefined ||
-    request.meta !== undefined
+    request.roleDetails !== undefined
   );
 }
 

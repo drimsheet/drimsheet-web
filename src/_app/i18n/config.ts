@@ -9,6 +9,7 @@ import authEn from '@/auth/i18n/locales/en/auth.json';
 import counterpartyEn from '@/counterparty/i18n/locales/en/counterparty.json';
 import journalEntriesEn from '@/journal-entries/i18n/locales/en/journal-entries.json';
 import onboardingEn from '@/onboarding/i18n/locales/en/onboarding.json';
+import reportingEn from '@/reporting/i18n/locales/en/reporting.json';
 import apiErrorsEn from '@/shared/i18n/locales/en/api-errors.json';
 import sharedEn from '@/shared/i18n/locales/en/shared.json';
 import userEn from '@/user/i18n/locales/en/user.json';
@@ -19,6 +20,7 @@ const resources = {
     auth: authEn,
     shared: sharedEn,
     counterparty: counterpartyEn,
+    reporting: reportingEn,
     'journal-entries': journalEntriesEn,
     'ledger-accounts': ledgerAccountsEn,
     accounting: accountingEn,

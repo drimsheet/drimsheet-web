@@ -25,7 +25,6 @@ export interface CategorySummaryProps {
   account: ILedgerAccountDto;
   transactionCount?: number | null;
   intervalSlot?: ReactNode;
-  rangeError?: string;
   balance?: IMoneyDto | null;
 }
 
@@ -118,8 +117,3 @@ export interface CategorySummarySkeletonProps {
 
 export interface CategorySummaryWithStateProps
   extends CategoryPartWithStateProps, CategorySummarySkeletonProps {}
-
-export type CategoryChartsWithStateProps = Pick<
-  CategoryPartWithStateProps,
-  'loading' | 'children'
->;

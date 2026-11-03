@@ -1,4 +1,7 @@
-import { ReportingIntervalSelectSkeleton } from '@/reporting/components/reporting-interval-select';
+import {
+  ReportingIntervalSelectError,
+  ReportingIntervalSelectSkeleton,
+} from '@/reporting/components/reporting-interval-select';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
@@ -10,3 +13,5 @@ const meta = {
 export default meta;
 type TStory = StoryObj<typeof meta>;
 export const Loading: TStory = {};
+
+export const Error: TStory = { render: () => <ReportingIntervalSelectError /> };

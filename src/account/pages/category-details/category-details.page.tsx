@@ -1,27 +1,22 @@
 import { useLedgerAccount } from '@/account/hooks/use-ledger-account';
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
-import {
-  ReportingIntervalSelect,
-  ReportingIntervalSelectSkeleton,
-} from '@/reporting/components/reporting-interval-select';
+import { ReportingIntervalSelectContainer } from '@/reporting/components/reporting-interval-select';
 import { useAccountActivity } from '@/reporting/hooks/use-account-activity';
-import { useReportingInterval } from '@/reporting/hooks/use-reporting-interval';
 import { AppBody } from '@/shared/components/app';
 import { AppSection } from '@/shared/components/app-section';
-import type { UIntervalSelection } from '@/shared/components/interval-select';
 import { StatusBadge } from '@/shared/components/status-badge';
+import type { IDateRangeDto } from '@/shared/lib/api/Api';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router-dom';
 import categoryDetailsHelpers from './helper';
 import { CategoryActionsContainer } from './parts/category-actions.container';
-import { CategoryChartsWithState } from './parts/category-charts';
+import { CategoryCharts } from './parts/category-charts';
 import { CategoryMetadata } from './parts/category-metadata';
 import {
   CategorySummary,
   CategorySummaryWithState,
 } from './parts/category-summary';
-import { CategoryTransactionsWithState } from './parts/category-transactions';
 import { CategoryTransactionsContainer } from './parts/category-transactions.container';
 import { CategoryTrend, CategoryTrendWithState } from './parts/category-trend';
 import { CounterpartyShareContainer } from './parts/counterparty-share.container';
@@ -45,8 +40,7 @@ export function CategoryDetailsPage() {
     !account.isControlAccount &&
     (account.type === 'revenue' || account.type === 'expense');
 
-  const reporting = useReportingInterval(isCategory);
-  const range = reporting.range;
+  const [range, setRange] = useState<IDateRangeDto>();
   const query = { from: range?.from ?? '', to: range?.to ?? '', bucketDays: 1 };
 
   const activityQuery = useAccountActivity(
@@ -79,13 +73,12 @@ export function CategoryDetailsPage() {
   const selectedId =
     selected?.accountId === accountId ? selected.counterpartyId : null;
 
-  const transactionCount =
-    !reporting.isRangeTooLong && (reporting.isPending || recent.isPending)
-      ? undefined
-      : (recent.data?.meta.total ?? null);
+  const recentCount = range ? (recent.data?.meta.total ?? null) : null;
+  const transactionCount = range && recent.isPending ? undefined : recentCount;
+  const balance = range ? (activity?.balance ?? null) : null;
 
-  const handleIntervalChange = (selection: UIntervalSelection) => {
-    reporting.onChange(selection);
+  const handleIntervalChange = (next: IDateRangeDto | undefined) => {
+    setRange(next);
     setSelected(null);
   };
 
@@ -119,16 +112,8 @@ export function CategoryDetailsPage() {
   const selectedName =
     selectedId === 'self' ? self_label : (selected?.name ?? unassigned_label);
 
-  const show_detail_sections =
-    !accountQuery.isError &&
-    !reporting.isError &&
-    !reporting.isRangeTooLong &&
-    (accountQuery.isPending ||
-      (isCategory && (reporting.isPending || !!range)));
-
   const breadcrumb_label = t('categories_table_breadcrumb');
   const overview_title = t('details_overview_title');
-  const range_error_text = t('reporting_range_too_long_error');
   const status_label = account ? t(`categories_status_${account.status}`) : '';
 
   const recent_transactions_title = t(
@@ -165,93 +150,63 @@ export function CategoryDetailsPage() {
       <AppSection title={accountQuery.isError ? undefined : overview_title}>
         <CategorySummaryWithState
           loading={accountQuery.isPending}
-          error={accountQuery.isError || reporting.isError}
+          error={accountQuery.isError}
           showPeriod
         >
           {account && isCategory && (
             <CategorySummary
               account={account}
-              balance={
-                !reporting.isRangeTooLong &&
-                (reporting.isPending || activityQuery.isPending)
-                  ? undefined
-                  : (activity?.balance ?? null)
-              }
+              balance={range && activityQuery.isPending ? undefined : balance}
               intervalSlot={
-                <>
-                  {reporting.isPending && <ReportingIntervalSelectSkeleton />}
-                  {reporting.interval && !reporting.isPending && (
-                    <ReportingIntervalSelect
-                      interval={reporting.interval}
-                      onChange={handleIntervalChange}
-                    />
-                  )}
-                </>
-              }
-              rangeError={
-                reporting.isRangeTooLong ? range_error_text : undefined
+                <ReportingIntervalSelectContainer
+                  onChange={handleIntervalChange}
+                />
               }
               transactionCount={transactionCount}
             />
           )}
         </CategorySummaryWithState>
       </AppSection>
-      {show_detail_sections && (
+      {!accountQuery.isError && account && isCategory && range && (
         <>
           <AppSection>
-            <CategoryChartsWithState
-              loading={accountQuery.isPending || reporting.isPending}
-            >
-              {account && isCategory && range && (
-                <>
-                  <CategoryTrendWithState
-                    loading={activityQuery.isPending}
-                    error={
-                      activityQuery.isError ||
-                      (activityQuery.isSuccess && activity === null)
-                    }
-                  >
-                    {activityQuery.isSuccess && activity && (
-                      <CategoryTrend
-                        months={activity.months}
-                        hasTransactions={activity.hasActivity}
-                        currencyCode={account.functionalBalance.currencyCode}
-                        type={
-                          account.type === 'revenue' ? 'revenue' : 'expense'
-                        }
-                      />
-                    )}
-                  </CategoryTrendWithState>
-                  <CounterpartyShareContainer
-                    key={`${accountId}:${range.from}:${range.to}`}
-                    accountId={accountId}
-                    from={range.from}
-                    to={range.to}
+            <CategoryCharts>
+              <CategoryTrendWithState
+                loading={activityQuery.isPending}
+                error={
+                  activityQuery.isError ||
+                  (activityQuery.isSuccess && activity === null)
+                }
+              >
+                {activityQuery.isSuccess && activity && (
+                  <CategoryTrend
+                    months={activity.months}
+                    hasTransactions={activity.hasActivity}
+                    currencyCode={account.functionalBalance.currencyCode}
                     type={account.type === 'revenue' ? 'revenue' : 'expense'}
-                    selectedId={selectedId}
-                    onSelect={handleSelect}
                   />
-                </>
-              )}
-            </CategoryChartsWithState>
+                )}
+              </CategoryTrendWithState>
+              <CounterpartyShareContainer
+                key={`${accountId}:${range.from}:${range.to}`}
+                accountId={accountId}
+                from={range.from}
+                to={range.to}
+                type={account.type === 'revenue' ? 'revenue' : 'expense'}
+                selectedId={selectedId}
+                onSelect={handleSelect}
+              />
+            </CategoryCharts>
           </AppSection>
           <AppSection title={recent_transactions_title}>
-            <CategoryTransactionsWithState
-              loading={accountQuery.isPending || reporting.isPending}
-            >
-              {account && isCategory && range && (
-                <CategoryTransactionsContainer
-                  accountId={accountId}
-                  from={range.from}
-                  to={range.to}
-                  counterpartyId={selectedId}
-                  selectedCounterparty={
-                    selectedId === null ? null : selectedName
-                  }
-                  onClearCounterparty={() => setSelected(null)}
-                />
-              )}
-            </CategoryTransactionsWithState>
+            <CategoryTransactionsContainer
+              accountId={accountId}
+              from={range.from}
+              to={range.to}
+              counterpartyId={selectedId}
+              selectedCounterparty={selectedId === null ? null : selectedName}
+              onClearCounterparty={() => setSelected(null)}
+            />
           </AppSection>
         </>
       )}

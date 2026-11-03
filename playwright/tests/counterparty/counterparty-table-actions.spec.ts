@@ -19,7 +19,7 @@ const counterparty: ICounterpartyDto = {
   status: 'active',
   type: 'organization',
   roles: ['vendor'],
-  meta: { vendor: { address: null } },
+  roleDetails: { vendor: { address: null } },
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
 };

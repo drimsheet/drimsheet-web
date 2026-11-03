@@ -103,7 +103,7 @@ const participation: IAccountBalanceContributionsByCounterpartyDto[] = [
     status: 'active',
     type: 'organization',
     roles: ['vendor'],
-    meta: {},
+    roleDetails: {},
     createdAt: category.createdAt,
     updatedAt: category.updatedAt,
   },

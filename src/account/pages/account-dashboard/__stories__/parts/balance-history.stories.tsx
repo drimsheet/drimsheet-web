@@ -38,5 +38,8 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+export const AwaitingSelection: Story = {
+  args: { showHistory: false, history: undefined },
+};
 export const Loading: Story = { args: { loading: true, history: undefined } };
 export const Error: Story = { args: { error: true, history: undefined } };

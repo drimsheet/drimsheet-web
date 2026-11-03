@@ -30,7 +30,7 @@ it('fetches by ID and PATCHes changes instead of creating', async () => {
     type: 'organization',
     status: 'active',
     roles: ['employer'],
-    meta: {
+    roleDetails: {
       employer: {
         displayName: null,
         address: {

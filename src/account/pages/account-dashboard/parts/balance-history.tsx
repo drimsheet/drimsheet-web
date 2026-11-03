@@ -5,7 +5,7 @@ import type { BalanceHistoryProps } from '../types';
 
 export function BalanceHistory({
   intervalSlot,
-  errorDescription,
+  showHistory = true,
   history,
   loading,
   error,
@@ -26,18 +26,22 @@ export function BalanceHistory({
     emptyDescription: t('dashboard_history_empty_description'),
     loadingLabel: t('dashboard_loading_history'),
     errorTitle: t('dashboard_history_error_title'),
-    errorDescription: errorDescription ?? t('dashboard_error_description'),
+    errorDescription: t('dashboard_error_description'),
   };
 
-  const range_text = history
-    ? t('dashboard_period_range', {
-        from: dashboardHelpers.formatDate(history.period.from, locale),
-        to: dashboardHelpers.formatDate(history.period.to, locale),
-      })
-    : '';
+  const range_text =
+    showHistory && history
+      ? t('dashboard_period_range', {
+          from: dashboardHelpers.formatDate(history.period.from, locale),
+          to: dashboardHelpers.formatDate(history.period.to, locale),
+        })
+      : '';
 
   return (
-    <div className="flex min-w-0 flex-col gap-3" aria-busy={loading}>
+    <div
+      className="flex min-w-0 flex-col gap-3"
+      aria-busy={showHistory && loading}
+    >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h3 className="m-0 text-sm font-medium text-muted-foreground">
@@ -49,11 +53,13 @@ export function BalanceHistory({
         </div>
         {intervalSlot}
       </div>
-      <BalanceTrendWithState
-        labels={labels}
-        state={loading ? 'loading' : settledState}
-        points={history?.points}
-      />
+      {showHistory && (
+        <BalanceTrendWithState
+          labels={labels}
+          state={loading ? 'loading' : settledState}
+          points={history?.points}
+        />
+      )}
     </div>
   );
 }

@@ -32,7 +32,7 @@ const original: ICounterpartyDto = {
   type: 'organization',
   status: 'active',
   roles: [],
-  meta: {},
+  roleDetails: {},
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
 };
@@ -113,14 +113,14 @@ async function setup(page: Page, options: ISetupOptions = {}) {
       ...party,
       name: data.name ?? party.name,
       type: data.type ?? party.type,
-      meta:
-        data.meta === undefined
-          ? party.meta
-          : (data.meta as ICounterpartyDto['meta']),
+      roleDetails:
+        data.roleDetails === undefined
+          ? party.roleDetails
+          : (data.roleDetails as ICounterpartyDto['roleDetails']),
       roles:
-        data.meta === undefined
+        data.roleDetails === undefined
           ? party.roles
-          : (Object.keys(data.meta) as UCounterpartyRole[]),
+          : (Object.keys(data.roleDetails) as UCounterpartyRole[]),
       updatedAt: '2026-10-05T00:00:00Z',
     };
     await route.fulfill({ json: party });
@@ -313,7 +313,10 @@ test('preserves a failed draft edit, blocks duplicate saves, and refreshes detai
       page.getByRole('button', { name: 'Edit', exact: true })
     ).toBeDisabled();
   });
-  await page.getByRole('link', { name: 'All people & businesses' }).click();
+  await page
+    .getByRole('navigation', { name: 'breadcrumb' })
+    .getByRole('link', { name: 'People & Businesses', exact: true })
+    .click();
   await expect(
     page.getByRole('link', { name: 'Updated counterparty', exact: true })
   ).toBeVisible();
@@ -327,8 +330,8 @@ test('locks type for archived-only usage even with no visible recent transaction
     page.getByRole('heading', { name: 'No transactions yet' })
   ).toBeVisible();
   await expect(
-    page.getByPlaceholder('Search transactions...')
-  ).not.toBeVisible();
+    page.getByRole('region', { name: 'Recent transactions' })
+  ).toContainText('Showing 0 of 0');
   const dialog = await open(page);
   await expect(dialog.getByRole('combobox', { name: 'Type' })).toBeDisabled();
   await expect(dialog.getByText(restriction)).toBeVisible();
@@ -349,10 +352,10 @@ test('locks type for archived-only usage even with no visible recent transaction
 });
 
 for (const role of ['vendor', 'contractor', 'employer'] as const) {
-  test(`loads and updates the ${role} form from server metadata`, async ({
+  test(`loads and updates the ${role} form from server role details`, async ({
     page,
   }) => {
-    const meta =
+    const roleDetails =
       role === 'vendor'
         ? {
             vendor: { address },
@@ -371,7 +374,7 @@ for (const role of ['vendor', 'contractor', 'employer'] as const) {
         ...original,
         roles:
           role === 'vendor' ? ['vendor', 'contractor', 'employer'] : [role],
-        meta,
+        roleDetails,
       },
     });
 
@@ -435,14 +438,18 @@ for (const role of ['vendor', 'contractor', 'employer'] as const) {
     await dialog.getByLabel('City', { exact: true }).fill('Abuja');
     await dialog.getByRole('button', { name: 'Save changes' }).click();
     await expect(dialog).not.toBeVisible();
-    expect(state.patches[0].meta?.[role]?.address).toEqual({
+    expect(state.patches[0].roleDetails?.[role]?.address).toEqual({
       ...address,
       city: 'Abuja',
     });
     expect(state.patches[0]).not.toHaveProperty('status');
     if (role === 'vendor') {
-      expect(state.patches[0].meta?.contractor).toEqual(meta.contractor);
-      expect(state.patches[0].meta?.employer).toEqual(meta.employer);
+      expect(state.patches[0].roleDetails?.contractor).toEqual(
+        roleDetails.contractor
+      );
+      expect(state.patches[0].roleDetails?.employer).toEqual(
+        roleDetails.employer
+      );
     }
   });
 }

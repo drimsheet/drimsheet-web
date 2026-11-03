@@ -72,3 +72,7 @@ export const OpenPicker: TStory = {
     );
   },
 };
+
+export const InvalidRange: TStory = {
+  args: { error: 'Select a date range of 366 days or fewer.' },
+};

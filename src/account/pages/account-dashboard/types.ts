@@ -27,8 +27,8 @@ export interface AccountsSummaryWithStateProps extends Pick<
 }
 
 export interface BalanceHistoryProps {
+  showHistory?: boolean;
   intervalSlot?: ReactNode;
-  errorDescription?: string;
   history?: IAccountDashboardHistory;
   loading: boolean;
   error: boolean;

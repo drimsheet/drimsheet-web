@@ -10,8 +10,19 @@ describe('BalanceHistory', () => {
     const intervalSlot = <ReportingIntervalSelect onChange={onChange} />;
 
     const { rerender } = render(
-      <BalanceHistory intervalSlot={intervalSlot} loading error />
+      <BalanceHistory
+        intervalSlot={intervalSlot}
+        showHistory={false}
+        loading={false}
+        error={false}
+      />
     );
+
+    expect(screen.getByRole('button', { name: 'Interval' })).toBeVisible();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    rerender(<BalanceHistory intervalSlot={intervalSlot} loading error />);
 
     expect(
       screen.getByRole('status', { name: 'Loading balance history' })
