@@ -93,7 +93,7 @@ describe('CounterpartyRowActions', () => {
     );
   });
 
-  it('checks deletion eligibility only after opening the menu', async () => {
+  it('rechecks eligibility on each menu open and hides the previous result while checking', async () => {
     let resolveEligibility!: (canDelete: boolean) => void;
 
     const onCheckDeleteEligibility = vi.fn(
@@ -133,6 +133,29 @@ describe('CounterpartyRowActions', () => {
 
     await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     expect(onDelete).toHaveBeenCalledExactlyOnceWith(counterparty);
+
+    await user.click(
+      screen.getByRole('button', { name: 'Open person or business actions' })
+    );
+    expect(onCheckDeleteEligibility).toHaveBeenCalledTimes(2);
+    expect(
+      screen.queryByRole('menuitem', { name: 'Delete' })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('menuitem', {
+        name: 'Checking whether this person or business can be deleted',
+      })
+    ).toBeVisible();
+
+    await act(async () => resolveEligibility(false));
+    expect(
+      screen.queryByRole('menuitem', { name: 'Delete' })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', {
+        name: 'Checking whether this person or business can be deleted',
+      })
+    ).not.toBeInTheDocument();
   });
 
   it('hides delete when the counterparty is ineligible', async () => {

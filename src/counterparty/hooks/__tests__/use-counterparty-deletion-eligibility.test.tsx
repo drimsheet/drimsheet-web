@@ -40,7 +40,7 @@ describe('counterparty deletion eligibility hooks', () => {
     ).toHaveBeenCalledExactlyOnceWith('counterparty-1');
   });
 
-  it('does not check table-row eligibility until requested', async () => {
+  it('checks table-row eligibility on demand and fetches a fresh result for each request', async () => {
     vi.mocked(
       counterpartyService.getCounterpartyDeletionEligibility
     ).mockResolvedValue({ canDelete: false });
@@ -61,5 +61,17 @@ describe('counterparty deletion eligibility hooks', () => {
     expect(
       counterpartyService.getCounterpartyDeletionEligibility
     ).toHaveBeenCalledExactlyOnceWith('counterparty-1');
+
+    vi.mocked(
+      counterpartyService.getCounterpartyDeletionEligibility
+    ).mockResolvedValue({ canDelete: true });
+    await act(async () => {
+      expect(await result.current('counterparty-1')).toEqual({
+        canDelete: true,
+      });
+    });
+    expect(
+      counterpartyService.getCounterpartyDeletionEligibility
+    ).toHaveBeenCalledTimes(2);
   });
 });

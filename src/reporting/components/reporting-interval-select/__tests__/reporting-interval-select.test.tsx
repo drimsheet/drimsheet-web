@@ -110,14 +110,14 @@ describe('ReportingIntervalSelect', () => {
     await user.click(trigger());
     const endInput = screen.getByRole('textbox', { name: 'End date' });
     await user.clear(endInput);
-    await user.type(endInput, '2024-04-01');
+    await user.paste('2024-04-01');
     expect(screen.getByRole('alert')).toHaveTextContent(
       'Choose dates within the allowed range.'
     );
     expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
     expect(onChange).not.toHaveBeenCalled();
     await user.clear(endInput);
-    await user.type(endInput, '2024-03-31');
+    await user.paste('2024-03-31');
     await user.click(screen.getByRole('button', { name: 'Apply' }));
     expect(onChange).toHaveBeenCalledExactlyOnceWith({
       type: 'custom',
