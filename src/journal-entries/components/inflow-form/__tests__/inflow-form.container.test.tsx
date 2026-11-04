@@ -118,7 +118,8 @@ describe('InflowFormContainer', () => {
       type: 'application/pdf',
     });
 
-    render(<InflowFormContainer />);
+    const onSuccess = vi.fn().mockResolvedValue(undefined);
+    render(<InflowFormContainer onSuccess={onSuccess} />);
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
     await user.click(screen.getByRole('option', { name: 'Operating account' }));
@@ -152,6 +153,7 @@ describe('InflowFormContainer', () => {
       'Transaction was created successfully.'
     );
     await waitFor(() => {
+      expect(onSuccess).toHaveBeenCalledOnce();
       expect(navigate).toHaveBeenCalledWith('/transactions');
     });
     expect(handleApiError).not.toHaveBeenCalled();
@@ -159,7 +161,8 @@ describe('InflowFormContainer', () => {
 
   it('creates a draft receipt without a posting timestamp', async () => {
     const user = userEvent.setup();
-    render(<InflowFormContainer />);
+    const onSuccess = vi.fn().mockResolvedValue(undefined);
+    render(<InflowFormContainer onSuccess={onSuccess} />);
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
     await user.click(screen.getByRole('option', { name: 'Operating account' }));
@@ -176,6 +179,34 @@ describe('InflowFormContainer', () => {
       );
     });
     expect(toast.success).toHaveBeenCalledWith('Draft saved successfully');
+    expect(onSuccess).toHaveBeenCalledOnce();
     expect(navigate).toHaveBeenCalledWith('/transactions');
+  });
+  it('retains the continuation and entered values after a failed transaction submission', async () => {
+    const user = userEvent.setup();
+    const onSuccess = vi.fn();
+    createReceipt.mockRejectedValueOnce(new Error('Request failed'));
+
+    render(
+      <InflowFormContainer
+        onSuccess={onSuccess}
+        initialValues={{
+          accountId: 'bank-account',
+          categoryId: 'sales-revenue',
+          amount: { amount: 250, currencyCode: 'NGN', isMinorUnit: false },
+          counterparty: { name: 'Acme' },
+          description: 'Keep this transaction',
+        }}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await waitFor(() => expect(handleApiError).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: 'Create' })).toBeEnabled();
+    expect(screen.getByLabelText('Description')).toHaveValue(
+      'Keep this transaction'
+    );
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
   });
 });

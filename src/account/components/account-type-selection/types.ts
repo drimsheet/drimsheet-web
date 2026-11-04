@@ -13,5 +13,6 @@ export interface AccountTypeSelectionProps {
   value?: ULedgerAccountBehavior;
   onSubmit: (value: ULedgerAccountBehavior) => void;
   disabled?: boolean;
+  loading?: boolean;
   className?: string;
 }

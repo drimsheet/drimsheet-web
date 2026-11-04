@@ -2,6 +2,7 @@ export { CashTransferForm } from './cash-transfer-form';
 export { CashTransferFormContainer } from './cash-transfer-form.container';
 export { CashTransferFormSkeleton } from './state';
 export type {
+  CashTransferFormContainerProps,
   CashTransferFormProps,
   ICashTransferCurrencyContext,
   ICashTransferFormInitialValues,

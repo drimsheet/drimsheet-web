@@ -237,6 +237,27 @@ describe('CashTransferForm', () => {
       vi.fn() as unknown as typeof window.HTMLElement.prototype.scrollIntoView;
   });
 
+  it('identifies the transfer field that opens account creation', async () => {
+    const user = userEvent.setup();
+    const onAddAccount = vi.fn();
+    renderForm({ onAddAccount });
+
+    await user.click(screen.getByRole('combobox', { name: 'Source account' }));
+    await user.click(screen.getByRole('option', { name: 'Add a new account' }));
+    expect(onAddAccount).toHaveBeenLastCalledWith(
+      expect.objectContaining({ sourceAccountId: 'source-bank' }),
+      'sourceAccountId'
+    );
+    await user.click(
+      screen.getByRole('combobox', { name: 'Destination account' })
+    );
+    await user.click(screen.getByRole('option', { name: 'Add a new account' }));
+    expect(onAddAccount).toHaveBeenLastCalledWith(
+      expect.objectContaining({ destinationAccountId: 'destination-cash' }),
+      'destinationAccountId'
+    );
+  });
+
   it('renders the requested single-entry transfer fields', () => {
     renderForm();
 

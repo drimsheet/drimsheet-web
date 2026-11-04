@@ -43,6 +43,7 @@ export function CashTransferForm({
   initialValues,
   loading = false,
   officialExchangeRate,
+  onAddAccount,
   onCurrencyContextChange,
   onSaveDraft,
   onSubmit,
@@ -140,14 +141,14 @@ export function CashTransferForm({
         sourceAccountId
       ) || functionalCurrencyCode;
 
-    formik.setValues(
+    void formik.setValues(
       cashTransferFormHelpers.updateSourceAccount(
         formik.values,
         sourceAccountId,
         nextSourceCurrencyCode
       )
     );
-    formik.setFieldTouched('sourceAccountId', true, false);
+    void formik.setFieldTouched('sourceAccountId', true, false);
     onCurrencyContextChange({
       sourceCurrencyCode: nextSourceCurrencyCode,
       destinationCurrencyCode,
@@ -170,14 +171,14 @@ export function CashTransferForm({
       setIsItemizedRowEditing(false);
     }
 
-    formik.setValues(
+    void formik.setValues(
       cashTransferFormHelpers.updateDestinationAccount(
         formik.values,
         destinationAccountId,
         nextDestinationCurrencyCode
       )
     );
-    formik.setFieldTouched('destinationAccountId', true, false);
+    void formik.setFieldTouched('destinationAccountId', true, false);
     onCurrencyContextChange({
       sourceCurrencyCode,
       destinationCurrencyCode: nextDestinationCurrencyCode,
@@ -374,6 +375,11 @@ export function CashTransferForm({
             disabled={interactionDisabled}
             error={sourceAccountError}
             label={source_account_label}
+            onAddAccount={
+              onAddAccount
+                ? () => onAddAccount(formik.values, 'sourceAccountId')
+                : undefined
+            }
             onChange={handleSourceAccountChange}
             value={formik.values.sourceAccountId}
           />
@@ -384,6 +390,11 @@ export function CashTransferForm({
             disabled={interactionDisabled}
             error={destinationAccountError}
             label={destination_account_label}
+            onAddAccount={
+              onAddAccount
+                ? () => onAddAccount(formik.values, 'destinationAccountId')
+                : undefined
+            }
             onChange={handleDestinationAccountChange}
             value={formik.values.destinationAccountId}
           />

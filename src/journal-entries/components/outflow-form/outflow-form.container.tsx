@@ -13,10 +13,7 @@ import { journalEntryFormMapper } from '@/journal-entries/lib/mappers/journal-en
 import { journalEntryMapper } from '@/journal-entries/lib/mappers/journal-entry.mapper';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useExchangeRates } from '@/shared/hooks/use-exchange-rates';
-import {
-  EJournalEntrySourceType,
-  type IJournalEntryListDto,
-} from '@/shared/lib/api/Api';
+import { EJournalEntrySourceType } from '@/shared/lib/api/Api';
 import { fileUploadService } from '@/shared/lib/services/file-upload.service';
 import type { IReactQueryOptions } from '@/shared/types/query-options.types';
 import { useMemo, useState } from 'react';
@@ -24,16 +21,18 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import type { OutflowFormContainerProps } from './types';
+
 const requiredQueryOptions: IReactQueryOptions = {
   throwOnError: true,
 };
 
-interface OutflowFormContainerProps {
-  journalEntry?: IJournalEntryListDto;
-}
-
 export function OutflowFormContainer({
   journalEntry,
+  initialValues: creationInitialValues,
+  restoring = false,
+  onAddAccount,
+  onSuccess,
 }: Readonly<OutflowFormContainerProps>) {
   const { t } = useTranslation<'journal-entries'>('journal-entries');
   const navigate = useNavigate();
@@ -91,8 +90,8 @@ export function OutflowFormContainer({
             journalEntry,
             functionalCurrencyCode
           )
-        : undefined,
-    [functionalCurrencyCode, journalEntry]
+        : creationInitialValues,
+    [functionalCurrencyCode, journalEntry, creationInitialValues]
   );
 
   const isFormDataPending =
@@ -151,7 +150,8 @@ export function OutflowFormContainer({
         toast.success(successMessage);
       }
 
-      navigate('/transactions');
+      await onSuccess?.();
+      await navigate('/transactions');
     } catch (error) {
       handleApiError(error, { showToast: true });
     } finally {
@@ -165,7 +165,7 @@ export function OutflowFormContainer({
   const handleSaveDraft = (values: ICashTransactionFormValues) =>
     handlePersistValues(values, 'draft');
 
-  if (isFormDataPending) {
+  if (isFormDataPending || restoring) {
     return <CashTransactionFormSkeleton />;
   }
 
@@ -179,6 +179,7 @@ export function OutflowFormContainer({
       initialValues={initialValues}
       loading={submissionIntent === 'submit' || isRectifying}
       officialExchangeRate={officialExchangeRates?.[0]}
+      onAddAccount={onAddAccount}
       onCurrencyContextChange={setCurrencyContext}
       onSaveDraft={journalEntry ? undefined : handleSaveDraft}
       onSubmit={handleSubmit}

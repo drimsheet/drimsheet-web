@@ -11,6 +11,7 @@ import type { AccountTypeSelectionDialogProps } from './types';
 
 export function AccountTypeSelectionDialog({
   open,
+  loading,
   onClose,
   onSubmit,
   defaultValue,
@@ -41,6 +42,7 @@ export function AccountTypeSelectionDialog({
 
         <AccountTypeSelection
           defaultValue={defaultValue}
+          loading={loading}
           onSubmit={handleSubmit}
         />
       </DialogContent>

@@ -4,124 +4,73 @@
 
 Make imports predictable so the agent can change one part of the app without causing accidental coupling.
 
-## Import Direction
+## Capability Ownership
 
-- `src/_app/` may import from any feature or shared module.
-- `src/<feature>/pages/` may import from that feature’s `components/`, `hooks/`, `layouts/`, `dialogs/`, and `lib/`.
-- `src/<feature>/dialogs/` may import from that feature’s `components/`, `hooks/`, `layouts/`, and `lib/`.
-- `src/<feature>/components/` may import only from the same feature’s `lib/`, `types`, and shared code.
-- `src/<feature>/hooks/` may import from the same feature’s `lib/` and shared code.
-- `src/<feature>/routes/` may import pages only.
-- `src/shared/` must not import from any feature folder.
+- A feature owns a business capability, not every workflow that consumes it.
+  Other features may reuse its public APIs under the responsibility rules below;
+  individual feature or page allowlists are not required.
+- The consumer owns composition: inputs, workflow-specific queries and data
+  selection, presentation adapters, continuation, and navigation callbacks.
+- The provider owns its domain operations, reusable query definitions, data
+  access, transport, and internal presentation and states. Compose these
+  capabilities without duplicating their implementation in the consumer.
+- A reusable capability must not depend on its consumers' workflow-specific
+  types, mappers, helpers, or translations. Keep those adaptations with the
+  consumer and pass inputs through the provider's contract.
+- Dependencies between modules must remain acyclic, including type-only imports
+  and re-exports. Different capabilities in two features may depend in opposite
+  directions only when neither acquires a dependency on its own consumer.
 
-### Reporting interval selection composition exception
+## Import Permissions by Responsibility
 
-`src/account/pages/account-dashboard/`, `src/account/pages/account-details/`, and
-`src/account/pages/category-details/` may compose `ReportingIntervalSelectContainer`
-and consume its selected date range through
-`@/reporting/components/reporting-interval-select`.
-Report queries stay with their page/container owners.
+These permissions apply within a feature and across features. All imports must
+also respect public entry points, private ownership, and side-effect placement.
+Feature code may consume shared code; shared code must remain feature-agnostic.
 
-`src/reporting/components/reporting-interval-select/reporting-interval-select.container.tsx`
-may call `accountingService` from `@/accounting/lib/services/accounting.service`
-to load the current fiscal year and its reporting interval. Accounting transport
-remains in that service. The selector container owns fetching, selection, range
-checks, and loading/error presentation; the selector view remains presentational.
+| Importing responsibility                          | Allowed dependencies                                                                                                                                                                                      |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/_app/`                                       | Public feature and shared APIs for bootstrap, providers, layouts, and root route wiring.                                                                                                                  |
+| Pages and dialogs                                 | Public components, containers, layouts, dialogs, hooks, and reusable `lib/` APIs for composition and orchestration.                                                                                       |
+| Reusable component containers (`*.container.tsx`) | Public presentation APIs, dialogs, hooks, and reusable `lib/` APIs needed to fulfill the container's capability.                                                                                          |
+| Pure components, presentation parts, and layouts  | Public presentation components/layouts, presentation-only hooks, public types, and deterministic config, mappers, validation, and utilities. No services, effectful hooks, containers, dialogs, or pages. |
+| Feature hooks                                     | Public hooks, services, and reusable non-UI contracts and logic. No components, layouts, dialogs, or pages.                                                                                               |
+| Feature services                                  | Public services, reusable non-UI contracts and logic, and their own transport boundary (including shared API infrastructure). No UI modules or hooks.                                                     |
+| Deterministic `lib/` modules                      | Public types and deterministic non-UI logic/config. No UI modules, hooks, services, or transport.                                                                                                         |
+| Feature routes                                    | Public page entry points only, plus routing-library imports needed to declare routes.                                                                                                                     |
+| `src/shared/`                                     | Shared modules and external dependencies appropriate to the importing responsibility; no feature or `_app` imports.                                                                                       |
 
-### Account dashboard reporting composition exception
+- Feature code must not import from `src/_app/`.
+- A hook used by a pure view must itself be presentation-only: it may coordinate
+  local rendering or interaction state, but must not perform external side
+  effects or introduce data access through another hook.
+- Containers own reusable orchestration for their capability. Workflow-specific
+  orchestration belongs in the consuming page/dialog or its private containers
+  and hooks; do not expose it as a reusable component container.
+- Private support files inherit their owner's dependency scope, not permission
+  to change responsibility. A pure page/dialog part or helper remains pure even
+  though its owner may orchestrate side effects.
 
-`src/account/pages/account-dashboard/` may import
-`useAssetAndLiabilityBalancesByCurrency` from `@/reporting/hooks/use-asset-and-liability-balances-by-currency`.
-It may also import `useBalancesBySubType` from
-`@/reporting/hooks/use-balances-by-sub-type`.
-The dashboard supplies each query and selector; the reporting hooks and service
-remain feature-owned and must not import account-specific mappers.
-The dashboard may also compose `TotalBalance` and `BalancesByCurrency` through
-their public `@/reporting/components/total-balance` and
-`@/reporting/components/balances-by-currency` APIs. These reporting components
-must not import account-owned types, helpers, or translations.
-It may also compose the BalanceTrend component family through
-`@/reporting/components/balance-trend`, with the same ownership restrictions.
+## Public Capability Entry Points
 
-### Account details reporting composition exception
-
-`src/account/pages/account-details/` may import `useAccountCashFlow` from
-`@/reporting/hooks/use-account-cash-flow`. The page supplies the account ID
-and query; the reporting hook and service remain feature-owned.
-It may also compose `AccountCashFlowChart` and its skeleton through
-`@/reporting/components/account-cash-flow-chart`; the container stays page-private.
-
-### Account ledger reporting access exception
-
-`src/account/hooks/use-category-accounts.ts`,
-`src/account/hooks/use-category-summary.ts`, and
-`src/account/pages/category-details/` may call `ledgerReportingService` from
-`@/reporting/lib/services/ledger-reporting.service` for revenue/expense reports
-and account counterparty participation. Reporting transport stays in the
-reporting feature and must not import account-owned code.
-
-### Category details reporting hooks exception
-
-`src/account/pages/category-details/` may import `useAccountActivity` from
-`@/reporting/hooks/use-account-activity` and
-`useAccountBalanceContributionsByCounterparty` from
-`@/reporting/hooks/use-account-balance-contributions-by-counterparty`.
-The page supplies report inputs; query definitions and transport remain reporting-owned.
-
-### Account transaction data access exception
-
-Account details and category details page-private parts may use `useJournalEntries` from
-`@/journal-entries/hooks/use-journal-entries`.
-
-### Category detail composition exception
-
-`src/account/pages/category-details/` may compose the public `TransactionsTable`
-from `@/journal-entries/components/transactions-table`. The page supplies journal
-entries and presentation callbacks; private journal entry modules remain private.
-
-### Counterparty detail reporting access exception
-
-`src/counterparty/pages/counterparty-details/` may use
-`accountingService` from `@/accounting/lib/services/accounting.service` to
-resolve the current fiscal year and `ledgerReportingService` from
-`@/reporting/lib/services/ledger-reporting.service` for counterparty account-type
-participation. Transport remains in its owning feature service.
-
-### Counterparty detail composition exception
-
-`src/counterparty/pages/counterparty-details/` may import the public
-`TransactionsTable` from `@/journal-entries/components/transactions-table`.
-The page supplies data and presentation props; it must not import the transaction
-container or private helpers. This exception does not extend to feature hooks,
-services, or components.
-
-### Accounting onboarding composition exception
-
-`src/onboarding/pages/accounting-entity-onboarding/` may compose public
-accounting form contracts, accounting/account mutation hooks, accounting mappers
-and category configuration, and user profile/preferences hooks to complete onboarding.
-Orchestration stays in this page owner; transport stays in the owning feature
-services. This exception does not extend to other onboarding components or
-feature hooks.
+- Consume components, layouts with directory APIs, dialogs, and pages through
+  their public `index.ts`. Public UI contracts and existing skeleton/error/state
+  exports belong to that API. Do not deep-import UI implementations, containers,
+  `types.ts`, or `state.tsx` from outside their owner.
+- Reusable feature hooks and `lib/` modules may expose their contracts through
+  explicit module paths, such as `hooks/use-<capability>` or
+  `lib/services/<capability>.service`. These paths do not require new barrels or
+  a feature-wide `index.ts`.
+- An exported symbol is not automatically a public capability. Page/dialog
+  support files, component parts/helpers, and other owner-private modules stay
+  private regardless of their exports or import alias.
+- Cross-feature data access uses the owning feature's public hooks or services.
+  Generated clients and transport configuration remain behind the owning service
+  boundary; generated DTOs may be consumed as type-only contracts.
+- Do not widen a barrel just to bypass privacy. When another owner needs private
+  code, extract a reusable component, hook, or `lib/` module in its owning feature
+  with a consumer-independent contract.
 
 ## Page Ownership Boundaries
-
-### All transactions filter options exception
-
-`src/journal-entries/pages/all-transactions/` may call `ledgerAccountService`
-from `@/account/lib/services/ledger-account.service` and `counterpartyService`
-from `@/counterparty/lib/services/counterparty.service` to load transaction
-filter options. Transport stays in those owning services. The transactions
-table and its private filter receive options and callbacks through props.
-
-### Transactions overview data access exception
-
-`src/journal-entries/pages/transactions/` may call `ledgerReportingService`
-from `@/reporting/lib/services/ledger-reporting.service` and `accountingService`
-from `@/accounting/lib/services/accounting.service` for overview balances,
-currency activity, daily activity, and the current fiscal year.
-Transport stays in those
-owning services; overview composition and presentation stay page-private.
 
 - A page directory is an orchestration owner. Its parts, hooks, helpers, types,
   tests, and stories inherit page dependency permissions.
@@ -143,9 +92,9 @@ owning services; overview composition and presentation stay page-private.
   in `types.ts` and are exported directly from there with `export type` through
   the barrel. Other owners import the dialog through its public `index.ts`; do
   not import its implementation file directly.
-- Pure feature components must not import dialogs. Existing orchestration
-  containers may compose public dialog APIs but must never import private
-  dialog modules. This does not grant new cross-feature import permissions.
+- Pure feature components must not import dialogs. Orchestration containers may
+  compose public dialog APIs under the responsibility rules above, but must
+  never import private dialog modules.
 - Import private parts and owner types explicitly and relatively from production
   files; support files may use explicit aliased implementation paths.
 - Do not add barrels inside private dialog directories or re-export private files
@@ -156,26 +105,30 @@ owning services; overview composition and presentation stay page-private.
 - Shared code must stay feature-agnostic.
 - Feature code may depend on shared code, but not the other way around.
 - A component's `parts/` files share the dependency permissions of their owner
-  and may be imported only from within that owning component directory.
+  subject to their own responsibility, and may be imported only from within that
+  owning component directory.
 - A component's root-level `helper.ts` shares the dependency
-  permissions of its owner and may be imported only from within that owning
-  component directory.
+  scope of its owner, remains deterministic, and may be imported only from
+  within that owning component directory.
 - Import the component helper through its explicit sibling `./helper` path. Do
   not create a `helpers/` directory, add another helper module, or re-export the
   helper from the owner's public `index.ts`.
 - A component's `__tests__/` and `__stories__/` files inherit the dependency
   permissions of that component owner. Other `__tests__/` files inherit the
   permissions of their nearest production responsibility directory.
-- Support directories are organizational boundaries, not public APIs. Import
-  public components through their directory alias and private helpers or parts
-  through explicit implementation paths without adding exports for them.
+- Support directories are organizational boundaries, not public APIs. Within
+  the owning directory, import private helpers or parts through explicit
+  implementation paths without adding public exports for them.
 - UI components must not reach into infrastructure concerns directly.
 - Pages and dialogs may orchestrate side effects, but they should not own reusable business logic.
 - Route files must remain thin and only wire URLs to pages.
 
 ## Side-Effect Placement
 
-- Network access belongs in hooks or services, not in pure components.
+- Network transport belongs in the owning services. Hooks, pages, dialogs, and
+  containers may coordinate data access through those services or public hooks,
+  never through another feature's transport internals. Pure components must not
+  perform network access.
 - Local storage, analytics, timers, subscriptions, and DOM mutation belong outside pure components.
 - Reusable data shaping and mapping belong in `lib/mappers/`. Deterministic
   value shaping owned by one component belongs in that component's root-level

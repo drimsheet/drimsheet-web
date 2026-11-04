@@ -195,7 +195,8 @@ describe('OutflowFormContainer', () => {
       type: 'application/pdf',
     });
 
-    render(<OutflowFormContainer />);
+    const onSuccess = vi.fn().mockResolvedValue(undefined);
+    render(<OutflowFormContainer onSuccess={onSuccess} />);
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
     await user.click(screen.getByRole('option', { name: 'Operating account' }));
@@ -246,6 +247,7 @@ describe('OutflowFormContainer', () => {
       'Transaction was created successfully.'
     );
     await waitFor(() => {
+      expect(onSuccess).toHaveBeenCalledOnce();
       expect(navigate).toHaveBeenCalledWith('/transactions');
     });
     expect(handleApiError).not.toHaveBeenCalled();
@@ -253,7 +255,8 @@ describe('OutflowFormContainer', () => {
 
   it('creates a draft payment without a posting timestamp', async () => {
     const user = userEvent.setup();
-    render(<OutflowFormContainer />);
+    const onSuccess = vi.fn().mockResolvedValue(undefined);
+    render(<OutflowFormContainer onSuccess={onSuccess} />);
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
     await user.click(screen.getByRole('option', { name: 'Operating account' }));
@@ -273,6 +276,7 @@ describe('OutflowFormContainer', () => {
       );
     });
     expect(toast.success).toHaveBeenCalledWith('Draft saved successfully');
+    expect(onSuccess).toHaveBeenCalledOnce();
     expect(navigate).toHaveBeenCalledWith('/transactions');
   });
 

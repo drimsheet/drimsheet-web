@@ -164,6 +164,46 @@ describe('CashTransactionForm', () => {
       vi.fn() as unknown as typeof window.HTMLElement.prototype.scrollIntoView;
   });
 
+  it('passes unfinished values and the attachment to account creation without validating the form', async () => {
+    const user = userEvent.setup();
+    const onAddAccount = vi.fn();
+
+    const attachment = new File(['receipt'], 'receipt.pdf', {
+      type: 'application/pdf',
+    });
+
+    render(
+      <CashTransactionForm
+        accounts={accounts}
+        categories={categories}
+        functionalCurrencyCode="NGN"
+        initialValues={{
+          ...validValues,
+          amount: { ...validValues.amount, amount: Number.NaN },
+          attachment,
+        }}
+        onAddAccount={onAddAccount}
+        onCurrencyContextChange={vi.fn()}
+        onSubmit={vi.fn()}
+      />
+    );
+
+    await user.clear(screen.getByLabelText('Description'));
+    await user.type(
+      screen.getByLabelText('Description'),
+      'Unfinished transaction'
+    );
+    await user.click(screen.getByRole('combobox', { name: 'Account' }));
+    await user.click(screen.getByRole('option', { name: 'Add a new account' }));
+    expect(onAddAccount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description: 'Unfinished transaction',
+        attachment,
+        amount: expect.objectContaining({ amount: Number.NaN }),
+      })
+    );
+  });
+
   it('renders the single-entry layout and omits same-currency exchange rate', () => {
     render(
       <CashTransactionForm

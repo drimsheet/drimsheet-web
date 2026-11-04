@@ -1,7 +1,9 @@
 import type { IItemizedFieldValue } from '@/journal-entries/components/itemized-fields';
+import type { UTransactionAccountField } from '@/journal-entries/lib/types/transaction-continuation.types';
 import type { ICurrencyExchangeRateInputValue } from '@/shared/components/currency-exchange-rate-input';
 import type {
   IExchangeRate,
+  IJournalEntryListDto,
   ILedgerAccountDto,
   IMoneyDto,
 } from '@/shared/lib/api/Api';
@@ -48,9 +50,24 @@ export interface CashTransferFormProps {
   initialValues?: ICashTransferFormInitialValues;
   loading?: boolean;
   officialExchangeRate?: IExchangeRate;
+  onAddAccount?: (
+    values: ICashTransferFormValues,
+    field: UTransactionAccountField
+  ) => void;
   onCurrencyContextChange: (context: ICashTransferCurrencyContext) => void;
   onSaveDraft?: (values: ICashTransferFormValues) => void;
   onSubmit: (values: ICashTransferFormValues) => void;
   savingDraft?: boolean;
   submitLabel?: string;
+}
+
+export interface CashTransferFormContainerProps {
+  journalEntry?: IJournalEntryListDto;
+  initialValues?: Partial<ICashTransferFormValues>;
+  restoring?: boolean;
+  onAddAccount?: (
+    values: ICashTransferFormValues,
+    field?: UTransactionAccountField
+  ) => void;
+  onSuccess?: () => Promise<void>;
 }

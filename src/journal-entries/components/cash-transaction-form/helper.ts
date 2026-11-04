@@ -36,7 +36,7 @@ const COUNTERPARTY_TEXT_KEYS = Object.freeze({
  * preferring the selected account's currency when one can be resolved.
  */
 function createInitialValues(
-  initialValues: ICashTransactionFormValues | undefined,
+  initialValues: Partial<ICashTransactionFormValues> | undefined,
   accounts: ILedgerAccountDto[],
   functionalCurrencyCode: string
 ): ICashTransactionFormValues {

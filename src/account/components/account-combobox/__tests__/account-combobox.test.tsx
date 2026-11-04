@@ -241,6 +241,52 @@ describe('AccountCombobox', () => {
     expect(await screen.findByText('No accounts found.')).toBeInTheDocument();
   });
 
+  it('keeps the add action last when searching and preserves the selected account', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onAddAccount = vi.fn();
+
+    render(
+      <AccountCombobox
+        label="Account"
+        value="1"
+        accounts={mockAccounts}
+        onChange={onChange}
+        onAddAccount={onAddAccount}
+      />
+    );
+
+    const input = screen.getByRole('combobox', { name: 'Account' });
+    await user.click(input);
+    expect(screen.getAllByRole('option').at(-1)).toHaveTextContent(
+      'Add a new account'
+    );
+    await user.clear(input);
+    await user.type(input, 'No matching account');
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    onChange.mockClear();
+    await user.click(screen.getByRole('option', { name: 'Add a new account' }));
+    expect(onAddAccount).toHaveBeenCalledOnce();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('supports adding an account by keyboard when there are no accounts', async () => {
+    const user = userEvent.setup();
+    const onAddAccount = vi.fn();
+    render(
+      <AccountCombobox
+        label="Account"
+        value=""
+        accounts={[]}
+        onChange={vi.fn()}
+        onAddAccount={onAddAccount}
+      />
+    );
+    await user.click(screen.getByRole('combobox', { name: 'Account' }));
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(onAddAccount).toHaveBeenCalledOnce();
+  });
+
   it('handles invalid initial value gracefully', () => {
     const onChange = vi.fn();
     render(

@@ -118,6 +118,7 @@ const meta = {
   title: 'Ledger Accounts/AccountCombobox',
   component: AccountCombobox,
   tags: ['autodocs'],
+  args: { onAddAccount: () => undefined },
   parameters: { layout: 'centered' },
   decorators: [
     (Story) => (
@@ -156,5 +157,14 @@ export const WithError: Story = {
     accounts: mockAccounts,
     onChange: (value) => console.log('Account changed:', value),
     error: [{ message: 'Account is required' }],
+  },
+};
+
+export const Empty: Story = {
+  args: {
+    label: 'Account',
+    value: '',
+    accounts: [],
+    onChange: () => undefined,
   },
 };

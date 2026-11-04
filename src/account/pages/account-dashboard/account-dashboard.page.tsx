@@ -15,11 +15,12 @@ import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
 import { useDebounce } from '@/shared/hooks/use-debounce';
 import { useTableQueryParams } from '@/shared/hooks/use-table-query-params';
-import type { IDateRangeDto } from '@/shared/lib/api/Api';
+
 import {
   EAssetSubType,
   ELedgerAccountBehavior,
   ELedgerType,
+  type IDateRangeDto,
   type ULedgerAccountBehavior,
 } from '@/shared/lib/api/Api';
 import { Plus } from 'lucide-react';

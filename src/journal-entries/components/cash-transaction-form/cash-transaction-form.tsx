@@ -48,6 +48,7 @@ export function CashTransactionForm({
   initialValues,
   loading = false,
   officialExchangeRate,
+  onAddAccount,
   onCurrencyContextChange,
   onSaveDraft,
   onSubmit,
@@ -378,6 +379,9 @@ export function CashTransactionForm({
             disabled={interactionDisabled}
             error={accountError}
             label={account_label}
+            onAddAccount={
+              onAddAccount ? () => onAddAccount(formik.values) : undefined
+            }
             onChange={handleAccountChange}
             value={formik.values.accountId}
           />
@@ -470,6 +474,7 @@ export function CashTransactionForm({
             </div>
           ) : (
             <div className="space-y-3">
+              {/* TODO: add a category creation continuation for category selectors. */}
               <AccountCombobox
                 id="cash-transaction-category"
                 accounts={categories}

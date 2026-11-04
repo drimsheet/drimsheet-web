@@ -6,11 +6,7 @@ import { journalEntryFormMapper } from '@/journal-entries/lib/mappers/journal-en
 import { journalEntryMapper } from '@/journal-entries/lib/mappers/journal-entry.mapper';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useExchangeRates } from '@/shared/hooks/use-exchange-rates';
-import {
-  EAssetSubType,
-  EJournalEntrySourceType,
-  type IJournalEntryListDto,
-} from '@/shared/lib/api/Api';
+import { EAssetSubType, EJournalEntrySourceType } from '@/shared/lib/api/Api';
 import { fileUploadService } from '@/shared/lib/services/file-upload.service';
 import type { IReactQueryOptions } from '@/shared/types/query-options.types';
 import { useMemo, useState } from 'react';
@@ -20,6 +16,7 @@ import { toast } from 'sonner';
 import { CashTransferForm } from './cash-transfer-form';
 import { CashTransferFormSkeleton } from './state';
 import type {
+  CashTransferFormContainerProps,
   ICashTransferCurrencyContext,
   ICashTransferFormValues,
 } from './types';
@@ -28,12 +25,12 @@ const requiredQueryOptions: IReactQueryOptions = {
   throwOnError: true,
 };
 
-interface CashTransferFormContainerProps {
-  journalEntry?: IJournalEntryListDto;
-}
-
 export function CashTransferFormContainer({
   journalEntry,
+  initialValues: creationInitialValues,
+  restoring = false,
+  onAddAccount,
+  onSuccess,
 }: Readonly<CashTransferFormContainerProps>) {
   const { t } = useTranslation<'journal-entries'>('journal-entries');
   const navigate = useNavigate();
@@ -81,8 +78,8 @@ export function CashTransferFormContainer({
     () =>
       journalEntry
         ? journalEntryFormMapper.toCashTransferFormValues(journalEntry)
-        : undefined,
-    [journalEntry]
+        : creationInitialValues,
+    [journalEntry, creationInitialValues]
   );
 
   const isFormDataPending =
@@ -148,7 +145,8 @@ export function CashTransferFormContainer({
         toast.success(successMessage);
       }
 
-      navigate('/transactions');
+      await onSuccess?.();
+      await navigate('/transactions');
     } catch (error) {
       handleApiError(error, { showToast: true });
     } finally {
@@ -162,7 +160,7 @@ export function CashTransferFormContainer({
   const handleSaveDraft = (values: ICashTransferFormValues) =>
     handlePersistValues(values, 'draft');
 
-  if (isFormDataPending) {
+  if (isFormDataPending || restoring) {
     return <CashTransferFormSkeleton />;
   }
 
@@ -176,6 +174,7 @@ export function CashTransferFormContainer({
       initialValues={initialValues}
       loading={submissionIntent === 'submit' || isRectifying}
       officialExchangeRate={officialExchangeRates?.[0]}
+      onAddAccount={onAddAccount}
       onCurrencyContextChange={setCurrencyContext}
       onSaveDraft={journalEntry ? undefined : handleSaveDraft}
       onSubmit={handleSubmit}

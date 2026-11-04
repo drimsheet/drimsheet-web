@@ -11,21 +11,11 @@ import { Field, FieldError } from '@/shared/components/field';
 import { InputGroupAddon } from '@/shared/components/input-group';
 import { Label } from '@/shared/components/label';
 import type { ILedgerAccountDto } from '@/shared/lib/api/Api';
-import { Wallet } from 'lucide-react';
+import { Plus, Wallet } from 'lucide-react';
 import { createElement, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export interface AccountComboboxProps {
-  label: string;
-  value: string;
-  accounts: ILedgerAccountDto[];
-  onChange: (value: string) => void;
-  error?: Array<{ message?: string } | undefined>;
-  id?: string;
-  placeholder?: string;
-  emptyMessage?: string;
-  disabled?: boolean;
-}
+import type { AccountComboboxProps, TAccountComboboxItem } from './types';
 
 function AccountIcon({ account }: Readonly<{ account?: ILedgerAccountDto }>) {
   const Icon = account ? mapAccountTypeToIcon(account) : Wallet;
@@ -38,6 +28,7 @@ export function AccountCombobox({
   value,
   accounts,
   onChange,
+  onAddAccount,
   error,
   id = 'account-select',
   placeholder,
@@ -69,10 +60,21 @@ export function AccountCombobox({
     setSearchValue(value);
   };
 
-  const handleValueChange = (account: ILedgerAccountDto | null) => {
+  const handleValueChange = (account: TAccountComboboxItem | null) => {
+    if (account === 'add-account') {
+      setSearchValue('');
+      onAddAccount?.();
+
+      return;
+    }
+
     onChange(account?.id ?? '');
     setSearchValue('');
   };
+
+  const items: TAccountComboboxItem[] = onAddAccount
+    ? [...options, 'add-account']
+    : options;
 
   const hasError = Boolean(error?.length);
 
@@ -82,21 +84,30 @@ export function AccountCombobox({
   const resolved_empty_message =
     emptyMessage ?? t('ledger-accounts:no_accounts_found');
 
+  const add_account_text = t('ledger-accounts:add_new_account');
+
   return (
     <Field data-invalid={hasError}>
       <Label htmlFor={id} className="text-muted-foreground">
         {label}
       </Label>
       <Combobox
-        items={options}
+        items={items}
+        filter={null}
         autoHighlight
         value={selectedAccount ?? null}
         onValueChange={handleValueChange}
-        itemToStringLabel={(item: ILedgerAccountDto | null) => item?.name || ''}
+        itemToStringLabel={(item: TAccountComboboxItem | null) =>
+          item === 'add-account' ? add_account_text : item?.name || ''
+        }
         isItemEqualToValue={(
-          account: ILedgerAccountDto | null,
-          selectedAccount: ILedgerAccountDto | null
-        ) => account?.id === selectedAccount?.id}
+          account: TAccountComboboxItem | null,
+          selectedAccount: TAccountComboboxItem | null
+        ) =>
+          typeof account === 'string' || typeof selectedAccount === 'string'
+            ? account === selectedAccount
+            : account?.id === selectedAccount?.id
+        }
         onInputValueChange={handleInputValueChange}
       >
         <ComboboxInput
@@ -121,6 +132,12 @@ export function AccountCombobox({
                 </div>
               </ComboboxItem>
             ))}
+            {onAddAccount && (
+              <ComboboxItem value="add-account">
+                <Plus />
+                {add_account_text}
+              </ComboboxItem>
+            )}
           </ComboboxList>
         </ComboboxContent>
       </Combobox>

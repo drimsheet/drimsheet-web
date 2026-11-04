@@ -25,10 +25,14 @@ export const assetAccountService = {
     return response.data;
   },
   async createPettyCashAccount(payload: IPettyCashAccountCreationReq) {
-    await drimsheetApi.ledger.createPettyCashAccount(payload);
+    const response = await drimsheetApi.ledger.createPettyCashAccount(payload);
+
+    return response.data;
   },
 
   async createBankAccount(payload: IBankAccountCreationReq) {
-    await drimsheetApi.ledger.createBankAccount(payload);
+    const response = await drimsheetApi.ledger.createBankAccount(payload);
+
+    return response.data;
   },
 };

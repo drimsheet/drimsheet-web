@@ -30,8 +30,10 @@ const defaultExchangeRateContext: IOpeningBalanceExchangeRateContext = {
 export function PettyCashAccountCreationDialog({
   open,
   onClose,
+  onSuccess,
 }: Readonly<PettyCashAccountCreationDialogProps>) {
   const { t } = useTranslation(['ledger-accounts', 'shared']);
+
   const handleApiError = useApiErrorHandler();
 
   const [exchangeRateContext, setExchangeRateContext] =
@@ -79,10 +81,11 @@ export function PettyCashAccountCreationDialog({
         officialExchangeRate
       );
 
-      await createPettyCashAccount(request);
+      const account = await createPettyCashAccount(request);
       toast.success(
         t('ledger-accounts:petty_cash_account_created_success_text')
       );
+      onSuccess?.(account.id);
       handleClose();
     } catch (error) {
       handleApiError(error, { showToast: true });

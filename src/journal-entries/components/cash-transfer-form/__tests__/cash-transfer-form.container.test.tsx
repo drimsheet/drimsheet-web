@@ -118,7 +118,8 @@ describe('CashTransferFormContainer', () => {
       type: 'application/pdf',
     });
 
-    render(<CashTransferFormContainer />);
+    const onSuccess = vi.fn().mockResolvedValue(undefined);
+    render(<CashTransferFormContainer onSuccess={onSuccess} />);
 
     await user.click(screen.getByRole('combobox', { name: 'Source account' }));
     await user.click(screen.getByRole('option', { name: 'Operating account' }));
@@ -157,6 +158,7 @@ describe('CashTransferFormContainer', () => {
     );
     expect(toast.success).toHaveBeenCalledWith('Transfer created successfully');
     await waitFor(() => {
+      expect(onSuccess).toHaveBeenCalledOnce();
       expect(navigate).toHaveBeenCalledWith('/transactions');
     });
     expect(handleApiError).not.toHaveBeenCalled();
@@ -164,7 +166,8 @@ describe('CashTransferFormContainer', () => {
 
   it('creates a draft transfer without a posting timestamp', async () => {
     const user = userEvent.setup();
-    render(<CashTransferFormContainer />);
+    const onSuccess = vi.fn().mockResolvedValue(undefined);
+    render(<CashTransferFormContainer onSuccess={onSuccess} />);
 
     await user.click(screen.getByRole('combobox', { name: 'Source account' }));
     await user.click(screen.getByRole('option', { name: 'Operating account' }));
@@ -181,6 +184,7 @@ describe('CashTransferFormContainer', () => {
       );
     });
     expect(toast.success).toHaveBeenCalledWith('Draft saved successfully');
+    expect(onSuccess).toHaveBeenCalledOnce();
     expect(navigate).toHaveBeenCalledWith('/transactions');
   });
 });

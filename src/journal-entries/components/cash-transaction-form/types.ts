@@ -33,9 +33,10 @@ export interface CashTransactionFormProps {
   counterpartyOptions?: IJournalCounterpartyReq[];
   disabled?: boolean;
   functionalCurrencyCode: string;
-  initialValues?: ICashTransactionFormValues;
+  initialValues?: Partial<ICashTransactionFormValues>;
   loading?: boolean;
   officialExchangeRate?: IExchangeRate;
+  onAddAccount?: (values: ICashTransactionFormValues) => void;
   onCurrencyContextChange: (context: ICashTransactionCurrencyContext) => void;
   onSaveDraft?: (values: ICashTransactionFormValues) => void;
   onSubmit: (values: ICashTransactionFormValues) => void;

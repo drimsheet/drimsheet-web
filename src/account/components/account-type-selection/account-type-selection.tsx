@@ -15,6 +15,7 @@ export function AccountTypeSelection({
   value,
   onSubmit,
   disabled = false,
+  loading = false,
   className,
 }: Readonly<AccountTypeSelectionProps>) {
   const { t } = useTranslation(['ledger-accounts']);
@@ -23,7 +24,7 @@ export function AccountTypeSelection({
     value ?? defaultValue
   );
 
-  const selectedValue = value !== undefined ? value : internalSelected;
+  const selectedValue = value ?? internalSelected;
 
   const options: IAccountTypeOption[] = [
     {
@@ -58,7 +59,7 @@ export function AccountTypeSelection({
     },
   ];
 
-  const canSubmit = Boolean(selectedValue && !disabled);
+  const canSubmit = Boolean(selectedValue && !disabled && !loading);
 
   const handleSelect = (optionValue: ULedgerAccountBehavior) => {
     if (disabled) {
@@ -92,7 +93,7 @@ export function AccountTypeSelection({
         defaultValue={defaultValue ?? ''}
         onValueChange={(val) => handleSelect(val as ULedgerAccountBehavior)}
         aria-label={title}
-        disabled={disabled}
+        disabled={disabled || loading}
         className="flex flex-col gap-3"
       >
         {options.map((option) => {
@@ -115,7 +116,7 @@ export function AccountTypeSelection({
               <RadioGroupItem
                 id={optionId}
                 value={option.value}
-                disabled={disabled}
+                disabled={disabled || loading}
               />
 
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
@@ -141,6 +142,7 @@ export function AccountTypeSelection({
         <Button
           onClick={handleSubmit}
           disabled={!canSubmit}
+          loading={loading}
           className="min-w-[100px]"
         >
           {continueText}
