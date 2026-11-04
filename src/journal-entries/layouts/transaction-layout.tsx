@@ -1,4 +1,6 @@
+import { TransactionAttachments } from '@/journal-entries/components/transaction-attachments';
 import { AppBody } from '@/shared/components/app';
+import { AppSection } from '@/shared/components/app-section';
 import { Label } from '@/shared/components/label';
 import { RadioGroup, RadioGroupItem } from '@/shared/components/radio-group';
 import { useTranslation } from 'react-i18next';
@@ -53,7 +55,12 @@ export function TransactionLayout() {
           ))}
         </RadioGroup>
       </fieldset>
-      <Outlet />
+      <AppSection>
+        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,28rem)] lg:gap-20">
+          <Outlet />
+          <TransactionAttachments key={location.pathname} />
+        </div>
+      </AppSection>
     </AppBody>
   );
 }
