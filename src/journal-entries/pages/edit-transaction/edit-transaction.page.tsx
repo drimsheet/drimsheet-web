@@ -34,29 +34,25 @@ export function EditTransactionPage() {
 
   if (isPending) {
     return (
-      <>
-        <AppBody title={page_title}>
-          <AppSection>
-            {type === 'transfer' ? (
-              <CashTransferFormSkeleton />
-            ) : (
-              <CashTransactionFormSkeleton />
-            )}
-          </AppSection>
-        </AppBody>
-      </>
+      <AppBody title={page_title}>
+        <AppSection>
+          {type === 'transfer' ? (
+            <CashTransferFormSkeleton />
+          ) : (
+            <CashTransactionFormSkeleton />
+          )}
+        </AppSection>
+      </AppBody>
     );
   }
 
   if (isError) {
     return (
-      <>
-        <AppBody>
-          <AppSection>
-            <JournalEntryNotFound onBack={handleBack} />
-          </AppSection>
-        </AppBody>
-      </>
+      <AppBody>
+        <AppSection>
+          <JournalEntryNotFound onBack={handleBack} />
+        </AppSection>
+      </AppBody>
     );
   }
 
@@ -82,20 +78,18 @@ export function EditTransactionPage() {
   }
 
   return (
-    <>
-      <AppBody title={page_title}>
-        <AppSection>
-          {canonicalType === 'inflow' && (
-            <InflowFormContainer journalEntry={journalEntry} />
-          )}
-          {canonicalType === 'outflow' && (
-            <OutflowFormContainer journalEntry={journalEntry} />
-          )}
-          {canonicalType === 'transfer' && (
-            <CashTransferFormContainer journalEntry={journalEntry} />
-          )}
-        </AppSection>
-      </AppBody>
-    </>
+    <AppBody title={page_title}>
+      <AppSection>
+        {canonicalType === 'inflow' && (
+          <InflowFormContainer journalEntry={journalEntry} />
+        )}
+        {canonicalType === 'outflow' && (
+          <OutflowFormContainer journalEntry={journalEntry} />
+        )}
+        {canonicalType === 'transfer' && (
+          <CashTransferFormContainer journalEntry={journalEntry} />
+        )}
+      </AppSection>
+    </AppBody>
   );
 }
