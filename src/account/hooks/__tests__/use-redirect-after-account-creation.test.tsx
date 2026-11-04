@@ -11,7 +11,7 @@ vi.mock('react-router-dom', async (importOriginal) => ({
   useNavigate: () => navigate,
 }));
 
-function setup(params: Record<string, string> = {}) {
+function setup(params: Record<string, string> = {}, defaultRedirect?: string) {
   function Wrapper({ children }: { children: ReactNode }) {
     return (
       <MemoryRouter
@@ -22,7 +22,7 @@ function setup(params: Record<string, string> = {}) {
     );
   }
 
-  return renderHook(() => useRedirectAfterAccountCreation(), {
+  return renderHook(() => useRedirectAfterAccountCreation(defaultRedirect), {
     wrapper: Wrapper,
   });
 }
@@ -31,6 +31,13 @@ describe('useRedirectAfterAccountCreation', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it.each([
+    {
+      alias: 'categoryId',
+      redirect:
+        '/transactions/inflow?continuationKey=draft&categoryItemId=row-1',
+      expected:
+        '/transactions/inflow?continuationKey=draft&categoryItemId=row-1&categoryId=new-account',
+    },
     {
       alias: 'accountId',
       redirect: '/transactions/inflow?continuationKey=draft',
@@ -113,6 +120,13 @@ describe('useRedirectAfterAccountCreation', () => {
     await result.current.redirectAfterCreation('new-account');
 
     expect(navigate).toHaveBeenCalledExactlyOnceWith('/accounts', {
+      replace: true,
+    });
+  });
+  it('returns standalone category creation to the category list', async () => {
+    const { result } = setup({}, '/categories');
+    await result.current.redirectAfterCancellation();
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('/categories', {
       replace: true,
     });
   });

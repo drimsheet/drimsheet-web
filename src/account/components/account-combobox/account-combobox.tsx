@@ -29,6 +29,7 @@ export function AccountCombobox({
   accounts,
   onChange,
   onAddAccount,
+  newAccountLabel,
   error,
   id = 'account-select',
   placeholder,
@@ -72,6 +73,18 @@ export function AccountCombobox({
     setSearchValue('');
   };
 
+  const handleCheckItemValueEquality = (
+    account: TAccountComboboxItem | null,
+    selectedAccount: TAccountComboboxItem | null
+  ) => {
+    const isString =
+      typeof account === 'string' || typeof selectedAccount === 'string';
+
+    return isString
+      ? account === selectedAccount
+      : account?.id === selectedAccount?.id;
+  };
+
   const items: TAccountComboboxItem[] = onAddAccount
     ? [...options, 'add-account']
     : options;
@@ -84,7 +97,8 @@ export function AccountCombobox({
   const resolved_empty_message =
     emptyMessage ?? t('ledger-accounts:no_accounts_found');
 
-  const add_account_text = t('ledger-accounts:add_new_account');
+  const add_account_text =
+    newAccountLabel ?? t('ledger-accounts:add_new_account');
 
   return (
     <Field data-invalid={hasError}>
@@ -100,14 +114,7 @@ export function AccountCombobox({
         itemToStringLabel={(item: TAccountComboboxItem | null) =>
           item === 'add-account' ? add_account_text : item?.name || ''
         }
-        isItemEqualToValue={(
-          account: TAccountComboboxItem | null,
-          selectedAccount: TAccountComboboxItem | null
-        ) =>
-          typeof account === 'string' || typeof selectedAccount === 'string'
-            ? account === selectedAccount
-            : account?.id === selectedAccount?.id
-        }
+        isItemEqualToValue={handleCheckItemValueEquality}
         onInputValueChange={handleInputValueChange}
       >
         <ComboboxInput

@@ -68,3 +68,7 @@ export const LongDescription: Story = {
 export const Disabled: Story = {
   args: { disabled: true },
 };
+
+export const CategoryCreation: Story = {
+  args: { initialEditItemId: 'first', onAddCategory: () => undefined },
+};

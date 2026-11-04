@@ -107,5 +107,13 @@ export const PostingParent: Story = {
 export const ControlParent: Story = {
   args: { parent: { account: accounts[0], path: ['Operating expenses'] } },
 };
+
 export const Saving: Story = { args: { pending: true } };
+
+export const LockedType: Story = {
+  args: {
+    disableTypeSelection: true,
+    parent: { account: accounts[0], path: ['Operating expenses'] },
+  },
+};
 export const SaveFailure: Story = { args: { error: true } };

@@ -36,6 +36,8 @@ export interface CashTransactionFormProps {
   initialValues?: Partial<ICashTransactionFormValues>;
   loading?: boolean;
   officialExchangeRate?: IExchangeRate;
+  initialEditItemId?: string;
+  onAddCategory?: (values: ICashTransactionFormValues, itemId?: string) => void;
   onAddAccount?: (values: ICashTransactionFormValues) => void;
   onCurrencyContextChange: (context: ICashTransactionCurrencyContext) => void;
   onSaveDraft?: (values: ICashTransactionFormValues) => void;

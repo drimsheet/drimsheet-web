@@ -9,10 +9,13 @@ import type {
   ICategoryCreationFormValues,
   ICategoryParentSelection,
   TCategoryAccount,
+  UCategoryCreationType,
 } from './types';
 
-function createInitialValues(): ICategoryCreationFormValues {
-  return { type: '', parentId: '', name: '', postingAccountName: '' };
+function createInitialValues(
+  type: UCategoryCreationType = ''
+): ICategoryCreationFormValues {
+  return { type, parentId: '', name: '', postingAccountName: '' };
 }
 
 function findParent(

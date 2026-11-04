@@ -1,5 +1,8 @@
 import { AccountCombobox } from '@/account/components/account-combobox';
-import { ItemizedFields } from '@/journal-entries/components/itemized-fields';
+import {
+  ItemizedFields,
+  type IItemizedFieldValue,
+} from '@/journal-entries/components/itemized-fields';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +47,8 @@ export function CashTransferForm({
   loading = false,
   officialExchangeRate,
   onAddAccount,
+  onAddCategory,
+  initialEditItemId,
   onCurrencyContextChange,
   onSaveDraft,
   onSubmit,
@@ -55,10 +60,13 @@ export function CashTransferForm({
   const [singleEntryConfirmationOpen, setSingleEntryConfirmationOpen] =
     useState(false);
 
-  const [isItemizedRowEditing, setIsItemizedRowEditing] = useState(false);
+  const [isItemizedRowEditing, setIsItemizedRowEditing] = useState(
+    Boolean(initialEditItemId)
+  );
 
-  const [initialItemizedEditItemId, setInitialItemizedEditItemId] =
-    useState<string>();
+  const [initialItemizedEditItemId, setInitialItemizedEditItemId] = useState<
+    string | undefined
+  >(initialEditItemId);
 
   const validationSchema = useCashTransferFormValidation(
     sourceAccounts,
@@ -280,6 +288,13 @@ export function CashTransferForm({
     void formik.setFieldTouched('items', false, false);
   };
 
+  const handleAddItemCategory = (
+    items: IItemizedFieldValue[],
+    itemId: string
+  ) => {
+    onAddCategory?.({ ...formik.values, items }, itemId);
+  };
+
   const handleItemsChange = (items: ICashTransferFormValues['items']) => {
     setInitialItemizedEditItemId(undefined);
     void formik.setValues(
@@ -462,6 +477,9 @@ export function CashTransferForm({
                 initialEditItemId={initialItemizedEditItemId}
                 onChange={handleItemsChange}
                 onEditModeChange={handleItemizedEditModeChange}
+                onAddCategory={
+                  onAddCategory ? handleAddItemCategory : undefined
+                }
               />
             </div>
           ) : (

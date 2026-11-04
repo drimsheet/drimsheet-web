@@ -168,3 +168,13 @@ export const Empty: Story = {
     onChange: () => undefined,
   },
 };
+
+export const CategoryCreation: Story = {
+  args: {
+    label: 'Category',
+    value: '',
+    accounts: mockAccounts.filter((account) => account.type === 'revenue'),
+    onChange: () => undefined,
+    newAccountLabel: 'Add a new category',
+  },
+};

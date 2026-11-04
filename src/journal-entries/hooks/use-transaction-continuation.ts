@@ -1,5 +1,6 @@
 import { journalEntryStorageService } from '@/journal-entries/lib/services/storage.service';
 import type {
+  ITransactionContinuationItem,
   ITransactionContinuationSearchParams,
   UTransactionAccountField,
   UTransactionCreationType,
@@ -63,6 +64,17 @@ export function useTransactionContinuation<T extends object>(
 
   const isRestoring = Boolean(continuationKey) && continuation.isPending;
 
+  const restoredValues = continuation.data as
+    | (T & { items?: ITransactionContinuationItem[] })
+    | null
+    | undefined;
+
+  const categoryItemId = restoredValues?.items?.some(
+    (item) => item.id === initialParams.categoryItemId
+  )
+    ? initialParams.categoryItemId
+    : undefined;
+
   const initialValues = useMemo(() => {
     if (inlineInitialValues) {
       return inlineInitialValues;
@@ -75,14 +87,31 @@ export function useTransactionContinuation<T extends object>(
       'accountId',
       'sourceAccountId',
       'destinationAccountId',
+      'categoryId',
     ] as const) {
       if (initialParams[key]) {
         overrides[key] = initialParams[key];
       }
     }
 
-    return { ...continuation.data, ...overrides } as Partial<T>;
-  }, [continuation.data, initialParams, inlineInitialValues]);
+    if (initialParams.categoryItemId) {
+      delete overrides.categoryId;
+    }
+
+    const values = { ...restoredValues, ...overrides } as Partial<T> & {
+      items?: ITransactionContinuationItem[];
+    };
+
+    const categoryId = initialParams.categoryId;
+
+    if (categoryItemId && categoryId) {
+      values.items = values.items?.map((item) =>
+        item.id === categoryItemId ? { ...item, accountId: categoryId } : item
+      );
+    }
+
+    return values;
+  }, [restoredValues, initialParams, inlineInitialValues, categoryItemId]);
 
   const handleAddAccount = (
     values: T,
@@ -144,6 +173,41 @@ export function useTransactionContinuation<T extends object>(
     }
   };
 
+  const handleAddCategory = async (values: T, itemId?: string) => {
+    if (!scopedKey || isSaving) {
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const key = continuationKey ?? crypto.randomUUID();
+      await journalEntryStorageService.saveContinuation(
+        scopedKey,
+        type,
+        key,
+        values
+      );
+      const returnParams = new URLSearchParams({ continuationKey: key });
+
+      if (itemId) {
+        returnParams.set('categoryItemId', itemId);
+      }
+
+      const creationParams = new URLSearchParams({
+        type: type === 'inflow' ? 'revenue' : 'expense',
+        redirect: `/transactions/${type}?${returnParams}`,
+        redirectAccountAlias: 'categoryId',
+      });
+
+      await navigate(`/categories/new?${creationParams}`);
+    } catch (error) {
+      handleApiError(error, { showToast: true });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handlePettyCashAccountCreated = (accountId: string) => {
     if (pendingValues.current) {
       setInlineInitialValues({
@@ -195,11 +259,13 @@ export function useTransactionContinuation<T extends object>(
 
   return {
     initialValues,
+    categoryItemId,
     isRestoring,
     isSaving,
     showAccountTypeSelection,
     showPettyCashAccountCreation,
     handleAddAccount,
+    handleAddCategory,
     handleAccountTypeSelected,
     handleAccountTypeSelectionClose: () => setShowAccountTypeSelection(false),
     handlePettyCashAccountCreated,

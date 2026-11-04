@@ -1,3 +1,4 @@
+import type { UAccountCreationRedirectAlias } from '@/account/lib/types/account-creation-redirect.types';
 import type { IChartOfAccountsNodeDto } from '@/shared/lib/api/Api';
 import type { FormikProps } from 'formik';
 
@@ -28,6 +29,7 @@ export interface CategoryCreationFormProps {
   accountsError: boolean;
   pending: boolean;
   error: boolean;
+  disableTypeSelection?: boolean;
   onTypeChange: (value: string) => void;
   onParentChange: (id: string) => void;
   onPickerOpenChange: (open: boolean) => void;
@@ -55,4 +57,10 @@ export interface PromotionPreviewProps {
   parentName: string;
   postingAccountName: string;
   categoryName: string;
+}
+
+export interface ICategoryCreationPageSearchParams {
+  type?: UCategoryCreationType;
+  redirect?: string;
+  redirectAccountAlias?: UAccountCreationRedirectAlias;
 }

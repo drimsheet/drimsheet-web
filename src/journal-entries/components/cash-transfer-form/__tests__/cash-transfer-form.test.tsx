@@ -258,6 +258,47 @@ describe('CashTransferForm', () => {
     );
   });
 
+  it('passes the active fee row and attachment to category creation', async () => {
+    const user = userEvent.setup();
+    const onAddCategory = vi.fn();
+
+    const attachment = new File(['receipt'], 'receipt.pdf', {
+      type: 'application/pdf',
+    });
+
+    const fee = {
+      id: 'fee-1',
+      accountId: 'bank-fees',
+      amount: { amount: 5, currencyCode: 'NGN', isMinorUnit: false },
+      description: 'Transfer fee',
+    };
+
+    renderForm({
+      initialValues: {
+        ...defaultInitialValues,
+        isItemized: true,
+        items: [fee],
+        attachment,
+      },
+      initialEditItemId: fee.id,
+      onAddCategory,
+    });
+    expect(screen.getByRole('button', { name: 'Create' })).toBeDisabled();
+    await user.click(screen.getByRole('combobox', { name: 'Category' }));
+    await user.click(
+      screen.getByRole('option', { name: 'Add a new category' })
+    );
+    expect(onAddCategory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAccountId: 'source-bank',
+        destinationAccountId: 'destination-cash',
+        attachment,
+        items: [fee],
+      }),
+      fee.id
+    );
+  });
+
   it('renders the requested single-entry transfer fields', () => {
     renderForm();
 

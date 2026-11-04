@@ -12,6 +12,8 @@ export function InflowPage() {
   const params: IInflowPageSearchParams = {
     accountId: searchParams.get('accountId') ?? undefined,
     continuationKey: searchParams.get('continuationKey') ?? undefined,
+    categoryId: searchParams.get('categoryId') ?? undefined,
+    categoryItemId: searchParams.get('categoryItemId') ?? undefined,
   };
 
   const continuation = useTransactionContinuation<ICashTransactionFormValues>(
@@ -25,6 +27,8 @@ export function InflowPage() {
         initialValues={continuation.initialValues}
         restoring={continuation.isRestoring}
         onAddAccount={continuation.handleAddAccount}
+        onAddCategory={continuation.handleAddCategory}
+        initialEditItemId={continuation.categoryItemId}
         onSuccess={continuation.handleContinuationComplete}
       />
       <AccountTypeSelectionDialog

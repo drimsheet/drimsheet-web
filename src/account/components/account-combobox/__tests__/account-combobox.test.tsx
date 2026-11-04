@@ -287,6 +287,30 @@ describe('AccountCombobox', () => {
     expect(onAddAccount).toHaveBeenCalledOnce();
   });
 
+  it('uses the custom creation label when there are no matching accounts', async () => {
+    const user = userEvent.setup();
+    const onAddAccount = vi.fn();
+    render(
+      <AccountCombobox
+        label="Category"
+        value=""
+        accounts={mockAccounts}
+        onChange={vi.fn()}
+        onAddAccount={onAddAccount}
+        newAccountLabel="Add a new category"
+      />
+    );
+    await user.type(
+      screen.getByRole('combobox', { name: 'Category' }),
+      'No matching category'
+    );
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    await user.click(
+      screen.getByRole('option', { name: 'Add a new category' })
+    );
+    expect(onAddAccount).toHaveBeenCalledOnce();
+  });
+
   it('handles invalid initial value gracefully', () => {
     const onChange = vi.fn();
     render(

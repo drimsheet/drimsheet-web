@@ -2,6 +2,7 @@ import { useTransactionContinuation } from '@/journal-entries/hooks/use-transact
 import type {
   ITransactionContinuationSearchParams,
   UTransactionAccountField,
+  UTransactionCreationType,
 } from '@/journal-entries/lib/types/transaction-continuation.types';
 import { StorageScopeContext } from '@/shared/hooks/use-scoped-key';
 import { ELedgerAccountBehavior } from '@/shared/lib/api/Api';
@@ -42,7 +43,10 @@ interface IValues {
   attachment: File | null;
 }
 
-function setup(params: ITransactionContinuationSearchParams = {}) {
+function setup(
+  params: ITransactionContinuationSearchParams = {},
+  type: UTransactionCreationType = 'inflow'
+) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -67,7 +71,7 @@ function setup(params: ITransactionContinuationSearchParams = {}) {
 
   return renderHook(
     () => ({
-      ...useTransactionContinuation<IValues>('inflow', params),
+      ...useTransactionContinuation<IValues>(type, params),
       location: useLocation(),
     }),
     { wrapper: Wrapper }
@@ -248,6 +252,135 @@ describe('useTransactionContinuation', () => {
     );
     await act(() =>
       result.current.handleAccountTypeSelected(ELedgerAccountBehavior.Bank)
+    );
+    expect(mocks.navigate).not.toHaveBeenCalled();
+    expect(mocks.handleError).toHaveBeenCalled();
+    expect(result.current.isSaving).toBe(false);
+  });
+  it.each(['inflow', 'transfer'] as const)(
+    'persists %s before opening category creation with the matching type',
+    async (type) => {
+      const { result } = setup({}, type);
+
+      const values = {
+        accountId: 'bank',
+        description: 'Unfinished',
+        attachment: new File(['receipt'], 'receipt.pdf'),
+      };
+
+      await act(() => result.current.handleAddCategory(values, 'row-1'));
+      const [scope, savedType, key, saved] = mocks.set.mock.calls[0];
+      expect(scope).toBe('user:user:entity:entity:journal-entries');
+      expect(savedType).toBe(type);
+      expect(saved).toEqual(values);
+
+      const destination = new URL(
+        mocks.navigate.mock.calls[0][0],
+        'https://example.com'
+      );
+
+      expect(destination.pathname).toBe('/categories/new');
+      expect(destination.searchParams.get('type')).toBe(
+        type === 'inflow' ? 'revenue' : 'expense'
+      );
+      expect(destination.searchParams.get('redirectAccountAlias')).toBe(
+        'categoryId'
+      );
+
+      const redirect = new URL(
+        destination.searchParams.get('redirect')!,
+        destination.origin
+      );
+
+      expect(redirect.pathname).toBe(`/transactions/${type}`);
+      expect(redirect.searchParams.get('continuationKey')).toBe(key);
+      expect(redirect.searchParams.get('categoryItemId')).toBe('row-1');
+      expect(mocks.set.mock.invocationCallOrder[0]).toBeLessThan(
+        mocks.navigate.mock.invocationCallOrder[0]
+      );
+    }
+  );
+
+  it('restores a single category without replacing the saved transaction account', async () => {
+    mocks.get.mockResolvedValue({
+      accountId: 'bank',
+      categoryId: 'old-category',
+      description: 'Saved',
+      attachment: null,
+    });
+
+    const { result } = setup({
+      continuationKey: 'draft',
+      categoryId: 'new-category',
+    });
+
+    await waitFor(() => expect(result.current.isRestoring).toBe(false));
+    expect(result.current.initialValues).toMatchObject({
+      accountId: 'bank',
+      categoryId: 'new-category',
+      description: 'Saved',
+    });
+  });
+
+  it('restores the active item and changes only that item category', async () => {
+    const saved = {
+      accountId: 'bank',
+      description: 'Saved',
+      attachment: null,
+      items: [
+        { id: 'row-1', accountId: 'old-category', description: 'Draft item' },
+        { id: 'row-2', accountId: 'unchanged' },
+      ],
+    };
+
+    mocks.get.mockResolvedValue(saved);
+
+    const { result } = setup({
+      continuationKey: 'draft',
+      categoryId: 'new-category',
+      categoryItemId: 'row-1',
+    });
+
+    await waitFor(() => expect(result.current.isRestoring).toBe(false));
+    expect(result.current.categoryItemId).toBe('row-1');
+    expect(result.current.initialValues).toEqual({
+      ...saved,
+      items: [
+        { id: 'row-1', accountId: 'new-category', description: 'Draft item' },
+        saved.items[1],
+      ],
+    });
+  });
+
+  it('restores an unfinished category row on cancellation without a new category ID', async () => {
+    const saved = {
+      accountId: 'bank',
+      description: 'Saved',
+      attachment: null,
+      items: [{ id: 'row-1', accountId: '' }],
+    };
+
+    mocks.get.mockResolvedValue(saved);
+
+    const { result } = setup({
+      continuationKey: 'draft',
+      categoryItemId: 'row-1',
+    });
+
+    await waitFor(() => expect(result.current.isRestoring).toBe(false));
+    expect(result.current.categoryItemId).toBe('row-1');
+    expect(result.current.initialValues).toEqual(saved);
+  });
+
+  it('stays on the transaction when saving the category continuation fails', async () => {
+    mocks.set.mockRejectedValue(new Error('Storage unavailable'));
+    const { result } = setup();
+    await act(() =>
+      result.current.handleAddCategory({
+        accountId: 'bank',
+        description: 'Saved',
+        attachment: null,
+      })
     );
     expect(mocks.navigate).not.toHaveBeenCalled();
     expect(mocks.handleError).toHaveBeenCalled();

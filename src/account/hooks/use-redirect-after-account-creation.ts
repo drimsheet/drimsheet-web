@@ -1,7 +1,7 @@
 import type { UAccountCreationRedirectAlias } from '@/account/lib/types/account-creation-redirect.types';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-export function useRedirectAfterAccountCreation() {
+export function useRedirectAfterAccountCreation(defaultRedirect = '/accounts') {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const requestedRedirect = searchParams.get('redirect');
@@ -12,9 +12,10 @@ export function useRedirectAfterAccountCreation() {
     requestedRedirect.startsWith('/') &&
     !requestedRedirect.startsWith('//');
 
-  const redirect = hasRedirect ? requestedRedirect : '/accounts';
+  const redirect = hasRedirect ? requestedRedirect : defaultRedirect;
 
   const accountAlias: UAccountCreationRedirectAlias | undefined =
+    requestedAlias === 'categoryId' ||
     requestedAlias === 'accountId' ||
     requestedAlias === 'destinationAccountId' ||
     requestedAlias === 'sourceAccountId'

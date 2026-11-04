@@ -6,6 +6,8 @@ export interface InflowFormContainerProps {
   journalEntry?: IJournalEntryListDto;
   initialValues?: Partial<ICashTransactionFormValues>;
   restoring?: boolean;
+  initialEditItemId?: string;
+  onAddCategory?: (values: ICashTransactionFormValues, itemId?: string) => void;
   onAddAccount?: (
     values: ICashTransactionFormValues,
     field?: UTransactionAccountField

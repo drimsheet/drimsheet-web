@@ -32,6 +32,8 @@ export function InflowFormContainer({
   initialValues: creationInitialValues,
   restoring = false,
   onAddAccount,
+  onAddCategory,
+  initialEditItemId,
   onSuccess,
 }: Readonly<InflowFormContainerProps>) {
   const { t } = useTranslation<'journal-entries'>('journal-entries');
@@ -180,6 +182,8 @@ export function InflowFormContainer({
       loading={submissionIntent === 'submit' || isRectifying}
       officialExchangeRate={officialExchangeRates?.[0]}
       onAddAccount={onAddAccount}
+      onAddCategory={onAddCategory}
+      initialEditItemId={initialEditItemId}
       onCurrencyContextChange={setCurrencyContext}
       onSaveDraft={journalEntry ? undefined : handleSaveDraft}
       onSubmit={handleSubmit}

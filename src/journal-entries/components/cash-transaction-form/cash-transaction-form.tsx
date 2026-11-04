@@ -1,5 +1,8 @@
 import { AccountCombobox } from '@/account/components/account-combobox';
-import { ItemizedFields } from '@/journal-entries/components/itemized-fields';
+import {
+  ItemizedFields,
+  type IItemizedFieldValue,
+} from '@/journal-entries/components/itemized-fields';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +52,8 @@ export function CashTransactionForm({
   loading = false,
   officialExchangeRate,
   onAddAccount,
+  onAddCategory,
+  initialEditItemId,
   onCurrencyContextChange,
   onSaveDraft,
   onSubmit,
@@ -56,15 +61,18 @@ export function CashTransactionForm({
   submitLabel,
   variant,
 }: Readonly<CashTransactionFormProps>) {
-  const { t } = useTranslation<'journal-entries'>('journal-entries');
+  const { t } = useTranslation(['journal-entries', 'ledger-accounts']);
 
   const [singleEntryConfirmationOpen, setSingleEntryConfirmationOpen] =
     useState(false);
 
-  const [isItemizedRowEditing, setIsItemizedRowEditing] = useState(false);
+  const [isItemizedRowEditing, setIsItemizedRowEditing] = useState(
+    Boolean(initialEditItemId)
+  );
 
-  const [initialItemizedEditItemId, setInitialItemizedEditItemId] =
-    useState<string>();
+  const [initialItemizedEditItemId, setInitialItemizedEditItemId] = useState<
+    string | undefined
+  >(initialEditItemId);
 
   const validationSchema = useCashTransactionFormValidation(
     accounts,
@@ -240,6 +248,13 @@ export function CashTransactionForm({
     void formik.setFieldValue('isItemized', true);
   };
 
+  const handleAddItemCategory = (
+    items: IItemizedFieldValue[],
+    itemId: string
+  ) => {
+    onAddCategory?.({ ...formik.values, items }, itemId);
+  };
+
   const handleItemsChange = (items: ICashTransactionFormValues['items']) => {
     setInitialItemizedEditItemId(undefined);
     void formik.setFieldValue('items', items);
@@ -329,6 +344,7 @@ export function CashTransactionForm({
   const date_label = t('cash_transaction_date_label');
   const date_placeholder = t('cash_transaction_date_placeholder');
   const category_label = t('category_label');
+  const new_category_label = t('ledger-accounts:add_new_category');
   const category_placeholder = t('category_placeholder');
   const create_text = submitLabel ?? t('cash_transaction_create_text');
   const save_draft_text = t('cash_transaction_save_draft_text');
@@ -470,17 +486,23 @@ export function CashTransactionForm({
                 initialEditItemId={initialItemizedEditItemId}
                 onChange={handleItemsChange}
                 onEditModeChange={handleItemizedEditModeChange}
+                onAddCategory={
+                  onAddCategory ? handleAddItemCategory : undefined
+                }
               />
             </div>
           ) : (
             <div className="space-y-3">
-              {/* TODO: add a category creation continuation for category selectors. */}
               <AccountCombobox
                 id="cash-transaction-category"
                 accounts={categories}
                 disabled={interactionDisabled}
                 error={categoryError}
                 label={category_label}
+                onAddAccount={
+                  onAddCategory ? () => onAddCategory(formik.values) : undefined
+                }
+                newAccountLabel={new_category_label}
                 onChange={handleCategoryChange}
                 placeholder={category_placeholder}
                 value={formik.values.categoryId}

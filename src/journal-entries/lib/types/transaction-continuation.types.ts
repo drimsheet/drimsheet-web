@@ -7,7 +7,14 @@ export type UTransactionAccountField =
 
 export interface ITransactionContinuationSearchParams {
   continuationKey?: string;
+  categoryId?: string;
+  categoryItemId?: string;
   accountId?: string;
   sourceAccountId?: string;
   destinationAccountId?: string;
+}
+
+export interface ITransactionContinuationItem {
+  id: string;
+  accountId: string;
 }

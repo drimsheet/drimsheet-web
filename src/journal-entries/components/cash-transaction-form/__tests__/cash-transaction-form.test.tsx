@@ -204,6 +204,34 @@ describe('CashTransactionForm', () => {
     );
   });
 
+  it('passes the unfinished transaction and its attachment to single-category creation', async () => {
+    const user = userEvent.setup();
+    const onAddCategory = vi.fn();
+
+    const attachment = new File(['receipt'], 'receipt.pdf', {
+      type: 'application/pdf',
+    });
+
+    render(
+      <CashTransactionForm
+        accounts={accounts}
+        categories={categories}
+        functionalCurrencyCode="NGN"
+        initialValues={{ ...validValues, categoryId: '', attachment }}
+        onAddCategory={onAddCategory}
+        onCurrencyContextChange={vi.fn()}
+        onSubmit={vi.fn()}
+      />
+    );
+    await user.click(screen.getByRole('combobox', { name: 'Category' }));
+    await user.click(
+      screen.getByRole('option', { name: 'Add a new category' })
+    );
+    expect(onAddCategory).toHaveBeenCalledWith(
+      expect.objectContaining({ ...validValues, categoryId: '', attachment })
+    );
+  });
+
   it('renders the single-entry layout and omits same-currency exchange rate', () => {
     render(
       <CashTransactionForm

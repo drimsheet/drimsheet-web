@@ -13,6 +13,8 @@ export function TransferPage() {
     sourceAccountId: searchParams.get('sourceAccountId') ?? undefined,
     destinationAccountId: searchParams.get('destinationAccountId') ?? undefined,
     continuationKey: searchParams.get('continuationKey') ?? undefined,
+    categoryId: searchParams.get('categoryId') ?? undefined,
+    categoryItemId: searchParams.get('categoryItemId') ?? undefined,
   };
 
   const continuation = useTransactionContinuation<ICashTransferFormValues>(
@@ -26,6 +28,8 @@ export function TransferPage() {
         initialValues={continuation.initialValues}
         restoring={continuation.isRestoring}
         onAddAccount={continuation.handleAddAccount}
+        onAddCategory={continuation.handleAddCategory}
+        initialEditItemId={continuation.categoryItemId}
         onSuccess={continuation.handleContinuationComplete}
       />
       <AccountTypeSelectionDialog

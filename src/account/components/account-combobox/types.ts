@@ -5,6 +5,7 @@ export interface AccountComboboxProps {
   value: string;
   accounts: ILedgerAccountDto[];
   onAddAccount?: () => void;
+  newAccountLabel?: string;
   onChange: (value: string) => void;
   error?: Array<{ message?: string } | undefined>;
   id?: string;

@@ -57,7 +57,7 @@ const income: IChartOfAccountsNodeDto = {
   children: [],
 };
 
-async function setup(page: Page) {
+async function setup(page: Page, path = '/categories/new') {
   await registerAuthenticatedAppRoutes(page);
 
   await page.route(
@@ -106,7 +106,7 @@ async function setup(page: Page) {
           : [expenses],
     })
   );
-  await page.goto('/categories/new');
+  await page.goto(path);
 }
 
 async function chooseParent(page: Page, name: string) {
@@ -128,8 +128,19 @@ async function chooseParent(page: Page, name: string) {
 test('coordinates the selected parent and preview and retains names after a failed save', async ({
   page,
 }) => {
-  await setup(page);
-  await page.getByRole('radio', { name: 'Expenses', exact: true }).click();
+  await setup(
+    page,
+    '/categories/new?type=expense&redirect=%2Ftransactions%2Foutflow%3FcontinuationKey%3Ddraft&redirectAccountAlias=categoryId'
+  );
+  await expect(
+    page.getByRole('radio', { name: 'Expenses', exact: true })
+  ).toBeChecked();
+  await expect(
+    page.getByRole('radio', { name: 'Expenses', exact: true })
+  ).toBeDisabled();
+  await expect(
+    page.getByRole('radio', { name: 'Income', exact: true })
+  ).toBeDisabled();
   await chooseParent(page, 'Utilities');
   await page.getByLabel('Category name', { exact: true }).fill('Internet');
   await page
@@ -189,7 +200,13 @@ test('clears the previous parent and preview when the category class changes', a
 test('shows parent-picker loading and errors, then recovers after refresh', async ({
   page,
 }) => {
-  await setup(page);
+  await setup(page, '/categories/new?type=invalid');
+  await expect(
+    page.getByRole('radio', { name: 'Expenses', exact: true })
+  ).toBeEnabled();
+  await expect(
+    page.getByRole('radio', { name: 'Income', exact: true })
+  ).toBeEnabled();
   let release!: () => void;
 
   const gate = new Promise<void>((resolve) => {

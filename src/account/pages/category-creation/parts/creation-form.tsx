@@ -27,6 +27,7 @@ export function CategoryCreationForm({
   accountsError,
   pending,
   error,
+  disableTypeSelection = false,
   onTypeChange,
   onParentChange,
   onPickerOpenChange,
@@ -42,6 +43,7 @@ export function CategoryCreationForm({
     form.touched.postingAccountName && form.errors.postingAccountName;
 
   const isPromotion = !!parent && !parent.account.isControlAccount;
+  const typeSelectionDisabled = pending || disableTypeSelection;
   const type_label = t('category_creation_type_label');
   const income_label = t('category_creation_income_label');
   const expenses_label = t('category_creation_expenses_label');
@@ -72,7 +74,7 @@ export function CategoryCreationForm({
         </Alert>
       )}
       <FieldGroup>
-        <FieldSet disabled={pending}>
+        <FieldSet disabled={typeSelectionDisabled}>
           <FieldLegend variant="label" id={`${id}-type-label`}>
             {type_label}
           </FieldLegend>
@@ -85,7 +87,7 @@ export function CategoryCreationForm({
             aria-required
             aria-invalid={!!typeError}
             aria-describedby={typeError ? `${id}-type-error` : undefined}
-            disabled={pending}
+            disabled={typeSelectionDisabled}
           >
             <Field orientation="horizontal" className="w-auto">
               <RadioGroupItem id={`${id}-income`} value="revenue" />

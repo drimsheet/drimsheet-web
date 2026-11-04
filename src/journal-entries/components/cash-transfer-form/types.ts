@@ -50,6 +50,8 @@ export interface CashTransferFormProps {
   initialValues?: ICashTransferFormInitialValues;
   loading?: boolean;
   officialExchangeRate?: IExchangeRate;
+  initialEditItemId?: string;
+  onAddCategory?: (values: ICashTransferFormValues, itemId?: string) => void;
   onAddAccount?: (
     values: ICashTransferFormValues,
     field: UTransactionAccountField
@@ -65,6 +67,8 @@ export interface CashTransferFormContainerProps {
   journalEntry?: IJournalEntryListDto;
   initialValues?: Partial<ICashTransferFormValues>;
   restoring?: boolean;
+  initialEditItemId?: string;
+  onAddCategory?: (values: ICashTransferFormValues, itemId?: string) => void;
   onAddAccount?: (
     values: ICashTransferFormValues,
     field?: UTransactionAccountField
