@@ -122,11 +122,13 @@ describe('CashTransferFormContainer', () => {
     render(<CashTransferFormContainer onSuccess={onSuccess} />);
 
     await user.click(screen.getByRole('combobox', { name: 'Source account' }));
-    await user.click(screen.getByRole('option', { name: 'Operating account' }));
+    await user.click(
+      screen.getByRole('option', { name: /^Operating account/ })
+    );
     await user.click(
       screen.getByRole('combobox', { name: 'Destination account' })
     );
-    await user.click(screen.getByRole('option', { name: 'Petty cash' }));
+    await user.click(screen.getByRole('option', { name: /^Petty cash/ }));
     await user.type(screen.getByLabelText('Amount sent'), '250');
     await user.upload(screen.getByLabelText('Attach receipt'), attachment);
     await user.click(screen.getByRole('button', { name: 'Create' }));
@@ -170,11 +172,13 @@ describe('CashTransferFormContainer', () => {
     render(<CashTransferFormContainer onSuccess={onSuccess} />);
 
     await user.click(screen.getByRole('combobox', { name: 'Source account' }));
-    await user.click(screen.getByRole('option', { name: 'Operating account' }));
+    await user.click(
+      screen.getByRole('option', { name: /^Operating account/ })
+    );
     await user.click(
       screen.getByRole('combobox', { name: 'Destination account' })
     );
-    await user.click(screen.getByRole('option', { name: 'Petty cash' }));
+    await user.click(screen.getByRole('option', { name: /^Petty cash/ }));
     await user.type(screen.getByLabelText('Amount sent'), '250');
     await user.click(screen.getByRole('button', { name: 'Save draft' }));
 

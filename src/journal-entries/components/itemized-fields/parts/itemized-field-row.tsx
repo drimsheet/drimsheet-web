@@ -124,6 +124,7 @@ export function ItemizedFieldRow({
         <AccountCombobox
           id={categoryId}
           accounts={accounts}
+          showBalance={false}
           disabled={disabled}
           error={errors?.accountId}
           label={category_label}

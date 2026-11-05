@@ -10,7 +10,9 @@ import {
 import { Field, FieldError } from '@/shared/components/field';
 import { InputGroupAddon } from '@/shared/components/input-group';
 import { Label } from '@/shared/components/label';
+import { Money } from '@/shared/components/money';
 import type { ILedgerAccountDto } from '@/shared/lib/api/Api';
+import { cn } from '@/shared/lib/utils/cn';
 import { Plus, Wallet } from 'lucide-react';
 import { createElement, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +37,7 @@ export function AccountCombobox({
   placeholder,
   emptyMessage,
   disabled = false,
+  showBalance = true,
 }: Readonly<AccountComboboxProps>) {
   const { t } = useTranslation(['ledger-accounts']);
   const [searchValue, setSearchValue] = useState('');
@@ -137,6 +140,19 @@ export function AccountCombobox({
                   <AccountIcon account={item} />
                   <span className="truncate">{item.name}</span>
                 </div>
+                {showBalance && (
+                  <Money
+                    value={item.balance}
+                    className={cn(
+                      'ml-auto shrink-0 whitespace-nowrap text-right text-xs tabular-nums',
+                      {
+                        'text-financial-expense!': item.balance.amount < 0,
+                        'text-financial-income!': item.balance.amount > 0,
+                        'text-muted-foreground!': item.balance.amount === 0,
+                      }
+                    )}
+                  />
+                )}
               </ComboboxItem>
             ))}
             {onAddAccount && (

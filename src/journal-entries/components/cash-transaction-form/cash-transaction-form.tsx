@@ -496,6 +496,7 @@ export function CashTransactionForm({
               <AccountCombobox
                 id="cash-transaction-category"
                 accounts={categories}
+                showBalance={false}
                 disabled={interactionDisabled}
                 error={categoryError}
                 label={category_label}

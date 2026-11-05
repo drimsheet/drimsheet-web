@@ -433,7 +433,7 @@ describe('CashTransactionForm', () => {
     );
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
-    await user.click(screen.getByRole('option', { name: 'USD bank account' }));
+    await user.click(screen.getByRole('option', { name: /^USD bank account/ }));
 
     expect(onCurrencyContextChange).toHaveBeenLastCalledWith({
       currencyCode: 'USD',
@@ -458,7 +458,7 @@ describe('CashTransactionForm', () => {
     );
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
-    await user.click(screen.getByRole('option', { name: 'NGN bank account' }));
+    await user.click(screen.getByRole('option', { name: /^NGN bank account/ }));
 
     expect(onCurrencyContextChange).toHaveBeenCalledWith({
       currencyCode: 'NGN',
@@ -536,7 +536,7 @@ describe('CashTransactionForm', () => {
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
     await user.click(
-      await screen.findByRole('option', { name: 'NGN bank account' })
+      await screen.findByRole('option', { name: /^NGN bank account/ })
     );
 
     await waitFor(() =>
@@ -670,7 +670,7 @@ describe('CashTransactionForm', () => {
     expect(createButton).toBeDisabled();
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
-    await user.click(screen.getByRole('option', { name: 'USD bank account' }));
+    await user.click(screen.getByRole('option', { name: /^USD bank account/ }));
 
     expect(createButton).toBeEnabled();
     expect(
@@ -700,7 +700,7 @@ describe('CashTransactionForm', () => {
     expect(createButton).toBeDisabled();
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
-    await user.click(screen.getByRole('option', { name: 'USD bank account' }));
+    await user.click(screen.getByRole('option', { name: /^USD bank account/ }));
 
     expect(createButton).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();

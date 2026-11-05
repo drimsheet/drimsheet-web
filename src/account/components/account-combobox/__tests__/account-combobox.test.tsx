@@ -162,6 +162,58 @@ describe('AccountCombobox', () => {
     expect(onChange).toHaveBeenCalledWith('2');
   });
 
+  it('shows each account balance in its own currency by default', async () => {
+    const user = userEvent.setup();
+    render(
+      <AccountCombobox
+        label="Account"
+        value=""
+        onChange={vi.fn()}
+        accounts={mockAccounts}
+      />
+    );
+
+    await user.click(screen.getByRole('combobox', { name: 'Account' }));
+
+    expect(
+      await screen.findByRole('option', { name: /Main Bank Account/i })
+    ).toHaveTextContent('NGN 1,500,000');
+    expect(
+      screen.getByRole('option', { name: /Trade Payables/i })
+    ).toHaveTextContent('$4,800');
+    expect(
+      screen.getByRole('option', { name: /Consulting Revenue/i })
+    ).toHaveTextContent('$95,400');
+  });
+
+  it('hides balances when showBalance is false and still selects an account', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <AccountCombobox
+        label="Category"
+        value=""
+        onChange={onChange}
+        accounts={mockAccounts}
+        showBalance={false}
+      />
+    );
+
+    await user.click(screen.getByRole('combobox', { name: 'Category' }));
+
+    for (const account of mockAccounts) {
+      expect(
+        await screen.findByRole('option', { name: account.name })
+      ).toBeVisible();
+    }
+
+    await user.click(
+      screen.getByRole('option', { name: 'Consulting Revenue' })
+    );
+
+    expect(onChange).toHaveBeenCalledWith('3');
+  });
+
   it('filters accounts when typing', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

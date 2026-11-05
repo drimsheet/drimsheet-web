@@ -49,9 +49,9 @@ const mockAccounts: ILedgerAccountDto[] = [
     status: ELedgerAccountStatus.Active,
     contraAccountRule: 'contra_not_applicable' as UContraAccountRule,
     adjunctAccountRule: 'adjunct_not_applicable' as UAdjunctAccountRule,
-    balance: { amount: 4800, currencyCode: 'USD', isMinorUnit: false },
+    balance: { amount: -4800, currencyCode: 'USD', isMinorUnit: false },
     functionalBalance: {
-      amount: 4800,
+      amount: -4800,
       currencyCode: 'USD',
       isMinorUnit: false,
     },
@@ -74,9 +74,9 @@ const mockAccounts: ILedgerAccountDto[] = [
     status: ELedgerAccountStatus.Active,
     contraAccountRule: 'contra_not_applicable' as UContraAccountRule,
     adjunctAccountRule: 'adjunct_not_applicable' as UAdjunctAccountRule,
-    balance: { amount: 95400, currencyCode: 'USD', isMinorUnit: false },
+    balance: { amount: 0, currencyCode: 'USD', isMinorUnit: false },
     functionalBalance: {
-      amount: 95400,
+      amount: 0,
       currencyCode: 'USD',
       isMinorUnit: false,
     },
@@ -172,6 +172,7 @@ export const Empty: Story = {
 export const CategoryCreation: Story = {
   args: {
     label: 'Category',
+    showBalance: false,
     value: '',
     accounts: mockAccounts.filter((account) => account.type === 'revenue'),
     onChange: () => undefined,

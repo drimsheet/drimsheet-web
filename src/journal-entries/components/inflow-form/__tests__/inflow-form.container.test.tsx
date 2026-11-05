@@ -122,7 +122,9 @@ describe('InflowFormContainer', () => {
     render(<InflowFormContainer onSuccess={onSuccess} />);
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
-    await user.click(screen.getByRole('option', { name: 'Operating account' }));
+    await user.click(
+      screen.getByRole('option', { name: /^Operating account/ })
+    );
     await user.type(screen.getByLabelText('Amount'), '250');
     await user.click(screen.getByRole('combobox', { name: 'Category' }));
     await user.click(screen.getByRole('option', { name: 'Sales revenue' }));
@@ -165,7 +167,9 @@ describe('InflowFormContainer', () => {
     render(<InflowFormContainer onSuccess={onSuccess} />);
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
-    await user.click(screen.getByRole('option', { name: 'Operating account' }));
+    await user.click(
+      screen.getByRole('option', { name: /^Operating account/ })
+    );
     await user.type(screen.getByLabelText('Amount'), '250');
     await user.click(screen.getByRole('combobox', { name: 'Category' }));
     await user.click(screen.getByRole('option', { name: 'Sales revenue' }));

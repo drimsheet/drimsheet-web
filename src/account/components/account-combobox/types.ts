@@ -12,6 +12,7 @@ export interface AccountComboboxProps {
   placeholder?: string;
   emptyMessage?: string;
   disabled?: boolean;
+  showBalance?: boolean;
 }
 
 export type TAccountComboboxItem = ILedgerAccountDto | 'add-account';

@@ -412,7 +412,7 @@ describe('CashTransferForm', () => {
       screen.getByRole('option', { name: 'Bank fees' })
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('option', { name: 'Petty cash' })
+      screen.queryByRole('option', { name: /^Petty cash/ })
     ).not.toBeInTheDocument();
   });
 
