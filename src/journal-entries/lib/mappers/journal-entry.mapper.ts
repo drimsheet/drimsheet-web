@@ -11,7 +11,6 @@ import {
   type IExchangeRateDto,
   type IExchangeRateQueryParam,
   type IFileAttachment,
-  type IJournalCounterpartyReq,
   type IJournalEntryListDto,
   type IJournalEntryRectificationCounterpartyLineReq,
   type IJournalEntryRectificationLineReq,
@@ -96,24 +95,6 @@ function toTransferExchangeRateQuery(
   };
 }
 
-function toJournalCounterpartyReq(
-  value: ICashTransactionFormValues['counterparty']
-): IJournalCounterpartyReq {
-  const counterparty: IJournalCounterpartyReq = {
-    name: value.name,
-  };
-
-  if (value.id !== undefined) {
-    counterparty.id = value.id;
-  }
-
-  if (value.type !== undefined) {
-    counterparty.type = value.type;
-  }
-
-  return counterparty;
-}
-
 function toJournalEntryLineReq({
   accountId,
   amount,
@@ -124,7 +105,7 @@ function toJournalEntryLineReq({
 }: IJournalEntryLineMappingInput): IPaymentEntryLineReq & IReceiptEntryLineReq {
   return {
     accountId,
-    counterparty: toJournalCounterpartyReq(counterparty),
+    counterpartyId: counterparty.id,
     amount: moneyMapper.toMoneyDto(
       amount.amount,
       amount.currencyCode,
@@ -293,7 +274,7 @@ function toTransferChargeLineReq(
 ): IJournalLineReq {
   return {
     accountId: item.accountId,
-    counterparty: null,
+    counterpartyId: null,
     amount: moneyMapper.toMoneyDto(
       item.amount.amount,
       item.amount.currencyCode,
@@ -399,11 +380,7 @@ function toRectificationCounterpartyLine(
 ): IJournalEntryRectificationCounterpartyLineReq {
   const rectificationLine: IJournalEntryRectificationCounterpartyLineReq = {
     accountId: line.accountId,
-    counterparty: {
-      id: line.counterparty.id,
-      name: line.counterparty.name,
-      type: line.counterparty.type,
-    },
+    counterpartyId: line.counterpartyId,
     amount: {
       amount: line.amount.amount,
       currencyCode: line.amount.currencyCode,
@@ -468,7 +445,7 @@ function toRectificationChargeLine(
 ): IJournalEntryRectificationLineReq {
   const rectificationLine: IJournalEntryRectificationLineReq = {
     accountId: line.accountId,
-    counterparty: null,
+    counterpartyId: null,
     amount: {
       amount: line.amount.amount,
       currencyCode: line.amount.currencyCode,

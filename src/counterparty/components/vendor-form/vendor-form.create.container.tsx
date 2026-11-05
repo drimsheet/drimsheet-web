@@ -13,6 +13,7 @@ import type {
 import { VendorForm } from './vendor-form';
 
 export function VendorFormCreateContainer({
+  initialValues,
   onSuccess,
   onBusyChange,
 }: Readonly<VendorFormCreateContainerProps>) {
@@ -35,9 +36,12 @@ export function VendorFormCreateContainer({
     }
 
     try {
-      await createCounterparty(counterpartyMapper.toVendorCreateReq(values));
+      const counterparty = await createCounterparty(
+        counterpartyMapper.toVendorCreateReq(values)
+      );
+
       toast.success(t('vendor_created_success_text'));
-      onSuccess();
+      onSuccess(counterparty);
     } catch (error) {
       handleApiError(error, { showToast: true });
     }
@@ -49,6 +53,7 @@ export function VendorFormCreateContainer({
 
   return (
     <VendorForm
+      initialValues={initialValues}
       onSubmit={handleSubmit}
       jurisdictions={jurisdictions}
       loading={isCreating}

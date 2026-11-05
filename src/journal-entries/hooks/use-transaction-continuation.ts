@@ -9,6 +9,8 @@ import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useScopedKey } from '@/shared/hooks/use-scoped-key';
 import {
   ELedgerAccountBehavior,
+  type ICounterpartyDto,
+  type UCounterpartyRole,
   type ULedgerAccountBehavior,
 } from '@/shared/lib/api/Api';
 import { observabilityService } from '@/shared/lib/services/observability.service';
@@ -23,6 +25,16 @@ export function useTransactionContinuation<T extends object>(
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [initialParams] = useState(params);
+
+  const [showCounterpartyRoleSelection, setShowCounterpartyRoleSelection] =
+    useState(false);
+
+  const [counterpartyRole, setCounterpartyRole] = useState<
+    UCounterpartyRole | 'default'
+  >();
+
+  const [counterpartyInitialValues, setCounterpartyInitialValues] =
+    useState<Pick<ICounterpartyDto, 'name'>>();
 
   const [showAccountTypeSelection, setShowAccountTypeSelection] =
     useState(false);
@@ -208,6 +220,61 @@ export function useTransactionContinuation<T extends object>(
     }
   };
 
+  const handleAddCounterparty = (values: T, name: string) => {
+    if (type === 'transfer') {
+      return;
+    }
+
+    pendingValues.current = values;
+    setCounterpartyInitialValues({ name: name.trim() });
+    setShowCounterpartyRoleSelection(true);
+  };
+
+  const handleCounterpartyRoleSelectionClose = () => {
+    setShowCounterpartyRoleSelection(false);
+    setCounterpartyInitialValues(undefined);
+  };
+
+  const handleCounterpartyRoleSelected = (
+    role: UCounterpartyRole | 'default'
+  ) => {
+    setShowCounterpartyRoleSelection(false);
+    setCounterpartyRole(role);
+  };
+
+  const handleCounterpartyCreationClose = () => {
+    setCounterpartyRole(undefined);
+    setCounterpartyInitialValues(undefined);
+  };
+
+  const handleCounterpartyCreated = (counterparty: ICounterpartyDto) => {
+    if (pendingValues.current) {
+      setInlineInitialValues({
+        ...pendingValues.current,
+        counterparty: {
+          id: counterparty.id,
+          name: counterparty.name,
+          type: counterparty.type,
+        },
+      });
+    }
+  };
+
+  const handleCounterpartyCreationCloseAutoFocus = (event: Event) => {
+    event.preventDefault();
+    document.getElementById('cash-transaction-counterparty')?.focus();
+  };
+
+  const handleCounterpartyRoleSelectionCloseAutoFocus = (event: Event) => {
+    if (counterpartyRole) {
+      event.preventDefault();
+
+      return;
+    }
+
+    handleCounterpartyCreationCloseAutoFocus(event);
+  };
+
   const handlePettyCashAccountCreated = (accountId: string) => {
     if (pendingValues.current) {
       setInlineInitialValues({
@@ -262,10 +329,20 @@ export function useTransactionContinuation<T extends object>(
     categoryItemId,
     isRestoring,
     isSaving,
+    showCounterpartyRoleSelection,
+    counterpartyRole,
+    counterpartyInitialValues,
+    handleCounterpartyRoleSelected,
+    handleCounterpartyCreated,
+    handleCounterpartyCreationClose,
+    handleCounterpartyCreationCloseAutoFocus,
+    handleCounterpartyRoleSelectionCloseAutoFocus,
+    handleCounterpartyRoleSelectionClose,
     showAccountTypeSelection,
     showPettyCashAccountCreation,
     handleAddAccount,
     handleAddCategory,
+    handleAddCounterparty,
     handleAccountTypeSelected,
     handleAccountTypeSelectionClose: () => setShowAccountTypeSelection(false),
     handlePettyCashAccountCreated,

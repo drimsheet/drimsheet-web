@@ -237,8 +237,8 @@ export function createCashTransactionFormValidation(
         otherwise: (schema) => schema.optional(),
       }),
     counterparty: yup.object({
-      id: yup.string().optional(),
-      name: yup.string().trim().required(messages.counterpartyRequired),
+      id: yup.string().trim().required(messages.counterpartyRequired),
+      name: yup.string().defined(),
       type: yup.string().optional(),
     }),
     description: yup.string().optional(),

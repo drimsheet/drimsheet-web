@@ -31,6 +31,7 @@ export function OutflowFormContainer({
   journalEntry,
   initialValues: creationInitialValues,
   restoring = false,
+  onAddCounterparty,
   onAddAccount,
   onAddCategory,
   initialEditItemId,
@@ -181,6 +182,7 @@ export function OutflowFormContainer({
       initialValues={initialValues}
       loading={submissionIntent === 'submit' || isRectifying}
       officialExchangeRate={officialExchangeRates?.[0]}
+      onAddCounterparty={journalEntry ? undefined : onAddCounterparty}
       onAddAccount={onAddAccount}
       onAddCategory={onAddCategory}
       initialEditItemId={initialEditItemId}

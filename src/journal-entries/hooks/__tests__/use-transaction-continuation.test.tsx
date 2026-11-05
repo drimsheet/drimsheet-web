@@ -5,7 +5,10 @@ import type {
   UTransactionCreationType,
 } from '@/journal-entries/lib/types/transaction-continuation.types';
 import { StorageScopeContext } from '@/shared/hooks/use-scoped-key';
-import { ELedgerAccountBehavior } from '@/shared/lib/api/Api';
+import {
+  ELedgerAccountBehavior,
+  type ICounterpartyDto,
+} from '@/shared/lib/api/Api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
@@ -385,5 +388,120 @@ describe('useTransactionContinuation', () => {
     expect(mocks.navigate).not.toHaveBeenCalled();
     expect(mocks.handleError).toHaveBeenCalled();
     expect(result.current.isSaving).toBe(false);
+  });
+
+  it.each(['inflow', 'outflow'] as const)(
+    'shows role selection first and applies a created counterparty to the preserved %s',
+    (type) => {
+      const { result } = setup({}, type);
+      const originalSearch = result.current.location.search;
+
+      const values = {
+        accountId: 'bank',
+        description: 'Unfinished',
+        attachment: new File(['receipt'], 'receipt.pdf'),
+        counterparty: { id: '', name: '  A & B / Partners  ' },
+        items: [{ id: 'row', accountId: 'category' }],
+      };
+
+      act(() =>
+        result.current.handleAddCounterparty(values, values.counterparty.name)
+      );
+      expect(result.current.showCounterpartyRoleSelection).toBe(true);
+      expect(result.current.counterpartyRole).toBeUndefined();
+      expect(result.current.counterpartyInitialValues).toEqual({
+        name: 'A & B / Partners',
+      });
+      expect(result.current.location.search).toBe(originalSearch);
+      act(() => result.current.handleCounterpartyRoleSelected('vendor'));
+      expect(result.current.showCounterpartyRoleSelection).toBe(false);
+      expect(result.current.counterpartyRole).toBe('vendor');
+      expect(result.current.counterpartyInitialValues).toEqual({
+        name: 'A & B / Partners',
+      });
+      expect(result.current.location.search).toBe(originalSearch);
+      act(() =>
+        result.current.handleCounterpartyCreated({
+          id: 'created-party',
+          name: 'A & B Partners',
+          type: 'organization',
+        } as ICounterpartyDto)
+      );
+      expect(result.current.initialValues).toEqual({
+        ...values,
+        counterparty: {
+          id: 'created-party',
+          name: 'A & B Partners',
+          type: 'organization',
+        },
+      });
+      expect(result.current.counterpartyRole).toBe('vendor');
+      act(() => result.current.handleCounterpartyCreationClose());
+      expect(result.current.counterpartyRole).toBeUndefined();
+      expect(result.current.counterpartyInitialValues).toBeUndefined();
+      expect(result.current.location.search).toBe(originalSearch);
+      expect(
+        new URLSearchParams(result.current.location.search).get('keep')
+      ).toBe('yes');
+      expect(mocks.navigate).not.toHaveBeenCalled();
+      expect(mocks.set).not.toHaveBeenCalled();
+    }
+  );
+
+  it('closes counterparty selection and creation without resetting the mounted transaction', () => {
+    const { result } = setup();
+    const initialValues = result.current.initialValues;
+    const originalSearch = result.current.location.search;
+
+    const values = {
+      accountId: 'bank',
+      description: 'Unfinished',
+      attachment: null,
+      counterparty: { id: '', name: 'Original typed name' },
+    };
+
+    act(() =>
+      result.current.handleAddCounterparty(values, 'Original typed name')
+    );
+    act(() => result.current.handleCounterpartyRoleSelectionClose());
+    expect(result.current.showCounterpartyRoleSelection).toBe(false);
+    expect(result.current.counterpartyInitialValues).toBeUndefined();
+    expect(result.current.initialValues).toBe(initialValues);
+
+    const nextValues = {
+      ...values,
+      counterparty: { id: '', name: 'Second payer' },
+    };
+
+    act(() =>
+      result.current.handleAddCounterparty(
+        nextValues,
+        nextValues.counterparty.name
+      )
+    );
+    act(() => result.current.handleCounterpartyRoleSelected('default'));
+    expect(result.current.counterpartyInitialValues).toEqual({
+      name: 'Second payer',
+    });
+    act(() => result.current.handleCounterpartyCreationClose());
+    expect(result.current.counterpartyRole).toBeUndefined();
+    expect(result.current.initialValues).toBe(initialValues);
+    expect(result.current.counterpartyInitialValues).toBeUndefined();
+    expect(result.current.location.search).toBe(originalSearch);
+    expect(mocks.navigate).not.toHaveBeenCalled();
+    expect(mocks.set).not.toHaveBeenCalled();
+  });
+
+  it('does not offer counterparty creation for transfers', () => {
+    const { result } = setup({}, 'transfer');
+    act(() =>
+      result.current.handleAddCounterparty(
+        { accountId: '', description: '', attachment: null },
+        'Acme'
+      )
+    );
+    expect(result.current.showCounterpartyRoleSelection).toBe(false);
+    expect(mocks.set).not.toHaveBeenCalled();
+    expect(mocks.navigate).not.toHaveBeenCalled();
   });
 });

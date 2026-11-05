@@ -1661,15 +1661,9 @@ export interface IJournalEntryDto {
   lines: IJournalLineDto[];
 }
 
-export interface IJournalCounterpartyReq {
-  id?: string;
-  name: string;
-  type?: UCounterpartyType;
-}
-
 export interface IPaymentEntryLineReq {
   accountId: string;
-  counterparty: IJournalCounterpartyReq;
+  counterpartyId: string;
   amount: IMoneyDto;
   exchangeRate: IExchangeRateDto | null;
   description: string | null;
@@ -1694,7 +1688,7 @@ export interface IPaymentEntryReq {
 
 export interface IReceiptEntryLineReq {
   accountId: string;
-  counterparty: IJournalCounterpartyReq;
+  counterpartyId: string;
   amount: IMoneyDto;
   exchangeRate: IExchangeRateDto | null;
   description: string | null;
@@ -1728,7 +1722,7 @@ export interface ITransferEntryLineReq {
 
 export interface IJournalLineReq {
   accountId: string;
-  counterparty: IJournalCounterpartyReq | null;
+  counterpartyId: string | null;
   amount: IMoneyDto;
   exchangeRate: IExchangeRateDto | null;
   description: string | null;
@@ -1762,7 +1756,7 @@ export interface IJournalEntryRectificationDto {
 
 export interface IJournalEntryRectificationCounterpartyLineReq {
   accountId: string;
-  counterparty: IJournalCounterpartyReq;
+  counterpartyId: string;
   amount: IMoneyDto;
   exchangeRate: IExchangeRateDto | null;
   description: string | null;
@@ -1807,7 +1801,7 @@ export interface ITransferJournalEntryRectificationLineReq {
 
 export interface IJournalEntryRectificationLineReq {
   accountId: string;
-  counterparty: IJournalCounterpartyReq | null;
+  counterpartyId: string | null;
   amount: IMoneyDto;
   exchangeRate: IExchangeRateDto | null;
   description: string | null;

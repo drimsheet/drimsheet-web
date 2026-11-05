@@ -22,7 +22,7 @@ const values: ICashTransactionFormValues = {
   exchangeRate: null,
   isItemized: false,
   items: [],
-  counterparty: { name: 'New counterparty' },
+  counterparty: { id: 'payer-1', name: 'Payer' },
   description: '  August receipt  ',
   attachment: null,
 };
@@ -35,7 +35,7 @@ const paymentValues: ICashTransactionFormValues = {
   exchangeRate: null,
   isItemized: false,
   items: [],
-  counterparty: { name: 'New recipient' },
+  counterparty: { id: 'recipient-1', name: 'Recipient' },
   description: '  August payment  ',
   attachment: null,
 };
@@ -191,7 +191,7 @@ describe('journalEntryMapper', () => {
       attachmentReferences: ['attachment-1'],
       sourceLine: {
         accountId: 'ngn-bank',
-        counterparty: { name: 'New recipient' },
+        counterpartyId: 'recipient-1',
         amount: {
           amount: 250000,
           currencyCode: 'NGN',
@@ -204,7 +204,7 @@ describe('journalEntryMapper', () => {
       destinationLines: [
         {
           accountId: 'office-expense',
-          counterparty: { name: 'New recipient' },
+          counterpartyId: 'recipient-1',
           amount: {
             amount: 250000,
             currencyCode: 'NGN',
@@ -269,7 +269,7 @@ describe('journalEntryMapper', () => {
 
     expect(result.sourceLine).toEqual({
       accountId: 'ngn-bank',
-      counterparty: { name: 'New recipient' },
+      counterpartyId: 'recipient-1',
       amount: {
         amount: 250000,
         currencyCode: 'NGN',
@@ -282,7 +282,7 @@ describe('journalEntryMapper', () => {
     expect(result.destinationLines).toEqual([
       {
         accountId: 'office-expense',
-        counterparty: { name: 'New recipient' },
+        counterpartyId: 'recipient-1',
         amount: {
           amount: 100000,
           currencyCode: 'NGN',
@@ -294,7 +294,7 @@ describe('journalEntryMapper', () => {
       },
       {
         accountId: 'travel-expense',
-        counterparty: { name: 'New recipient' },
+        counterpartyId: 'recipient-1',
         amount: {
           amount: 150000,
           currencyCode: 'NGN',
@@ -369,7 +369,7 @@ describe('journalEntryMapper', () => {
       sourceLines: [
         {
           accountId: 'sales-revenue',
-          counterparty: { name: 'New counterparty' },
+          counterpartyId: 'payer-1',
           amount: {
             amount: 250000,
             currencyCode: 'NGN',
@@ -382,7 +382,7 @@ describe('journalEntryMapper', () => {
       ],
       destinationLine: {
         accountId: 'ngn-bank',
-        counterparty: { name: 'New counterparty' },
+        counterpartyId: 'payer-1',
         amount: {
           amount: 250000,
           currencyCode: 'NGN',
@@ -447,7 +447,7 @@ describe('journalEntryMapper', () => {
     ]);
     expect(result.destinationLine).toEqual({
       accountId: 'ngn-bank',
-      counterparty: { name: 'New counterparty' },
+      counterpartyId: 'payer-1',
       amount: {
         amount: 250000,
         currencyCode: 'NGN',
@@ -581,7 +581,7 @@ describe('journalEntryMapper', () => {
     expect(result.chargeLines).toEqual([
       expect.objectContaining({
         accountId: 'bank-fees',
-        counterparty: null,
+        counterpartyId: null,
         amount: expect.objectContaining({ amount: 2500 }),
         description: 'Bank fee',
         sequenceOrder: 3,

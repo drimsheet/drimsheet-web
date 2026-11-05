@@ -314,6 +314,14 @@ describe('AccountCombobox', () => {
       'Add a new account'
     );
     await user.clear(input);
+    await user.type(input, 'Main Bank');
+    expect(
+      screen.getByRole('option', { name: /Main Bank Account/i })
+    ).toBeVisible();
+    expect(screen.getAllByRole('option').at(-1)).toHaveTextContent(
+      'Add a new account'
+    );
+    await user.clear(input);
     await user.type(input, 'No matching account');
     expect(screen.getAllByRole('option')).toHaveLength(1);
     onChange.mockClear();

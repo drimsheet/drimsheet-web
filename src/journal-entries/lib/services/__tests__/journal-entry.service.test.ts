@@ -53,7 +53,7 @@ describe('journalEntryService', () => {
       sourceType: 'payment',
       sourceLine: {
         accountId: 'cash',
-        counterparty: { name: 'Vendor' },
+        counterpartyId: 'counterparty-1',
         amount: { amount: 1, currencyCode: 'NGN', isMinorUnit: false },
         exchangeRate: null,
         description: null,

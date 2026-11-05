@@ -81,7 +81,7 @@ function toCashTransactionFormValues(
         }))
       : [],
     counterparty: {
-      id: counterparty?.id,
+      id: counterparty?.id ?? '',
       name: counterparty?.name ?? '',
     },
     description: journalEntry.memo ?? '',

@@ -19,8 +19,11 @@ export interface CounterpartyFormProps {
   className?: string;
 }
 
-export interface CounterpartyFormCreateContainerProps {
-  onSuccess: () => void;
+export interface CounterpartyFormCreateContainerProps extends Pick<
+  CounterpartyFormProps,
+  'initialValues'
+> {
+  onSuccess: (counterparty: ICounterpartyDto) => void;
   onBusyChange?: (busy: boolean) => void;
 }
 

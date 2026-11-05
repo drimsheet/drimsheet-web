@@ -161,7 +161,7 @@ describe('OutflowFormContainer', () => {
       isPending: false,
     } as never);
     vi.mocked(useCounterparties).mockReturnValue({
-      data: { data: [] },
+      data: { data: [{ id: 'party-1', name: 'Acme' }] },
       isPending: false,
     } as never);
     vi.mocked(useExchangeRates).mockReturnValue({ data: undefined } as never);
@@ -173,6 +173,25 @@ describe('OutflowFormContainer', () => {
     vi.mocked(fileUploadService.uploadFile).mockResolvedValue('attachment-ref');
     createPayment.mockResolvedValue(undefined);
     rectifyJournalEntry.mockResolvedValue(undefined);
+  });
+
+  it('omits counterparty creation when editing an existing transaction', async () => {
+    const user = userEvent.setup();
+    render(
+      <OutflowFormContainer
+        journalEntry={journalEntry}
+        onAddCounterparty={vi.fn()}
+      />
+    );
+    const counterparty = screen.getByRole('combobox', { name: 'Recipient' });
+    await user.clear(counterparty);
+    await user.type(counterparty, 'New person');
+    expect(
+      screen.queryByRole('option', { name: 'Add new counterparty' })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/will be created as an individual/)
+    ).not.toBeInTheDocument();
   });
 
   it('renders the outflow loading state while prerequisite data is pending', () => {
@@ -209,7 +228,7 @@ describe('OutflowFormContainer', () => {
       screen.getByRole('combobox', { name: 'Recipient' }),
       'Acme'
     );
-    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('option', { name: 'Acme' }));
     await user.upload(screen.getByLabelText('Attach file'), attachment);
     await user.click(screen.getByRole('button', { name: 'Create' }));
 
@@ -220,13 +239,13 @@ describe('OutflowFormContainer', () => {
           attachmentReferences: ['attachment-ref'],
           sourceLine: expect.objectContaining({
             accountId: 'bank-account',
-            counterparty: { name: 'Acme' },
+            counterpartyId: 'party-1',
             sequenceOrder: 1,
           }),
           destinationLines: [
             expect.objectContaining({
               accountId: 'office-expense',
-              counterparty: { name: 'Acme' },
+              counterpartyId: 'party-1',
               sequenceOrder: 2,
             }),
           ],
@@ -271,7 +290,7 @@ describe('OutflowFormContainer', () => {
       screen.getByRole('combobox', { name: 'Recipient' }),
       'Acme'
     );
-    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('option', { name: 'Acme' }));
     await user.click(screen.getByRole('button', { name: 'Save draft' }));
 
     await waitFor(() => {

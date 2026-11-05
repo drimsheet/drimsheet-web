@@ -18,15 +18,10 @@ import { CurrencyExchangeRateInput } from '@/shared/components/currency-exchange
 import { DateInput } from '@/shared/components/date-input';
 import { Field, FieldError, FieldGroup } from '@/shared/components/field';
 import { FileUpload } from '@/shared/components/file-upload';
-import {
-  FreeSoloCombobox,
-  type UFreeSoloComboboxValue,
-} from '@/shared/components/free-solo-combobox';
 import { Input } from '@/shared/components/input';
 import { Label } from '@/shared/components/label';
 import { MoneyWithCurrencyInput } from '@/shared/components/money-with-currency-input';
 import { useFieldErrorMessage } from '@/shared/hooks/use-field-error-message';
-import type { IJournalCounterpartyReq } from '@/shared/lib/api/Api';
 import { dateUtils } from '@/shared/lib/utils/date';
 import { generateUUID } from '@/shared/lib/utils/uuid';
 import { useFormik } from 'formik';
@@ -34,9 +29,11 @@ import { ArrowLeft, ListCollapse } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import cashTransactionFormHelpers from './helper';
+import { CounterpartySelect } from './parts/counterparty-select';
 import type {
   CashTransactionFormProps,
   ICashTransactionFormValues,
+  TCashTransactionCounterparty,
 } from './types';
 import { useCashTransactionFormValidation } from './validation';
 
@@ -50,6 +47,7 @@ export function CashTransactionForm({
   functionalCurrencyCode,
   initialValues,
   loading = false,
+  onAddCounterparty,
   officialExchangeRate,
   onAddAccount,
   onAddCategory,
@@ -196,19 +194,16 @@ export function CashTransactionForm({
   };
 
   const handleCounterpartyChange = (
-    counterparty: UFreeSoloComboboxValue<IJournalCounterpartyReq>
+    counterparty: TCashTransactionCounterparty | null
   ) => {
-    let nextCounterparty: IJournalCounterpartyReq;
+    void formik.setFieldValue(
+      'counterparty',
+      counterparty ?? { id: '', name: '' }
+    );
+  };
 
-    if (typeof counterparty === 'string') {
-      nextCounterparty = { name: counterparty };
-    } else if (counterparty === null) {
-      nextCounterparty = { name: '' };
-    } else {
-      nextCounterparty = counterparty;
-    }
-
-    void formik.setFieldValue('counterparty', nextCounterparty);
+  const handleAddCounterparty = (name: string) => {
+    onAddCounterparty?.(formik.values, name);
   };
 
   const handleCategoryChange = (categoryId: string) => {
@@ -333,7 +328,7 @@ export function CashTransactionForm({
   const dateError = getErrorMessage('date');
   const categoryError = getErrorMessage('categoryId');
   const exchangeRateError = getErrorMessage('exchangeRate');
-  const counterpartyError = getErrorMessage('counterparty.name');
+  const counterpartyError = getErrorMessage('counterparty.id');
   const attachmentError = getErrorMessage('attachment');
 
   /**
@@ -362,6 +357,11 @@ export function CashTransactionForm({
     cashTransactionFormHelpers.getCounterpartyTextKeys(variant);
 
   const counterparty_empty_text = t(counterparty_text_keys.empty);
+
+  const counterparty_create_label = t(
+    'cash_transaction_counterparty_create_label'
+  );
+
   const counterparty_label = t(counterparty_text_keys.label);
   const counterparty_placeholder = t(counterparty_text_keys.placeholder);
   const attachment_label = t('cash_transaction_attachment_label');
@@ -521,24 +521,19 @@ export function CashTransactionForm({
             </div>
           )}
 
-          <FreeSoloCombobox<IJournalCounterpartyReq>
-            id="cash-transaction-counterparty"
+          <CounterpartySelect
+            key={resolvedInitialValues.counterparty.id}
             disabled={interactionDisabled}
+            creationDisabled={isItemizedRowEditing}
             emptyMessage={counterparty_empty_text}
             error={counterpartyError}
-            getOptionLabel={(counterparty) => counterparty.name}
-            isOptionEqualToValue={(counterparty, value) =>
-              counterparty.id !== undefined && counterparty.id === value.id
-            }
             label={counterparty_label}
-            name="counterparty.name"
-            onBlur={() =>
-              void formik.setFieldTouched('counterparty.name', true)
-            }
-            onValueChange={handleCounterpartyChange}
+            onBlur={() => void formik.setFieldTouched('counterparty.id', true)}
+            onChange={handleCounterpartyChange}
+            onCreate={onAddCounterparty ? handleAddCounterparty : undefined}
+            createLabel={counterparty_create_label}
             options={counterpartyOptions}
             placeholder={counterparty_placeholder}
-            required
             value={formik.values.counterparty}
           />
 

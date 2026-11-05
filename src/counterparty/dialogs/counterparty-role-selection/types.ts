@@ -3,6 +3,7 @@ import type { UCounterpartyRoleSelectValue } from '@/counterparty/components/cou
 export interface CounterpartyRoleSelectionDialogProps {
   open: boolean;
   onClose: () => void;
+  onCloseAutoFocus?: (event: Event) => void;
   onSubmit: (value: UCounterpartyRoleSelectValue) => void;
   defaultValue?: UCounterpartyRoleSelectValue;
 }

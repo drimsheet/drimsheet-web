@@ -9,16 +9,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/components/dialog';
+import type { ICounterpartyDto } from '@/shared/lib/api/Api';
 import type { TFunction } from 'i18next';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CounterpartyCreationDialogProps } from './types';
 
-interface RenderFormProps {
-  role: CounterpartyCreationDialogProps['role'];
-  onSuccess: () => void;
-  onBusyChange: (busy: boolean) => void;
-}
+const creationForms = {
+  default: CounterpartyFormCreateContainer,
+  vendor: VendorFormCreateContainer,
+  contractor: ContractorFormCreateContainer,
+  employer: EmployerFormCreateContainer,
+};
 
 function getTitleAndDescription(
   role: CounterpartyCreationDialogProps['role'],
@@ -48,47 +50,13 @@ function getTitleAndDescription(
   }
 }
 
-function RenderForm({
-  role,
-  onSuccess,
-  onBusyChange,
-}: Readonly<RenderFormProps>) {
-  switch (role) {
-    case 'vendor':
-      return (
-        <VendorFormCreateContainer
-          onSuccess={onSuccess}
-          onBusyChange={onBusyChange}
-        />
-      );
-    case 'contractor':
-      return (
-        <ContractorFormCreateContainer
-          onSuccess={onSuccess}
-          onBusyChange={onBusyChange}
-        />
-      );
-    case 'employer':
-      return (
-        <EmployerFormCreateContainer
-          onSuccess={onSuccess}
-          onBusyChange={onBusyChange}
-        />
-      );
-    default:
-      return (
-        <CounterpartyFormCreateContainer
-          onSuccess={onSuccess}
-          onBusyChange={onBusyChange}
-        />
-      );
-  }
-}
-
 export function CounterpartyCreationDialog({
   open,
   role,
+  initialValues,
+  onSuccess,
   onClose,
+  onCloseAutoFocus,
 }: Readonly<CounterpartyCreationDialogProps>) {
   const { t } = useTranslation('counterparty');
   const [busy, setBusy] = useState(false);
@@ -99,17 +67,24 @@ export function CounterpartyCreationDialog({
     }
   };
 
+  const handleSuccess = (counterparty: ICounterpartyDto) => {
+    onSuccess?.(counterparty);
+    onClose();
+  };
+
   if (!open) {
     return null;
   }
 
   const { title, description } = getTitleAndDescription(role, t);
+  const CreationForm = creationForms[role];
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className="max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-md"
         showCloseButton={!busy}
+        onCloseAutoFocus={onCloseAutoFocus}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -117,7 +92,11 @@ export function CounterpartyCreationDialog({
             {description}
           </DialogDescription>
         </DialogHeader>
-        <RenderForm role={role} onSuccess={onClose} onBusyChange={setBusy} />
+        <CreationForm
+          initialValues={initialValues}
+          onSuccess={handleSuccess}
+          onBusyChange={setBusy}
+        />
       </DialogContent>
     </Dialog>
   );

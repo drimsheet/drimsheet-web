@@ -6,6 +6,10 @@ export interface OutflowFormContainerProps {
   journalEntry?: IJournalEntryListDto;
   initialValues?: Partial<ICashTransactionFormValues>;
   restoring?: boolean;
+  onAddCounterparty?: (
+    values: ICashTransactionFormValues,
+    name: string
+  ) => void;
   initialEditItemId?: string;
   onAddCategory?: (values: ICashTransactionFormValues, itemId?: string) => void;
   onAddAccount?: (

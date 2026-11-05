@@ -178,7 +178,7 @@ for (const type of ['inflow', 'outflow', 'transfer'] as const) {
           date: '2026-09-21',
           exchangeRate: null,
           description: 'Preserved transaction',
-          counterparty: { name: 'Acme' },
+          counterparty: { id: 'party-1', name: 'Acme' },
           isItemized: type !== 'inflow',
           items:
             type === 'inflow'
@@ -258,3 +258,116 @@ for (const type of ['inflow', 'outflow', 'transfer'] as const) {
     }
   });
 }
+
+for (const type of ['inflow', 'outflow'] as const) {
+  test(`${type} opens counterparty creation from role selection without resetting the transaction`, async ({
+    page,
+  }) => {
+    await registerAuthenticatedAppRoutes(page);
+    await page.route('**/api/v1/counterparties*', (route) =>
+      route.fulfill({
+        json: {
+          data: [],
+          meta: { page: 1, limit: 100, total: 0, totalPages: 1 },
+        },
+      })
+    );
+    await page.route('**/api/v1/ledger/posting-accounts*', (route) =>
+      route.fulfill({
+        json: {
+          data: [],
+          meta: { page: 1, limit: 100, total: 0, totalPages: 1 },
+        },
+      })
+    );
+    await page.goto(`/transactions/${type}?keep=yes`);
+    await page
+      .getByLabel('Description', { exact: true })
+      .fill('Preserved transaction');
+    await page.getByLabel('Attach file', { exact: true }).setInputFiles({
+      name: 'counterparty.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('receipt'),
+    });
+    await page
+      .getByRole('combobox', {
+        name: type === 'inflow' ? 'Payer' : 'Recipient',
+        exact: true,
+      })
+      .fill('A & B Partners');
+    await page
+      .getByRole('option', { name: 'Add new counterparty', exact: true })
+      .click();
+
+    const selector = page.getByRole('dialog', {
+      name: 'Select a role',
+      exact: true,
+    });
+
+    await expect(selector).toBeVisible();
+    await selector.getByRole('radio', { name: /default/i }).check();
+    await selector
+      .getByRole('button', { name: 'Continue', exact: true })
+      .click();
+
+    await expect(selector).toBeHidden();
+    await expect(
+      page.getByRole('dialog', {
+        name: 'Create person or business',
+        exact: true,
+      })
+    ).toBeVisible();
+    await expect(page).toHaveURL(`/transactions/${type}?keep=yes`);
+    await expect(page.getByLabel('Description', { exact: true })).toHaveValue(
+      'Preserved transaction'
+    );
+    await expect(
+      page.getByText('counterparty.pdf', { exact: true })
+    ).toBeVisible();
+  });
+}
+
+test('dismissing counterparty role selection restores focus and preserves the inflow', async ({
+  page,
+}) => {
+  await registerAuthenticatedAppRoutes(page);
+  await page.route('**/api/v1/counterparties*', (route) =>
+    route.fulfill({
+      json: {
+        data: [],
+        meta: { page: 1, limit: 100, total: 0, totalPages: 1 },
+      },
+    })
+  );
+  await page.route('**/api/v1/ledger/posting-accounts*', (route) =>
+    route.fulfill({
+      json: {
+        data: [],
+        meta: { page: 1, limit: 100, total: 0, totalPages: 1 },
+      },
+    })
+  );
+  await page.goto('/transactions/inflow?keep=yes');
+
+  const counterparty = page.getByRole('combobox', {
+    name: 'Payer',
+    exact: true,
+  });
+
+  const description = page.getByLabel('Description', { exact: true });
+  await description.fill('Unfinished inflow');
+  await counterparty.fill('New payer');
+  await page
+    .getByRole('option', { name: 'Add new counterparty', exact: true })
+    .click();
+  await expect(
+    page.getByRole('dialog', { name: 'Select a role', exact: true })
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page).toHaveURL('/transactions/inflow?keep=yes');
+  await expect(counterparty).toHaveValue('New payer');
+  await expect(counterparty).toBeFocused();
+  await expect(description).toHaveValue('Unfinished inflow');
+});

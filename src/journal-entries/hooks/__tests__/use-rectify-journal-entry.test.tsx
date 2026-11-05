@@ -18,7 +18,7 @@ const payload = {
   sourceType: 'payment',
   sourceLine: {
     accountId: 'cash',
-    counterparty: { name: 'Vendor' },
+    counterpartyId: 'counterparty-1',
     amount: { amount: 100, currencyCode: 'NGN', isMinorUnit: false },
     exchangeRate: null,
     description: null,

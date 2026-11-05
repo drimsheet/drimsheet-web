@@ -1,12 +1,9 @@
 import type { IItemizedFieldValue } from '@/journal-entries/components/itemized-fields';
-import type {
-  IExchangeRate,
-  IJournalCounterpartyReq,
-  ILedgerAccountDto,
-} from '@/shared/lib/api/Api';
+import type { IExchangeRate, ILedgerAccountDto } from '@/shared/lib/api/Api';
 import { dateUtils } from '@/shared/lib/utils/date';
 import type {
   ICashTransactionFormValues,
+  TCashTransactionCounterparty,
   UCashTransactionFormVariant,
 } from './types';
 
@@ -69,7 +66,7 @@ function createInitialValues(
       description: item.description,
     })),
     counterparty: {
-      id: initialValues?.counterparty?.id,
+      id: initialValues?.counterparty?.id ?? '',
       name: initialValues?.counterparty?.name ?? '',
       type: initialValues?.counterparty?.type,
     },
@@ -198,13 +195,10 @@ function normalizeValues(
   exchangeRateRequired: boolean,
   officialRate?: number
 ): ICashTransactionFormValues {
-  const counterparty: IJournalCounterpartyReq = {
+  const counterparty: TCashTransactionCounterparty = {
+    id: values.counterparty.id,
     name: values.counterparty.name.trim(),
   };
-
-  if (values.counterparty.id !== undefined) {
-    counterparty.id = values.counterparty.id;
-  }
 
   if (values.counterparty.type !== undefined) {
     counterparty.type = values.counterparty.type;

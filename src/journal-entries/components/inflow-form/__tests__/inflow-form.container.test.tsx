@@ -5,7 +5,10 @@ import { InflowFormContainer } from '@/journal-entries/components/inflow-form';
 import { useCreateReceipt } from '@/journal-entries/hooks/use-create-receipt';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useExchangeRates } from '@/shared/hooks/use-exchange-rates';
-import type { ILedgerAccountDto } from '@/shared/lib/api/Api';
+import type {
+  IJournalEntryListDto,
+  ILedgerAccountDto,
+} from '@/shared/lib/api/Api';
 import { fileUploadService } from '@/shared/lib/services/file-upload.service';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -85,7 +88,7 @@ describe('InflowFormContainer', () => {
       isPending: false,
     } as never);
     vi.mocked(useCounterparties).mockReturnValue({
-      data: { data: [] },
+      data: { data: [{ id: 'party-1', name: 'Acme' }] },
       isPending: false,
     } as never);
     vi.mocked(useExchangeRates).mockReturnValue({ data: undefined } as never);
@@ -96,6 +99,51 @@ describe('InflowFormContainer', () => {
     vi.mocked(useApiErrorHandler).mockReturnValue(handleApiError);
     vi.mocked(fileUploadService.uploadFile).mockResolvedValue('attachment-ref');
     createReceipt.mockResolvedValue(undefined);
+  });
+
+  it('omits counterparty creation when editing an existing transaction', async () => {
+    const user = userEvent.setup();
+    render(
+      <InflowFormContainer
+        journalEntry={
+          {
+            sourceType: 'receipt',
+            effectiveDate: '2026-09-21',
+            memo: '',
+            lines: [
+              {
+                sequenceOrder: 1,
+                account: { id: 'sales-revenue' },
+                amount: {
+                  amount: 250,
+                  currencyCode: 'NGN',
+                  isMinorUnit: false,
+                },
+              },
+              {
+                sequenceOrder: 2,
+                account: { id: 'bank-account' },
+                amount: {
+                  amount: 250,
+                  currencyCode: 'NGN',
+                  isMinorUnit: false,
+                },
+              },
+            ],
+          } as IJournalEntryListDto
+        }
+        onAddCounterparty={vi.fn()}
+      />
+    );
+    const counterparty = screen.getByRole('combobox', { name: 'Payer' });
+    await user.clear(counterparty);
+    await user.type(counterparty, 'New person');
+    expect(
+      screen.queryByRole('option', { name: 'Add new counterparty' })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/will be created as an individual/)
+    ).not.toBeInTheDocument();
   });
 
   it('renders the inflow loading state while prerequisite data is pending', () => {
@@ -129,7 +177,7 @@ describe('InflowFormContainer', () => {
     await user.click(screen.getByRole('combobox', { name: 'Category' }));
     await user.click(screen.getByRole('option', { name: 'Sales revenue' }));
     await user.type(screen.getByRole('combobox', { name: 'Payer' }), 'Acme');
-    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('option', { name: 'Acme' }));
     await user.upload(screen.getByLabelText('Attach file'), attachment);
     await user.click(screen.getByRole('button', { name: 'Create' }));
 
@@ -140,12 +188,12 @@ describe('InflowFormContainer', () => {
           attachmentReferences: ['attachment-ref'],
           destinationLine: expect.objectContaining({
             accountId: 'bank-account',
-            counterparty: { name: 'Acme' },
+            counterpartyId: 'party-1',
           }),
           sourceLines: [
             expect.objectContaining({
               accountId: 'sales-revenue',
-              counterparty: { name: 'Acme' },
+              counterpartyId: 'party-1',
             }),
           ],
         })
@@ -174,7 +222,7 @@ describe('InflowFormContainer', () => {
     await user.click(screen.getByRole('combobox', { name: 'Category' }));
     await user.click(screen.getByRole('option', { name: 'Sales revenue' }));
     await user.type(screen.getByRole('combobox', { name: 'Payer' }), 'Acme');
-    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('option', { name: 'Acme' }));
     await user.click(screen.getByRole('button', { name: 'Save draft' }));
 
     await waitFor(() => {
@@ -198,7 +246,7 @@ describe('InflowFormContainer', () => {
           accountId: 'bank-account',
           categoryId: 'sales-revenue',
           amount: { amount: 250, currencyCode: 'NGN', isMinorUnit: false },
-          counterparty: { name: 'Acme' },
+          counterparty: { id: 'party-1', name: 'Acme' },
           description: 'Keep this transaction',
         }}
       />

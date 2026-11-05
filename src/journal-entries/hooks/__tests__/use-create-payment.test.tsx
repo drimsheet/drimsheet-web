@@ -14,7 +14,7 @@ const payload: IPaymentEntryReq = {
   attachmentReferences: ['attachment-reference-1'],
   sourceLine: {
     accountId: 'bank',
-    counterparty: { name: 'Recipient' },
+    counterpartyId: 'counterparty-1',
     amount: { amount: 100, currencyCode: 'NGN', isMinorUnit: false },
     exchangeRate: null,
     description: null,
@@ -23,7 +23,7 @@ const payload: IPaymentEntryReq = {
   destinationLines: [
     {
       accountId: 'expense',
-      counterparty: { name: 'Recipient' },
+      counterpartyId: 'counterparty-1',
       amount: { amount: 100, currencyCode: 'NGN', isMinorUnit: false },
       exchangeRate: null,
       description: null,

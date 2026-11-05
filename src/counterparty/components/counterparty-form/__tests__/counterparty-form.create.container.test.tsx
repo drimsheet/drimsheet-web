@@ -1,4 +1,7 @@
-import { CounterpartyFormCreateContainer } from '@/counterparty/components/counterparty-form';
+import {
+  CounterpartyFormCreateContainer,
+  type ICounterpartyFormValues,
+} from '@/counterparty/components/counterparty-form';
 import { counterpartyService } from '@/counterparty/lib/services/counterparty.service';
 import type { ICounterpartyDto } from '@/shared/lib/api/Api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -33,7 +36,7 @@ const created: ICounterpartyDto = {
   updatedAt: '2026-10-05T00:00:00Z',
 };
 
-function setup() {
+function setup(initialValues?: Partial<ICounterpartyFormValues>) {
   const onSuccess = vi.fn();
 
   const client = new QueryClient({
@@ -42,7 +45,10 @@ function setup() {
 
   render(
     <QueryClientProvider client={client}>
-      <CounterpartyFormCreateContainer onSuccess={onSuccess} />
+      <CounterpartyFormCreateContainer
+        initialValues={initialValues}
+        onSuccess={onSuccess}
+      />
     </QueryClientProvider>
   );
 
@@ -73,7 +79,9 @@ it('waits for persistence before completing and prevents another submit while sa
   expect(counterpartyService.getCounterparty).not.toHaveBeenCalled();
   expect(counterpartyService.updateCounterparty).not.toHaveBeenCalled();
   await act(async () => resolve(created));
-  await waitFor(() => expect(onSuccess).toHaveBeenCalledOnce());
+  await waitFor(() =>
+    expect(onSuccess).toHaveBeenCalledExactlyOnceWith(created)
+  );
   expect(toast.success).toHaveBeenCalledWith(
     'Person or business created successfully'
   );
@@ -91,5 +99,34 @@ it('retains input and reports a failed create without closing the owner', async 
   expect(screen.getByLabelText('Name')).toHaveValue('Example');
   expect(screen.getByRole('button', { name: 'Create' })).toBeEnabled();
   expect(onSuccess).not.toHaveBeenCalled();
+  client.clear();
+});
+
+it('prefills the supplied values and allows them to be edited before creation', async () => {
+  vi.mocked(counterpartyService.createCounterparty).mockResolvedValue({
+    ...created,
+    name: 'Changed name',
+    type: 'organization',
+  });
+
+  const { user, client } = setup({
+    name: 'Intended name',
+    type: 'organization',
+  });
+
+  expect(screen.getByLabelText('Name')).toHaveValue('Intended name');
+  expect(screen.getByRole('combobox', { name: 'Type' })).toHaveTextContent(
+    'Organization'
+  );
+  await user.clear(screen.getByLabelText('Name'));
+  await user.type(screen.getByLabelText('Name'), 'Changed name');
+  await user.click(screen.getByRole('button', { name: 'Create' }));
+  await waitFor(() =>
+    expect(counterpartyService.createCounterparty).toHaveBeenCalledWith({
+      name: 'Changed name',
+      type: 'organization',
+      status: 'active',
+    })
+  );
   client.clear();
 });

@@ -11,6 +11,7 @@ import type {
 } from './types';
 
 export function CounterpartyFormCreateContainer({
+  initialValues,
   onSuccess,
   onBusyChange,
 }: Readonly<CounterpartyFormCreateContainerProps>) {
@@ -32,11 +33,12 @@ export function CounterpartyFormCreateContainer({
     }
 
     try {
-      await createCounterparty(
+      const counterparty = await createCounterparty(
         counterpartyMapper.toCounterpartyCreateReq(values)
       );
+
       toast.success(t('counterparty_created_success_text'));
-      onSuccess();
+      onSuccess(counterparty);
     } catch (error) {
       handleApiError(error, { showToast: true });
     }
@@ -44,6 +46,7 @@ export function CounterpartyFormCreateContainer({
 
   return (
     <CounterpartyForm
+      initialValues={initialValues}
       onSubmit={handleSubmit}
       loading={isCreating}
       disabled={isCreating}

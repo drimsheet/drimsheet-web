@@ -15,7 +15,7 @@ const payload: IReceiptEntryReq = {
   sourceLines: [
     {
       accountId: 'sales',
-      counterparty: { name: 'Payer' },
+      counterpartyId: 'counterparty-1',
       amount: { amount: 100, currencyCode: 'NGN', isMinorUnit: false },
       exchangeRate: null,
       description: null,
@@ -24,7 +24,7 @@ const payload: IReceiptEntryReq = {
   ],
   destinationLine: {
     accountId: 'bank',
-    counterparty: { name: 'Payer' },
+    counterpartyId: 'counterparty-1',
     amount: { amount: 100, currencyCode: 'NGN', isMinorUnit: false },
     exchangeRate: null,
     description: null,

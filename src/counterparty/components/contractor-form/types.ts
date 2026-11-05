@@ -38,8 +38,11 @@ export type ContractorFormSkeletonProps = Pick<
   'showPostalCode' | 'showDisplayName'
 >;
 
-export interface ContractorFormCreateContainerProps {
-  onSuccess: () => void;
+export interface ContractorFormCreateContainerProps extends Pick<
+  ContractorFormProps,
+  'initialValues'
+> {
+  onSuccess: (counterparty: ICounterpartyDto) => void;
   onBusyChange?: (busy: boolean) => void;
 }
 
