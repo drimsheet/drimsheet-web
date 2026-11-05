@@ -11,7 +11,7 @@ export type TCashTransactionCounterparty = Pick<
   ICounterpartyDto,
   'id' | 'name'
 > &
-  Partial<Pick<ICounterpartyDto, 'type'>>;
+  Partial<Pick<ICounterpartyDto, 'type' | 'roles'>>;
 
 export interface ICashTransactionFormValues {
   accountId: string;
@@ -70,6 +70,10 @@ export interface CounterpartySelectProps {
   emptyMessage: string;
   createLabel: string;
   onBlur: () => void;
+}
+
+export interface CounterpartyOptionProps {
+  counterparty: TCashTransactionCounterparty;
 }
 
 export type UCounterpartySelectItem =

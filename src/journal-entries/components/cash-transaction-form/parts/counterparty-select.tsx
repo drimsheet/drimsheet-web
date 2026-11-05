@@ -14,6 +14,7 @@ import type {
   CounterpartySelectProps,
   UCounterpartySelectItem,
 } from '../types';
+import { CounterpartyOption } from './counterparty-option';
 
 export function CounterpartySelect({
   value,
@@ -113,12 +114,12 @@ export function CounterpartySelect({
           placeholder={placeholder}
           showClear
         />
-        <ComboboxContent className="w-full">
+        <ComboboxContent className="w-[calc(var(--anchor-width)+--spacing(7))]">
           <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
           <ComboboxList>
             {filteredOptions.map((option) => (
               <ComboboxItem key={option.id} value={option}>
-                <span className="min-w-0 truncate">{option.name}</span>
+                <CounterpartyOption counterparty={option} />
               </ComboboxItem>
             ))}
             {onCreate && (

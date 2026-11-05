@@ -398,6 +398,72 @@ describe('CashTransactionForm', () => {
     );
   });
 
+  it('shows type icons and relationship badges without changing the selected counterparty', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(
+      <CashTransactionForm
+        accounts={accounts}
+        categories={categories}
+        functionalCurrencyCode="NGN"
+        initialValues={{ ...validValues, counterparty: { id: '', name: '' } }}
+        counterpartyOptions={[
+          {
+            id: 'business',
+            name: 'Acme Consulting',
+            type: 'organization',
+            roles: ['vendor', 'contractor', 'employer'],
+          },
+          {
+            id: 'person',
+            name: 'Jordan Taylor',
+            type: 'individual',
+            roles: [],
+          },
+        ]}
+        onAddCounterparty={vi.fn()}
+        onCurrencyContextChange={vi.fn()}
+        onSubmit={onSubmit}
+      />
+    );
+    const input = screen.getByRole('combobox', { name: 'Person or business' });
+    await user.click(input);
+
+    const organization = screen.getByRole('option', {
+      name: /Acme Consulting/,
+    });
+
+    const individual = screen.getByRole('option', { name: /Jordan Taylor/ });
+    expect(
+      within(organization).getByRole('img', { name: 'Organization' })
+    ).toBeVisible();
+    expect(
+      within(individual).getByRole('img', { name: 'Individual' })
+    ).toBeVisible();
+    expect(within(organization).getByText('Vendor')).toBeVisible();
+    expect(within(organization).getByText('Contractor')).toBeVisible();
+    expect(within(organization).getByText('Employer')).toBeVisible();
+    expect(
+      within(individual).queryByText(/Vendor|Contractor|Employer/)
+    ).not.toBeInTheDocument();
+    expect(screen.getAllByRole('option').at(-1)).toHaveTextContent(
+      'Add new counterparty'
+    );
+    await user.click(organization);
+    expect(input).toHaveValue('Acme Consulting');
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
+        ...validValues,
+        counterparty: {
+          id: 'business',
+          name: 'Acme Consulting',
+          type: 'organization',
+        },
+      })
+    );
+  });
+
   it('selects an existing counterparty and clears its identity when searching for another', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();

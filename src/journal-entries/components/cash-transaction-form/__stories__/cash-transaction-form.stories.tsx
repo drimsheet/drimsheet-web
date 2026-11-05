@@ -33,8 +33,18 @@ const categories = [
 ] as unknown as ILedgerAccountDto[];
 
 const counterpartyOptions: ICashTransactionFormValues['counterparty'][] = [
-  { id: 'counterparty-1', name: 'Acme Consulting', type: 'organization' },
-  { id: 'counterparty-2', name: 'Jordan Taylor', type: 'individual' },
+  {
+    id: 'counterparty-1',
+    name: 'Acme Consulting',
+    type: 'organization',
+    roles: ['vendor', 'employer'],
+  },
+  {
+    id: 'counterparty-2',
+    name: 'Jordan Taylor',
+    type: 'individual',
+    roles: ['contractor'],
+  },
 ];
 
 const meta = {

@@ -9,8 +9,18 @@ const meta = {
   args: {
     value: { id: '', name: '' },
     options: [
-      { id: 'person', name: 'Jordan Taylor' },
-      { id: 'business', name: 'Acme Consulting' },
+      {
+        id: 'person',
+        name: 'Jordan Taylor',
+        type: 'individual',
+        roles: ['contractor'],
+      },
+      {
+        id: 'business',
+        name: 'Acme Consulting',
+        type: 'organization',
+        roles: ['vendor', 'employer'],
+      },
     ],
     label: 'Payer',
     placeholder: 'Select a payer',
@@ -44,4 +54,17 @@ export const Empty: Story = { args: { options: [] } };
 export const Disabled: Story = { args: { disabled: true } };
 export const Invalid: Story = {
   args: { error: [{ message: 'Payer is required' }] },
+};
+
+export const LongNamesAndRelationships: Story = {
+  args: {
+    options: [
+      {
+        id: 'business',
+        name: 'Acme International Consulting and Professional Services',
+        type: 'organization',
+        roles: ['vendor', 'contractor', 'employer'],
+      },
+    ],
+  },
 };
