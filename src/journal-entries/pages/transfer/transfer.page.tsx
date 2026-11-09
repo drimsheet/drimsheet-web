@@ -3,11 +3,12 @@ import { PettyCashAccountCreationDialog } from '@/account/dialogs/petty-cash-acc
 import type { ICashTransferFormValues } from '@/journal-entries/components/cash-transfer-form';
 import { CashTransferFormContainer } from '@/journal-entries/components/cash-transfer-form';
 import { useTransactionContinuation } from '@/journal-entries/hooks/use-transaction-continuation';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { ITransferPageSearchParams } from './types';
 
 export function TransferPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const params: ITransferPageSearchParams = {
     sourceAccountId: searchParams.get('sourceAccountId') ?? undefined,
@@ -22,6 +23,11 @@ export function TransferPage() {
     params
   );
 
+  const handleSuccess = async () => {
+    await continuation.handleContinuationComplete();
+    await navigate('/transactions');
+  };
+
   return (
     <>
       <CashTransferFormContainer
@@ -30,7 +36,7 @@ export function TransferPage() {
         onAddAccount={continuation.handleAddAccount}
         onAddCategory={continuation.handleAddCategory}
         initialEditItemId={continuation.categoryItemId}
-        onSuccess={continuation.handleContinuationComplete}
+        onSuccess={handleSuccess}
       />
       <AccountTypeSelectionDialog
         open={continuation.showAccountTypeSelection}

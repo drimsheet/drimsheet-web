@@ -31,7 +31,7 @@ describe('journalEntryStorageService', () => {
   it('stores the entire continuation with a one-day expiry and removes it when completed', async () => {
     const values = {
       amount: Number.NaN,
-      attachment: new File(['receipt'], 'receipt.pdf'),
+      attachments: [new File(['receipt'], 'receipt.pdf')],
     };
 
     const beforeSave = Date.now();
@@ -67,6 +67,30 @@ describe('journalEntryStorageService', () => {
       )
     ).toBeUndefined();
   });
+
+  it.each(['outflow', 'transfer'] as const)(
+    'restores a file from a %s continuation saved before the attachment list',
+    async (type) => {
+      const attachment = new File(['receipt'], 'receipt.pdf');
+
+      await journalEntryStorageService.saveContinuation(
+        'scope',
+        type,
+        'draft',
+        {
+          description: 'Office supplies',
+          attachment,
+        }
+      );
+
+      await expect(
+        journalEntryStorageService.loadContinuation('scope', type, 'draft')
+      ).resolves.toEqual({
+        description: 'Office supplies',
+        attachments: [attachment],
+      });
+    }
+  );
 
   it('isolates continuations by scope, transaction type, and tab session', async () => {
     await journalEntryStorageService.saveContinuation(

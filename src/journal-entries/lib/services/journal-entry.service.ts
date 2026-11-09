@@ -1,10 +1,14 @@
+import type {
+  UPaymentRectificationRequest,
+  UReceiptRectificationRequest,
+  UTransferRectificationRequest,
+} from '@/journal-entries/lib/types/journal-entry-rectification.types';
 import { drimsheetApi } from '@/shared/lib/api';
 import type {
   IGetJournalEntriesQuery,
   IPaymentEntryReq,
   IReceiptEntryReq,
   ITransferEntryReq,
-  TJournalEntryRectificationReq,
 } from '@/shared/lib/api/Api';
 
 const journalEntryService = {
@@ -55,16 +59,43 @@ const journalEntryService = {
     return res.data;
   },
 
-  async rectifyJournalEntry(
-    id: string,
-    payload: TJournalEntryRectificationReq
-  ) {
-    const res = await drimsheetApi.journalEntries.rectifyJournalEntry(
-      id,
-      payload
-    );
+  async rectifyPayment(id: string, request: UPaymentRectificationRequest) {
+    const api = drimsheetApi.journalEntries;
 
-    return res.data;
+    switch (request.action) {
+      case 'updateDraft':
+        return (await api.updateDraftPayment(id, request.payload)).data;
+      case 'updateMeta':
+        return (await api.updateJournalEntryMeta(id, request.payload)).data;
+      case 'voidAndReplace':
+        return (await api.voidAndReplacePayment(id, request.payload)).data;
+    }
+  },
+
+  async rectifyReceipt(id: string, request: UReceiptRectificationRequest) {
+    const api = drimsheetApi.journalEntries;
+
+    switch (request.action) {
+      case 'updateDraft':
+        return (await api.updateDraftReceipt(id, request.payload)).data;
+      case 'updateMeta':
+        return (await api.updateJournalEntryMeta(id, request.payload)).data;
+      case 'voidAndReplace':
+        return (await api.voidAndReplaceReceipt(id, request.payload)).data;
+    }
+  },
+
+  async rectifyTransfer(id: string, request: UTransferRectificationRequest) {
+    const api = drimsheetApi.journalEntries;
+
+    switch (request.action) {
+      case 'updateDraft':
+        return (await api.updateDraftTransfer(id, request.payload)).data;
+      case 'updateMeta':
+        return (await api.updateJournalEntryMeta(id, request.payload)).data;
+      case 'voidAndReplace':
+        return (await api.voidAndReplaceTransfer(id, request.payload)).data;
+    }
   },
 };
 

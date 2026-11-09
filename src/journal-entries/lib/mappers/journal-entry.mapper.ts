@@ -6,25 +6,34 @@ import type {
   ICashTransferCurrencyContext,
   ICashTransferFormValues,
 } from '@/journal-entries/components/cash-transfer-form';
+import type {
+  UPaymentRectificationRequest,
+  UReceiptRectificationRequest,
+  UTransferRectificationRequest,
+} from '@/journal-entries/lib/types/journal-entry-rectification.types';
+import {
+  EJournalEntryEditAction,
+  journalEntryEdit,
+} from '@/journal-entries/lib/utils/journal-entry-edit';
 import {
   EExchangeRateType,
   type IExchangeRateDto,
   type IExchangeRateQueryParam,
-  type IFileAttachment,
+  type IJournalEntryAttachmentsUpdateReq,
   type IJournalEntryListDto,
-  type IJournalEntryRectificationCounterpartyLineReq,
-  type IJournalEntryRectificationLineReq,
+  type IJournalEntryMetaUpdateReq,
   type IJournalLineReq,
   type IPaymentEntryLineReq,
   type IPaymentEntryReq,
-  type IPaymentJournalEntryRectificationReq,
   type IReceiptEntryLineReq,
   type IReceiptEntryReq,
-  type IReceiptJournalEntryRectificationReq,
   type ITransferEntryLineReq,
   type ITransferEntryReq,
-  type ITransferJournalEntryRectificationLineReq,
-  type ITransferJournalEntryRectificationReq,
+  type IUpdateDraftPaymentLineReq,
+  type IUpdateDraftPaymentReq,
+  type IUpdateDraftReceiptReq,
+  type IUpdateDraftTransferAssetLineReq,
+  type IUpdateDraftTransferReq,
 } from '@/shared/lib/api/Api';
 import { currencyMapper } from '@/shared/lib/mappers/currency.mapper';
 import { moneyMapper } from '@/shared/lib/mappers/money.mapper';
@@ -121,7 +130,7 @@ function toPaymentEntryReq(
   values: ICashTransactionFormValues,
   functionalCurrencyCode: string,
   postedAt: string | null,
-  attachmentReferences: string[] = []
+  attachmentReferences?: string[]
 ): IPaymentEntryReq {
   const currencyCode = values.amount.currencyCode;
   const description = values.description.trim() || null;
@@ -165,8 +174,7 @@ function toPaymentEntryReq(
         }),
       ];
 
-  return {
-    attachmentReferences: attachmentReferences.map((reference) => reference),
+  const request: IPaymentEntryReq = {
     sourceLine: toJournalEntryLineReq({
       accountId: values.accountId,
       amount: values.amount,
@@ -180,13 +188,19 @@ function toPaymentEntryReq(
     postedAt,
     memo: description,
   };
+
+  if (attachmentReferences !== undefined) {
+    request.attachmentReferences = attachmentReferences.slice();
+  }
+
+  return request;
 }
 
 function toReceiptEntryReq(
   values: ICashTransactionFormValues,
   functionalCurrencyCode: string,
   postedAt: string | null,
-  attachmentReferences: string[] = []
+  attachmentReferences?: string[]
 ): IReceiptEntryReq {
   const currencyCode = values.amount.currencyCode;
   const description = values.description.trim() || null;
@@ -230,8 +244,7 @@ function toReceiptEntryReq(
         }),
       ];
 
-  return {
-    attachmentReferences: attachmentReferences.map((reference) => reference),
+  const request: IReceiptEntryReq = {
     sourceLines,
     destinationLine: toJournalEntryLineReq({
       accountId: values.accountId,
@@ -245,6 +258,12 @@ function toReceiptEntryReq(
     postedAt,
     memo: description,
   };
+
+  if (attachmentReferences !== undefined) {
+    request.attachmentReferences = attachmentReferences.slice();
+  }
+
+  return request;
 }
 
 function toTransferEntryLineReq(
@@ -290,7 +309,7 @@ function toTransferEntryReq(
   values: ICashTransferFormValues,
   functionalCurrencyCode: string,
   postedAt: string | null,
-  attachmentReferences: string[] = []
+  attachmentReferences?: string[]
 ): ITransferEntryReq {
   const sourceCurrencyCode = values.amountSent.currencyCode;
   const destinationCurrencyCode = values.amountReceived.currencyCode;
@@ -342,8 +361,7 @@ function toTransferEntryReq(
       )
     : [];
 
-  return {
-    attachmentReferences: attachmentReferences.map((reference) => reference),
+  const request: ITransferEntryReq = {
     sourceLine: toTransferEntryLineReq(
       values.sourceAccountId,
       values.amountSent,
@@ -363,284 +381,419 @@ function toTransferEntryReq(
     postedAt,
     memo: description,
   };
+
+  if (attachmentReferences !== undefined) {
+    request.attachmentReferences = attachmentReferences.slice();
+  }
+
+  return request;
 }
 
-function copyAttachments(attachments: IFileAttachment[]) {
-  return attachments.map((attachment) => ({
-    url: attachment.url,
-    name: attachment.name,
-    type: attachment.type,
-    size: attachment.size,
-  }));
-}
-
-function toRectificationCounterpartyLine(
-  line: IPaymentEntryLineReq & IReceiptEntryLineReq,
-  id: string | undefined
-): IJournalEntryRectificationCounterpartyLineReq {
-  const rectificationLine: IJournalEntryRectificationCounterpartyLineReq = {
+function toDraftCounterpartyLine(
+  line: IPaymentEntryLineReq | IReceiptEntryLineReq,
+  id: string | undefined,
+  description?: string | null
+): IUpdateDraftPaymentLineReq {
+  const patch: IUpdateDraftPaymentLineReq = {
     accountId: line.accountId,
     counterpartyId: line.counterpartyId,
-    amount: {
-      amount: line.amount.amount,
-      currencyCode: line.amount.currencyCode,
-      isMinorUnit: line.amount.isMinorUnit,
-    },
-    exchangeRate: line.exchangeRate
-      ? {
-          baseCurrencyCode: line.exchangeRate.baseCurrencyCode,
-          targetCurrencyCode: line.exchangeRate.targetCurrencyCode,
-          rate: line.exchangeRate.rate,
-          type: line.exchangeRate.type,
-          asOf: line.exchangeRate.asOf,
-          source: line.exchangeRate.source,
-        }
-      : null,
-    description: line.description,
-    sequenceOrder: line.sequenceOrder,
-  };
-
-  if (id !== undefined) {
-    rectificationLine.id = id;
-  }
-
-  return rectificationLine;
-}
-
-function toTransferRectificationLine(
-  line: ITransferEntryLineReq,
-  id: string | undefined
-): ITransferJournalEntryRectificationLineReq {
-  const rectificationLine: ITransferJournalEntryRectificationLineReq = {
-    accountId: line.accountId,
-    amount: {
-      amount: line.amount.amount,
-      currencyCode: line.amount.currencyCode,
-      isMinorUnit: line.amount.isMinorUnit,
-    },
-    exchangeRate: line.exchangeRate
-      ? {
-          baseCurrencyCode: line.exchangeRate.baseCurrencyCode,
-          targetCurrencyCode: line.exchangeRate.targetCurrencyCode,
-          rate: line.exchangeRate.rate,
-          type: line.exchangeRate.type,
-          asOf: line.exchangeRate.asOf,
-          source: line.exchangeRate.source,
-        }
-      : null,
-    description: line.description,
-    sequenceOrder: line.sequenceOrder,
-  };
-
-  if (id !== undefined) {
-    rectificationLine.id = id;
-  }
-
-  return rectificationLine;
-}
-
-function toRectificationChargeLine(
-  line: IJournalLineReq,
-  id: string | undefined
-): IJournalEntryRectificationLineReq {
-  const rectificationLine: IJournalEntryRectificationLineReq = {
-    accountId: line.accountId,
-    counterpartyId: null,
-    amount: {
-      amount: line.amount.amount,
-      currencyCode: line.amount.currencyCode,
-      isMinorUnit: line.amount.isMinorUnit,
-    },
-    exchangeRate: line.exchangeRate
-      ? {
-          baseCurrencyCode: line.exchangeRate.baseCurrencyCode,
-          targetCurrencyCode: line.exchangeRate.targetCurrencyCode,
-          rate: line.exchangeRate.rate,
-          type: line.exchangeRate.type,
-          asOf: line.exchangeRate.asOf,
-          source: line.exchangeRate.source,
-        }
-      : null,
-    description: line.description,
-    sequenceOrder: line.sequenceOrder,
-  };
-
-  if (id !== undefined) {
-    rectificationLine.id = id;
-  }
-
-  return rectificationLine;
-}
-
-function findReusableLineId(
-  originalLines: IJournalEntryListDto['lines'],
-  accountId: string
-) {
-  return originalLines.find((line) => line.account.id === accountId)?.id;
-}
-
-function resolveRectificationLineId(
-  itemId: string | undefined,
-  originalIds: ReadonlySet<string>,
-  originalLines: IJournalEntryListDto['lines'],
-  accountId: string,
-  isItemized: boolean
-) {
-  if (itemId && originalIds.has(itemId)) {
-    return itemId;
-  }
-
-  if (!isItemized) {
-    return findReusableLineId(originalLines, accountId);
-  }
-
-  return undefined;
-}
-
-function toPaymentJournalEntryRectificationReq(
-  values: ICashTransactionFormValues,
-  functionalCurrencyCode: string,
-  journalEntry: IJournalEntryListDto,
-  attachments: IFileAttachment[]
-): IPaymentJournalEntryRectificationReq {
-  const payment = toPaymentEntryReq(
-    values,
-    functionalCurrencyCode,
-    journalEntry.postedAt ?? journalEntry.createdAt
-  );
-
-  const originalLines = [...journalEntry.lines].sort(
-    (left, right) => left.sequenceOrder - right.sequenceOrder
-  );
-
-  const sourceLine = originalLines[0];
-  const destinationLines = originalLines.slice(1);
-
-  const originalDestinationIds = new Set(
-    destinationLines.map((line) => line.id)
-  );
-
-  return {
-    attachments: copyAttachments(attachments),
-    effectiveDate: payment.effectiveDate,
-    postedAt: payment.postedAt,
-    memo: payment.memo,
-    sourceType: 'payment',
-    sourceLine: toRectificationCounterpartyLine(
-      payment.sourceLine,
-      sourceLine?.id
+    amount: moneyMapper.toMoneyDto(
+      line.amount.amount,
+      line.amount.currencyCode,
+      line.amount.isMinorUnit
     ),
-    destinationLines: payment.destinationLines.map((line, index) => {
-      const itemId = values.isItemized ? values.items[index]?.id : undefined;
-
-      const id = resolveRectificationLineId(
-        itemId,
-        originalDestinationIds,
-        destinationLines,
-        line.accountId,
-        values.isItemized
-      );
-
-      return toRectificationCounterpartyLine(line, id);
-    }),
+    exchangeRate: copyExchangeRate(line.exchangeRate),
+    description,
+    sequenceOrder: line.sequenceOrder,
   };
+
+  if (id !== undefined) {
+    patch.id = id;
+  }
+
+  return patch;
 }
 
-function toReceiptJournalEntryRectificationReq(
+function copyExchangeRate(
+  rate: IExchangeRateDto | null
+): IExchangeRateDto | null {
+  return (
+    rate && {
+      baseCurrencyCode: rate.baseCurrencyCode,
+      targetCurrencyCode: rate.targetCurrencyCode,
+      rate: rate.rate,
+      type: rate.type,
+      asOf: rate.asOf,
+      source: rate.source,
+    }
+  );
+}
+
+function toDraftAssetLine(
+  line: ITransferEntryLineReq,
+  id: string | undefined,
+  description?: string | null
+): IUpdateDraftTransferAssetLineReq {
+  const patch: IUpdateDraftTransferAssetLineReq = {
+    accountId: line.accountId,
+    amount: moneyMapper.toMoneyDto(
+      line.amount.amount,
+      line.amount.currencyCode,
+      line.amount.isMinorUnit
+    ),
+    exchangeRate: copyExchangeRate(line.exchangeRate),
+    description,
+    sequenceOrder: line.sequenceOrder,
+  };
+
+  if (id !== undefined) {
+    patch.id = id;
+  }
+
+  return patch;
+}
+
+function findCategoryLineId(
+  values: ICashTransactionFormValues,
+  originalLines: IJournalEntryListDto['lines'],
+  index: number
+) {
+  // TODO: Carry line identity across a switch between single and itemized editing.
+  if (!values.isItemized) {
+    return originalLines.length === 1 ? originalLines[0].id : undefined;
+  }
+
+  return originalLines.find((line) => line.id === values.items[index]?.id)?.id;
+}
+
+function toReplacementAttachmentReferences(
+  savedAttachments: IJournalEntryListDto['attachments'],
+  uploadedReferences: string[]
+): string[] {
+  const references = savedAttachments.map(({ url }) => url);
+
+  return references.concat(uploadedReferences);
+}
+
+function toAttachmentsUpdateReq(
+  entry: IJournalEntryListDto,
+  savedAttachments: IJournalEntryListDto['attachments'],
+  uploadedReferences: string[]
+): IJournalEntryAttachmentsUpdateReq | undefined {
+  const removedUrls = journalEntryEdit.getRemovedAttachmentUrls(
+    entry,
+    savedAttachments
+  );
+
+  if (!uploadedReferences.length && !removedUrls.length) {
+    return undefined;
+  }
+
+  const request: IJournalEntryAttachmentsUpdateReq = {};
+  if (uploadedReferences.length > 0) {
+    request.add = uploadedReferences.slice();
+  }
+
+  if (removedUrls.length) {
+    request.remove = removedUrls;
+  }
+
+  return request;
+}
+
+function toUpdateDraftPaymentReq(
   values: ICashTransactionFormValues,
   functionalCurrencyCode: string,
   journalEntry: IJournalEntryListDto,
-  attachments: IFileAttachment[]
-): IReceiptJournalEntryRectificationReq {
-  const receipt = toReceiptEntryReq(
-    values,
-    functionalCurrencyCode,
-    journalEntry.postedAt ?? journalEntry.createdAt
+  uploadedReferences: string[]
+): IUpdateDraftPaymentReq {
+  const payment = toPaymentEntryReq(values, functionalCurrencyCode, null);
+
+  const [sourceLine, ...destinationLines] = [...journalEntry.lines].sort(
+    (left, right) => left.sequenceOrder - right.sequenceOrder
   );
+
+  const request: IUpdateDraftPaymentReq = {
+    effectiveDate: payment.effectiveDate,
+    memo: payment.memo,
+    sourceLine: toDraftCounterpartyLine(payment.sourceLine, sourceLine?.id),
+    destinationLines: payment.destinationLines.map((line, index) =>
+      toDraftCounterpartyLine(
+        line,
+        findCategoryLineId(values, destinationLines, index),
+        values.isItemized ? line.description : undefined
+      )
+    ),
+  };
+
+  const attachments = toAttachmentsUpdateReq(
+    journalEntry,
+    journalEntryEdit.getSavedAttachments(values),
+    uploadedReferences
+  );
+
+  if (attachments) {
+    request.attachments = attachments;
+  }
+
+  return request;
+}
+
+function toUpdateDraftReceiptReq(
+  values: ICashTransactionFormValues,
+  functionalCurrencyCode: string,
+  journalEntry: IJournalEntryListDto,
+  uploadedReferences: string[]
+): IUpdateDraftReceiptReq {
+  const receipt = toReceiptEntryReq(values, functionalCurrencyCode, null);
 
   const originalLines = [...journalEntry.lines].sort(
     (left, right) => left.sequenceOrder - right.sequenceOrder
   );
 
-  const destinationLine = originalLines.at(-1);
   const sourceLines = originalLines.slice(0, -1);
-  const originalSourceIds = new Set(sourceLines.map((line) => line.id));
+  const destinationLine = originalLines.at(-1);
 
-  return {
-    attachments: copyAttachments(attachments),
+  const request: IUpdateDraftReceiptReq = {
     effectiveDate: receipt.effectiveDate,
-    postedAt: receipt.postedAt,
     memo: receipt.memo,
-    sourceType: 'receipt',
-    sourceLines: receipt.sourceLines.map((line, index) => {
-      const itemId = values.isItemized ? values.items[index]?.id : undefined;
-
-      const id = resolveRectificationLineId(
-        itemId,
-        originalSourceIds,
-        sourceLines,
-        line.accountId,
-        values.isItemized
-      );
-
-      return toRectificationCounterpartyLine(line, id);
-    }),
-    destinationLine: toRectificationCounterpartyLine(
+    sourceLines: receipt.sourceLines.map((line, index) =>
+      toDraftCounterpartyLine(
+        line,
+        findCategoryLineId(values, sourceLines, index),
+        values.isItemized ? line.description : undefined
+      )
+    ),
+    destinationLine: toDraftCounterpartyLine(
       receipt.destinationLine,
       destinationLine?.id
     ),
   };
+
+  const attachments = toAttachmentsUpdateReq(
+    journalEntry,
+    journalEntryEdit.getSavedAttachments(values),
+    uploadedReferences
+  );
+
+  if (attachments) {
+    request.attachments = attachments;
+  }
+
+  return request;
 }
 
-function toTransferJournalEntryRectificationReq(
+function toUpdateDraftTransferReq(
   values: ICashTransferFormValues,
   functionalCurrencyCode: string,
   journalEntry: IJournalEntryListDto,
-  attachments: IFileAttachment[]
-): ITransferJournalEntryRectificationReq {
-  const transfer = toTransferEntryReq(
-    values,
-    functionalCurrencyCode,
-    journalEntry.postedAt ?? journalEntry.createdAt
-  );
+  uploadedReferences: string[]
+): IUpdateDraftTransferReq {
+  const transfer = toTransferEntryReq(values, functionalCurrencyCode, null);
 
-  const originalLines = [...journalEntry.lines].sort(
-    (left, right) => left.sequenceOrder - right.sequenceOrder
-  );
+  const [sourceLine, destinationLine, ...chargeLines] = [
+    ...journalEntry.lines,
+  ].sort((left, right) => left.sequenceOrder - right.sequenceOrder);
 
-  const chargeLines = originalLines.slice(2);
-  const originalChargeIds = new Set(chargeLines.map((line) => line.id));
-
-  return {
-    attachments: copyAttachments(attachments),
+  const request: IUpdateDraftTransferReq = {
     effectiveDate: transfer.effectiveDate,
-    postedAt: transfer.postedAt,
     memo: transfer.memo,
-    sourceType: 'transfer',
-    sourceLine: toTransferRectificationLine(
-      transfer.sourceLine,
-      originalLines[0]?.id
-    ),
-    destinationLine: toTransferRectificationLine(
+    sourceLine: toDraftAssetLine(transfer.sourceLine, sourceLine?.id),
+    destinationLine: toDraftAssetLine(
       transfer.destinationLine,
-      originalLines[1]?.id
+      destinationLine?.id
     ),
-    chargeLines: transfer.chargeLines.map((line, index) => {
-      const itemId = values.items[index]?.id;
-      const id = itemId && originalChargeIds.has(itemId) ? itemId : undefined;
-
-      return toRectificationChargeLine(line, id);
-    }),
+    chargeLines: transfer.chargeLines.map((line, index) =>
+      // TODO: Expose counterparties on transfer charge lines in the editor.
+      toDraftAssetLine(
+        line,
+        chargeLines.find((original) => original.id === values.items[index]?.id)
+          ?.id,
+        line.description
+      )
+    ),
   };
+
+  const attachments = toAttachmentsUpdateReq(
+    journalEntry,
+    journalEntryEdit.getSavedAttachments(values),
+    uploadedReferences
+  );
+
+  if (attachments) {
+    request.attachments = attachments;
+  }
+
+  return request;
+}
+
+function toMetaUpdateReq(
+  entry: IJournalEntryListDto,
+  values: ICashTransactionFormValues | ICashTransferFormValues,
+  uploadedReferences: string[]
+): IJournalEntryMetaUpdateReq {
+  const memo = journalEntryEdit.getChangedMemo(entry, values.description);
+
+  const lines = journalEntryEdit
+    .getChangedDescriptions(entry, values)
+    .map((item) => ({
+      id: item.id,
+      description: item.description.trim() || null,
+    }));
+
+  const request: IJournalEntryMetaUpdateReq = {};
+
+  const attachments = toAttachmentsUpdateReq(
+    entry,
+    journalEntryEdit.getSavedAttachments(values),
+    uploadedReferences
+  );
+
+  if (attachments) {
+    request.attachments = attachments;
+  }
+
+  if (memo !== undefined) {
+    request.header = { memo };
+  }
+
+  if (lines.length > 0) {
+    request.lines = lines;
+  }
+
+  return request;
+}
+
+function toPaymentRectificationRequest(
+  entry: IJournalEntryListDto,
+  initialValues: ICashTransactionFormValues,
+  values: ICashTransactionFormValues,
+  functionalCurrencyCode: string,
+  uploadedReferences: string[] = []
+): UPaymentRectificationRequest | undefined {
+  switch (journalEntryEdit.getAction(entry, initialValues, values)) {
+    case EJournalEntryEditAction.UpdateDraft:
+      return {
+        action: EJournalEntryEditAction.UpdateDraft,
+        payload: toUpdateDraftPaymentReq(
+          values,
+          functionalCurrencyCode,
+          entry,
+          uploadedReferences
+        ),
+      };
+    case EJournalEntryEditAction.UpdateMeta:
+      return {
+        action: EJournalEntryEditAction.UpdateMeta,
+        payload: toMetaUpdateReq(entry, values, uploadedReferences),
+      };
+    case EJournalEntryEditAction.VoidAndReplace:
+      return {
+        action: EJournalEntryEditAction.VoidAndReplace,
+        payload: toPaymentEntryReq(
+          values,
+          functionalCurrencyCode,
+          entry.postedAt,
+          toReplacementAttachmentReferences(
+            journalEntryEdit.getSavedAttachments(values),
+            uploadedReferences
+          )
+        ),
+      };
+    default:
+      return undefined;
+  }
+}
+
+function toReceiptRectificationRequest(
+  entry: IJournalEntryListDto,
+  initialValues: ICashTransactionFormValues,
+  values: ICashTransactionFormValues,
+  functionalCurrencyCode: string,
+  uploadedReferences: string[] = []
+): UReceiptRectificationRequest | undefined {
+  switch (journalEntryEdit.getAction(entry, initialValues, values)) {
+    case EJournalEntryEditAction.UpdateDraft:
+      return {
+        action: EJournalEntryEditAction.UpdateDraft,
+        payload: toUpdateDraftReceiptReq(
+          values,
+          functionalCurrencyCode,
+          entry,
+          uploadedReferences
+        ),
+      };
+    case EJournalEntryEditAction.UpdateMeta:
+      return {
+        action: EJournalEntryEditAction.UpdateMeta,
+        payload: toMetaUpdateReq(entry, values, uploadedReferences),
+      };
+    case EJournalEntryEditAction.VoidAndReplace:
+      return {
+        action: EJournalEntryEditAction.VoidAndReplace,
+        payload: toReceiptEntryReq(
+          values,
+          functionalCurrencyCode,
+          entry.postedAt,
+          toReplacementAttachmentReferences(
+            journalEntryEdit.getSavedAttachments(values),
+            uploadedReferences
+          )
+        ),
+      };
+    default:
+      return undefined;
+  }
+}
+
+function toTransferRectificationRequest(
+  entry: IJournalEntryListDto,
+  initialValues: ICashTransferFormValues,
+  values: ICashTransferFormValues,
+  functionalCurrencyCode: string,
+  uploadedReferences: string[] = []
+): UTransferRectificationRequest | undefined {
+  switch (journalEntryEdit.getAction(entry, initialValues, values)) {
+    case EJournalEntryEditAction.UpdateDraft:
+      return {
+        action: EJournalEntryEditAction.UpdateDraft,
+        payload: toUpdateDraftTransferReq(
+          values,
+          functionalCurrencyCode,
+          entry,
+          uploadedReferences
+        ),
+      };
+    case EJournalEntryEditAction.UpdateMeta:
+      return {
+        action: EJournalEntryEditAction.UpdateMeta,
+        payload: toMetaUpdateReq(entry, values, uploadedReferences),
+      };
+    case EJournalEntryEditAction.VoidAndReplace:
+      return {
+        action: EJournalEntryEditAction.VoidAndReplace,
+        payload: toTransferEntryReq(
+          values,
+          functionalCurrencyCode,
+          entry.postedAt,
+          toReplacementAttachmentReferences(
+            journalEntryEdit.getSavedAttachments(values),
+            uploadedReferences
+          )
+        ),
+      };
+    default:
+      return undefined;
+  }
 }
 
 export const journalEntryMapper = Object.freeze({
   toExchangeRateQuery,
   toPaymentEntryReq,
-  toPaymentJournalEntryRectificationReq,
+  toPaymentRectificationRequest,
   toReceiptEntryReq,
-  toReceiptJournalEntryRectificationReq,
+  toReceiptRectificationRequest,
   toTransferExchangeRateQuery,
   toTransferEntryReq,
-  toTransferJournalEntryRectificationReq,
+  toTransferRectificationRequest,
 });

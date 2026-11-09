@@ -1284,8 +1284,6 @@ export interface IJournalHeaderDto {
   memo: string | null;
   status: UJournalEntryStatus;
   /** @format date-time */
-  effectiveDate: string;
-  /** @format date-time */
   postedAt: string | null;
   /** @format date-time */
   voidedAt: string | null;
@@ -1295,6 +1293,8 @@ export interface IJournalHeaderDto {
   createdAt: string;
   /** @format date-time */
   updatedAt: string;
+  /** @format date-time */
+  effectiveDate: string;
 }
 
 export interface IExchangeRate {
@@ -1567,8 +1567,6 @@ export interface IJournalEntryListDto {
   memo: string | null;
   status: UJournalEntryStatus;
   /** @format date-time */
-  effectiveDate: string;
-  /** @format date-time */
   postedAt: string | null;
   /** @format date-time */
   voidedAt: string | null;
@@ -1578,6 +1576,8 @@ export interface IJournalEntryListDto {
   createdAt: string;
   /** @format date-time */
   updatedAt: string;
+  /** @format date-time */
+  effectiveDate: string;
   id: string;
   accountingEntityId: string;
   attachments: IFileAttachment[];
@@ -1644,8 +1644,6 @@ export interface IJournalEntryDto {
   memo: string | null;
   status: UJournalEntryStatus;
   /** @format date-time */
-  effectiveDate: string;
-  /** @format date-time */
   postedAt: string | null;
   /** @format date-time */
   voidedAt: string | null;
@@ -1659,6 +1657,8 @@ export interface IJournalEntryDto {
   accountingEntityId: string;
   attachments: IFileAttachment[];
   lines: IJournalLineDto[];
+  /** @format date-time */
+  effectiveDate: string;
 }
 
 export interface IPaymentEntryLineReq {
@@ -1746,6 +1746,24 @@ export interface ITransferEntryReq {
   memo: string | null;
 }
 
+export interface IJournalEntryAttachmentsUpdateReq {
+  /** Upload references for files to attach. An empty list is a no-op. */
+  add?: string[];
+  /** Stored attachment URLs from this journal entry. An empty list is a no-op. */
+  remove?: string[];
+}
+
+export interface IJournalEntryMetaUpdateReq {
+  attachments?: IJournalEntryAttachmentsUpdateReq;
+  header?: {
+    memo?: string | null;
+  };
+  lines?: {
+    description?: string | null;
+    id: TEntityId;
+  }[];
+}
+
 export interface IJournalEntryRectificationDto {
   mode: UJournalEntryRectificationMode;
   originalJournalEntryId: string;
@@ -1766,7 +1784,7 @@ export interface IJournalEntryRectificationCounterpartyLineReq {
 }
 
 export interface IPaymentJournalEntryRectificationReq {
-  attachments: IFileAttachment[];
+  attachments?: IJournalEntryAttachmentsUpdateReq;
   /** @format date-time */
   effectiveDate: string;
   /** @format date-time */
@@ -1778,7 +1796,7 @@ export interface IPaymentJournalEntryRectificationReq {
 }
 
 export interface IReceiptJournalEntryRectificationReq {
-  attachments: IFileAttachment[];
+  attachments?: IJournalEntryAttachmentsUpdateReq;
   /** @format date-time */
   effectiveDate: string;
   /** @format date-time */
@@ -1811,7 +1829,7 @@ export interface IJournalEntryRectificationLineReq {
 }
 
 export interface ITransferJournalEntryRectificationReq {
-  attachments: IFileAttachment[];
+  attachments?: IJournalEntryAttachmentsUpdateReq;
   /** @format date-time */
   effectiveDate: string;
   /** @format date-time */
@@ -1827,6 +1845,89 @@ export type TJournalEntryRectificationReq =
   | IPaymentJournalEntryRectificationReq
   | IReceiptJournalEntryRectificationReq
   | ITransferJournalEntryRectificationReq;
+
+export interface IUpdateDraftOpeningBalanceReq {
+  amount?: IMoneyDto;
+  /** @format date-time */
+  effectiveDate?: string;
+  exchangeRate?: IExchangeRateDto | null;
+  memo?: string | null;
+  attachments?: IJournalEntryAttachmentsUpdateReq;
+}
+
+export interface IUpdateDraftPaymentLineReq {
+  id?: string;
+  accountId?: string;
+  counterpartyId?: string | null;
+  amount?: IMoneyDto;
+  exchangeRate?: IExchangeRateDto | null;
+  description?: string | null;
+  /** @format double */
+  sequenceOrder?: number;
+}
+
+export interface IUpdateDraftPaymentReq {
+  attachments?: IJournalEntryAttachmentsUpdateReq;
+  /** @format date-time */
+  effectiveDate?: string;
+  sourceLine?: IUpdateDraftPaymentLineReq;
+  /** When supplied, replaces the destination set. IDs retain existing lines. */
+  destinationLines?: IUpdateDraftPaymentLineReq[];
+  memo?: string | null;
+}
+
+export interface IUpdateDraftReceiptLineReq {
+  id?: string;
+  accountId?: string;
+  counterpartyId?: string | null;
+  amount?: IMoneyDto;
+  exchangeRate?: IExchangeRateDto | null;
+  description?: string | null;
+  /** @format double */
+  sequenceOrder?: number;
+}
+
+export interface IUpdateDraftReceiptReq {
+  attachments?: IJournalEntryAttachmentsUpdateReq;
+  /** @format date-time */
+  effectiveDate?: string;
+  /** When supplied, replaces the source set. IDs retain existing lines. */
+  sourceLines?: IUpdateDraftReceiptLineReq[];
+  destinationLine?: IUpdateDraftReceiptLineReq;
+  memo?: string | null;
+}
+
+export interface IUpdateDraftTransferAssetLineReq {
+  id?: string;
+  accountId?: string;
+  amount?: IMoneyDto;
+  exchangeRate?: IExchangeRateDto | null;
+  description?: string | null;
+  /** @format double */
+  sequenceOrder?: number;
+}
+
+export interface IUpdateDraftTransferChargeLineReq {
+  id?: string;
+  accountId?: string;
+  amount?: IMoneyDto;
+  exchangeRate?: IExchangeRateDto | null;
+  description?: string | null;
+  /** @format double */
+  sequenceOrder?: number;
+  counterpartyId?: string | null;
+}
+
+export interface IUpdateDraftTransferReq {
+  attachments?: IJournalEntryAttachmentsUpdateReq;
+  /** @format date-time */
+  effectiveDate?: string;
+  sourceLine?: IUpdateDraftTransferAssetLineReq;
+  destinationLine?: IUpdateDraftTransferAssetLineReq;
+  /** When supplied, replaces the charge set. IDs retain existing charges. */
+  chargeLines?: IUpdateDraftTransferChargeLineReq[];
+  memo?: string | null;
+}
 
 /** Make all properties in T readonly */
 export type ReadonlyRecordStringString = Record<string, string>;
@@ -3709,6 +3810,27 @@ export class Api<
       }),
 
     /**
+     * @description Updates the memo, existing line descriptions, and supporting attachments of a draft or posted journal entry.
+     *
+     * @tags Journal Entry
+     * @name UpdateJournalEntryMeta
+     * @request PATCH:/journal-entries/{id}/meta
+     */
+    updateJournalEntryMeta: (
+      id: string,
+      data: IJournalEntryMetaUpdateReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IJournalEntryDto, IHttpErrorDto>({
+        path: `/journal-entries/${id}/meta`,
+        method: 'PATCH',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
      * @description Correct a journal entry while preserving its accounting audit trail.
      *
      * @tags Journal Entry
@@ -3722,6 +3844,153 @@ export class Api<
     ) =>
       this.request<IJournalEntryRectificationDto, IHttpErrorDto>({
         path: `/journal-entries/${id}/rectify`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Updates the amount, effective date, exchange rate, memo, or attachments of a draft opening balance.
+     *
+     * @tags Journal Entry
+     * @name UpdateDraftOpeningBalance
+     * @request PATCH:/journal-entries/opening-balance/{id}
+     */
+    updateDraftOpeningBalance: (
+      id: string,
+      data: IUpdateDraftOpeningBalanceReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IJournalEntryDto, IHttpErrorDto>({
+        path: `/journal-entries/opening-balance/${id}`,
+        method: 'PATCH',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Updates the memo, effective date, lines, or attachments of a draft payment.
+     *
+     * @tags Journal Entry
+     * @name UpdateDraftPayment
+     * @request PATCH:/journal-entries/payment/{id}
+     */
+    updateDraftPayment: (
+      id: string,
+      data: IUpdateDraftPaymentReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IJournalEntryDto, IHttpErrorDto>({
+        path: `/journal-entries/payment/${id}`,
+        method: 'PATCH',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Voids and reverses a posted payment and records a draft or posted replacement.
+     *
+     * @tags Journal Entry
+     * @name VoidAndReplacePayment
+     * @request POST:/journal-entries/payment/{id}/void-and-replace
+     */
+    voidAndReplacePayment: (
+      id: string,
+      data: IPaymentEntryReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IJournalEntryDto, IHttpErrorDto>({
+        path: `/journal-entries/payment/${id}/void-and-replace`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Edits a draft receipt's memo, effective date, lines, or attachments.
+     *
+     * @tags Journal Entry
+     * @name UpdateDraftReceipt
+     * @request PATCH:/journal-entries/receipt/{id}
+     */
+    updateDraftReceipt: (
+      id: string,
+      data: IUpdateDraftReceiptReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IJournalEntryDto, IHttpErrorDto>({
+        path: `/journal-entries/receipt/${id}`,
+        method: 'PATCH',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Voids and reverses a posted receipt and records a draft or posted replacement.
+     *
+     * @tags Journal Entry
+     * @name VoidAndReplaceReceipt
+     * @request POST:/journal-entries/receipt/{id}/void-and-replace
+     */
+    voidAndReplaceReceipt: (
+      id: string,
+      data: IReceiptEntryReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IJournalEntryDto, IHttpErrorDto>({
+        path: `/journal-entries/receipt/${id}/void-and-replace`,
+        method: 'POST',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Edits a draft transfer's memo, effective date, lines, or attachments.
+     *
+     * @tags Journal Entry
+     * @name UpdateDraftTransfer
+     * @request PATCH:/journal-entries/transfer/{id}
+     */
+    updateDraftTransfer: (
+      id: string,
+      data: IUpdateDraftTransferReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IJournalEntryDto, IHttpErrorDto>({
+        path: `/journal-entries/transfer/${id}`,
+        method: 'PATCH',
+        body: data,
+        type: EContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Voids and reverses a posted transfer and records its replacement.
+     *
+     * @tags Journal Entry
+     * @name VoidAndReplaceTransfer
+     * @request POST:/journal-entries/transfer/{id}/void-and-replace
+     */
+    voidAndReplaceTransfer: (
+      id: string,
+      data: ITransferEntryReq,
+      params: RequestParams = {}
+    ) =>
+      this.request<IJournalEntryDto, IHttpErrorDto>({
+        path: `/journal-entries/transfer/${id}/void-and-replace`,
         method: 'POST',
         body: data,
         type: EContentType.Json,

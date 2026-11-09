@@ -3,6 +3,7 @@ import type { UTransactionAccountField } from '@/journal-entries/lib/types/trans
 import type { ICurrencyExchangeRateInputValue } from '@/shared/components/currency-exchange-rate-input';
 import type {
   IExchangeRate,
+  IFileAttachment,
   IJournalEntryListDto,
   ILedgerAccountDto,
   IMoneyDto,
@@ -18,7 +19,7 @@ export interface ICashTransferFormValues {
   isItemized: boolean;
   items: IItemizedFieldValue[];
   description: string;
-  attachment: File | null;
+  attachments: (File | IFileAttachment)[];
 }
 
 // TODO: remove this absurdity of separate initial value types from value types
@@ -32,7 +33,7 @@ export interface ICashTransferFormInitialValues {
   isItemized?: boolean;
   items?: IItemizedFieldValue[];
   description?: string;
-  attachment?: File | null;
+  attachments?: ICashTransferFormValues['attachments'];
 }
 
 export interface ICashTransferCurrencyContext {
@@ -58,7 +59,7 @@ export interface CashTransferFormProps {
   ) => void;
   onCurrencyContextChange: (context: ICashTransferCurrencyContext) => void;
   onSaveDraft?: (values: ICashTransferFormValues) => void;
-  onSubmit: (values: ICashTransferFormValues) => void;
+  onSubmit: (values: ICashTransferFormValues) => void | Promise<void>;
   savingDraft?: boolean;
   submitLabel?: string;
 }
@@ -73,5 +74,5 @@ export interface CashTransferFormContainerProps {
     values: ICashTransferFormValues,
     field?: UTransactionAccountField
   ) => void;
-  onSuccess?: () => Promise<void>;
+  onSuccess: () => Promise<void>;
 }

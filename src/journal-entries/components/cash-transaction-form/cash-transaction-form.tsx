@@ -21,6 +21,7 @@ import { FileUpload } from '@/shared/components/file-upload';
 import { Input } from '@/shared/components/input';
 import { Label } from '@/shared/components/label';
 import { MoneyWithCurrencyInput } from '@/shared/components/money-with-currency-input';
+import { UploadedFile } from '@/shared/components/uploaded-file';
 import { useFieldErrorMessage } from '@/shared/hooks/use-field-error-message';
 import { dateUtils } from '@/shared/lib/utils/date';
 import { generateUUID } from '@/shared/lib/utils/uuid';
@@ -113,8 +114,8 @@ export function CashTransactionForm({
     );
   };
 
-  const handleSubmit = (values: ICashTransactionFormValues) => {
-    onSubmit(normalizeValues(values));
+  const handleSubmit = async (values: ICashTransactionFormValues) => {
+    await onSubmit(normalizeValues(values));
   };
 
   const formik = useFormik<ICashTransactionFormValues>({
@@ -123,6 +124,14 @@ export function CashTransactionForm({
     validationSchema,
     onSubmit: handleSubmit,
   });
+
+  const savedAttachments = formik.values.attachments.filter(
+    (attachment) => 'url' in attachment
+  );
+
+  const newFiles = formik.values.attachments.filter(
+    (attachment) => attachment instanceof File
+  );
 
   const getErrorMessage = useFieldErrorMessage({
     errors: formik.errors,
@@ -211,9 +220,16 @@ export function CashTransactionForm({
     void formik.setFieldTouched('categoryId', true, false);
   };
 
-  const handleAttachmentChange = (attachment: File | null) => {
-    void formik.setFieldValue('attachment', attachment);
-    void formik.setFieldTouched('attachment', true, false);
+  const handleAttachmentChange = (filesOrRemovedUrl: File[] | string) => {
+    const attachments = Array.isArray(filesOrRemovedUrl)
+      ? [...savedAttachments, ...filesOrRemovedUrl]
+      : formik.values.attachments.filter(
+          (attachment) =>
+            !('url' in attachment) || attachment.url !== filesOrRemovedUrl
+        );
+
+    void formik.setFieldValue('attachments', attachments);
+    void formik.setFieldTouched('attachments', true, false);
   };
 
   const handleSaveDraft = async () => {
@@ -329,7 +345,7 @@ export function CashTransactionForm({
   const categoryError = getErrorMessage('categoryId');
   const exchangeRateError = getErrorMessage('exchangeRate');
   const counterpartyError = getErrorMessage('counterparty.id');
-  const attachmentError = getErrorMessage('attachment');
+  const attachmentError = getErrorMessage('attachments');
 
   /**
    * ================= Translations ================
@@ -365,12 +381,10 @@ export function CashTransactionForm({
   const counterparty_label = t(counterparty_text_keys.label);
   const counterparty_placeholder = t(counterparty_text_keys.placeholder);
   const attachment_label = t('cash_transaction_attachment_label');
-  const attachment_action_text = t('cash_transaction_attachment_action_text');
-  const attachment_replace_text = t('cash_transaction_attachment_replace_text');
-  const attachment_remove_text = t('cash_transaction_attachment_remove_text');
+  const attachment_action_text = t('cash_transaction_attachment_add_text');
 
   const attachment_guidance_text = t(
-    'cash_transaction_attachment_guidance_text'
+    'cash_transaction_attachments_guidance_text'
   );
 
   const return_title = t('cash_transaction_return_to_single_title');
@@ -552,19 +566,33 @@ export function CashTransactionForm({
             />
           </Field>
 
-          <FileUpload
-            accept={ATTACHMENT_ACCEPT}
-            actionText={attachment_action_text}
-            description={attachment_guidance_text}
-            disabled={interactionDisabled}
-            errors={attachmentError}
-            id="cash-transaction-attachment"
-            label={attachment_label}
-            onValueChange={handleAttachmentChange}
-            removeText={attachment_remove_text}
-            replaceText={attachment_replace_text}
-            value={formik.values.attachment}
-          />
+          <div className="space-y-2">
+            <FileUpload
+              accept={ATTACHMENT_ACCEPT}
+              actionText={attachment_action_text}
+              description={attachment_guidance_text}
+              disabled={interactionDisabled}
+              errors={attachmentError}
+              id="cash-transaction-attachment"
+              label={attachment_label}
+              multiple
+              onValueChange={handleAttachmentChange}
+              value={newFiles}
+            />
+            {savedAttachments.length > 0 && (
+              <ul className="space-y-2">
+                {savedAttachments.map((attachment) => (
+                  <li key={`${attachment.url}-${attachment.name}`}>
+                    <UploadedFile
+                      {...attachment}
+                      disabled={interactionDisabled}
+                      onRemove={() => handleAttachmentChange(attachment.url)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
           <div className="flex justify-end gap-2 pt-2">
             {onSaveDraft && (

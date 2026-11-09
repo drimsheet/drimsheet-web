@@ -24,7 +24,7 @@ const values: ICashTransactionFormValues = {
   items: [],
   counterparty: { id: 'payer-1', name: 'Payer' },
   description: '  August receipt  ',
-  attachment: null,
+  attachments: [],
 };
 
 const paymentValues: ICashTransactionFormValues = {
@@ -37,7 +37,7 @@ const paymentValues: ICashTransactionFormValues = {
   items: [],
   counterparty: { id: 'recipient-1', name: 'Recipient' },
   description: '  August payment  ',
-  attachment: null,
+  attachments: [],
 };
 
 const transferValues: ICashTransferFormValues = {
@@ -54,7 +54,7 @@ const transferValues: ICashTransferFormValues = {
   isItemized: false,
   items: [],
   description: '  Petty cash funding  ',
-  attachment: null,
+  attachments: [],
 };
 
 const paymentJournalEntry = {
@@ -334,7 +334,7 @@ describe('journalEntryMapper', () => {
     });
     expect(result.effectiveDate).toBe('2026-08-10');
     expect(result.postedAt).toBe(occurredAt);
-    expect(result.attachmentReferences).toEqual([]);
+    expect(result.attachmentReferences).toBeUndefined();
     expect(result.destinationLines[0]?.exchangeRate).toEqual(
       result.sourceLine.exchangeRate
     );
@@ -486,7 +486,7 @@ describe('journalEntryMapper', () => {
     });
     expect(result.effectiveDate).toBe('2026-08-10');
     expect(result.postedAt).toBe(occurredAt);
-    expect(result.attachmentReferences).toEqual([]);
+    expect(result.attachmentReferences).toBeUndefined();
     expect(result.destinationLine.exchangeRate).toEqual(
       result.sourceLines[0]?.exchangeRate
     );
@@ -709,8 +709,10 @@ describe('journalEntryMapper', () => {
     });
   });
 
-  it('maps payment edits to rectification with version and only persisted line IDs', () => {
-    const result = journalEntryMapper.toPaymentJournalEntryRectificationReq(
+  it('maps draft payment edits with only persisted line IDs', () => {
+    const request = journalEntryMapper.toPaymentRectificationRequest(
+      { ...paymentJournalEntry, status: 'draft', postedAt: null },
+      paymentValues,
       {
         ...paymentValues,
         isItemized: true,
@@ -737,20 +739,41 @@ describe('journalEntryMapper', () => {
           },
         ],
       },
-      'NGN',
-      paymentJournalEntry,
-      paymentJournalEntry.attachments
+      'NGN'
     );
 
+    expect(request).toMatchObject({
+      action: 'updateDraft',
+    });
+    if (request?.action !== 'updateDraft') {
+      throw new Error('Expected a payment draft update');
+    }
+
+    const result = request.payload;
     expect(result).toMatchObject({
-      sourceType: 'payment',
-      attachments: paymentJournalEntry.attachments,
       sourceLine: { id: 'cash-line' },
       destinationLines: [
         { id: 'office-line' },
         { accountId: 'travel-expense' },
       ],
     });
-    expect(result.destinationLines[1]).not.toHaveProperty('id');
+    expect(result.destinationLines?.[1]).not.toHaveProperty('id');
+  });
+  it('maps a memo edit without overwriting existing line descriptions', () => {
+    const request = journalEntryMapper.toPaymentRectificationRequest(
+      paymentJournalEntry,
+      paymentValues,
+      {
+        ...paymentValues,
+        description: 'Updated memo',
+        attachments: paymentJournalEntry.attachments,
+      },
+      'NGN'
+    );
+
+    expect(request).toEqual({
+      action: 'updateMeta',
+      payload: { header: { memo: 'Updated memo' } },
+    });
   });
 });

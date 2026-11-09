@@ -82,6 +82,7 @@ const messages: ICashTransferFormValidationMessages = {
   itemAmountRequired: 'Fee is required',
   itemCategoryRequired: 'Fee category is required',
   itemsRequired: 'Fees are required',
+  attachmentCount: 'Attach up to 3 files',
   attachmentSize: 'Attachment is too large',
   attachmentType: 'Attachment type is invalid',
 };
@@ -121,6 +122,23 @@ describe('CashTransferForm validation', () => {
     messages
   );
 
+  it('counts saved and newly selected attachments towards the same limit', async () => {
+    const saved = {
+      name: 'saved.pdf',
+      url: 'https://example.com/saved.pdf',
+      type: 'application/pdf',
+      size: 10,
+    };
+
+    const files = ['first.pdf', 'second.pdf', 'third.pdf'].map(
+      (name) => new File(['receipt'], name, { type: 'application/pdf' })
+    );
+
+    await expect(
+      schema.validateAt('attachments', { attachments: [saved, ...files] })
+    ).rejects.toThrow('Attach up to 3 files');
+  });
+
   it('accepts balanced same-currency values with charges', async () => {
     await expect(
       schema.validate({
@@ -144,7 +162,7 @@ describe('CashTransferForm validation', () => {
           },
         ],
         description: '',
-        attachment: null,
+        attachments: [],
       })
     ).resolves.toBeDefined();
   });
@@ -165,7 +183,7 @@ describe('CashTransferForm validation', () => {
         isItemized: false,
         items: [],
         description: '',
-        attachment: null,
+        attachments: [],
       })
     ).rejects.toThrow('Amounts must balance');
   });
@@ -197,7 +215,7 @@ describe('CashTransferForm validation', () => {
           },
         ],
         description: '',
-        attachment: null,
+        attachments: [],
       })
     ).resolves.toBeDefined();
   });
@@ -218,7 +236,7 @@ describe('CashTransferForm validation', () => {
         isItemized: false,
         items: [],
         description: '',
-        attachment: null,
+        attachments: [],
       })
     ).rejects.toThrow();
   });
@@ -278,7 +296,7 @@ describe('CashTransferForm', () => {
         ...defaultInitialValues,
         isItemized: true,
         items: [fee],
-        attachment,
+        attachments: [attachment],
       },
       initialEditItemId: fee.id,
       onAddCategory,
@@ -292,7 +310,7 @@ describe('CashTransferForm', () => {
       expect.objectContaining({
         sourceAccountId: 'source-bank',
         destinationAccountId: 'destination-cash',
-        attachment,
+        attachments: [attachment],
         items: [fee],
       }),
       fee.id

@@ -342,8 +342,6 @@
   "history_error_on_behalf_of_unexpected": "Invalid represented actor.",
   "journal_entry_error_draft_counterparty_not_allowed_invalid": "Draft people and businesses are not allowed.",
   "journal_entry_error_draft_ledger_account_not_allowed_invalid": "Draft ledger accounts are not allowed.",
-  "journal_entry_error_initial_opening_balance_account_already_exists_conflict": "Initial opening balance account already exists.",
-  "journal_entry_error_initial_opening_balance_transaction_required_unexpected": "Unable to set initial opening balance.",
   "journal_entry_error_journal_line_created_by_invalid": "Invalid journal line creator.",
   "ledger_balance_error_created_by_invalid": "Invalid ledger balance creator.",
   "ledger_error_bank_creation_transaction_required_unexpected": "Unable to create bank account.",
@@ -434,5 +432,6 @@
   "app_error_ledger_balance_missing_unexpected": "An error occurred while fetching the account balance.",
   "user_error_waitlist_feature_invalid": "Unknown feature.",
   "accounting_error_accounting_entity_individual_already_exists_in_jurisdiction_conflict": "A similar accounting entity already exists.",
-  "counterparty_error_role_details_invalid": "Invalid counterparty details."
+  "counterparty_error_role_details_invalid": "Invalid counterparty details.",
+  "journal_entry_error_attachment_count_invalid": "A transaction can have up to 3 attachments."
 }

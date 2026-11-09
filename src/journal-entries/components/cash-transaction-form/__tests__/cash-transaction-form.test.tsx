@@ -62,7 +62,8 @@ const validationMessages: ICashTransactionFormValidationMessages = {
   itemCategoryRequired: 'Item category is required',
   itemsRequired: 'Add at least one item',
   counterpartyRequired: 'Person or business is required',
-  attachmentSize: 'Attachment must be no larger than 2 MB',
+  attachmentCount: 'Attach up to 3 files',
+  attachmentSize: 'Each attachment must be no larger than 5 MB',
   attachmentType: 'Attachment must be a JPEG, PNG, or PDF',
 };
 
@@ -76,7 +77,7 @@ const validValues: ICashTransactionFormValues = {
   items: [],
   counterparty: { id: 'counterparty-1', name: 'Counterparty' },
   description: '',
-  attachment: null,
+  attachments: [],
 };
 
 describe('CashTransactionForm validation', () => {
@@ -112,24 +113,50 @@ describe('CashTransactionForm validation', () => {
     await expect(
       schema.validate({
         ...validValues,
-        attachment: new File(['text'], 'attachment.txt', {
-          type: 'text/plain',
-        }),
+        attachments: [
+          new File(['text'], 'attachment.txt', {
+            type: 'text/plain',
+          }),
+        ],
       })
     ).rejects.toThrow('Attachment must be a JPEG, PNG, or PDF');
 
     await expect(
       schema.validate({
         ...validValues,
-        attachment: new File(
-          [new Uint8Array(2 * 1024 * 1024 + 1)],
-          'attachment.pdf',
-          {
+        attachments: [
+          new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'attachment.pdf', {
             type: 'application/pdf',
-          }
-        ),
+          }),
+        ],
       })
-    ).rejects.toThrow('Attachment must be no larger than 2 MB');
+    ).rejects.toThrow('Each attachment must be no larger than 5 MB');
+  });
+
+  it('counts saved and new files together toward the three-file limit', async () => {
+    const saved = {
+      name: 'saved.pdf',
+      url: 'https://example.com/saved.pdf',
+      size: 10,
+      type: 'application/pdf',
+    };
+
+    const files = ['one.pdf', 'two.pdf', 'three.pdf'].map(
+      (name) =>
+        new File([new Uint8Array(5 * 1024 * 1024)], name, {
+          type: 'application/pdf',
+        })
+    );
+
+    await expect(
+      schema.validate({
+        ...validValues,
+        attachments: [saved, ...files.slice(0, 2)],
+      })
+    ).resolves.toBeTruthy();
+    await expect(
+      schema.validate({ ...validValues, attachments: [saved, ...files] })
+    ).rejects.toThrow('Attach up to 3 files');
   });
 
   it('rejects a future date', async () => {
@@ -180,7 +207,7 @@ describe('CashTransactionForm', () => {
         initialValues={{
           ...validValues,
           amount: { ...validValues.amount, amount: Number.NaN },
-          attachment,
+          attachments: [attachment],
         }}
         onAddAccount={onAddAccount}
         onCurrencyContextChange={vi.fn()}
@@ -198,7 +225,7 @@ describe('CashTransactionForm', () => {
     expect(onAddAccount).toHaveBeenCalledWith(
       expect.objectContaining({
         description: 'Unfinished transaction',
-        attachment,
+        attachments: [attachment],
         amount: expect.objectContaining({ amount: Number.NaN }),
       })
     );
@@ -217,7 +244,11 @@ describe('CashTransactionForm', () => {
         accounts={accounts}
         categories={categories}
         functionalCurrencyCode="NGN"
-        initialValues={{ ...validValues, categoryId: '', attachment }}
+        initialValues={{
+          ...validValues,
+          categoryId: '',
+          attachments: [attachment],
+        }}
         onAddCategory={onAddCategory}
         onCurrencyContextChange={vi.fn()}
         onSubmit={vi.fn()}
@@ -228,7 +259,11 @@ describe('CashTransactionForm', () => {
       screen.getByRole('option', { name: 'Add a new category' })
     );
     expect(onAddCategory).toHaveBeenCalledWith(
-      expect.objectContaining({ ...validValues, categoryId: '', attachment })
+      expect.objectContaining({
+        ...validValues,
+        categoryId: '',
+        attachments: [attachment],
+      })
     );
   });
 
@@ -252,7 +287,7 @@ describe('CashTransactionForm', () => {
             ...validValues,
             amount: { ...validValues.amount, amount: Number.NaN },
             counterparty: { id: '', name: '' },
-            attachment,
+            attachments: [attachment],
           }}
           counterpartyOptions={[{ id: 'existing', name: 'Existing person' }]}
           onAddCounterparty={onAddCounterparty}
@@ -276,7 +311,7 @@ describe('CashTransactionForm', () => {
         expect.objectContaining({
           counterparty: { id: '', name: '', type: undefined },
           amount: expect.objectContaining({ amount: Number.NaN }),
-          attachment,
+          attachments: [attachment],
         }),
         'New person'
       );
@@ -306,7 +341,7 @@ describe('CashTransactionForm', () => {
         {...props}
         initialValues={{
           ...validValues,
-          attachment,
+          attachments: [attachment],
           counterparty: { id: '', name: '' },
         }}
       />
@@ -348,7 +383,7 @@ describe('CashTransactionForm', () => {
     await waitFor(() =>
       expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
         ...validValues,
-        attachment,
+        attachments: [attachment],
         counterparty: createdCounterparty,
       })
     );

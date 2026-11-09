@@ -3,6 +3,7 @@ import type { ICurrencyExchangeRateInputValue } from '@/shared/components/curren
 import type {
   ICounterpartyDto,
   IExchangeRate,
+  IFileAttachment,
   ILedgerAccountDto,
   IMoneyDto,
 } from '@/shared/lib/api/Api';
@@ -23,7 +24,7 @@ export interface ICashTransactionFormValues {
   items: IItemizedFieldValue[];
   counterparty: TCashTransactionCounterparty;
   description: string;
-  attachment: File | null;
+  attachments: (File | IFileAttachment)[];
 }
 
 export interface ICashTransactionCurrencyContext {
@@ -51,7 +52,7 @@ export interface CashTransactionFormProps {
   onAddAccount?: (values: ICashTransactionFormValues) => void;
   onCurrencyContextChange: (context: ICashTransactionCurrencyContext) => void;
   onSaveDraft?: (values: ICashTransactionFormValues) => void;
-  onSubmit: (values: ICashTransactionFormValues) => void;
+  onSubmit: (values: ICashTransactionFormValues) => void | Promise<void>;
   savingDraft?: boolean;
   submitLabel?: string;
   variant?: UCashTransactionFormVariant;

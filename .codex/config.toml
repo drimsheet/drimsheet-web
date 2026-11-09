@@ -1,0 +1,12 @@
+# Scope local commands to the workspace roots and essential runtime files.
+default_permissions = "workspace-only"
+
+[permissions.workspace-only]
+description = "Work inside explicitly added workspace roots"
+extends = ":workspace"
+
+[permissions.workspace-only.filesystem]
+":root" = "deny"
+":minimal" = "read"
+":tmpdir" = "deny"
+":slash_tmp" = "deny"

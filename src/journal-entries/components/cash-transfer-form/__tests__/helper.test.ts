@@ -42,7 +42,7 @@ const values: ICashTransferFormValues = {
     },
   ],
   description: ' Transfer ',
-  attachment: null,
+  attachments: [],
 };
 
 const officialRate: IExchangeRate = {

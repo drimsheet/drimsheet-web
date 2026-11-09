@@ -5,11 +5,12 @@ import { CounterpartyRoleSelectionDialog } from '@/counterparty/dialogs/counterp
 import type { ICashTransactionFormValues } from '@/journal-entries/components/cash-transaction-form';
 import { OutflowFormContainer } from '@/journal-entries/components/outflow-form';
 import { useTransactionContinuation } from '@/journal-entries/hooks/use-transaction-continuation';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { IOutflowPageSearchParams } from './types';
 
 export function OutflowPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const params: IOutflowPageSearchParams = {
     accountId: searchParams.get('accountId') ?? undefined,
@@ -23,6 +24,11 @@ export function OutflowPage() {
     params
   );
 
+  const handleSuccess = async () => {
+    await continuation.handleContinuationComplete();
+    await navigate('/transactions');
+  };
+
   return (
     <>
       <OutflowFormContainer
@@ -32,7 +38,7 @@ export function OutflowPage() {
         onAddAccount={continuation.handleAddAccount}
         onAddCategory={continuation.handleAddCategory}
         initialEditItemId={continuation.categoryItemId}
-        onSuccess={continuation.handleContinuationComplete}
+        onSuccess={handleSuccess}
       />
       <CounterpartyRoleSelectionDialog
         open={continuation.showCounterpartyRoleSelection}

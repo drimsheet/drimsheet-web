@@ -16,5 +16,5 @@ export interface OutflowFormContainerProps {
     values: ICashTransactionFormValues,
     field?: UTransactionAccountField
   ) => void;
-  onSuccess?: () => Promise<void>;
+  onSuccess: () => Promise<void>;
 }

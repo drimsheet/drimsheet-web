@@ -10,6 +10,7 @@ import { useJournalEntry } from '@/journal-entries/hooks/use-journal-entry';
 import { journalEntryRouteMapper } from '@/journal-entries/lib/mappers/journal-entry-route.mapper';
 import { AppBody } from '@/shared/components/app';
 import { AppSection } from '@/shared/components/app-section';
+import { EJournalEntryStatus } from '@/shared/lib/api/Api';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
@@ -27,6 +28,12 @@ export function EditTransactionPage() {
   } = useJournalEntry(routeSourceType ? id : undefined);
 
   const handleBack = () => navigate('/transactions');
+
+  const handleSuccess = async () => {
+    if (journalEntry?.status !== EJournalEntryStatus.Draft) {
+      await handleBack();
+    }
+  };
 
   if (!id || !routeSourceType) {
     return <Navigate replace to="/transactions" />;
@@ -81,13 +88,22 @@ export function EditTransactionPage() {
     <AppBody title={page_title}>
       <AppSection>
         {canonicalType === 'inflow' && (
-          <InflowFormContainer journalEntry={journalEntry} />
+          <InflowFormContainer
+            journalEntry={journalEntry}
+            onSuccess={handleSuccess}
+          />
         )}
         {canonicalType === 'outflow' && (
-          <OutflowFormContainer journalEntry={journalEntry} />
+          <OutflowFormContainer
+            journalEntry={journalEntry}
+            onSuccess={handleSuccess}
+          />
         )}
         {canonicalType === 'transfer' && (
-          <CashTransferFormContainer journalEntry={journalEntry} />
+          <CashTransferFormContainer
+            journalEntry={journalEntry}
+            onSuccess={handleSuccess}
+          />
         )}
       </AppSection>
     </AppBody>

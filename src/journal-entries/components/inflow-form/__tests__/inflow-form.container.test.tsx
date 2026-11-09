@@ -5,39 +5,42 @@ import { InflowFormContainer } from '@/journal-entries/components/inflow-form';
 import { useCreateReceipt } from '@/journal-entries/hooks/use-create-receipt';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useExchangeRates } from '@/shared/hooks/use-exchange-rates';
+import { drimsheetApi } from '@/shared/lib/api';
 import type {
   IJournalEntryListDto,
   ILedgerAccountDto,
 } from '@/shared/lib/api/Api';
 import { fileUploadService } from '@/shared/lib/services/file-upload.service';
-import { render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  render as renderComponent,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactElement } from 'react';
 import { toast } from 'sonner';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { navigate } = vi.hoisted(() => ({ navigate: vi.fn() }));
+const onSuccess = vi.fn<() => Promise<void>>().mockResolvedValue(undefined);
 
 vi.mock('@/account/hooks/use-permitted-posting-accounts');
 vi.mock('@/accounting/hooks/use-accounting-entity');
 vi.mock('@/counterparty/hooks/use-counterparties');
 vi.mock('@/journal-entries/hooks/use-create-receipt');
-vi.mock('@/journal-entries/hooks/use-rectify-journal-entry', () => ({
-  useRectifyJournalEntry: () => ({ mutateAsync: vi.fn(), isPending: false }),
-}));
 vi.mock('@/shared/hooks/use-api-error-handler');
 vi.mock('@/shared/hooks/use-exchange-rates');
 vi.mock('@/shared/lib/services/file-upload.service', () => ({
   fileUploadService: {
-    uploadAttachment: vi.fn(),
     uploadFile: vi.fn(),
   },
 }));
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
+    error: vi.fn(),
   },
 }));
-vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
 
 const accounts = [
   {
@@ -62,6 +65,65 @@ const categories = [
 const createReceipt = vi.fn();
 const handleApiError = vi.fn();
 
+const timestamp = '2026-09-21T10:00:00.000Z';
+
+const journalEntry = {
+  id: 'receipt-entry',
+  accountingEntityId: 'entity-1',
+  sourceType: 'receipt',
+  memo: 'Original memo',
+  status: 'posted',
+  effectiveDate: '2026-09-21',
+  postedAt: timestamp,
+  voidedAt: null,
+  voidingEntryId: null,
+  createdBy: 'user-1',
+  createdAt: timestamp,
+  updatedAt: timestamp,
+  attachments: [],
+  lines: (
+    [
+      ['source-line', 'sales-revenue', 'Sales revenue', 'credit', 250],
+      ['destination-line', 'bank-account', 'Operating account', 'debit', 250],
+    ] as const
+  ).map(([id, accountId, name, side, amount], index) => ({
+    id,
+    entryId: 'receipt-entry',
+    account: { id: accountId, name },
+    counterparty: { id: 'party-1', name: 'Acme', status: 'active' },
+    sequenceOrder: index + 1,
+    amount: { amount, currencyCode: 'NGN', isMinorUnit: false },
+    exchangeRate: null,
+    functionalAmount: { amount, currencyCode: 'NGN', isMinorUnit: false },
+    side,
+    description: index === 2 ? 'Bank charge' : 'Original memo',
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  })),
+} satisfies IJournalEntryListDto;
+
+const updateDraft = vi.spyOn(drimsheetApi.journalEntries, 'updateDraftReceipt');
+
+const voidAndReplace = vi.spyOn(
+  drimsheetApi.journalEntries,
+  'voidAndReplaceReceipt'
+);
+
+const updateMeta = vi.spyOn(
+  drimsheetApi.journalEntries,
+  'updateJournalEntryMeta'
+);
+
+function render(element: ReactElement) {
+  const queryClient = new QueryClient();
+
+  return renderComponent(element, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    ),
+  });
+}
+
 describe('InflowFormContainer', () => {
   beforeAll(() => {
     window.HTMLElement.prototype.hasPointerCapture = vi.fn(
@@ -77,6 +139,9 @@ describe('InflowFormContainer', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    updateDraft.mockResolvedValue({ data: { id: journalEntry.id } } as never);
+    updateMeta.mockResolvedValue({ data: { id: journalEntry.id } } as never);
+    voidAndReplace.mockResolvedValue({ data: { id: 'replacement' } } as never);
 
     vi.mocked(usePermittedPostingAccounts).mockImplementation((query) => {
       const data = query.side === 'destination' ? accounts : categories;
@@ -105,34 +170,9 @@ describe('InflowFormContainer', () => {
     const user = userEvent.setup();
     render(
       <InflowFormContainer
-        journalEntry={
-          {
-            sourceType: 'receipt',
-            effectiveDate: '2026-09-21',
-            memo: '',
-            lines: [
-              {
-                sequenceOrder: 1,
-                account: { id: 'sales-revenue' },
-                amount: {
-                  amount: 250,
-                  currencyCode: 'NGN',
-                  isMinorUnit: false,
-                },
-              },
-              {
-                sequenceOrder: 2,
-                account: { id: 'bank-account' },
-                amount: {
-                  amount: 250,
-                  currencyCode: 'NGN',
-                  isMinorUnit: false,
-                },
-              },
-            ],
-          } as IJournalEntryListDto
-        }
+        journalEntry={journalEntry}
         onAddCounterparty={vi.fn()}
+        onSuccess={onSuccess}
       />
     );
     const counterparty = screen.getByRole('combobox', { name: 'Payer' });
@@ -152,21 +192,24 @@ describe('InflowFormContainer', () => {
       isPending: true,
     } as never);
 
-    render(<InflowFormContainer />);
+    render(<InflowFormContainer onSuccess={onSuccess} />);
 
     expect(screen.getByRole('status')).toHaveTextContent(
       'Loading transaction form'
     );
   });
 
-  it('maps neutral form values to a receipt request after uploading an attachment', async () => {
+  it('maps neutral form values to a receipt request after uploading three attachments', async () => {
     const user = userEvent.setup();
 
-    const attachment = new File(['receipt'], 'receipt.pdf', {
-      type: 'application/pdf',
-    });
+    const attachments = ['receipt.pdf', 'invoice.pdf', 'statement.pdf'].map(
+      (name) => new File(['receipt'], name, { type: 'application/pdf' })
+    );
 
-    const onSuccess = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(fileUploadService.uploadFile).mockImplementation(
+      async (file) => `ref-${file.name}`
+    );
+
     render(<InflowFormContainer onSuccess={onSuccess} />);
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
@@ -178,14 +221,20 @@ describe('InflowFormContainer', () => {
     await user.click(screen.getByRole('option', { name: 'Sales revenue' }));
     await user.type(screen.getByRole('combobox', { name: 'Payer' }), 'Acme');
     await user.click(screen.getByRole('option', { name: 'Acme' }));
-    await user.upload(screen.getByLabelText('Attach file'), attachment);
+    const picker = screen.getByLabelText('Attach file');
+    await user.upload(picker, attachments.slice(0, 2));
+    await user.upload(picker, attachments[2]);
     await user.click(screen.getByRole('button', { name: 'Create' }));
 
     await waitFor(() => {
-      expect(fileUploadService.uploadFile).toHaveBeenCalledWith(attachment);
+      expect(fileUploadService.uploadFile).toHaveBeenCalledTimes(3);
       expect(createReceipt).toHaveBeenCalledWith(
         expect.objectContaining({
-          attachmentReferences: ['attachment-ref'],
+          attachmentReferences: [
+            'ref-receipt.pdf',
+            'ref-invoice.pdf',
+            'ref-statement.pdf',
+          ],
           destinationLine: expect.objectContaining({
             accountId: 'bank-account',
             counterpartyId: 'party-1',
@@ -202,16 +251,12 @@ describe('InflowFormContainer', () => {
     expect(toast.success).toHaveBeenCalledWith(
       'Transaction was created successfully.'
     );
-    await waitFor(() => {
-      expect(onSuccess).toHaveBeenCalledOnce();
-      expect(navigate).toHaveBeenCalledWith('/transactions');
-    });
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledOnce());
     expect(handleApiError).not.toHaveBeenCalled();
   });
 
   it('creates a draft receipt without a posting timestamp', async () => {
     const user = userEvent.setup();
-    const onSuccess = vi.fn().mockResolvedValue(undefined);
     render(<InflowFormContainer onSuccess={onSuccess} />);
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
@@ -232,11 +277,9 @@ describe('InflowFormContainer', () => {
     });
     expect(toast.success).toHaveBeenCalledWith('Draft saved successfully');
     expect(onSuccess).toHaveBeenCalledOnce();
-    expect(navigate).toHaveBeenCalledWith('/transactions');
   });
   it('retains the continuation and entered values after a failed transaction submission', async () => {
     const user = userEvent.setup();
-    const onSuccess = vi.fn();
     createReceipt.mockRejectedValueOnce(new Error('Request failed'));
 
     render(
@@ -259,6 +302,91 @@ describe('InflowFormContainer', () => {
       'Keep this transaction'
     );
     expect(onSuccess).not.toHaveBeenCalled();
-    expect(navigate).not.toHaveBeenCalled();
+  });
+  it('saves edits to the receipt draft', async () => {
+    const user = userEvent.setup();
+    const draft = { ...journalEntry, status: 'draft' as const, postedAt: null };
+    render(<InflowFormContainer journalEntry={draft} onSuccess={onSuccess} />);
+
+    const description = screen.getByLabelText('Description');
+    await user.clear(description);
+    await user.type(description, 'Saved memo');
+    await user.click(screen.getByRole('button', { name: 'Save draft' }));
+
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledOnce());
+    expect(toast.success).toHaveBeenCalledWith('Draft saved successfully');
+    expect(updateDraft).toHaveBeenCalledWith(
+      journalEntry.id,
+      expect.objectContaining({
+        memo: 'Saved memo',
+        sourceLines: [expect.objectContaining({ id: 'source-line' })],
+        destinationLine: expect.objectContaining({ id: 'destination-line' }),
+      })
+    );
+    expect(updateDraft.mock.calls[0][1]).not.toHaveProperty('postedAt');
+    expect(updateDraft.mock.calls[0][1]).not.toHaveProperty('attachments');
+    expect(updateDraft).toHaveBeenCalledOnce();
+  });
+
+  it('uses metadata update when only the receipt description changes', async () => {
+    const user = userEvent.setup();
+    render(
+      <InflowFormContainer journalEntry={journalEntry} onSuccess={onSuccess} />
+    );
+
+    const description = screen.getByLabelText('Description');
+    await user.clear(description);
+    await user.type(description, 'Updated memo');
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+
+    await waitFor(() =>
+      expect(updateMeta).toHaveBeenCalledWith(
+        journalEntry.id,
+        expect.objectContaining({
+          header: { memo: 'Updated memo' },
+        })
+      )
+    );
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledOnce());
+    expect(voidAndReplace).not.toHaveBeenCalled();
+  });
+
+  it('voids and replaces a posted receipt when the amount changes', async () => {
+    const user = userEvent.setup();
+
+    const receipt = {
+      url: 'https://example.com/receipt.pdf',
+      name: 'receipt.pdf',
+      type: 'application/pdf',
+      size: 10,
+    };
+
+    render(
+      <InflowFormContainer
+        journalEntry={{ ...journalEntry, attachments: [receipt] }}
+        onSuccess={onSuccess}
+      />
+    );
+
+    const amount = screen.getByLabelText('Amount');
+    await user.clear(amount);
+    await user.type(amount, '300');
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+
+    await waitFor(() =>
+      expect(voidAndReplace).toHaveBeenCalledWith(
+        journalEntry.id,
+        expect.objectContaining({
+          postedAt: timestamp,
+          destinationLine: expect.objectContaining({
+            amount: expect.objectContaining({ amount: 300 }),
+          }),
+        })
+      )
+    );
+    expect(voidAndReplace.mock.calls[0][1].attachmentReferences).toEqual([
+      receipt.url,
+    ]);
+    expect(updateMeta).not.toHaveBeenCalled();
   });
 });

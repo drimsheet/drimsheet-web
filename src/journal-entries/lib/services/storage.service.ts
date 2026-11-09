@@ -20,15 +20,26 @@ function continuationRecordKey(
 }
 
 export const journalEntryStorageService = {
-  loadContinuation<T>(
+  async loadContinuation<T extends object>(
     scopedKey: string,
     type: UTransactionCreationType,
     key: string
   ) {
     // TODO: version continuation payloads when transaction form contracts change.
-    return storageService.getRecord<T>(
+    const values = await storageService.getRecord<T>(
       continuationRecordKey(scopedKey, type, key)
     );
+
+    if (values && !('attachments' in values) && 'attachment' in values) {
+      const { attachment, ...fields } = values;
+
+      return {
+        ...fields,
+        attachments: attachment instanceof File ? [attachment] : [],
+      } as T;
+    }
+
+    return values;
   },
 
   saveContinuation<T>(

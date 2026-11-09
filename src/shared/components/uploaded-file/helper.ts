@@ -13,8 +13,8 @@ function formatFileSize(size: number) {
   return `${megabytes.toFixed(megabytes >= 10 ? 0 : 1)} MB`;
 }
 
-const transactionDetailsHelpers = Object.freeze({
+const uploadedFileHelpers = Object.freeze({
   formatFileSize,
 });
 
-export default transactionDetailsHelpers;
+export default uploadedFileHelpers;

@@ -227,7 +227,7 @@ function createInitialValues(
     isItemized,
     items,
     description: initialValues?.description ?? '',
-    attachment: initialValues?.attachment ?? null,
+    attachments: initialValues?.attachments ?? [],
   };
 }
 
@@ -520,7 +520,7 @@ function normalizeValues(
         }))
       : [],
     description: values.description.trim(),
-    attachment: values.attachment,
+    attachments: values.attachments,
   };
 }
 

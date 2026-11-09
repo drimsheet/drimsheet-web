@@ -71,7 +71,7 @@ function createInitialValues(
       type: initialValues?.counterparty?.type,
     },
     description: initialValues?.description ?? '',
-    attachment: initialValues?.attachment ?? null,
+    attachments: initialValues?.attachments ?? [],
   };
 }
 
@@ -112,7 +112,7 @@ function updateAccount(
     })),
     counterparty: values.counterparty,
     description: values.description,
-    attachment: values.attachment,
+    attachments: values.attachments,
   };
 }
 
@@ -244,7 +244,7 @@ function normalizeValues(
     })),
     counterparty,
     description: values.description.trim(),
-    attachment: values.attachment,
+    attachments: values.attachments,
   };
 }
 

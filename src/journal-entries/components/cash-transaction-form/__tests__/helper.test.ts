@@ -28,7 +28,7 @@ const values: ICashTransactionFormValues = {
   ],
   counterparty: { id: 'counterparty-1', name: ' Acme ', type: 'organization' },
   description: ' Consulting ',
-  attachment: null,
+  attachments: [],
 };
 
 describe('cashTransactionFormHelpers', () => {
@@ -58,7 +58,7 @@ describe('cashTransactionFormHelpers', () => {
           type: undefined,
         },
         description: '',
-        attachment: null,
+        attachments: [],
       });
     });
 
@@ -102,7 +102,7 @@ describe('cashTransactionFormHelpers', () => {
           type: 'organization',
         },
         description: 'Consulting',
-        attachment: null,
+        attachments: [],
       });
     });
 
@@ -149,7 +149,7 @@ describe('cashTransactionFormHelpers', () => {
           type: 'organization',
         },
         description: ' Consulting ',
-        attachment: null,
+        attachments: [],
       });
     });
 
@@ -182,7 +182,7 @@ describe('cashTransactionFormHelpers', () => {
           type: 'organization',
         },
         description: ' Consulting ',
-        attachment: null,
+        attachments: [],
       });
     });
   });
@@ -375,7 +375,7 @@ describe('cashTransactionFormHelpers', () => {
           type: 'organization',
         },
         description: 'Consulting',
-        attachment: null,
+        attachments: [],
       });
     });
 
@@ -406,7 +406,7 @@ describe('cashTransactionFormHelpers', () => {
         ],
         counterparty: { id: 'new-party', name: 'New counterparty' },
         description: 'Consulting',
-        attachment: null,
+        attachments: [],
       });
     });
 

@@ -6,8 +6,8 @@ export interface FileUploadProps {
   errors?: Array<{ message?: string } | undefined>;
   id: string;
   label: string;
-  onValueChange: (file: File | null) => void;
-  removeText: string;
-  replaceText: string;
-  value: File | null;
+  multiple?: boolean;
+  onValueChange: (files: File[]) => void;
+  replaceText?: string;
+  value: File[];
 }
