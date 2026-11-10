@@ -12,6 +12,7 @@ import { ItemMedia } from '@/shared/components/item';
 import { Money } from '@/shared/components/money';
 import {
   EJournalEntrySourceType,
+  EJournalEntryStatus,
   ELedgerAccountBalanceEffect,
   type IJournalEntryListDto,
 } from '@/shared/lib/api/Api';
@@ -61,6 +62,10 @@ export function TransactionsTable({
         : undefined,
     [selectedTransaction]
   );
+
+  const canDeleteSelectedTransaction =
+    selectedTransaction?.status === EJournalEntryStatus.Draft ||
+    selectedTransaction?.status === EJournalEntryStatus.Posted;
 
   const handleSortChange = useCallback(
     (key: keyof ITransactionsTableRow, direction: 'asc' | 'desc' | null) => {
@@ -311,7 +316,9 @@ export function TransactionsTable({
           onArchiveTransaction ? handleSelectedTransactionArchive : undefined
         }
         onDelete={
-          onDeleteTransaction ? handleSelectedTransactionDelete : undefined
+          onDeleteTransaction && canDeleteSelectedTransaction
+            ? handleSelectedTransactionDelete
+            : undefined
         }
         details={selectedDetails}
         editDisabled={!onEditTransaction}

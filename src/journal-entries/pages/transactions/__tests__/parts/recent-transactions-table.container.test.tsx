@@ -1,6 +1,7 @@
 import { useArchiveJournalEntry } from '@/journal-entries/hooks/use-archive-journal-entry';
 import { useDeleteJournalEntry } from '@/journal-entries/hooks/use-delete-journal-entry';
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
+import { useVoidEntry } from '@/journal-entries/hooks/use-void-entry';
 import { RecentTransactionsTableContainer } from '@/journal-entries/pages/transactions/parts/recent-transactions-table.container';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import {
@@ -20,8 +21,11 @@ vi.mock('@/journal-entries/hooks/use-journal-entries');
 vi.mock('@/shared/hooks/use-api-error-handler');
 vi.mock('@/journal-entries/hooks/use-archive-journal-entry');
 vi.mock('@/journal-entries/hooks/use-delete-journal-entry');
+vi.mock('@/journal-entries/hooks/use-void-entry');
 
 const money = { amount: 125_000, currencyCode: 'NGN', isMinorUnit: false };
+const deleteEntry = vi.fn();
+const voidEntry = vi.fn();
 
 const paymentEntry = {
   id: 'payment-entry',
@@ -95,6 +99,16 @@ function renderContainer(initialEntry = '/transactions') {
   );
 }
 
+function mockEntry(entry: IJournalEntryListDto) {
+  vi.mocked(useJournalEntries).mockReturnValue({
+    data: {
+      data: [entry],
+      meta: { page: 1, limit: 10, total: 1, totalPages: 1 },
+    },
+    isPending: false,
+  } as never);
+}
+
 describe('RecentTransactionsTableContainer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -104,16 +118,14 @@ describe('RecentTransactionsTableContainer', () => {
       isPending: false,
     } as never);
     vi.mocked(useDeleteJournalEntry).mockReturnValue({
-      mutateAsync: vi.fn(),
+      mutateAsync: deleteEntry,
       isPending: false,
     } as never);
-    vi.mocked(useJournalEntries).mockReturnValue({
-      data: {
-        data: [paymentEntry],
-        meta: { page: 1, limit: 10, total: 1, totalPages: 1 },
-      },
+    vi.mocked(useVoidEntry).mockReturnValue({
+      mutateAsync: voidEntry,
       isPending: false,
     } as never);
+    mockEntry(paymentEntry);
   });
 
   it('requests newest-first entries and opens the resolved transaction details', async () => {
@@ -198,36 +210,61 @@ describe('RecentTransactionsTableContainer', () => {
     );
   });
 
-  it('deletes the selected transaction', async () => {
-    const user = userEvent.setup();
-    const deleteEntry = vi.fn().mockResolvedValue(undefined);
-    vi.mocked(useDeleteJournalEntry).mockReturnValue({
-      mutateAsync: deleteEntry,
-      isPending: false,
-    } as never);
-    renderContainer();
+  it.each([
+    [EJournalEntryStatus.Draft, deleteEntry, voidEntry],
+    [EJournalEntryStatus.Posted, voidEntry, deleteEntry],
+  ])(
+    'uses the matching mutation for a %s entry',
+    async (status, expectedMutation, otherMutation) => {
+      const user = userEvent.setup();
+      mockEntry({
+        ...paymentEntry,
+        status,
+        postedAt:
+          status === EJournalEntryStatus.Draft ? null : paymentEntry.postedAt,
+      });
+      renderContainer();
 
-    await user.click(screen.getByRole('button', { name: 'Open transaction' }));
-    await user.click(screen.getByRole('button', { name: 'Delete' }));
+      await user.click(
+        screen.getByRole('button', { name: 'Open transaction' })
+      );
+      await user.click(screen.getByRole('button', { name: 'Delete' }));
 
-    const confirmationDialog = screen.getByRole('alertdialog', {
-      name: 'Delete this transaction?',
-    });
+      const confirmationDialog = screen.getByRole('alertdialog', {
+        name: 'Delete this transaction?',
+      });
 
-    await user.type(
-      within(confirmationDialog).getByLabelText('Type "delete" to confirm'),
-      'delete'
-    );
-    await user.click(
-      within(confirmationDialog).getByRole('button', { name: 'Delete' })
-    );
+      await user.type(
+        within(confirmationDialog).getByLabelText('Type "delete" to confirm'),
+        'delete'
+      );
+      await user.click(
+        within(confirmationDialog).getByRole('button', { name: 'Delete' })
+      );
 
-    expect(deleteEntry).toHaveBeenCalledWith('payment-entry');
-    await waitFor(() => {
-      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    });
-  });
+      await waitFor(() => {
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
+      expect(expectedMutation).toHaveBeenCalledExactlyOnceWith('payment-entry');
+      expect(otherMutation).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([EJournalEntryStatus.Archived, EJournalEntryStatus.Voided])(
+    'disables deletion for a %s entry',
+    async (status) => {
+      const user = userEvent.setup();
+      mockEntry({ ...paymentEntry, status });
+      renderContainer();
+
+      await user.click(
+        screen.getByRole('button', { name: 'Open transaction' })
+      );
+
+      expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
+    }
+  );
 
   it('archives the selected entry and clears the same-page search only on success', async () => {
     const user = userEvent.setup();
@@ -282,12 +319,12 @@ describe('RecentTransactionsTableContainer', () => {
     );
   });
 
-  it('keeps the delete confirmation and entered confirmation text after deletion fails', async () => {
+  it('keeps the delete confirmation and entered confirmation text when voiding fails', async () => {
     const user = userEvent.setup();
     const error = new Error('unavailable');
     const handleError = vi.fn();
     vi.mocked(useApiErrorHandler).mockReturnValue(handleError);
-    vi.mocked(useDeleteJournalEntry).mockReturnValue({
+    vi.mocked(useVoidEntry).mockReturnValue({
       mutateAsync: vi.fn().mockRejectedValue(error),
       isPending: false,
     } as never);

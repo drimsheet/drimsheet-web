@@ -248,14 +248,6 @@ export const EFileUploadPurpose = {
 export type UFileUploadPurpose =
   (typeof EFileUploadPurpose)[keyof typeof EFileUploadPurpose];
 
-export const EJournalEntryRectificationMode = {
-  UpdateDraft: 'update_draft',
-  UpdateMeta: 'update_meta',
-  VoidAndReplace: 'void_and_replace',
-} as const;
-export type UJournalEntryRectificationMode =
-  (typeof EJournalEntryRectificationMode)[keyof typeof EJournalEntryRectificationMode];
-
 /** Exclude from T those types that are assignable to U */
 export const EExcludeUJournalEntrySourceTypeReversal = {
   Expense: 'expense',
@@ -1763,88 +1755,6 @@ export interface IJournalEntryMetaUpdateReq {
     id: TEntityId;
   }[];
 }
-
-export interface IJournalEntryRectificationDto {
-  mode: UJournalEntryRectificationMode;
-  originalJournalEntryId: string;
-  currentJournalEntryId: string;
-  reversingJournalEntryId: string | null;
-  journalEntry: IJournalEntryDto;
-}
-
-export interface IJournalEntryRectificationCounterpartyLineReq {
-  accountId: string;
-  counterpartyId: string;
-  amount: IMoneyDto;
-  exchangeRate: IExchangeRateDto | null;
-  description: string | null;
-  /** @format double */
-  sequenceOrder: number;
-  id?: string;
-}
-
-export interface IPaymentJournalEntryRectificationReq {
-  attachments?: IJournalEntryAttachmentsUpdateReq;
-  /** @format date-time */
-  effectiveDate: string;
-  /** @format date-time */
-  postedAt: string | null;
-  memo: string | null;
-  sourceType: 'payment';
-  sourceLine: IJournalEntryRectificationCounterpartyLineReq;
-  destinationLines: IJournalEntryRectificationCounterpartyLineReq[];
-}
-
-export interface IReceiptJournalEntryRectificationReq {
-  attachments?: IJournalEntryAttachmentsUpdateReq;
-  /** @format date-time */
-  effectiveDate: string;
-  /** @format date-time */
-  postedAt: string | null;
-  memo: string | null;
-  sourceType: 'receipt';
-  sourceLines: IJournalEntryRectificationCounterpartyLineReq[];
-  destinationLine: IJournalEntryRectificationCounterpartyLineReq;
-}
-
-export interface ITransferJournalEntryRectificationLineReq {
-  id?: string;
-  accountId: string;
-  amount: IMoneyDto;
-  exchangeRate: IExchangeRateDto | null;
-  description: string | null;
-  /** @format double */
-  sequenceOrder: number;
-}
-
-export interface IJournalEntryRectificationLineReq {
-  accountId: string;
-  counterpartyId: string | null;
-  amount: IMoneyDto;
-  exchangeRate: IExchangeRateDto | null;
-  description: string | null;
-  /** @format double */
-  sequenceOrder: number;
-  id?: string;
-}
-
-export interface ITransferJournalEntryRectificationReq {
-  attachments?: IJournalEntryAttachmentsUpdateReq;
-  /** @format date-time */
-  effectiveDate: string;
-  /** @format date-time */
-  postedAt: string | null;
-  memo: string | null;
-  sourceType: 'transfer';
-  sourceLine: ITransferJournalEntryRectificationLineReq;
-  destinationLine: ITransferJournalEntryRectificationLineReq;
-  chargeLines: IJournalEntryRectificationLineReq[];
-}
-
-export type TJournalEntryRectificationReq =
-  | IPaymentJournalEntryRectificationReq
-  | IReceiptJournalEntryRectificationReq
-  | ITransferJournalEntryRectificationReq;
 
 export interface IUpdateDraftOpeningBalanceReq {
   amount?: IMoneyDto;
@@ -3745,7 +3655,7 @@ export class Api<
       }),
 
     /**
-     * @description Delete a never-posted journal entry or reverse a previously-posted entry.
+     * @description Deletes a draft journal entry. Other statuses return 400.
      *
      * @tags Journal Entry
      * @name DeleteJournalEntry
@@ -3824,27 +3734,6 @@ export class Api<
       this.request<IJournalEntryDto, IHttpErrorDto>({
         path: `/journal-entries/${id}/meta`,
         method: 'PATCH',
-        body: data,
-        type: EContentType.Json,
-        format: 'json',
-        ...params,
-      }),
-
-    /**
-     * @description Correct a journal entry while preserving its accounting audit trail.
-     *
-     * @tags Journal Entry
-     * @name RectifyJournalEntry
-     * @request POST:/journal-entries/{id}/rectify
-     */
-    rectifyJournalEntry: (
-      id: string,
-      data: TJournalEntryRectificationReq,
-      params: RequestParams = {}
-    ) =>
-      this.request<IJournalEntryRectificationDto, IHttpErrorDto>({
-        path: `/journal-entries/${id}/rectify`,
-        method: 'POST',
         body: data,
         type: EContentType.Json,
         format: 'json',
@@ -4066,6 +3955,20 @@ export class Api<
         path: `/journal-entries/${id}/archive`,
         method: 'POST',
         format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Voids a posted journal entry and posts its offsetting reversal.
+     *
+     * @tags Journal Entry
+     * @name VoidJournalEntry
+     * @request POST:/journal-entries/{id}/void
+     */
+    voidJournalEntry: (id: string, params: RequestParams = {}) =>
+      this.request<void, IHttpErrorDto>({
+        path: `/journal-entries/${id}/void`,
+        method: 'POST',
         ...params,
       }),
   };

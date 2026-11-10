@@ -5,10 +5,14 @@ import {
 import { useArchiveJournalEntry } from '@/journal-entries/hooks/use-archive-journal-entry';
 import { useDeleteJournalEntry } from '@/journal-entries/hooks/use-delete-journal-entry';
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
+import { useVoidEntry } from '@/journal-entries/hooks/use-void-entry';
 import { journalEntryRouteMapper } from '@/journal-entries/lib/mappers/journal-entry-route.mapper';
 import { Button } from '@/shared/components/button';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
-import type { IJournalEntryListDto } from '@/shared/lib/api/Api';
+import {
+  EJournalEntryStatus,
+  type IJournalEntryListDto,
+} from '@/shared/lib/api/Api';
 import { ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -20,6 +24,7 @@ export function RecentTransactionsTableContainer() {
   const handleApiError = useApiErrorHandler();
   const archive = useArchiveJournalEntry();
   const remove = useDeleteJournalEntry();
+  const voidEntry = useVoidEntry();
 
   const transactions = useJournalEntries(
     { page: 1, limit: 15, orderBy: 'effectiveDate', sortDirection: 'desc' },
@@ -44,10 +49,13 @@ export function RecentTransactionsTableContainer() {
 
   async function handleDelete(entry: IJournalEntryListDto) {
     try {
-      await remove.mutateAsync(entry.id);
+      if (entry.status === EJournalEntryStatus.Draft) {
+        await remove.mutateAsync(entry.id);
+      } else if (entry.status === EJournalEntryStatus.Posted) {
+        await voidEntry.mutateAsync(entry.id);
+      }
     } catch (error) {
       handleApiError(error, { showToast: true });
-      throw error;
     }
   }
 

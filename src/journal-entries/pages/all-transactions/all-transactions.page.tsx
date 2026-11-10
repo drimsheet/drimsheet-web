@@ -5,15 +5,18 @@ import {
 import { useArchiveJournalEntry } from '@/journal-entries/hooks/use-archive-journal-entry';
 import { useDeleteJournalEntry } from '@/journal-entries/hooks/use-delete-journal-entry';
 import { useJournalEntries } from '@/journal-entries/hooks/use-journal-entries';
+import { useVoidEntry } from '@/journal-entries/hooks/use-void-entry';
 import { journalEntryQueryMapper } from '@/journal-entries/lib/mappers/journal-entry-query.mapper';
 import { journalEntryRouteMapper } from '@/journal-entries/lib/mappers/journal-entry-route.mapper';
 import { AppBody } from '@/shared/components/app';
 import { AppSection } from '@/shared/components/app-section';
 import { Button } from '@/shared/components/button';
+import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useDebounce } from '@/shared/hooks/use-debounce';
-import type {
-  IJournalEntryListDto,
-  UJournalEntrySortBy,
+import {
+  EJournalEntryStatus,
+  type IJournalEntryListDto,
+  type UJournalEntrySortBy,
 } from '@/shared/lib/api/Api';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
@@ -44,8 +47,10 @@ export function AllTransactionsPage() {
 
   const debouncedSearch = useDebounce(search, 300);
   const filterOptions = useTransactionFilterOptions();
+  const handleApiError = useApiErrorHandler();
   const archive = useArchiveJournalEntry();
   const remove = useDeleteJournalEntry();
+  const voidEntry = useVoidEntry();
 
   const query = journalEntryQueryMapper.toQuery(filters, {
     page,
@@ -88,8 +93,20 @@ export function AllTransactionsPage() {
   };
 
   const handleDelete = async (entry: IJournalEntryListDto) => {
-    await remove.mutateAsync(entry.id);
-    setPage(1);
+    try {
+      if (entry.status === EJournalEntryStatus.Draft) {
+        await remove.mutateAsync(entry.id);
+      } else if (entry.status === EJournalEntryStatus.Posted) {
+        await voidEntry.mutateAsync(entry.id);
+      } else {
+        return;
+      }
+
+      setPage(1);
+    } catch (error) {
+      handleApiError(error, { showToast: true });
+      throw error;
+    }
   };
 
   const handleAdd = () => {

@@ -18,6 +18,12 @@ const journalEntryService = {
     return res.data;
   },
 
+  async voidJournalEntry(id: string) {
+    const res = await drimsheetApi.journalEntries.voidJournalEntry(id);
+
+    return res.data;
+  },
+
   async archiveJournalEntry(id: string) {
     const res = await drimsheetApi.journalEntries.archiveJournalEntry(id);
 

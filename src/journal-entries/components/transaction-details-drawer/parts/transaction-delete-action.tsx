@@ -63,13 +63,13 @@ export function TransactionDeleteAction({
 
   const handleDelete = async (event?: MouseEvent<HTMLButtonElement>) => {
     event?.preventDefault();
-    if (!isDeleteConfirmed || busy) {
+    if (!onDelete || !isDeleteConfirmed || busy) {
       return;
     }
 
     setPendingAction('delete');
     try {
-      await onDelete?.();
+      await onDelete();
       setOpen(false);
       setConfirmationText('');
     } catch {
@@ -102,7 +102,7 @@ export function TransactionDeleteAction({
           {archive_instead_text}
         </AlertDialogAction>
         <AlertDialogAction
-          disabled={busy || !isDeleteConfirmed}
+          disabled={busy || !onDelete || !isDeleteConfirmed}
           loading={pendingAction === 'delete'}
           onClick={handleDelete}
           size="sm"
@@ -126,7 +126,11 @@ export function TransactionDeleteAction({
       open={open}
       title={confirmation_title}
       trigger={
-        <Button disabled={disabled} type="button" variant="destructive">
+        <Button
+          disabled={disabled || !onDelete}
+          type="button"
+          variant="destructive"
+        >
           {delete_label}
         </Button>
       }
