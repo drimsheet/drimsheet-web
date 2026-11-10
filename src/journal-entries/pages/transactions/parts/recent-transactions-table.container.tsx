@@ -56,6 +56,7 @@ export function RecentTransactionsTableContainer() {
       }
     } catch (error) {
       handleApiError(error, { showToast: true });
+      throw error;
     }
   }
 
