@@ -13,9 +13,8 @@ const meta = {
     id: 'story-file-upload',
     label: 'Attach receipt',
     onValueChange: () => undefined,
-    removeText: 'Remove file',
     replaceText: 'Replace file',
-    value: null,
+    value: [],
   },
 } satisfies Meta<typeof FileUpload>;
 
@@ -26,9 +25,18 @@ export const Default: Story = {};
 
 export const Interactive: Story = {
   render: (args) => {
-    const [file, setFile] = useState<File | null>(null);
+    const [files, setFiles] = useState<File[]>([]);
 
-    return <FileUpload {...args} value={file} onValueChange={setFile} />;
+    return <FileUpload {...args} value={files} onValueChange={setFiles} />;
+  },
+};
+
+export const Multiple: Story = {
+  ...Interactive,
+  args: {
+    multiple: true,
+    actionText: 'Add file',
+    description: 'Up to 3 files, 5 MB each.',
   },
 };
 

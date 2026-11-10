@@ -1,5 +1,7 @@
-import { CounterpartyRoleSelect } from '@/counterparty/components';
-import type { UCounterpartyRoleSelectValue } from '@/counterparty/components/counterparty-role-select/types';
+import {
+  CounterpartyRoleSelect,
+  type UCounterpartyRoleSelectValue,
+} from '@/counterparty/components/counterparty-role-select';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +14,7 @@ import type { CounterpartyRoleSelectionDialogProps } from './types';
 export function CounterpartyRoleSelectionDialog({
   open,
   onClose,
+  onCloseAutoFocus,
   onSubmit,
   defaultValue,
 }: Readonly<CounterpartyRoleSelectionDialogProps>) {
@@ -32,6 +35,7 @@ export function CounterpartyRoleSelectionDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
+        onCloseAutoFocus={onCloseAutoFocus}
         aria-describedby={undefined}
         className="max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-md"
       >

@@ -9,8 +9,10 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/shared/components/sidebar';
+import { StorageScopeContext } from '@/shared/hooks/use-scoped-key';
 import { AccountingEntityAvatarContainer } from '@/user/components/accounting-entity-avatar';
-import { useState } from 'react';
+import { useProfile } from '@/user/hooks/use-profile';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
@@ -29,7 +31,19 @@ export function AppLayout() {
       disabled: !hasAccountingEntities,
     });
 
+  const { data: profile, isPending: isProfilePending } = useProfile();
+
+  const userId = profile?.id;
+  const accountingEntityId = accountingEntity?.id;
+
+  const storageScope = useMemo(
+    () =>
+      userId && accountingEntityId ? { userId, accountingEntityId } : undefined,
+    [userId, accountingEntityId]
+  );
+
   const isLoading =
+    isProfilePending ||
     isLoadingAccountingEntities ||
     (hasAccountingEntities && isLoadingAccountingEntity);
 
@@ -42,29 +56,31 @@ export function AppLayout() {
   }
 
   return (
-    <MoneyJurisdictionProvider value={accountingEntity?.jurisdictionCode}>
-      <SidebarProvider
-        style={{ '--sidebar-width': '14rem' } as React.CSSProperties}
-      >
-        <AppSidebar
-          currentPath={pathname}
-          accountControl={
-            <AccountingEntityAvatarContainer
-              onLogoutClick={() => setShowLogoutConfirmation(true)}
-            />
-          }
+    <StorageScopeContext.Provider value={storageScope}>
+      <MoneyJurisdictionProvider value={accountingEntity?.jurisdictionCode}>
+        <SidebarProvider
+          style={{ '--sidebar-width': '14rem' } as React.CSSProperties}
+        >
+          <AppSidebar
+            currentPath={pathname}
+            accountControl={
+              <AccountingEntityAvatarContainer
+                onLogoutClick={() => setShowLogoutConfirmation(true)}
+              />
+            }
+          />
+          <SidebarInset className="min-w-0">
+            <div className="flex min-w-0 flex-1 flex-col gap-4 p-4 mb-8 md:px-8 md:py-6">
+              <SidebarTrigger className="md:hidden" />
+              <Outlet />
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+        <LogoutConfirmationDialog
+          open={showLogoutConfirmation}
+          onOpenChange={setShowLogoutConfirmation}
         />
-        <SidebarInset className="min-w-0">
-          <div className="flex min-w-0 flex-1 flex-col gap-4 p-4 mb-8 md:px-8 md:py-6">
-            <SidebarTrigger className="md:hidden" />
-            <Outlet />
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-      <LogoutConfirmationDialog
-        open={showLogoutConfirmation}
-        onOpenChange={setShowLogoutConfirmation}
-      />
-    </MoneyJurisdictionProvider>
+      </MoneyJurisdictionProvider>
+    </StorageScopeContext.Provider>
   );
 }

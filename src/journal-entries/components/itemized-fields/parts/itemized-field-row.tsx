@@ -25,6 +25,7 @@ interface ItemizedFieldRowProps {
   errors?: IItemizedFieldErrors;
   index: number;
   item: IItemizedFieldValue;
+  onAddCategory?: () => void;
   onChange: (item: IItemizedFieldValue) => void;
   onDelete: (itemId: string) => void;
 }
@@ -36,9 +37,10 @@ export function ItemizedFieldRow({
   index,
   item,
   onChange,
+  onAddCategory,
   onDelete,
 }: Readonly<ItemizedFieldRowProps>) {
-  const { t } = useTranslation<'journal-entries'>('journal-entries');
+  const { t } = useTranslation(['journal-entries', 'ledger-accounts']);
 
   const [descriptionVisible, setDescriptionVisible] = useState(
     Boolean(item.description)
@@ -91,6 +93,7 @@ export function ItemizedFieldRow({
 
   const amount_label = t('amount_label');
   const category_label = t('category_label');
+  const new_category_label = t('ledger-accounts:add_new_category');
   const category_placeholder = t('category_placeholder');
   const description_label = t('description_label');
   const item_description_placeholder = t('itemized_description_placeholder');
@@ -121,10 +124,13 @@ export function ItemizedFieldRow({
         <AccountCombobox
           id={categoryId}
           accounts={accounts}
+          showBalance={false}
           disabled={disabled}
           error={errors?.accountId}
           label={category_label}
           onChange={handleCategoryChange}
+          onAddAccount={onAddCategory}
+          newAccountLabel={new_category_label}
           placeholder={category_placeholder}
           value={item.accountId}
         />

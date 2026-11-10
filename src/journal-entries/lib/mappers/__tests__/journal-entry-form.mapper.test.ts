@@ -66,6 +66,15 @@ describe('journalEntryFormMapper', () => {
       createLine('category-line', 'office-expense', 2, 250),
     ]);
 
+    const receipt = {
+      url: 'https://example.com/receipt.pdf',
+      name: 'receipt.pdf',
+      type: 'application/pdf',
+      size: 10,
+    };
+
+    entry.attachments = [receipt];
+
     expect(
       journalEntryFormMapper.toCashTransactionFormValues(entry, 'NGN')
     ).toEqual({
@@ -78,7 +87,7 @@ describe('journalEntryFormMapper', () => {
       items: [],
       counterparty: { id: 'counterparty-1', name: 'Acme' },
       description: 'Entry memo',
-      attachment: null,
+      attachments: [receipt],
     });
   });
 

@@ -162,6 +162,58 @@ describe('AccountCombobox', () => {
     expect(onChange).toHaveBeenCalledWith('2');
   });
 
+  it('shows each account balance in its own currency by default', async () => {
+    const user = userEvent.setup();
+    render(
+      <AccountCombobox
+        label="Account"
+        value=""
+        onChange={vi.fn()}
+        accounts={mockAccounts}
+      />
+    );
+
+    await user.click(screen.getByRole('combobox', { name: 'Account' }));
+
+    expect(
+      await screen.findByRole('option', { name: /Main Bank Account/i })
+    ).toHaveTextContent('NGN 1,500,000');
+    expect(
+      screen.getByRole('option', { name: /Trade Payables/i })
+    ).toHaveTextContent('$4,800');
+    expect(
+      screen.getByRole('option', { name: /Consulting Revenue/i })
+    ).toHaveTextContent('$95,400');
+  });
+
+  it('hides balances when showBalance is false and still selects an account', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <AccountCombobox
+        label="Category"
+        value=""
+        onChange={onChange}
+        accounts={mockAccounts}
+        showBalance={false}
+      />
+    );
+
+    await user.click(screen.getByRole('combobox', { name: 'Category' }));
+
+    for (const account of mockAccounts) {
+      expect(
+        await screen.findByRole('option', { name: account.name })
+      ).toBeVisible();
+    }
+
+    await user.click(
+      screen.getByRole('option', { name: 'Consulting Revenue' })
+    );
+
+    expect(onChange).toHaveBeenCalledWith('3');
+  });
+
   it('filters accounts when typing', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
@@ -239,6 +291,84 @@ describe('AccountCombobox', () => {
     await user.type(input, 'xyz123');
 
     expect(await screen.findByText('No accounts found.')).toBeInTheDocument();
+  });
+
+  it('keeps the add action last when searching and preserves the selected account', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const onAddAccount = vi.fn();
+
+    render(
+      <AccountCombobox
+        label="Account"
+        value="1"
+        accounts={mockAccounts}
+        onChange={onChange}
+        onAddAccount={onAddAccount}
+      />
+    );
+
+    const input = screen.getByRole('combobox', { name: 'Account' });
+    await user.click(input);
+    expect(screen.getAllByRole('option').at(-1)).toHaveTextContent(
+      'Add a new account'
+    );
+    await user.clear(input);
+    await user.type(input, 'Main Bank');
+    expect(
+      screen.getByRole('option', { name: /Main Bank Account/i })
+    ).toBeVisible();
+    expect(screen.getAllByRole('option').at(-1)).toHaveTextContent(
+      'Add a new account'
+    );
+    await user.clear(input);
+    await user.type(input, 'No matching account');
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    onChange.mockClear();
+    await user.click(screen.getByRole('option', { name: 'Add a new account' }));
+    expect(onAddAccount).toHaveBeenCalledOnce();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('supports adding an account by keyboard when there are no accounts', async () => {
+    const user = userEvent.setup();
+    const onAddAccount = vi.fn();
+    render(
+      <AccountCombobox
+        label="Account"
+        value=""
+        accounts={[]}
+        onChange={vi.fn()}
+        onAddAccount={onAddAccount}
+      />
+    );
+    await user.click(screen.getByRole('combobox', { name: 'Account' }));
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(onAddAccount).toHaveBeenCalledOnce();
+  });
+
+  it('uses the custom creation label when there are no matching accounts', async () => {
+    const user = userEvent.setup();
+    const onAddAccount = vi.fn();
+    render(
+      <AccountCombobox
+        label="Category"
+        value=""
+        accounts={mockAccounts}
+        onChange={vi.fn()}
+        onAddAccount={onAddAccount}
+        newAccountLabel="Add a new category"
+      />
+    );
+    await user.type(
+      screen.getByRole('combobox', { name: 'Category' }),
+      'No matching category'
+    );
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    await user.click(
+      screen.getByRole('option', { name: 'Add a new category' })
+    );
+    expect(onAddAccount).toHaveBeenCalledOnce();
   });
 
   it('handles invalid initial value gracefully', () => {

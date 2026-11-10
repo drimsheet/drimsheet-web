@@ -46,6 +46,7 @@ function renderItemizedFields({
   initialEditItemId,
   onChange = vi.fn(),
   onEditModeChange,
+  onAddCategory,
 }: {
   defaultValue?: IItemizedFieldValue[];
   disabled?: boolean;
@@ -53,6 +54,7 @@ function renderItemizedFields({
   initialEditItemId?: string;
   onChange?: (items: IItemizedFieldValue[]) => void;
   onEditModeChange?: (isEditing: boolean) => void;
+  onAddCategory?: (items: IItemizedFieldValue[], itemId: string) => void;
 } = {}) {
   render(
     <TooltipProvider>
@@ -65,6 +67,7 @@ function renderItemizedFields({
         initialEditItemId={initialEditItemId}
         onChange={onChange}
         onEditModeChange={onEditModeChange}
+        onAddCategory={onAddCategory}
       />
     </TooltipProvider>
   );
@@ -76,6 +79,30 @@ describe('ItemizedFields', () => {
     window.HTMLElement.prototype.releasePointerCapture = vi.fn();
     window.HTMLElement.prototype.setPointerCapture = vi.fn();
     window.HTMLElement.prototype.scrollIntoView = vi.fn();
+  });
+
+  it('includes the uncommitted row in category creation without saving it', async () => {
+    const user = userEvent.setup();
+    const onAddCategory = vi.fn();
+    const onChange = vi.fn();
+    renderItemizedFields({ onAddCategory, onChange });
+    await user.click(screen.getByRole('button', { name: 'Add a new item' }));
+    await user.type(screen.getByLabelText('Amount'), '75');
+    await user.click(screen.getByRole('combobox', { name: 'Category' }));
+    await user.click(
+      screen.getByRole('option', { name: 'Add a new category' })
+    );
+    expect(onAddCategory).toHaveBeenCalledOnce();
+    const [items, itemId] = onAddCategory.mock.calls[0];
+    expect(items).toEqual([
+      item,
+      expect.objectContaining({
+        id: itemId,
+        accountId: '',
+        amount: { amount: 75, currencyCode: 'NGN', isMinorUnit: false },
+      }),
+    ]);
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it('renders committed items in view mode', () => {

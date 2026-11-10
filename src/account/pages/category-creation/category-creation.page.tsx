@@ -1,3 +1,4 @@
+import { useRedirectAfterAccountCreation } from '@/account/hooks/use-redirect-after-account-creation';
 import { categoryService } from '@/account/lib/services/category.service';
 import { AppBody } from '@/shared/components/app';
 import { AppSection } from '@/shared/components/app-section';
@@ -5,25 +6,38 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFormik, type FormikProps } from 'formik';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import categoryCreationHelpers from './helper';
 import { CategoryCreationForm } from './parts/creation-form';
 import type {
   ICategoryCreationFormValues,
+  ICategoryCreationPageSearchParams,
   ICategoryParentSelection,
 } from './types';
 import { categoryCreationSchema } from './validation';
 
 export function CategoryCreationPage() {
   const { t } = useTranslation('ledger-accounts');
-  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedType = searchParams.get('type');
+
+  const params: ICategoryCreationPageSearchParams = {
+    type:
+      requestedType === 'revenue' || requestedType === 'expense'
+        ? requestedType
+        : undefined,
+  };
+
+  const { redirectAfterCreation, redirectAfterCancellation } =
+    useRedirectAfterAccountCreation('/categories');
+
   const queryClient = useQueryClient();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const form: FormikProps<ICategoryCreationFormValues> =
     useFormik<ICategoryCreationFormValues>({
-      initialValues: categoryCreationHelpers.createInitialValues(),
+      initialValues: categoryCreationHelpers.createInitialValues(params.type),
       validationSchema: () => categoryCreationSchema(t, parent),
       onSubmit: handleSubmit,
     });
@@ -62,7 +76,7 @@ export function CategoryCreationPage() {
 
   async function handleSubmit(values: ICategoryCreationFormValues) {
     try {
-      await mutation.mutateAsync(values);
+      const category = await mutation.mutateAsync(values);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['categoryService'] }),
         queryClient.invalidateQueries({ queryKey: ['ledgerAccountService'] }),
@@ -74,14 +88,17 @@ export function CategoryCreationPage() {
         }),
       ]);
       toast.success(t('category_creation_success'));
-      navigate('/categories');
+      await redirectAfterCreation(category.id);
     } catch {
       // Keep the selected parent and both names available for correction.
     }
   }
 
   const handleTypeChange = (value: string) => {
-    if (value !== 'revenue' && value !== 'expense') {
+    if (
+      params.type !== undefined ||
+      (value !== 'revenue' && value !== 'expense')
+    ) {
       return;
     }
 
@@ -137,10 +154,11 @@ export function CategoryCreationPage() {
           accountsError={accounts.isError}
           pending={mutation.isPending || form.isSubmitting}
           error={mutation.isError}
+          disableTypeSelection={params.type !== undefined}
           onTypeChange={handleTypeChange}
           onParentChange={handleParentChange}
           onPickerOpenChange={setPickerOpen}
-          onCancel={() => navigate('/categories')}
+          onCancel={redirectAfterCancellation}
         />
       </AppSection>
     </AppBody>

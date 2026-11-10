@@ -33,7 +33,10 @@ it('shows the vendor skeleton until country options are ready', async () => {
 
   render(
     <QueryClientProvider client={client}>
-      <VendorFormCreateContainer onSuccess={vi.fn()} />
+      <VendorFormCreateContainer
+        initialValues={{ name: 'Intended name' }}
+        onSuccess={vi.fn()}
+      />
     </QueryClientProvider>
   );
   expect(screen.getByRole('status')).toHaveAccessibleName(
@@ -42,6 +45,7 @@ it('shows the vendor skeleton until country options are ready', async () => {
   expect(screen.queryByLabelText(/Legal name/i)).not.toBeInTheDocument();
   await act(async () => resolve([]));
   expect(await screen.findByLabelText(/Legal name/i)).toBeEnabled();
+  expect(screen.getByLabelText(/Legal name/i)).toHaveValue('Intended name');
   expect(screen.queryByRole('status')).not.toBeInTheDocument();
   expect(counterpartyService.getCounterparty).not.toHaveBeenCalled();
   expect(counterpartyService.updateCounterparty).not.toHaveBeenCalled();

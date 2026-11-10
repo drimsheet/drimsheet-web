@@ -2,6 +2,22 @@
 
 This repository uses `.agents/rules/` as the source of truth for AI task execution.
 
+## Project Access Scope
+
+- Keep file discovery and source inspection within `drimsheet-web` and any
+  additional workspace roots the user explicitly adds to the active task.
+- Scope searches, file listings, and tool working directories to those roots.
+  Do not inspect parent directories or sibling repositories, including the
+  backend, or follow symlinks that resolve outside the approved roots.
+- For backend contracts, use the generated API client and documentation in this
+  repository. If those are insufficient, ask the user to provide the specific
+  contract or add the required directory to the task before inspecting it.
+- Required agent instructions, skill files, and tool runtime files may be used
+  as needed for the task. This exception does not extend to external source
+  discovery or inspection.
+
+## Repository Rules
+
 Before making changes, follow the rules in:
 
 - `.agents/rules/folder-structure.md`

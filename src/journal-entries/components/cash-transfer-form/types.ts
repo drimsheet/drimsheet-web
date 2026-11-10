@@ -1,7 +1,10 @@
 import type { IItemizedFieldValue } from '@/journal-entries/components/itemized-fields';
+import type { UTransactionAccountField } from '@/journal-entries/lib/types/transaction-continuation.types';
 import type { ICurrencyExchangeRateInputValue } from '@/shared/components/currency-exchange-rate-input';
 import type {
   IExchangeRate,
+  IFileAttachment,
+  IJournalEntryListDto,
   ILedgerAccountDto,
   IMoneyDto,
 } from '@/shared/lib/api/Api';
@@ -16,7 +19,7 @@ export interface ICashTransferFormValues {
   isItemized: boolean;
   items: IItemizedFieldValue[];
   description: string;
-  attachment: File | null;
+  attachments: (File | IFileAttachment)[];
 }
 
 // TODO: remove this absurdity of separate initial value types from value types
@@ -30,7 +33,7 @@ export interface ICashTransferFormInitialValues {
   isItemized?: boolean;
   items?: IItemizedFieldValue[];
   description?: string;
-  attachment?: File | null;
+  attachments?: ICashTransferFormValues['attachments'];
 }
 
 export interface ICashTransferCurrencyContext {
@@ -48,9 +51,28 @@ export interface CashTransferFormProps {
   initialValues?: ICashTransferFormInitialValues;
   loading?: boolean;
   officialExchangeRate?: IExchangeRate;
+  initialEditItemId?: string;
+  onAddCategory?: (values: ICashTransferFormValues, itemId?: string) => void;
+  onAddAccount?: (
+    values: ICashTransferFormValues,
+    field: UTransactionAccountField
+  ) => void;
   onCurrencyContextChange: (context: ICashTransferCurrencyContext) => void;
   onSaveDraft?: (values: ICashTransferFormValues) => void;
-  onSubmit: (values: ICashTransferFormValues) => void;
+  onSubmit: (values: ICashTransferFormValues) => void | Promise<void>;
   savingDraft?: boolean;
   submitLabel?: string;
+}
+
+export interface CashTransferFormContainerProps {
+  journalEntry?: IJournalEntryListDto;
+  initialValues?: Partial<ICashTransferFormValues>;
+  restoring?: boolean;
+  initialEditItemId?: string;
+  onAddCategory?: (values: ICashTransferFormValues, itemId?: string) => void;
+  onAddAccount?: (
+    values: ICashTransferFormValues,
+    field?: UTransactionAccountField
+  ) => void;
+  onSuccess: () => Promise<void>;
 }

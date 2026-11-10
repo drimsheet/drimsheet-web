@@ -22,9 +22,9 @@ const values: ICashTransactionFormValues = {
   exchangeRate: null,
   isItemized: false,
   items: [],
-  counterparty: { name: 'New counterparty' },
+  counterparty: { id: 'payer-1', name: 'Payer' },
   description: '  August receipt  ',
-  attachment: null,
+  attachments: [],
 };
 
 const paymentValues: ICashTransactionFormValues = {
@@ -35,9 +35,9 @@ const paymentValues: ICashTransactionFormValues = {
   exchangeRate: null,
   isItemized: false,
   items: [],
-  counterparty: { name: 'New recipient' },
+  counterparty: { id: 'recipient-1', name: 'Recipient' },
   description: '  August payment  ',
-  attachment: null,
+  attachments: [],
 };
 
 const transferValues: ICashTransferFormValues = {
@@ -54,7 +54,7 @@ const transferValues: ICashTransferFormValues = {
   isItemized: false,
   items: [],
   description: '  Petty cash funding  ',
-  attachment: null,
+  attachments: [],
 };
 
 const paymentJournalEntry = {
@@ -191,7 +191,7 @@ describe('journalEntryMapper', () => {
       attachmentReferences: ['attachment-1'],
       sourceLine: {
         accountId: 'ngn-bank',
-        counterparty: { name: 'New recipient' },
+        counterpartyId: 'recipient-1',
         amount: {
           amount: 250000,
           currencyCode: 'NGN',
@@ -204,7 +204,7 @@ describe('journalEntryMapper', () => {
       destinationLines: [
         {
           accountId: 'office-expense',
-          counterparty: { name: 'New recipient' },
+          counterpartyId: 'recipient-1',
           amount: {
             amount: 250000,
             currencyCode: 'NGN',
@@ -269,7 +269,7 @@ describe('journalEntryMapper', () => {
 
     expect(result.sourceLine).toEqual({
       accountId: 'ngn-bank',
-      counterparty: { name: 'New recipient' },
+      counterpartyId: 'recipient-1',
       amount: {
         amount: 250000,
         currencyCode: 'NGN',
@@ -282,7 +282,7 @@ describe('journalEntryMapper', () => {
     expect(result.destinationLines).toEqual([
       {
         accountId: 'office-expense',
-        counterparty: { name: 'New recipient' },
+        counterpartyId: 'recipient-1',
         amount: {
           amount: 100000,
           currencyCode: 'NGN',
@@ -294,7 +294,7 @@ describe('journalEntryMapper', () => {
       },
       {
         accountId: 'travel-expense',
-        counterparty: { name: 'New recipient' },
+        counterpartyId: 'recipient-1',
         amount: {
           amount: 150000,
           currencyCode: 'NGN',
@@ -334,7 +334,7 @@ describe('journalEntryMapper', () => {
     });
     expect(result.effectiveDate).toBe('2026-08-10');
     expect(result.postedAt).toBe(occurredAt);
-    expect(result.attachmentReferences).toEqual([]);
+    expect(result.attachmentReferences).toBeUndefined();
     expect(result.destinationLines[0]?.exchangeRate).toEqual(
       result.sourceLine.exchangeRate
     );
@@ -369,7 +369,7 @@ describe('journalEntryMapper', () => {
       sourceLines: [
         {
           accountId: 'sales-revenue',
-          counterparty: { name: 'New counterparty' },
+          counterpartyId: 'payer-1',
           amount: {
             amount: 250000,
             currencyCode: 'NGN',
@@ -382,7 +382,7 @@ describe('journalEntryMapper', () => {
       ],
       destinationLine: {
         accountId: 'ngn-bank',
-        counterparty: { name: 'New counterparty' },
+        counterpartyId: 'payer-1',
         amount: {
           amount: 250000,
           currencyCode: 'NGN',
@@ -447,7 +447,7 @@ describe('journalEntryMapper', () => {
     ]);
     expect(result.destinationLine).toEqual({
       accountId: 'ngn-bank',
-      counterparty: { name: 'New counterparty' },
+      counterpartyId: 'payer-1',
       amount: {
         amount: 250000,
         currencyCode: 'NGN',
@@ -486,7 +486,7 @@ describe('journalEntryMapper', () => {
     });
     expect(result.effectiveDate).toBe('2026-08-10');
     expect(result.postedAt).toBe(occurredAt);
-    expect(result.attachmentReferences).toEqual([]);
+    expect(result.attachmentReferences).toBeUndefined();
     expect(result.destinationLine.exchangeRate).toEqual(
       result.sourceLines[0]?.exchangeRate
     );
@@ -581,7 +581,7 @@ describe('journalEntryMapper', () => {
     expect(result.chargeLines).toEqual([
       expect.objectContaining({
         accountId: 'bank-fees',
-        counterparty: null,
+        counterpartyId: null,
         amount: expect.objectContaining({ amount: 2500 }),
         description: 'Bank fee',
         sequenceOrder: 3,
@@ -709,8 +709,10 @@ describe('journalEntryMapper', () => {
     });
   });
 
-  it('maps payment edits to rectification with version and only persisted line IDs', () => {
-    const result = journalEntryMapper.toPaymentJournalEntryRectificationReq(
+  it('maps draft payment edits with only persisted line IDs', () => {
+    const request = journalEntryMapper.toPaymentRectificationRequest(
+      { ...paymentJournalEntry, status: 'draft', postedAt: null },
+      paymentValues,
       {
         ...paymentValues,
         isItemized: true,
@@ -737,20 +739,41 @@ describe('journalEntryMapper', () => {
           },
         ],
       },
-      'NGN',
-      paymentJournalEntry,
-      paymentJournalEntry.attachments
+      'NGN'
     );
 
+    expect(request).toMatchObject({
+      action: 'updateDraft',
+    });
+    if (request?.action !== 'updateDraft') {
+      throw new Error('Expected a payment draft update');
+    }
+
+    const result = request.payload;
     expect(result).toMatchObject({
-      sourceType: 'payment',
-      attachments: paymentJournalEntry.attachments,
       sourceLine: { id: 'cash-line' },
       destinationLines: [
         { id: 'office-line' },
         { accountId: 'travel-expense' },
       ],
     });
-    expect(result.destinationLines[1]).not.toHaveProperty('id');
+    expect(result.destinationLines?.[1]).not.toHaveProperty('id');
+  });
+  it('maps a memo edit without overwriting existing line descriptions', () => {
+    const request = journalEntryMapper.toPaymentRectificationRequest(
+      paymentJournalEntry,
+      paymentValues,
+      {
+        ...paymentValues,
+        description: 'Updated memo',
+        attachments: paymentJournalEntry.attachments,
+      },
+      'NGN'
+    );
+
+    expect(request).toEqual({
+      action: 'updateMeta',
+      payload: { header: { memo: 'Updated memo' } },
+    });
   });
 });

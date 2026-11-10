@@ -10,6 +10,7 @@ import { useJournalEntry } from '@/journal-entries/hooks/use-journal-entry';
 import { journalEntryRouteMapper } from '@/journal-entries/lib/mappers/journal-entry-route.mapper';
 import { AppBody } from '@/shared/components/app';
 import { AppSection } from '@/shared/components/app-section';
+import { EJournalEntryStatus } from '@/shared/lib/api/Api';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
@@ -28,35 +29,37 @@ export function EditTransactionPage() {
 
   const handleBack = () => navigate('/transactions');
 
+  const handleSuccess = async () => {
+    if (journalEntry?.status !== EJournalEntryStatus.Draft) {
+      await handleBack();
+    }
+  };
+
   if (!id || !routeSourceType) {
     return <Navigate replace to="/transactions" />;
   }
 
   if (isPending) {
     return (
-      <>
-        <AppBody title={page_title}>
-          <AppSection>
-            {type === 'transfer' ? (
-              <CashTransferFormSkeleton />
-            ) : (
-              <CashTransactionFormSkeleton />
-            )}
-          </AppSection>
-        </AppBody>
-      </>
+      <AppBody title={page_title}>
+        <AppSection>
+          {type === 'transfer' ? (
+            <CashTransferFormSkeleton />
+          ) : (
+            <CashTransactionFormSkeleton />
+          )}
+        </AppSection>
+      </AppBody>
     );
   }
 
   if (isError) {
     return (
-      <>
-        <AppBody>
-          <AppSection>
-            <JournalEntryNotFound onBack={handleBack} />
-          </AppSection>
-        </AppBody>
-      </>
+      <AppBody>
+        <AppSection>
+          <JournalEntryNotFound onBack={handleBack} />
+        </AppSection>
+      </AppBody>
     );
   }
 
@@ -82,20 +85,27 @@ export function EditTransactionPage() {
   }
 
   return (
-    <>
-      <AppBody title={page_title}>
-        <AppSection>
-          {canonicalType === 'inflow' && (
-            <InflowFormContainer journalEntry={journalEntry} />
-          )}
-          {canonicalType === 'outflow' && (
-            <OutflowFormContainer journalEntry={journalEntry} />
-          )}
-          {canonicalType === 'transfer' && (
-            <CashTransferFormContainer journalEntry={journalEntry} />
-          )}
-        </AppSection>
-      </AppBody>
-    </>
+    <AppBody title={page_title}>
+      <AppSection>
+        {canonicalType === 'inflow' && (
+          <InflowFormContainer
+            journalEntry={journalEntry}
+            onSuccess={handleSuccess}
+          />
+        )}
+        {canonicalType === 'outflow' && (
+          <OutflowFormContainer
+            journalEntry={journalEntry}
+            onSuccess={handleSuccess}
+          />
+        )}
+        {canonicalType === 'transfer' && (
+          <CashTransferFormContainer
+            journalEntry={journalEntry}
+            onSuccess={handleSuccess}
+          />
+        )}
+      </AppSection>
+    </AppBody>
   );
 }

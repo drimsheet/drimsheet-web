@@ -251,7 +251,6 @@
   "user_error_user_value_object_too_long_invalid": "User value is too long.",
   "user_error_user_value_object_too_short_invalid": "User value is too short.",
   "user_error_user_value_object_type_invalid": "Invalid user value type.",
-  "app_error_ledger_balance_propagation_outbox_not_found": "An error occurred.",
   "app_error_user_preferences_app_preferences_invalid": "Invalid app preferences.",
   "app_error_user_preferences_app_theme_invalid": "Invalid theme option.",
   "app_error_user_preferences_app_usage_mode_invalid": "Invalid app usage mode.",
@@ -307,7 +306,6 @@
   "journal_entry_error_source_account_balance_missing_unexpected": "An error occurred.",
   "fx_cost_basis_lot_error_not_found_unexpected": "An error occurred.",
   "journal_entry_error_journal_line_id_invalid": "Invalid journal.",
-  "journal_entry_error_rectification_has_no_changes_invalid": "No changes were made.",
   "journal_entry_error_rectification_line_id_invalid": "Invalid rectification line.",
   "journal_entry_error_rectification_not_permitted_invalid": "You are not allowed to update this resource.",
   "journal_entry_error_deletion_not_permitted_invalid": "You are not allowed to delete this resource.",
@@ -342,8 +340,6 @@
   "history_error_on_behalf_of_unexpected": "Invalid represented actor.",
   "journal_entry_error_draft_counterparty_not_allowed_invalid": "Draft people and businesses are not allowed.",
   "journal_entry_error_draft_ledger_account_not_allowed_invalid": "Draft ledger accounts are not allowed.",
-  "journal_entry_error_initial_opening_balance_account_already_exists_conflict": "Initial opening balance account already exists.",
-  "journal_entry_error_initial_opening_balance_transaction_required_unexpected": "Unable to set initial opening balance.",
   "journal_entry_error_journal_line_created_by_invalid": "Invalid journal line creator.",
   "ledger_balance_error_created_by_invalid": "Invalid ledger balance creator.",
   "ledger_error_bank_creation_transaction_required_unexpected": "Unable to create bank account.",
@@ -434,5 +430,6 @@
   "app_error_ledger_balance_missing_unexpected": "An error occurred while fetching the account balance.",
   "user_error_waitlist_feature_invalid": "Unknown feature.",
   "accounting_error_accounting_entity_individual_already_exists_in_jurisdiction_conflict": "A similar accounting entity already exists.",
-  "counterparty_error_role_details_invalid": "Invalid counterparty details."
+  "counterparty_error_role_details_invalid": "Invalid counterparty details.",
+  "journal_entry_error_attachment_count_invalid": "A transaction can have up to 3 attachments."
 }

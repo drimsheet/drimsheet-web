@@ -29,7 +29,7 @@ const payload: ITransferEntryReq = {
   chargeLines: [
     {
       accountId: 'bank-fees',
-      counterparty: null,
+      counterpartyId: null,
       amount: { amount: 5, currencyCode: 'NGN', isMinorUnit: false },
       exchangeRate: null,
       description: 'Transfer fee',

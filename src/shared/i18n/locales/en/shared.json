@@ -59,6 +59,8 @@
   "file_type_pngs": "PNGs",
   "file_type_excel": "Excel files",
   "file_upload_accepts": "{{types}} only",
+  "uploaded_file_open_label": "Open attachment {{name}}",
+  "uploaded_file_remove_label": "Remove file {{name}}",
   "add": "Add",
   "cancel": "Cancel",
   "save": "Save",

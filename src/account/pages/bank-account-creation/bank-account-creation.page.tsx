@@ -4,6 +4,7 @@ import {
   type IBankDetailsFormValues,
 } from '@/account/components/bank-details-form';
 import { useCreateBankAccount } from '@/account/hooks/use-create-bank-account';
+import { useRedirectAfterAccountCreation } from '@/account/hooks/use-redirect-after-account-creation';
 import { assetAccountMapper } from '@/account/lib/mappers/asset-account.mapper';
 import type { IOpeningBalanceExchangeRateContext } from '@/account/lib/types/opening-balance-exchange-rate.types';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
@@ -18,7 +19,6 @@ import { useCurrencies } from '@/shared/hooks/use-currencies';
 import { useExchangeRates } from '@/shared/hooks/use-exchange-rates';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const defaultExchangeRateContext: IOpeningBalanceExchangeRateContext = {
@@ -29,7 +29,10 @@ const defaultExchangeRateContext: IOpeningBalanceExchangeRateContext = {
 
 export function BankAccountCreationPage() {
   const { t } = useTranslation(['ledger-accounts', 'shared']);
-  const navigate = useNavigate();
+
+  const { hasRedirect, redirectAfterCreation, redirectAfterCancellation } =
+    useRedirectAfterAccountCreation();
+
   const handleApiError = useApiErrorHandler();
 
   const [statementFiles, setStatementFiles] = useState<File[]>([]);
@@ -79,9 +82,9 @@ export function BankAccountCreationPage() {
         officialExchangeRate
       );
 
-      await createBankAccount(request);
+      const account = await createBankAccount(request);
       toast.success(t('ledger-accounts:bank_account_created_success_text'));
-      navigate('/accounts', { replace: true });
+      await redirectAfterCreation(account.id);
     } catch (error) {
       handleApiError(error, { showToast: true });
     }
@@ -130,7 +133,9 @@ export function BankAccountCreationPage() {
                 <AlertDescription>{form_error_text}</AlertDescription>
               </Alert>
             )}
-            {!hasFormError && isFormLoading && <BankDetailsFormSkeleton />}
+            {!hasFormError && isFormLoading && (
+              <BankDetailsFormSkeleton showCancel={hasRedirect} />
+            )}
             {!hasFormError && !isFormLoading && (
               <BankDetailsFormContainer
                 key={initialJurisdiction}
@@ -145,6 +150,7 @@ export function BankAccountCreationPage() {
                 loading={isCreating}
                 officialExchangeRate={officialExchangeRate}
                 onExchangeRateContextChange={setExchangeRateContext}
+                onCancel={hasRedirect ? redirectAfterCancellation : undefined}
                 onSubmit={handleSubmit}
               />
             )}

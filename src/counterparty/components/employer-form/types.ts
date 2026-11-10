@@ -37,8 +37,11 @@ export type EmployerFormSkeletonProps = Pick<
   'showPostalCode'
 >;
 
-export interface EmployerFormCreateContainerProps {
-  onSuccess: () => void;
+export interface EmployerFormCreateContainerProps extends Pick<
+  EmployerFormProps,
+  'initialValues'
+> {
+  onSuccess: (counterparty: ICounterpartyDto) => void;
   onBusyChange?: (busy: boolean) => void;
 }
 

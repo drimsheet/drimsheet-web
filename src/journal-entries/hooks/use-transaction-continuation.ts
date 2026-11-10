@@ -1,0 +1,353 @@
+import { journalEntryStorageService } from '@/journal-entries/lib/services/storage.service';
+import type {
+  ITransactionContinuationItem,
+  ITransactionContinuationSearchParams,
+  UTransactionAccountField,
+  UTransactionCreationType,
+} from '@/journal-entries/lib/types/transaction-continuation.types';
+import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
+import { useScopedKey } from '@/shared/hooks/use-scoped-key';
+import {
+  ELedgerAccountBehavior,
+  type ICounterpartyDto,
+  type UCounterpartyRole,
+  type ULedgerAccountBehavior,
+} from '@/shared/lib/api/Api';
+import { observabilityService } from '@/shared/lib/services/observability.service';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+
+export function useTransactionContinuation<T extends object>(
+  type: UTransactionCreationType,
+  params: ITransactionContinuationSearchParams
+) {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [initialParams] = useState(params);
+
+  const [showCounterpartyRoleSelection, setShowCounterpartyRoleSelection] =
+    useState(false);
+
+  const [counterpartyRole, setCounterpartyRole] = useState<
+    UCounterpartyRole | 'default'
+  >();
+
+  const [counterpartyInitialValues, setCounterpartyInitialValues] =
+    useState<Pick<ICounterpartyDto, 'name'>>();
+
+  const [showAccountTypeSelection, setShowAccountTypeSelection] =
+    useState(false);
+
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [showPettyCashAccountCreation, setShowPettyCashAccountCreation] =
+    useState(false);
+
+  const [inlineInitialValues, setInlineInitialValues] = useState<T>();
+  const pendingValues = useRef<T | undefined>(undefined);
+  const accountField = useRef<UTransactionAccountField>('accountId');
+  const scopedKey = useScopedKey('journal-entries');
+  const handleApiError = useApiErrorHandler();
+  const continuationKey = initialParams.continuationKey;
+
+  const continuation = useQuery({
+    queryKey: [
+      'journalEntryStorageService',
+      'loadContinuation',
+      scopedKey,
+      type,
+      continuationKey,
+    ],
+    enabled: Boolean(continuationKey && scopedKey),
+    queryFn: async () => {
+      if (!scopedKey || !continuationKey) {
+        return null;
+      }
+
+      return journalEntryStorageService
+        .loadContinuation<T>(scopedKey, type, continuationKey)
+        .then((value) => value ?? null)
+        .catch(() => null);
+    },
+    staleTime: Infinity,
+    gcTime: 0,
+  });
+
+  const isRestoring = Boolean(continuationKey) && continuation.isPending;
+
+  const restoredValues = continuation.data as
+    | (T & { items?: ITransactionContinuationItem[] })
+    | null
+    | undefined;
+
+  const categoryItemId = restoredValues?.items?.some(
+    (item) => item.id === initialParams.categoryItemId
+  )
+    ? initialParams.categoryItemId
+    : undefined;
+
+  const initialValues = useMemo(() => {
+    if (inlineInitialValues) {
+      return inlineInitialValues;
+    }
+
+    // TODO: reset saved exchange rates when a returned account uses a different currency.
+    const overrides: Record<string, string> = {};
+
+    for (const key of [
+      'accountId',
+      'sourceAccountId',
+      'destinationAccountId',
+      'categoryId',
+    ] as const) {
+      if (initialParams[key]) {
+        overrides[key] = initialParams[key];
+      }
+    }
+
+    if (initialParams.categoryItemId) {
+      delete overrides.categoryId;
+    }
+
+    const values = { ...restoredValues, ...overrides } as Partial<T> & {
+      items?: ITransactionContinuationItem[];
+    };
+
+    const categoryId = initialParams.categoryId;
+
+    if (categoryItemId && categoryId) {
+      values.items = values.items?.map((item) =>
+        item.id === categoryItemId ? { ...item, accountId: categoryId } : item
+      );
+    }
+
+    return values;
+  }, [restoredValues, initialParams, inlineInitialValues, categoryItemId]);
+
+  const handleAddAccount = (
+    values: T,
+    field: UTransactionAccountField = 'accountId'
+  ) => {
+    pendingValues.current = values;
+    accountField.current = field;
+    setShowAccountTypeSelection(true);
+  };
+
+  const handleAccountTypeSelected = async (
+    behavior: ULedgerAccountBehavior
+  ) => {
+    if (!pendingValues.current || isSaving) {
+      return;
+    }
+
+    if (behavior === ELedgerAccountBehavior.PettyCash) {
+      setShowAccountTypeSelection(false);
+      setShowPettyCashAccountCreation(true);
+
+      return;
+    }
+
+    if (behavior !== ELedgerAccountBehavior.Bank) {
+      // TODO: support virtual and credit card account creation when those flows exist.
+      return;
+    }
+
+    if (!scopedKey) {
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const key = continuationKey ?? crypto.randomUUID();
+      await journalEntryStorageService.saveContinuation(
+        scopedKey,
+        type,
+        key,
+        pendingValues.current
+      );
+
+      const returnParams = new URLSearchParams({
+        continuationKey: key,
+      });
+
+      const creationParams = new URLSearchParams({
+        redirect: `/transactions/${type}?${returnParams}`,
+        redirectAccountAlias: accountField.current,
+      });
+
+      await navigate(`/accounts/new/bank?${creationParams}`);
+    } catch (error) {
+      handleApiError(error, { showToast: true });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddCategory = async (values: T, itemId?: string) => {
+    if (!scopedKey || isSaving) {
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const key = continuationKey ?? crypto.randomUUID();
+      await journalEntryStorageService.saveContinuation(
+        scopedKey,
+        type,
+        key,
+        values
+      );
+      const returnParams = new URLSearchParams({ continuationKey: key });
+
+      if (itemId) {
+        returnParams.set('categoryItemId', itemId);
+      }
+
+      const creationParams = new URLSearchParams({
+        type: type === 'inflow' ? 'revenue' : 'expense',
+        redirect: `/transactions/${type}?${returnParams}`,
+        redirectAccountAlias: 'categoryId',
+      });
+
+      await navigate(`/categories/new?${creationParams}`);
+    } catch (error) {
+      handleApiError(error, { showToast: true });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddCounterparty = (values: T, name: string) => {
+    if (type === 'transfer') {
+      return;
+    }
+
+    pendingValues.current = values;
+    setCounterpartyInitialValues({ name: name.trim() });
+    setShowCounterpartyRoleSelection(true);
+  };
+
+  const handleCounterpartyRoleSelectionClose = () => {
+    setShowCounterpartyRoleSelection(false);
+    setCounterpartyInitialValues(undefined);
+  };
+
+  const handleCounterpartyRoleSelected = (
+    role: UCounterpartyRole | 'default'
+  ) => {
+    setShowCounterpartyRoleSelection(false);
+    setCounterpartyRole(role);
+  };
+
+  const handleCounterpartyCreationClose = () => {
+    setCounterpartyRole(undefined);
+    setCounterpartyInitialValues(undefined);
+  };
+
+  const handleCounterpartyCreated = (counterparty: ICounterpartyDto) => {
+    if (pendingValues.current) {
+      setInlineInitialValues({
+        ...pendingValues.current,
+        counterparty: {
+          id: counterparty.id,
+          name: counterparty.name,
+          type: counterparty.type,
+        },
+      });
+    }
+  };
+
+  const handleCounterpartyCreationCloseAutoFocus = (event: Event) => {
+    event.preventDefault();
+    document.getElementById('cash-transaction-counterparty')?.focus();
+  };
+
+  const handleCounterpartyRoleSelectionCloseAutoFocus = (event: Event) => {
+    if (counterpartyRole) {
+      event.preventDefault();
+
+      return;
+    }
+
+    handleCounterpartyCreationCloseAutoFocus(event);
+  };
+
+  const handlePettyCashAccountCreated = (accountId: string) => {
+    if (pendingValues.current) {
+      setInlineInitialValues({
+        ...pendingValues.current,
+        [accountField.current]: accountId,
+      });
+    }
+  };
+
+  const handleContinuationComplete = async () => {
+    if (scopedKey && continuationKey) {
+      await journalEntryStorageService
+        .removeContinuation(scopedKey, type, continuationKey)
+        .catch((error: unknown) => {
+          observabilityService.report(
+            error instanceof Error
+              ? error
+              : new Error('Continuation cleanup failed'),
+            {
+              source: 'transaction-continuation',
+            }
+          );
+        });
+    }
+  };
+
+  useEffect(() => {
+    if (
+      isRestoring ||
+      !Object.keys(initialParams).some((key) => searchParams.has(key))
+    ) {
+      return;
+    }
+
+    // Keep the captured initial parameters after replacing the browser URL.
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+
+        for (const key of Object.keys(initialParams)) {
+          next.delete(key);
+        }
+
+        return next;
+      },
+      { replace: true }
+    );
+  }, [initialParams, isRestoring, searchParams, setSearchParams]);
+
+  return {
+    initialValues,
+    categoryItemId,
+    isRestoring,
+    isSaving,
+    showCounterpartyRoleSelection,
+    counterpartyRole,
+    counterpartyInitialValues,
+    handleCounterpartyRoleSelected,
+    handleCounterpartyCreated,
+    handleCounterpartyCreationClose,
+    handleCounterpartyCreationCloseAutoFocus,
+    handleCounterpartyRoleSelectionCloseAutoFocus,
+    handleCounterpartyRoleSelectionClose,
+    showAccountTypeSelection,
+    showPettyCashAccountCreation,
+    handleAddAccount,
+    handleAddCategory,
+    handleAddCounterparty,
+    handleAccountTypeSelected,
+    handleAccountTypeSelectionClose: () => setShowAccountTypeSelection(false),
+    handlePettyCashAccountCreated,
+    handlePettyCashAccountCreationClose: () =>
+      setShowPettyCashAccountCreation(false),
+    handleContinuationComplete,
+  };
+}

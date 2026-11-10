@@ -5,7 +5,15 @@ import {
   type TEntityId,
 } from '@/shared/lib/api/Api';
 import { storageService } from '@/shared/lib/services/storage.service';
-import { beforeEach, describe, expect, it } from 'vitest';
+import type { IStorageRecord } from '@/shared/lib/types/storage.types';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const database = vi.hoisted(() => ({ transact: vi.fn(), prune: vi.fn() }));
+
+vi.mock('@/shared/db/indexed-db', () => ({
+  EDbStoreName: { Records: 'records' },
+  indexedDbService: database,
+}));
 
 const accountingEntityId = '00000000-0000-4000-8000-000000000002' as TEntityId;
 
@@ -23,6 +31,7 @@ const preferences = {
 
 describe('storageService', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     localStorage.clear();
   });
 
@@ -73,5 +82,52 @@ describe('storageService', () => {
 
     expect(storageService.get('theme')).toBeUndefined();
     expect(storageService.get('preferences')).toBeUndefined();
+  });
+
+  it('restores active records and ignores expired records', async () => {
+    const value = { description: 'Unfinished transaction' };
+    database.transact.mockResolvedValueOnce({
+      id: 'draft',
+      value,
+      expiresAt: Date.now() + 1000,
+    });
+    expect(await storageService.getRecord('draft')).toEqual(value);
+
+    database.transact.mockResolvedValueOnce({
+      id: 'draft',
+      value,
+      expiresAt: Date.now() - 1,
+    });
+    expect(await storageService.getRecord('draft')).toBeUndefined();
+  });
+
+  it('prunes only the requested user prefix, including when other users have expired records', async () => {
+    await storageService.prune('user:one:');
+
+    const shouldRemove = database.prune.mock.calls[0][1] as (
+      record: IStorageRecord
+    ) => boolean;
+
+    expect(
+      shouldRemove({
+        id: 'user:one:entity:a:draft',
+        value: {},
+        expiresAt: Date.now() + 1000,
+      })
+    ).toBe(true);
+    expect(
+      shouldRemove({
+        id: 'user:two:entity:a:draft',
+        value: {},
+        expiresAt: Date.now() - 1,
+      })
+    ).toBe(false);
+    expect(
+      shouldRemove({
+        id: 'user:two:entity:a:draft',
+        value: {},
+        expiresAt: Date.now() + 1000,
+      })
+    ).toBe(false);
   });
 });

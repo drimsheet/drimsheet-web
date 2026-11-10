@@ -31,13 +31,6 @@ async function uploadFile(file: File): Promise<string> {
   return uploadInstruction.reference;
 }
 
-async function uploadAttachment(file: File) {
-  const uploadInstruction = await upload(file);
-
-  return uploadInstruction.file;
-}
-
 export const fileUploadService = Object.freeze({
-  uploadAttachment,
   uploadFile,
 });

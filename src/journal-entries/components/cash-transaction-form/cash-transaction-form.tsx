@@ -1,5 +1,8 @@
 import { AccountCombobox } from '@/account/components/account-combobox';
-import { ItemizedFields } from '@/journal-entries/components/itemized-fields';
+import {
+  ItemizedFields,
+  type IItemizedFieldValue,
+} from '@/journal-entries/components/itemized-fields';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,15 +18,11 @@ import { CurrencyExchangeRateInput } from '@/shared/components/currency-exchange
 import { DateInput } from '@/shared/components/date-input';
 import { Field, FieldError, FieldGroup } from '@/shared/components/field';
 import { FileUpload } from '@/shared/components/file-upload';
-import {
-  FreeSoloCombobox,
-  type UFreeSoloComboboxValue,
-} from '@/shared/components/free-solo-combobox';
 import { Input } from '@/shared/components/input';
 import { Label } from '@/shared/components/label';
 import { MoneyWithCurrencyInput } from '@/shared/components/money-with-currency-input';
+import { UploadedFile } from '@/shared/components/uploaded-file';
 import { useFieldErrorMessage } from '@/shared/hooks/use-field-error-message';
-import type { IJournalCounterpartyReq } from '@/shared/lib/api/Api';
 import { dateUtils } from '@/shared/lib/utils/date';
 import { generateUUID } from '@/shared/lib/utils/uuid';
 import { useFormik } from 'formik';
@@ -31,9 +30,11 @@ import { ArrowLeft, ListCollapse } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import cashTransactionFormHelpers from './helper';
+import { CounterpartySelect } from './parts/counterparty-select';
 import type {
   CashTransactionFormProps,
   ICashTransactionFormValues,
+  TCashTransactionCounterparty,
 } from './types';
 import { useCashTransactionFormValidation } from './validation';
 
@@ -47,7 +48,11 @@ export function CashTransactionForm({
   functionalCurrencyCode,
   initialValues,
   loading = false,
+  onAddCounterparty,
   officialExchangeRate,
+  onAddAccount,
+  onAddCategory,
+  initialEditItemId,
   onCurrencyContextChange,
   onSaveDraft,
   onSubmit,
@@ -55,15 +60,18 @@ export function CashTransactionForm({
   submitLabel,
   variant,
 }: Readonly<CashTransactionFormProps>) {
-  const { t } = useTranslation<'journal-entries'>('journal-entries');
+  const { t } = useTranslation(['journal-entries', 'ledger-accounts']);
 
   const [singleEntryConfirmationOpen, setSingleEntryConfirmationOpen] =
     useState(false);
 
-  const [isItemizedRowEditing, setIsItemizedRowEditing] = useState(false);
+  const [isItemizedRowEditing, setIsItemizedRowEditing] = useState(
+    Boolean(initialEditItemId)
+  );
 
-  const [initialItemizedEditItemId, setInitialItemizedEditItemId] =
-    useState<string>();
+  const [initialItemizedEditItemId, setInitialItemizedEditItemId] = useState<
+    string | undefined
+  >(initialEditItemId);
 
   const validationSchema = useCashTransactionFormValidation(
     accounts,
@@ -106,8 +114,8 @@ export function CashTransactionForm({
     );
   };
 
-  const handleSubmit = (values: ICashTransactionFormValues) => {
-    onSubmit(normalizeValues(values));
+  const handleSubmit = async (values: ICashTransactionFormValues) => {
+    await onSubmit(normalizeValues(values));
   };
 
   const formik = useFormik<ICashTransactionFormValues>({
@@ -116,6 +124,14 @@ export function CashTransactionForm({
     validationSchema,
     onSubmit: handleSubmit,
   });
+
+  const savedAttachments = formik.values.attachments.filter(
+    (attachment) => 'url' in attachment
+  );
+
+  const newFiles = formik.values.attachments.filter(
+    (attachment) => attachment instanceof File
+  );
 
   const getErrorMessage = useFieldErrorMessage({
     errors: formik.errors,
@@ -187,19 +203,16 @@ export function CashTransactionForm({
   };
 
   const handleCounterpartyChange = (
-    counterparty: UFreeSoloComboboxValue<IJournalCounterpartyReq>
+    counterparty: TCashTransactionCounterparty | null
   ) => {
-    let nextCounterparty: IJournalCounterpartyReq;
+    void formik.setFieldValue(
+      'counterparty',
+      counterparty ?? { id: '', name: '' }
+    );
+  };
 
-    if (typeof counterparty === 'string') {
-      nextCounterparty = { name: counterparty };
-    } else if (counterparty === null) {
-      nextCounterparty = { name: '' };
-    } else {
-      nextCounterparty = counterparty;
-    }
-
-    void formik.setFieldValue('counterparty', nextCounterparty);
+  const handleAddCounterparty = (name: string) => {
+    onAddCounterparty?.(formik.values, name);
   };
 
   const handleCategoryChange = (categoryId: string) => {
@@ -207,9 +220,16 @@ export function CashTransactionForm({
     void formik.setFieldTouched('categoryId', true, false);
   };
 
-  const handleAttachmentChange = (attachment: File | null) => {
-    void formik.setFieldValue('attachment', attachment);
-    void formik.setFieldTouched('attachment', true, false);
+  const handleAttachmentChange = (filesOrRemovedUrl: File[] | string) => {
+    const attachments = Array.isArray(filesOrRemovedUrl)
+      ? [...savedAttachments, ...filesOrRemovedUrl]
+      : formik.values.attachments.filter(
+          (attachment) =>
+            !('url' in attachment) || attachment.url !== filesOrRemovedUrl
+        );
+
+    void formik.setFieldValue('attachments', attachments);
+    void formik.setFieldTouched('attachments', true, false);
   };
 
   const handleSaveDraft = async () => {
@@ -237,6 +257,13 @@ export function CashTransactionForm({
     void formik.setFieldTouched('items', false, false);
     void formik.setFieldTouched('amount.amount', false, false);
     void formik.setFieldValue('isItemized', true);
+  };
+
+  const handleAddItemCategory = (
+    items: IItemizedFieldValue[],
+    itemId: string
+  ) => {
+    onAddCategory?.({ ...formik.values, items }, itemId);
   };
 
   const handleItemsChange = (items: ICashTransactionFormValues['items']) => {
@@ -317,8 +344,8 @@ export function CashTransactionForm({
   const dateError = getErrorMessage('date');
   const categoryError = getErrorMessage('categoryId');
   const exchangeRateError = getErrorMessage('exchangeRate');
-  const counterpartyError = getErrorMessage('counterparty.name');
-  const attachmentError = getErrorMessage('attachment');
+  const counterpartyError = getErrorMessage('counterparty.id');
+  const attachmentError = getErrorMessage('attachments');
 
   /**
    * ================= Translations ================
@@ -328,6 +355,7 @@ export function CashTransactionForm({
   const date_label = t('cash_transaction_date_label');
   const date_placeholder = t('cash_transaction_date_placeholder');
   const category_label = t('category_label');
+  const new_category_label = t('ledger-accounts:add_new_category');
   const category_placeholder = t('category_placeholder');
   const create_text = submitLabel ?? t('cash_transaction_create_text');
   const save_draft_text = t('cash_transaction_save_draft_text');
@@ -345,15 +373,18 @@ export function CashTransactionForm({
     cashTransactionFormHelpers.getCounterpartyTextKeys(variant);
 
   const counterparty_empty_text = t(counterparty_text_keys.empty);
+
+  const counterparty_create_label = t(
+    'cash_transaction_counterparty_create_label'
+  );
+
   const counterparty_label = t(counterparty_text_keys.label);
   const counterparty_placeholder = t(counterparty_text_keys.placeholder);
   const attachment_label = t('cash_transaction_attachment_label');
-  const attachment_action_text = t('cash_transaction_attachment_action_text');
-  const attachment_replace_text = t('cash_transaction_attachment_replace_text');
-  const attachment_remove_text = t('cash_transaction_attachment_remove_text');
+  const attachment_action_text = t('cash_transaction_attachment_add_text');
 
   const attachment_guidance_text = t(
-    'cash_transaction_attachment_guidance_text'
+    'cash_transaction_attachments_guidance_text'
   );
 
   const return_title = t('cash_transaction_return_to_single_title');
@@ -378,6 +409,9 @@ export function CashTransactionForm({
             disabled={interactionDisabled}
             error={accountError}
             label={account_label}
+            onAddAccount={
+              onAddAccount ? () => onAddAccount(formik.values) : undefined
+            }
             onChange={handleAccountChange}
             value={formik.values.accountId}
           />
@@ -466,6 +500,9 @@ export function CashTransactionForm({
                 initialEditItemId={initialItemizedEditItemId}
                 onChange={handleItemsChange}
                 onEditModeChange={handleItemizedEditModeChange}
+                onAddCategory={
+                  onAddCategory ? handleAddItemCategory : undefined
+                }
               />
             </div>
           ) : (
@@ -473,9 +510,14 @@ export function CashTransactionForm({
               <AccountCombobox
                 id="cash-transaction-category"
                 accounts={categories}
+                showBalance={false}
                 disabled={interactionDisabled}
                 error={categoryError}
                 label={category_label}
+                onAddAccount={
+                  onAddCategory ? () => onAddCategory(formik.values) : undefined
+                }
+                newAccountLabel={new_category_label}
                 onChange={handleCategoryChange}
                 placeholder={category_placeholder}
                 value={formik.values.categoryId}
@@ -493,24 +535,19 @@ export function CashTransactionForm({
             </div>
           )}
 
-          <FreeSoloCombobox<IJournalCounterpartyReq>
-            id="cash-transaction-counterparty"
+          <CounterpartySelect
+            key={resolvedInitialValues.counterparty.id}
             disabled={interactionDisabled}
+            creationDisabled={isItemizedRowEditing}
             emptyMessage={counterparty_empty_text}
             error={counterpartyError}
-            getOptionLabel={(counterparty) => counterparty.name}
-            isOptionEqualToValue={(counterparty, value) =>
-              counterparty.id !== undefined && counterparty.id === value.id
-            }
             label={counterparty_label}
-            name="counterparty.name"
-            onBlur={() =>
-              void formik.setFieldTouched('counterparty.name', true)
-            }
-            onValueChange={handleCounterpartyChange}
+            onBlur={() => void formik.setFieldTouched('counterparty.id', true)}
+            onChange={handleCounterpartyChange}
+            onCreate={onAddCounterparty ? handleAddCounterparty : undefined}
+            createLabel={counterparty_create_label}
             options={counterpartyOptions}
             placeholder={counterparty_placeholder}
-            required
             value={formik.values.counterparty}
           />
 
@@ -529,19 +566,33 @@ export function CashTransactionForm({
             />
           </Field>
 
-          <FileUpload
-            accept={ATTACHMENT_ACCEPT}
-            actionText={attachment_action_text}
-            description={attachment_guidance_text}
-            disabled={interactionDisabled}
-            errors={attachmentError}
-            id="cash-transaction-attachment"
-            label={attachment_label}
-            onValueChange={handleAttachmentChange}
-            removeText={attachment_remove_text}
-            replaceText={attachment_replace_text}
-            value={formik.values.attachment}
-          />
+          <div className="space-y-2">
+            <FileUpload
+              accept={ATTACHMENT_ACCEPT}
+              actionText={attachment_action_text}
+              description={attachment_guidance_text}
+              disabled={interactionDisabled}
+              errors={attachmentError}
+              id="cash-transaction-attachment"
+              label={attachment_label}
+              multiple
+              onValueChange={handleAttachmentChange}
+              value={newFiles}
+            />
+            {savedAttachments.length > 0 && (
+              <ul className="space-y-2">
+                {savedAttachments.map((attachment) => (
+                  <li key={`${attachment.url}-${attachment.name}`}>
+                    <UploadedFile
+                      {...attachment}
+                      disabled={interactionDisabled}
+                      onRemove={() => handleAttachmentChange(attachment.url)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
           <div className="flex justify-end gap-2 pt-2">
             {onSaveDraft && (

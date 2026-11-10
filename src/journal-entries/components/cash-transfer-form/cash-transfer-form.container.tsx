@@ -1,25 +1,25 @@
 import { usePermittedPostingAccounts } from '@/account/hooks/use-permitted-posting-accounts';
 import { useAccountingEntity } from '@/accounting/hooks/use-accounting-entity';
 import { useCreateTransfer } from '@/journal-entries/hooks/use-create-transfer';
-import { useRectifyJournalEntry } from '@/journal-entries/hooks/use-rectify-journal-entry';
+import { useRectifyTransfer } from '@/journal-entries/hooks/use-rectify-transfer';
 import { journalEntryFormMapper } from '@/journal-entries/lib/mappers/journal-entry-form.mapper';
 import { journalEntryMapper } from '@/journal-entries/lib/mappers/journal-entry.mapper';
 import { useApiErrorHandler } from '@/shared/hooks/use-api-error-handler';
 import { useExchangeRates } from '@/shared/hooks/use-exchange-rates';
+import { useUploadFile } from '@/shared/hooks/use-upload-file';
 import {
   EAssetSubType,
   EJournalEntrySourceType,
-  type IJournalEntryListDto,
+  EJournalEntryStatus,
 } from '@/shared/lib/api/Api';
-import { fileUploadService } from '@/shared/lib/services/file-upload.service';
 import type { IReactQueryOptions } from '@/shared/types/query-options.types';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CashTransferForm } from './cash-transfer-form';
 import { CashTransferFormSkeleton } from './state';
 import type {
+  CashTransferFormContainerProps,
   ICashTransferCurrencyContext,
   ICashTransferFormValues,
 } from './types';
@@ -28,15 +28,16 @@ const requiredQueryOptions: IReactQueryOptions = {
   throwOnError: true,
 };
 
-interface CashTransferFormContainerProps {
-  journalEntry?: IJournalEntryListDto;
-}
-
 export function CashTransferFormContainer({
   journalEntry,
+  initialValues: creationInitialValues,
+  restoring = false,
+  onAddAccount,
+  onAddCategory,
+  initialEditItemId,
+  onSuccess,
 }: Readonly<CashTransferFormContainerProps>) {
   const { t } = useTranslation<'journal-entries'>('journal-entries');
-  const navigate = useNavigate();
 
   const [currencyContext, setCurrencyContext] =
     useState<ICashTransferCurrencyContext>();
@@ -73,17 +74,18 @@ export function CashTransferFormContainer({
 
   const { data: officialExchangeRates } = useExchangeRates(exchangeRateQuery);
   const { mutateAsync: createTransfer } = useCreateTransfer();
+  const { mutateAsync: rectifyTransfer } = useRectifyTransfer();
+  const { mutateAsync: uploadFile } = useUploadFile();
 
-  const { mutateAsync: rectifyJournalEntry, isPending: isRectifying } =
-    useRectifyJournalEntry();
-
-  const initialValues = useMemo(
+  const editInitialValues = useMemo(
     () =>
       journalEntry
         ? journalEntryFormMapper.toCashTransferFormValues(journalEntry)
         : undefined,
     [journalEntry]
   );
+
+  const isDraft = journalEntry?.status === EJournalEntryStatus.Draft;
 
   const isFormDataPending =
     isSourcesPending || isDestinationsPending || isAccountingEntityPending;
@@ -98,57 +100,46 @@ export function CashTransferFormContainer({
     (account) => account.subType !== EAssetSubType.CashAndCashEquivalent
   );
 
-  const handlePersistValues = async (
+  const uploadAttachments = (values: ICashTransferFormValues) =>
+    Promise.all(
+      values.attachments
+        .filter((attachment) => attachment instanceof File)
+        .map((file) => uploadFile(file))
+    );
+
+  const createEntry = (
     values: ICashTransferFormValues,
-    intent: 'submit' | 'draft'
-  ) => {
+    postedAt: string | null,
+    attachmentReferences: string[]
+  ) =>
+    createTransfer(
+      journalEntryMapper.toTransferEntryReq(
+        values,
+        functionalCurrencyCode,
+        postedAt,
+        attachmentReferences
+      )
+    );
+
+  const handleCreate = async (values: ICashTransferFormValues) => {
+    const attachmentReferences = await uploadAttachments(values);
+    await createEntry(values, new Date().toISOString(), attachmentReferences);
+    toast.success(t('transfer_created_success_text'));
+    await onSuccess();
+  };
+
+  const handleCreateDraft = async (values: ICashTransferFormValues) => {
     if (submissionIntent) {
       return;
     }
 
-    setSubmissionIntent(intent);
+    setSubmissionIntent('draft');
 
     try {
-      if (journalEntry) {
-        const attachments = values.attachment
-          ? [await fileUploadService.uploadAttachment(values.attachment)]
-          : journalEntry.attachments;
-
-        const payload =
-          journalEntryMapper.toTransferJournalEntryRectificationReq(
-            values,
-            functionalCurrencyCode,
-            journalEntry,
-            attachments
-          );
-
-        await rectifyJournalEntry({ id: journalEntry.id, payload });
-        toast.success(t('journal_entry_updated_success_text'));
-      } else {
-        const attachmentReferences = values.attachment
-          ? [await fileUploadService.uploadFile(values.attachment)]
-          : [];
-
-        const postedAt = intent === 'draft' ? null : new Date().toISOString();
-
-        const payload = journalEntryMapper.toTransferEntryReq(
-          values,
-          functionalCurrencyCode,
-          postedAt,
-          attachmentReferences
-        );
-
-        await createTransfer(payload);
-
-        const successMessage =
-          intent === 'draft'
-            ? t('journal_entry_draft_saved_success_text')
-            : t('transfer_created_success_text');
-
-        toast.success(successMessage);
-      }
-
-      navigate('/transactions');
+      const attachmentReferences = await uploadAttachments(values);
+      await createEntry(values, null, attachmentReferences);
+      toast.success(t('journal_entry_draft_saved_success_text'));
+      await onSuccess();
     } catch (error) {
       handleApiError(error, { showToast: true });
     } finally {
@@ -156,15 +147,70 @@ export function CashTransferFormContainer({
     }
   };
 
-  const handleSubmit = (values: ICashTransferFormValues) =>
-    handlePersistValues(values, 'submit');
+  const handleRectify = async (values: ICashTransferFormValues) => {
+    if (!journalEntry || !editInitialValues) {
+      return;
+    }
 
-  const handleSaveDraft = (values: ICashTransferFormValues) =>
-    handlePersistValues(values, 'draft');
+    const attachmentReferences = await uploadAttachments(values);
 
-  if (isFormDataPending) {
+    const request = journalEntryMapper.toTransferRectificationRequest(
+      journalEntry,
+      editInitialValues,
+      values,
+      functionalCurrencyCode,
+      attachmentReferences
+    );
+
+    if (!request) {
+      toast.info(t('journal_entry_no_changes_text'));
+
+      return;
+    }
+
+    await rectifyTransfer({ id: journalEntry.id, request });
+
+    const successMessage = isDraft
+      ? t('journal_entry_draft_saved_success_text')
+      : t('journal_entry_updated_success_text');
+
+    toast.success(successMessage);
+    await onSuccess();
+  };
+
+  const handleSubmit = async (values: ICashTransferFormValues) => {
+    if (submissionIntent) {
+      return;
+    }
+
+    setSubmissionIntent('submit');
+
+    try {
+      if (journalEntry) {
+        await handleRectify(values);
+      } else {
+        await handleCreate(values);
+      }
+    } catch (error) {
+      handleApiError(error, { showToast: true });
+    } finally {
+      setSubmissionIntent(undefined);
+    }
+  };
+
+  if (isFormDataPending || restoring) {
     return <CashTransferFormSkeleton />;
   }
+
+  const getEditSubmitLabel = () => {
+    if (!journalEntry) {
+      return undefined;
+    }
+
+    return isDraft
+      ? t('cash_transaction_save_draft_text')
+      : t('journal_entry_update_text');
+  };
 
   return (
     <CashTransferForm
@@ -173,14 +219,17 @@ export function CashTransferFormContainer({
       categories={categories}
       disabled={!functionalCurrencyCode}
       functionalCurrencyCode={functionalCurrencyCode}
-      initialValues={initialValues}
-      loading={submissionIntent === 'submit' || isRectifying}
+      initialValues={editInitialValues ?? creationInitialValues}
+      loading={submissionIntent === 'submit'}
       officialExchangeRate={officialExchangeRates?.[0]}
+      onAddAccount={onAddAccount}
+      onAddCategory={onAddCategory}
+      initialEditItemId={initialEditItemId}
       onCurrencyContextChange={setCurrencyContext}
-      onSaveDraft={journalEntry ? undefined : handleSaveDraft}
+      onSaveDraft={journalEntry ? undefined : handleCreateDraft}
       onSubmit={handleSubmit}
       savingDraft={submissionIntent === 'draft'}
-      submitLabel={journalEntry ? t('journal_entry_update_text') : undefined}
+      submitLabel={getEditSubmitLabel()}
     />
   );
 }

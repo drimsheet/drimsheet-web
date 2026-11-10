@@ -20,6 +20,7 @@ export interface ItemizedFieldsProps {
   disabled?: boolean;
   excludeSelectedAccounts?: boolean;
   initialEditItemId?: string;
+  onAddCategory?: (items: IItemizedFieldValue[], itemId: string) => void;
   onChange: (items: IItemizedFieldValue[]) => void;
   onEditModeChange?: (isEditing: boolean) => void;
 }

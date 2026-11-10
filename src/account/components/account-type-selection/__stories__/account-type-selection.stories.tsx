@@ -47,3 +47,7 @@ export const Disabled: Story = {
     defaultValue: ELedgerAccountBehavior.Bank,
   },
 };
+
+export const Loading: Story = {
+  args: { loading: true, defaultValue: ELedgerAccountBehavior.Bank },
+};

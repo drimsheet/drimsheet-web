@@ -2,11 +2,7 @@ import {
   CashTransactionForm,
   type ICashTransactionFormValues,
 } from '@/journal-entries/components/cash-transaction-form';
-import type {
-  IExchangeRate,
-  IJournalCounterpartyReq,
-  ILedgerAccountDto,
-} from '@/shared/lib/api/Api';
+import type { IExchangeRate, ILedgerAccountDto } from '@/shared/lib/api/Api';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const accounts = [
@@ -36,9 +32,19 @@ const categories = [
   },
 ] as unknown as ILedgerAccountDto[];
 
-const counterpartyOptions: IJournalCounterpartyReq[] = [
-  { id: 'counterparty-1', name: 'Acme Consulting', type: 'organization' },
-  { id: 'counterparty-2', name: 'Jordan Taylor', type: 'individual' },
+const counterpartyOptions: ICashTransactionFormValues['counterparty'][] = [
+  {
+    id: 'counterparty-1',
+    name: 'Acme Consulting',
+    type: 'organization',
+    roles: ['vendor', 'employer'],
+  },
+  {
+    id: 'counterparty-2',
+    name: 'Jordan Taylor',
+    type: 'individual',
+    roles: ['contractor'],
+  },
 ];
 
 const meta = {
@@ -129,5 +135,20 @@ export const FunctionalCurrencyAccount: Story = {
 export const NarrowViewport: Story = {
   parameters: {
     viewport: { defaultViewport: 'mobile1' },
+  },
+};
+
+export const NewPayer: Story = {
+  args: {
+    variant: 'inflow',
+    counterpartyOptions: [],
+    onAddCounterparty: () => undefined,
+  },
+};
+
+export const NewPayee: Story = {
+  args: {
+    ...NewPayer.args,
+    variant: 'outflow',
   },
 };

@@ -1,9 +1,11 @@
+import { EDbStoreName, indexedDbService } from '@/shared/db/indexed-db';
 import {
   EAppThemePreference,
   type IUserPreferences,
   type TEntityId,
   type UAppThemePreference,
 } from '@/shared/lib/api/Api';
+import type { IStorageRecord } from '@/shared/lib/types/storage.types';
 
 export interface IStorageState {
   accountingEntityId: TEntityId;
@@ -51,6 +53,54 @@ function serialize<K extends keyof IStorageState>(
 }
 
 export const storageService = {
+  async getRecord<T>(key: string): Promise<T | undefined> {
+    const record: IStorageRecord<T> | undefined =
+      await indexedDbService.transact(
+        EDbStoreName.Records,
+        'readonly',
+        (store) => store.get(key)
+      );
+
+    if (
+      !record ||
+      (record.expiresAt !== undefined && record.expiresAt <= Date.now())
+    ) {
+      return undefined;
+    }
+
+    return record.value;
+  },
+
+  async setRecord<T>(key: string, value: T, expiresAt?: number) {
+    await indexedDbService.transact(
+      EDbStoreName.Records,
+      'readwrite',
+      (store) =>
+        store.put({ id: key, value, expiresAt } satisfies IStorageRecord<T>)
+    );
+  },
+
+  async removeRecord(key: string) {
+    await indexedDbService.transact(
+      EDbStoreName.Records,
+      'readwrite',
+      (store) => store.delete(key)
+    );
+  },
+
+  async prune(prefix?: string) {
+    await indexedDbService.prune<IStorageRecord>(
+      EDbStoreName.Records,
+      (record) => {
+        if (prefix !== undefined) {
+          return record.id.startsWith(prefix);
+        }
+
+        return record.expiresAt !== undefined && record.expiresAt <= Date.now();
+      }
+    );
+  },
+
   get<K extends keyof IStorageState>(key: K): IStorageState[K] | undefined {
     const storedValue = localStorage.getItem(storageKeys[key]);
 

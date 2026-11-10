@@ -52,6 +52,14 @@ describe('categoryCreationHelpers', () => {
       postingAccountName: '',
     });
   });
+  it('seeds the category type requested by the transaction', () => {
+    expect(categoryCreationHelpers.createInitialValues('revenue')).toEqual({
+      type: 'revenue',
+      name: '',
+      parentId: '',
+      postingAccountName: '',
+    });
+  });
   it('finds a nested parent with its full name path', () => {
     expect(
       categoryCreationHelpers.findParent([controlAccount], postingAccount.id)

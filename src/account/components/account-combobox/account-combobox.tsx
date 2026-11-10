@@ -10,22 +10,14 @@ import {
 import { Field, FieldError } from '@/shared/components/field';
 import { InputGroupAddon } from '@/shared/components/input-group';
 import { Label } from '@/shared/components/label';
+import { Money } from '@/shared/components/money';
 import type { ILedgerAccountDto } from '@/shared/lib/api/Api';
-import { Wallet } from 'lucide-react';
+import { cn } from '@/shared/lib/utils/cn';
+import { Plus, Wallet } from 'lucide-react';
 import { createElement, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export interface AccountComboboxProps {
-  label: string;
-  value: string;
-  accounts: ILedgerAccountDto[];
-  onChange: (value: string) => void;
-  error?: Array<{ message?: string } | undefined>;
-  id?: string;
-  placeholder?: string;
-  emptyMessage?: string;
-  disabled?: boolean;
-}
+import type { AccountComboboxProps, TAccountComboboxItem } from './types';
 
 function AccountIcon({ account }: Readonly<{ account?: ILedgerAccountDto }>) {
   const Icon = account ? mapAccountTypeToIcon(account) : Wallet;
@@ -38,11 +30,14 @@ export function AccountCombobox({
   value,
   accounts,
   onChange,
+  onAddAccount,
+  newAccountLabel,
   error,
   id = 'account-select',
   placeholder,
   emptyMessage,
   disabled = false,
+  showBalance = true,
 }: Readonly<AccountComboboxProps>) {
   const { t } = useTranslation(['ledger-accounts']);
   const [searchValue, setSearchValue] = useState('');
@@ -69,10 +64,33 @@ export function AccountCombobox({
     setSearchValue(value);
   };
 
-  const handleValueChange = (account: ILedgerAccountDto | null) => {
+  const handleValueChange = (account: TAccountComboboxItem | null) => {
+    if (account === 'add-account') {
+      setSearchValue('');
+      onAddAccount?.();
+
+      return;
+    }
+
     onChange(account?.id ?? '');
     setSearchValue('');
   };
+
+  const handleCheckItemValueEquality = (
+    account: TAccountComboboxItem | null,
+    selectedAccount: TAccountComboboxItem | null
+  ) => {
+    const isString =
+      typeof account === 'string' || typeof selectedAccount === 'string';
+
+    return isString
+      ? account === selectedAccount
+      : account?.id === selectedAccount?.id;
+  };
+
+  const items: TAccountComboboxItem[] = onAddAccount
+    ? [...options, 'add-account']
+    : options;
 
   const hasError = Boolean(error?.length);
 
@@ -82,21 +100,24 @@ export function AccountCombobox({
   const resolved_empty_message =
     emptyMessage ?? t('ledger-accounts:no_accounts_found');
 
+  const add_account_text =
+    newAccountLabel ?? t('ledger-accounts:add_new_account');
+
   return (
     <Field data-invalid={hasError}>
       <Label htmlFor={id} className="text-muted-foreground">
         {label}
       </Label>
       <Combobox
-        items={options}
+        items={items}
+        filter={null}
         autoHighlight
         value={selectedAccount ?? null}
         onValueChange={handleValueChange}
-        itemToStringLabel={(item: ILedgerAccountDto | null) => item?.name || ''}
-        isItemEqualToValue={(
-          account: ILedgerAccountDto | null,
-          selectedAccount: ILedgerAccountDto | null
-        ) => account?.id === selectedAccount?.id}
+        itemToStringLabel={(item: TAccountComboboxItem | null) =>
+          item === 'add-account' ? add_account_text : item?.name || ''
+        }
+        isItemEqualToValue={handleCheckItemValueEquality}
         onInputValueChange={handleInputValueChange}
       >
         <ComboboxInput
@@ -119,8 +140,27 @@ export function AccountCombobox({
                   <AccountIcon account={item} />
                   <span className="truncate">{item.name}</span>
                 </div>
+                {showBalance && (
+                  <Money
+                    value={item.balance}
+                    className={cn(
+                      'ml-auto shrink-0 whitespace-nowrap text-right text-xs tabular-nums',
+                      {
+                        'text-financial-expense!': item.balance.amount < 0,
+                        'text-financial-income!': item.balance.amount > 0,
+                        'text-muted-foreground!': item.balance.amount === 0,
+                      }
+                    )}
+                  />
+                )}
               </ComboboxItem>
             ))}
+            {onAddAccount && (
+              <ComboboxItem value="add-account">
+                <Plus />
+                {add_account_text}
+              </ComboboxItem>
+            )}
           </ComboboxList>
         </ComboboxContent>
       </Combobox>

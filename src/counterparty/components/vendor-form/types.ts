@@ -34,8 +34,11 @@ export type VendorFormSkeletonProps = Pick<
   'showPostalCode' | 'showDisplayName'
 >;
 
-export interface VendorFormCreateContainerProps {
-  onSuccess: () => void;
+export interface VendorFormCreateContainerProps extends Pick<
+  VendorFormProps,
+  'initialValues'
+> {
+  onSuccess: (counterparty: ICounterpartyDto) => void;
   onBusyChange?: (busy: boolean) => void;
 }
 

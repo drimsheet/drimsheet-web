@@ -1,6 +1,10 @@
 import journalEntryService from '@/journal-entries/lib/services/journal-entry.service';
 import { drimsheetApi } from '@/shared/lib/api';
-import type { TJournalEntryRectificationReq } from '@/shared/lib/api/Api';
+import type {
+  IPaymentEntryReq,
+  IReceiptEntryReq,
+  ITransferEntryReq,
+} from '@/shared/lib/api/Api';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/shared/lib/api', () => ({
@@ -9,7 +13,13 @@ vi.mock('@/shared/lib/api', () => ({
       deleteJournalEntry: vi.fn(),
       getJournalEntry: vi.fn(),
       getJournalEntries: vi.fn(),
-      rectifyJournalEntry: vi.fn(),
+      updateJournalEntryMeta: vi.fn(),
+      updateDraftPayment: vi.fn(),
+      updateDraftReceipt: vi.fn(),
+      updateDraftTransfer: vi.fn(),
+      voidAndReplacePayment: vi.fn(),
+      voidAndReplaceReceipt: vi.fn(),
+      voidAndReplaceTransfer: vi.fn(),
     },
   },
 }));
@@ -44,35 +54,120 @@ describe('journalEntryService', () => {
     );
   });
 
-  it('delegates rectification to the generated operation', async () => {
-    const payload = {
-      attachments: [],
-      effectiveDate: '2026-09-21',
-      postedAt: null,
-      memo: null,
-      sourceType: 'payment',
-      sourceLine: {
-        accountId: 'cash',
-        counterparty: { name: 'Vendor' },
-        amount: { amount: 1, currencyCode: 'NGN', isMinorUnit: false },
-        exchangeRate: null,
-        description: null,
-        sequenceOrder: 1,
-      },
-      destinationLines: [],
-    } satisfies TJournalEntryRectificationReq;
+  it.each([
+    ['rectifyPayment', 'updateDraftPayment'],
+    ['rectifyReceipt', 'updateDraftReceipt'],
+    ['rectifyTransfer', 'updateDraftTransfer'],
+  ] as const)(
+    'sends %s draft edits to the matching draft endpoint',
+    async (rectifyMethod, updateMethod) => {
+      const api = drimsheetApi.journalEntries;
+      vi.mocked(api[updateMethod]).mockResolvedValue({
+        data: { id: 'entry-1' },
+      } as never);
+      const patch = { attachments: { add: ['upload-ref'] }, memo: 'Draft' };
 
-    vi.mocked(
-      drimsheetApi.journalEntries.rectifyJournalEntry
-    ).mockResolvedValue({
-      data: { currentJournalEntryId: 'entry-1' },
+      await expect(
+        journalEntryService[rectifyMethod]('entry-1', {
+          action: 'updateDraft',
+          payload: patch,
+        })
+      ).resolves.toEqual({ id: 'entry-1' });
+      expect(api[updateMethod]).toHaveBeenCalledWith('entry-1', patch);
+      expect(api[updateMethod]).toHaveBeenCalledOnce();
+    }
+  );
+
+  it('delegates memo and line descriptions to the metadata operation', async () => {
+    const operation = drimsheetApi.journalEntries.updateJournalEntryMeta;
+    vi.mocked(operation).mockResolvedValue({
+      data: { id: 'entry-1' },
     } as never);
 
-    await journalEntryService.rectifyJournalEntry('entry-1', payload);
+    const patch = {
+      header: { memo: null },
+      lines: [{ id: 'line-1', description: 'Edited' }],
+    };
 
-    expect(
-      drimsheetApi.journalEntries.rectifyJournalEntry
-    ).toHaveBeenCalledWith('entry-1', payload);
+    await expect(
+      journalEntryService.rectifyPayment('entry-1', {
+        action: 'updateMeta',
+        payload: patch,
+      })
+    ).resolves.toEqual({ id: 'entry-1' });
+    expect(operation).toHaveBeenCalledWith('entry-1', patch);
+  });
+
+  it('returns the replacement journal for each source-specific correction', async () => {
+    const line = {
+      accountId: 'cash',
+      counterpartyId: 'counterparty-1',
+      amount: { amount: 1, currencyCode: 'NGN', isMinorUnit: false },
+      exchangeRate: null,
+      description: null,
+      sequenceOrder: 1,
+    };
+
+    const header = { effectiveDate: '2026-09-21', postedAt: null, memo: null };
+
+    const payment = {
+      ...header,
+      sourceLine: line,
+      destinationLines: [line],
+    } satisfies IPaymentEntryReq;
+
+    const receipt = {
+      ...header,
+      sourceLines: [line],
+      destinationLine: line,
+    } satisfies IReceiptEntryReq;
+
+    const transfer = {
+      ...header,
+      sourceLine: line,
+      destinationLine: line,
+      chargeLines: [line],
+    } satisfies ITransferEntryReq;
+
+    const replacement = { id: 'replacement-1' };
+
+    const {
+      voidAndReplacePayment,
+      voidAndReplaceReceipt,
+      voidAndReplaceTransfer,
+    } = drimsheetApi.journalEntries;
+
+    vi.mocked(voidAndReplacePayment).mockResolvedValue({
+      data: replacement,
+    } as never);
+    vi.mocked(voidAndReplaceReceipt).mockResolvedValue({
+      data: replacement,
+    } as never);
+    vi.mocked(voidAndReplaceTransfer).mockResolvedValue({
+      data: replacement,
+    } as never);
+
+    await expect(
+      journalEntryService.rectifyPayment('entry-1', {
+        action: 'voidAndReplace',
+        payload: payment,
+      })
+    ).resolves.toEqual(replacement);
+    await expect(
+      journalEntryService.rectifyReceipt('entry-1', {
+        action: 'voidAndReplace',
+        payload: receipt,
+      })
+    ).resolves.toEqual(replacement);
+    await expect(
+      journalEntryService.rectifyTransfer('entry-1', {
+        action: 'voidAndReplace',
+        payload: transfer,
+      })
+    ).resolves.toEqual(replacement);
+    expect(voidAndReplacePayment).toHaveBeenCalledWith('entry-1', payment);
+    expect(voidAndReplaceReceipt).toHaveBeenCalledWith('entry-1', receipt);
+    expect(voidAndReplaceTransfer).toHaveBeenCalledWith('entry-1', transfer);
   });
 });
 

@@ -1,5 +1,5 @@
 import type { ICashTransactionFormValues } from '@/journal-entries/components/cash-transaction-form';
-import type { ICashTransferFormInitialValues } from '@/journal-entries/components/cash-transfer-form';
+import type { ICashTransferFormValues } from '@/journal-entries/components/cash-transfer-form';
 import {
   EJournalEntrySourceType,
   type IExchangeRate,
@@ -81,17 +81,22 @@ function toCashTransactionFormValues(
         }))
       : [],
     counterparty: {
-      id: counterparty?.id,
+      id: counterparty?.id ?? '',
       name: counterparty?.name ?? '',
     },
     description: journalEntry.memo ?? '',
-    attachment: null,
+    attachments: journalEntry.attachments.map(({ url, name, type, size }) => ({
+      url,
+      name,
+      type,
+      size,
+    })),
   };
 }
 
 function toCashTransferFormValues(
   journalEntry: IJournalEntryListDto
-): ICashTransferFormInitialValues {
+): ICashTransferFormValues {
   const lines = sortLines(journalEntry.lines);
   const sourceLine = lines[0];
   const destinationLine = lines[1];
@@ -135,7 +140,12 @@ function toCashTransferFormValues(
       description: line.description ?? '',
     })),
     description: journalEntry.memo ?? '',
-    attachment: null,
+    attachments: journalEntry.attachments.map(({ url, name, type, size }) => ({
+      url,
+      name,
+      type,
+      size,
+    })),
   };
 }
 

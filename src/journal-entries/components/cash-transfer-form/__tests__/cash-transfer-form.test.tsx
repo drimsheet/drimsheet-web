@@ -82,6 +82,7 @@ const messages: ICashTransferFormValidationMessages = {
   itemAmountRequired: 'Fee is required',
   itemCategoryRequired: 'Fee category is required',
   itemsRequired: 'Fees are required',
+  attachmentCount: 'Attach up to 3 files',
   attachmentSize: 'Attachment is too large',
   attachmentType: 'Attachment type is invalid',
 };
@@ -121,6 +122,23 @@ describe('CashTransferForm validation', () => {
     messages
   );
 
+  it('counts saved and newly selected attachments towards the same limit', async () => {
+    const saved = {
+      name: 'saved.pdf',
+      url: 'https://example.com/saved.pdf',
+      type: 'application/pdf',
+      size: 10,
+    };
+
+    const files = ['first.pdf', 'second.pdf', 'third.pdf'].map(
+      (name) => new File(['receipt'], name, { type: 'application/pdf' })
+    );
+
+    await expect(
+      schema.validateAt('attachments', { attachments: [saved, ...files] })
+    ).rejects.toThrow('Attach up to 3 files');
+  });
+
   it('accepts balanced same-currency values with charges', async () => {
     await expect(
       schema.validate({
@@ -144,7 +162,7 @@ describe('CashTransferForm validation', () => {
           },
         ],
         description: '',
-        attachment: null,
+        attachments: [],
       })
     ).resolves.toBeDefined();
   });
@@ -165,7 +183,7 @@ describe('CashTransferForm validation', () => {
         isItemized: false,
         items: [],
         description: '',
-        attachment: null,
+        attachments: [],
       })
     ).rejects.toThrow('Amounts must balance');
   });
@@ -197,7 +215,7 @@ describe('CashTransferForm validation', () => {
           },
         ],
         description: '',
-        attachment: null,
+        attachments: [],
       })
     ).resolves.toBeDefined();
   });
@@ -218,7 +236,7 @@ describe('CashTransferForm validation', () => {
         isItemized: false,
         items: [],
         description: '',
-        attachment: null,
+        attachments: [],
       })
     ).rejects.toThrow();
   });
@@ -235,6 +253,68 @@ describe('CashTransferForm', () => {
       vi.fn() as unknown as typeof window.HTMLElement.prototype.setPointerCapture;
     window.HTMLElement.prototype.scrollIntoView =
       vi.fn() as unknown as typeof window.HTMLElement.prototype.scrollIntoView;
+  });
+
+  it('identifies the transfer field that opens account creation', async () => {
+    const user = userEvent.setup();
+    const onAddAccount = vi.fn();
+    renderForm({ onAddAccount });
+
+    await user.click(screen.getByRole('combobox', { name: 'Source account' }));
+    await user.click(screen.getByRole('option', { name: 'Add a new account' }));
+    expect(onAddAccount).toHaveBeenLastCalledWith(
+      expect.objectContaining({ sourceAccountId: 'source-bank' }),
+      'sourceAccountId'
+    );
+    await user.click(
+      screen.getByRole('combobox', { name: 'Destination account' })
+    );
+    await user.click(screen.getByRole('option', { name: 'Add a new account' }));
+    expect(onAddAccount).toHaveBeenLastCalledWith(
+      expect.objectContaining({ destinationAccountId: 'destination-cash' }),
+      'destinationAccountId'
+    );
+  });
+
+  it('passes the active fee row and attachment to category creation', async () => {
+    const user = userEvent.setup();
+    const onAddCategory = vi.fn();
+
+    const attachment = new File(['receipt'], 'receipt.pdf', {
+      type: 'application/pdf',
+    });
+
+    const fee = {
+      id: 'fee-1',
+      accountId: 'bank-fees',
+      amount: { amount: 5, currencyCode: 'NGN', isMinorUnit: false },
+      description: 'Transfer fee',
+    };
+
+    renderForm({
+      initialValues: {
+        ...defaultInitialValues,
+        isItemized: true,
+        items: [fee],
+        attachments: [attachment],
+      },
+      initialEditItemId: fee.id,
+      onAddCategory,
+    });
+    expect(screen.getByRole('button', { name: 'Create' })).toBeDisabled();
+    await user.click(screen.getByRole('combobox', { name: 'Category' }));
+    await user.click(
+      screen.getByRole('option', { name: 'Add a new category' })
+    );
+    expect(onAddCategory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceAccountId: 'source-bank',
+        destinationAccountId: 'destination-cash',
+        attachments: [attachment],
+        items: [fee],
+      }),
+      fee.id
+    );
   });
 
   it('renders the requested single-entry transfer fields', () => {
@@ -350,7 +430,7 @@ describe('CashTransferForm', () => {
       screen.getByRole('option', { name: 'Bank fees' })
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('option', { name: 'Petty cash' })
+      screen.queryByRole('option', { name: /^Petty cash/ })
     ).not.toBeInTheDocument();
   });
 

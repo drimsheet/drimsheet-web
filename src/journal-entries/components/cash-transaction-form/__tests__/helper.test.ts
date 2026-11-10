@@ -28,7 +28,7 @@ const values: ICashTransactionFormValues = {
   ],
   counterparty: { id: 'counterparty-1', name: ' Acme ', type: 'organization' },
   description: ' Consulting ',
-  attachment: null,
+  attachments: [],
 };
 
 describe('cashTransactionFormHelpers', () => {
@@ -53,12 +53,12 @@ describe('cashTransactionFormHelpers', () => {
         isItemized: false,
         items: [],
         counterparty: {
-          id: undefined,
+          id: '',
           name: '',
           type: undefined,
         },
         description: '',
-        attachment: null,
+        attachments: [],
       });
     });
 
@@ -102,7 +102,7 @@ describe('cashTransactionFormHelpers', () => {
           type: 'organization',
         },
         description: 'Consulting',
-        attachment: null,
+        attachments: [],
       });
     });
 
@@ -149,7 +149,7 @@ describe('cashTransactionFormHelpers', () => {
           type: 'organization',
         },
         description: ' Consulting ',
-        attachment: null,
+        attachments: [],
       });
     });
 
@@ -182,7 +182,7 @@ describe('cashTransactionFormHelpers', () => {
           type: 'organization',
         },
         description: ' Consulting ',
-        attachment: null,
+        attachments: [],
       });
     });
   });
@@ -375,17 +375,17 @@ describe('cashTransactionFormHelpers', () => {
           type: 'organization',
         },
         description: 'Consulting',
-        attachment: null,
+        attachments: [],
       });
     });
 
-    it('omits absent counterparty identity fields and clears an unneeded exchange rate', () => {
+    it('preserves the selected ID, omits an absent type, and clears an unneeded exchange rate', () => {
       expect(
         cashTransactionFormHelpers.normalizeValues(
           {
             ...values,
             exchangeRate: { value: 1500, inverted: false },
-            counterparty: { name: ' New counterparty ' },
+            counterparty: { id: 'new-party', name: ' New counterparty ' },
           },
           false
         )
@@ -404,9 +404,9 @@ describe('cashTransactionFormHelpers', () => {
             description: 'Item description',
           },
         ],
-        counterparty: { name: 'New counterparty' },
+        counterparty: { id: 'new-party', name: 'New counterparty' },
         description: 'Consulting',
-        attachment: null,
+        attachments: [],
       });
     });
 

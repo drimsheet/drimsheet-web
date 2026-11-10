@@ -6,7 +6,8 @@ import * as yup from 'yup';
 import cashTransferFormHelpers from './helper';
 import type { ICashTransferFormValues } from './types';
 
-const MAX_ATTACHMENT_SIZE_BYTES = 2 * 1024 * 1024;
+const MAX_ATTACHMENTS = 3;
+const MAX_ATTACHMENT_SIZE_BYTES = 5 * 1024 * 1024;
 
 const ACCEPTED_ATTACHMENT_TYPES = new Set([
   'image/jpeg',
@@ -35,6 +36,7 @@ export interface ICashTransferFormValidationMessages {
   itemAmountRequired: string;
   itemCategoryRequired: string;
   itemsRequired: string;
+  attachmentCount: string;
   attachmentSize: string;
   attachmentType: string;
 }
@@ -227,14 +229,22 @@ export function createCashTransferFormValidation(
           otherwise: (schema) => schema.optional(),
         }),
       description: yup.string().optional(),
-      attachment: yup
-        .mixed<File>()
-        .nullable()
-        .test('attachment-type', messages.attachmentType, (file) =>
-          file ? isAcceptedAttachment(file) : true
+      attachments: yup
+        .array(
+          yup.mixed<ICashTransferFormValues['attachments'][number]>().defined()
         )
-        .test('attachment-size', messages.attachmentSize, (file) =>
-          file ? file.size <= MAX_ATTACHMENT_SIZE_BYTES : true
+        .required()
+        .max(MAX_ATTACHMENTS, messages.attachmentCount)
+        .test('attachment-type', messages.attachmentType, (attachments) =>
+          attachments.every(
+            (file) => !(file instanceof File) || isAcceptedAttachment(file)
+          )
+        )
+        .test('attachment-size', messages.attachmentSize, (attachments) =>
+          attachments.every(
+            (file) =>
+              !(file instanceof File) || file.size <= MAX_ATTACHMENT_SIZE_BYTES
+          )
         ),
     })
     .test('balanced-transfer', messages.amountsUnbalanced, function (values) {
@@ -313,7 +323,8 @@ export function useCashTransferFormValidation(
           itemAmountRequired: t('itemized_amount_required_text'),
           itemCategoryRequired: t('itemized_category_required_text'),
           itemsRequired: t('itemized_items_required_text'),
-          attachmentSize: t('cash_transaction_attachment_size_text'),
+          attachmentCount: t('cash_transaction_attachments_count_text'),
+          attachmentSize: t('cash_transaction_attachments_size_text'),
           attachmentType: t('cash_transaction_attachment_type_text'),
         },
         officialExchangeRate

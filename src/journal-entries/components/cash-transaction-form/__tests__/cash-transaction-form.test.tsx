@@ -6,7 +6,7 @@ import {
   type UCashTransactionFormVariant,
 } from '@/journal-entries/components/cash-transaction-form';
 import type { IExchangeRate, ILedgerAccountDto } from '@/shared/lib/api/Api';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -62,7 +62,8 @@ const validationMessages: ICashTransactionFormValidationMessages = {
   itemCategoryRequired: 'Item category is required',
   itemsRequired: 'Add at least one item',
   counterpartyRequired: 'Person or business is required',
-  attachmentSize: 'Attachment must be no larger than 2 MB',
+  attachmentCount: 'Attach up to 3 files',
+  attachmentSize: 'Each attachment must be no larger than 5 MB',
   attachmentType: 'Attachment must be a JPEG, PNG, or PDF',
 };
 
@@ -74,9 +75,9 @@ const validValues: ICashTransactionFormValues = {
   exchangeRate: null,
   isItemized: false,
   items: [],
-  counterparty: { name: 'Counterparty' },
+  counterparty: { id: 'counterparty-1', name: 'Counterparty' },
   description: '',
-  attachment: null,
+  attachments: [],
 };
 
 describe('CashTransactionForm validation', () => {
@@ -112,24 +113,50 @@ describe('CashTransactionForm validation', () => {
     await expect(
       schema.validate({
         ...validValues,
-        attachment: new File(['text'], 'attachment.txt', {
-          type: 'text/plain',
-        }),
+        attachments: [
+          new File(['text'], 'attachment.txt', {
+            type: 'text/plain',
+          }),
+        ],
       })
     ).rejects.toThrow('Attachment must be a JPEG, PNG, or PDF');
 
     await expect(
       schema.validate({
         ...validValues,
-        attachment: new File(
-          [new Uint8Array(2 * 1024 * 1024 + 1)],
-          'attachment.pdf',
-          {
+        attachments: [
+          new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'attachment.pdf', {
             type: 'application/pdf',
-          }
-        ),
+          }),
+        ],
       })
-    ).rejects.toThrow('Attachment must be no larger than 2 MB');
+    ).rejects.toThrow('Each attachment must be no larger than 5 MB');
+  });
+
+  it('counts saved and new files together toward the three-file limit', async () => {
+    const saved = {
+      name: 'saved.pdf',
+      url: 'https://example.com/saved.pdf',
+      size: 10,
+      type: 'application/pdf',
+    };
+
+    const files = ['one.pdf', 'two.pdf', 'three.pdf'].map(
+      (name) =>
+        new File([new Uint8Array(5 * 1024 * 1024)], name, {
+          type: 'application/pdf',
+        })
+    );
+
+    await expect(
+      schema.validate({
+        ...validValues,
+        attachments: [saved, ...files.slice(0, 2)],
+      })
+    ).resolves.toBeTruthy();
+    await expect(
+      schema.validate({ ...validValues, attachments: [saved, ...files] })
+    ).rejects.toThrow('Attach up to 3 files');
   });
 
   it('rejects a future date', async () => {
@@ -162,6 +189,416 @@ describe('CashTransactionForm', () => {
       vi.fn() as unknown as typeof window.HTMLElement.prototype.setPointerCapture;
     window.HTMLElement.prototype.scrollIntoView =
       vi.fn() as unknown as typeof window.HTMLElement.prototype.scrollIntoView;
+  });
+
+  it('passes unfinished values and the attachment to account creation without validating the form', async () => {
+    const user = userEvent.setup();
+    const onAddAccount = vi.fn();
+
+    const attachment = new File(['receipt'], 'receipt.pdf', {
+      type: 'application/pdf',
+    });
+
+    render(
+      <CashTransactionForm
+        accounts={accounts}
+        categories={categories}
+        functionalCurrencyCode="NGN"
+        initialValues={{
+          ...validValues,
+          amount: { ...validValues.amount, amount: Number.NaN },
+          attachments: [attachment],
+        }}
+        onAddAccount={onAddAccount}
+        onCurrencyContextChange={vi.fn()}
+        onSubmit={vi.fn()}
+      />
+    );
+
+    await user.clear(screen.getByLabelText('Description'));
+    await user.type(
+      screen.getByLabelText('Description'),
+      'Unfinished transaction'
+    );
+    await user.click(screen.getByRole('combobox', { name: 'Account' }));
+    await user.click(screen.getByRole('option', { name: 'Add a new account' }));
+    expect(onAddAccount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description: 'Unfinished transaction',
+        attachments: [attachment],
+        amount: expect.objectContaining({ amount: Number.NaN }),
+      })
+    );
+  });
+
+  it('passes the unfinished transaction and its attachment to single-category creation', async () => {
+    const user = userEvent.setup();
+    const onAddCategory = vi.fn();
+
+    const attachment = new File(['receipt'], 'receipt.pdf', {
+      type: 'application/pdf',
+    });
+
+    render(
+      <CashTransactionForm
+        accounts={accounts}
+        categories={categories}
+        functionalCurrencyCode="NGN"
+        initialValues={{
+          ...validValues,
+          categoryId: '',
+          attachments: [attachment],
+        }}
+        onAddCategory={onAddCategory}
+        onCurrencyContextChange={vi.fn()}
+        onSubmit={vi.fn()}
+      />
+    );
+    await user.click(screen.getByRole('combobox', { name: 'Category' }));
+    await user.click(
+      screen.getByRole('option', { name: 'Add a new category' })
+    );
+    expect(onAddCategory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ...validValues,
+        categoryId: '',
+        attachments: [attachment],
+      })
+    );
+  });
+
+  it.each(['inflow', 'outflow'] as const)(
+    'offers %s counterparty creation for an unmatched search with the unfinished transaction',
+    async (variant) => {
+      const onAddCounterparty = vi.fn();
+      const user = userEvent.setup();
+
+      const attachment = new File(['receipt'], 'receipt.pdf', {
+        type: 'application/pdf',
+      });
+
+      render(
+        <CashTransactionForm
+          accounts={accounts}
+          categories={categories}
+          functionalCurrencyCode="NGN"
+          variant={variant}
+          initialValues={{
+            ...validValues,
+            amount: { ...validValues.amount, amount: Number.NaN },
+            counterparty: { id: '', name: '' },
+            attachments: [attachment],
+          }}
+          counterpartyOptions={[{ id: 'existing', name: 'Existing person' }]}
+          onAddCounterparty={onAddCounterparty}
+          onCurrencyContextChange={vi.fn()}
+          onSubmit={vi.fn()}
+        />
+      );
+
+      const input = screen.getByRole('combobox', {
+        name: variant === 'inflow' ? 'Payer' : 'Recipient',
+      });
+
+      await user.type(input, '  New person  ');
+      expect(screen.queryByRole('note')).not.toBeInTheDocument();
+      await user.click(
+        screen.getByRole('option', {
+          name: 'Add new counterparty',
+        })
+      );
+      expect(onAddCounterparty).toHaveBeenCalledWith(
+        expect.objectContaining({
+          counterparty: { id: '', name: '', type: undefined },
+          amount: expect.objectContaining({ amount: Number.NaN }),
+          attachments: [attachment],
+        }),
+        'New person'
+      );
+    }
+  );
+
+  it('replaces the search with a created counterparty while preserving the transaction', async () => {
+    const user = userEvent.setup();
+    const onAddCounterparty = vi.fn();
+    const onSubmit = vi.fn();
+
+    const attachment = new File(['receipt'], 'receipt.pdf', {
+      type: 'application/pdf',
+    });
+
+    const props = {
+      accounts,
+      categories,
+      functionalCurrencyCode: 'NGN',
+      onAddCounterparty,
+      onCurrencyContextChange: vi.fn(),
+      onSubmit,
+    };
+
+    const { rerender } = render(
+      <CashTransactionForm
+        {...props}
+        initialValues={{
+          ...validValues,
+          attachments: [attachment],
+          counterparty: { id: '', name: '' },
+        }}
+      />
+    );
+
+    await user.type(
+      screen.getByRole('combobox', { name: 'Person or business' }),
+      'Acme'
+    );
+    await user.click(
+      screen.getByRole('option', { name: 'Add new counterparty' })
+    );
+
+    const [preservedValues] = onAddCounterparty.mock.calls[0] as [
+      ICashTransactionFormValues,
+    ];
+
+    const createdCounterparty = {
+      id: 'created',
+      name: 'Acme Ltd',
+      type: 'organization' as const,
+    };
+
+    rerender(
+      <CashTransactionForm
+        {...props}
+        initialValues={{
+          ...preservedValues,
+          counterparty: createdCounterparty,
+        }}
+      />
+    );
+
+    expect(
+      screen.getByRole('combobox', { name: 'Person or business' })
+    ).toHaveValue('Acme Ltd');
+    expect(screen.getByText('receipt.pdf')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
+        ...validValues,
+        attachments: [attachment],
+        counterparty: createdCounterparty,
+      })
+    );
+  });
+
+  it('keeps the add action last for empty, exact, and partial searches', async () => {
+    const user = userEvent.setup();
+    const onAddCounterparty = vi.fn();
+    render(
+      <CashTransactionForm
+        accounts={accounts}
+        categories={categories}
+        functionalCurrencyCode="NGN"
+        initialValues={{ ...validValues, counterparty: { id: '', name: '' } }}
+        counterpartyOptions={[{ id: 'acme', name: 'Acme Consulting' }]}
+        onAddCounterparty={onAddCounterparty}
+        onCurrencyContextChange={vi.fn()}
+        onSubmit={vi.fn()}
+      />
+    );
+    const input = screen.getByRole('combobox', { name: 'Person or business' });
+    await user.click(input);
+    expect(screen.getAllByRole('option').at(-1)).toHaveTextContent(
+      'Add new counterparty'
+    );
+    await user.type(input, 'Acme Consulting');
+    expect(
+      screen.getByRole('option', { name: 'Acme Consulting' })
+    ).toBeVisible();
+    expect(screen.getAllByRole('option').at(-1)).toHaveTextContent(
+      'Add new counterparty'
+    );
+    await user.clear(input);
+    await user.type(input, 'Acme');
+    expect(
+      screen.getByRole('option', { name: 'Acme Consulting' })
+    ).toBeVisible();
+    expect(screen.getAllByRole('option').at(-1)).toHaveTextContent(
+      'Add new counterparty'
+    );
+    await user.click(
+      screen.getByRole('option', { name: 'Add new counterparty' })
+    );
+    expect(onAddCounterparty).toHaveBeenCalledExactlyOnceWith(
+      expect.any(Object),
+      'Acme'
+    );
+  });
+
+  it('shows type icons and relationship badges without changing the selected counterparty', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(
+      <CashTransactionForm
+        accounts={accounts}
+        categories={categories}
+        functionalCurrencyCode="NGN"
+        initialValues={{ ...validValues, counterparty: { id: '', name: '' } }}
+        counterpartyOptions={[
+          {
+            id: 'business',
+            name: 'Acme Consulting',
+            type: 'organization',
+            roles: ['vendor', 'contractor', 'employer'],
+          },
+          {
+            id: 'person',
+            name: 'Jordan Taylor',
+            type: 'individual',
+            roles: [],
+          },
+        ]}
+        onAddCounterparty={vi.fn()}
+        onCurrencyContextChange={vi.fn()}
+        onSubmit={onSubmit}
+      />
+    );
+    const input = screen.getByRole('combobox', { name: 'Person or business' });
+    await user.click(input);
+
+    const organization = screen.getByRole('option', {
+      name: /Acme Consulting/,
+    });
+
+    const individual = screen.getByRole('option', { name: /Jordan Taylor/ });
+    expect(
+      within(organization).getByRole('img', { name: 'Organization' })
+    ).toBeVisible();
+    expect(
+      within(individual).getByRole('img', { name: 'Individual' })
+    ).toBeVisible();
+    expect(within(organization).getByText('Vendor')).toBeVisible();
+    expect(within(organization).getByText('Contractor')).toBeVisible();
+    expect(within(organization).getByText('Employer')).toBeVisible();
+    expect(
+      within(individual).queryByText(/Vendor|Contractor|Employer/)
+    ).not.toBeInTheDocument();
+    expect(screen.getAllByRole('option').at(-1)).toHaveTextContent(
+      'Add new counterparty'
+    );
+    await user.click(organization);
+    expect(input).toHaveValue('Acme Consulting');
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
+        ...validValues,
+        counterparty: {
+          id: 'business',
+          name: 'Acme Consulting',
+          type: 'organization',
+        },
+      })
+    );
+  });
+
+  it('selects an existing counterparty and clears its identity when searching for another', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(
+      <CashTransactionForm
+        accounts={accounts}
+        categories={categories}
+        functionalCurrencyCode="NGN"
+        variant="inflow"
+        initialValues={{ ...validValues, counterparty: { id: '', name: '' } }}
+        counterpartyOptions={[{ id: 'existing', name: 'Existing person' }]}
+        onAddCounterparty={vi.fn()}
+        onCurrencyContextChange={vi.fn()}
+        onSubmit={onSubmit}
+      />
+    );
+    const input = screen.getByRole('combobox', { name: 'Payer' });
+    await user.type(input, 'Existing');
+    expect(screen.getAllByRole('option').at(-1)).toHaveTextContent(
+      'Add new counterparty'
+    );
+    await user.click(screen.getByRole('option', { name: 'Existing person' }));
+    expect(input).toHaveValue('Existing person');
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          counterparty: { id: 'existing', name: 'Existing person' },
+        })
+      )
+    );
+
+    onSubmit.mockClear();
+    await user.click(input);
+    await user.click(
+      within(input.parentElement!).getByRole('button', {
+        name: 'Clear selection',
+      })
+    );
+    expect(input).toHaveValue('');
+    await user.type(input, 'Existing');
+    await user.click(screen.getByRole('option', { name: 'Existing person' }));
+    await user.type(input, ' changed');
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    expect(await screen.findByText('Payer is required')).toBeVisible();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('rejects an unmatched name for both submission and saving a draft without offering creation when unavailable', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const onSaveDraft = vi.fn();
+    render(
+      <CashTransactionForm
+        accounts={accounts}
+        categories={categories}
+        functionalCurrencyCode="NGN"
+        variant="inflow"
+        initialValues={{ ...validValues, counterparty: { id: '', name: '' } }}
+        onCurrencyContextChange={vi.fn()}
+        onSubmit={onSubmit}
+        onSaveDraft={onSaveDraft}
+      />
+    );
+    await user.type(
+      screen.getByRole('combobox', { name: 'Payer' }),
+      'Unknown payer'
+    );
+    expect(screen.getByText('No payers found.')).toBeVisible();
+    expect(
+      screen.queryByRole('option', { name: 'Add new counterparty' })
+    ).not.toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Save draft' }));
+    expect(await screen.findByText('Payer is required')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await waitFor(() => expect(onSubmit).not.toHaveBeenCalled());
+    expect(onSaveDraft).not.toHaveBeenCalled();
+  });
+
+  it('allows creation before the first counterparty exists', async () => {
+    const user = userEvent.setup();
+    const onAddCounterparty = vi.fn();
+    render(
+      <CashTransactionForm
+        accounts={accounts}
+        categories={categories}
+        functionalCurrencyCode="NGN"
+        variant="inflow"
+        onAddCounterparty={onAddCounterparty}
+        onCurrencyContextChange={vi.fn()}
+        onSubmit={vi.fn()}
+      />
+    );
+    await user.click(screen.getByRole('combobox', { name: 'Payer' }));
+    await user.click(
+      screen.getByRole('option', { name: 'Add new counterparty' })
+    );
+    expect(onAddCounterparty).toHaveBeenCalledWith(expect.any(Object), '');
   });
 
   it('renders the single-entry layout and omits same-currency exchange rate', () => {
@@ -203,19 +640,19 @@ describe('CashTransactionForm', () => {
   }>([
     {
       label: 'Person or business',
-      placeholder: 'Select or enter a person or business',
+      placeholder: 'Select a person or business',
       requiredMessage: 'Person or business is required',
       variant: undefined,
     },
     {
       label: 'Payer',
-      placeholder: 'Select or enter a payer',
+      placeholder: 'Select a payer',
       requiredMessage: 'Payer is required',
       variant: 'inflow',
     },
     {
       label: 'Recipient',
-      placeholder: 'Select or enter a recipient',
+      placeholder: 'Select a recipient',
       requiredMessage: 'Recipient is required',
       variant: 'outflow',
     },
@@ -231,7 +668,7 @@ describe('CashTransactionForm', () => {
           functionalCurrencyCode="NGN"
           initialValues={{
             ...validValues,
-            counterparty: { name: '' },
+            counterparty: { id: '', name: '' },
           }}
           onCurrencyContextChange={() => undefined}
           onSubmit={() => undefined}
@@ -365,7 +802,7 @@ describe('CashTransactionForm', () => {
     );
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
-    await user.click(screen.getByRole('option', { name: 'USD bank account' }));
+    await user.click(screen.getByRole('option', { name: /^USD bank account/ }));
 
     expect(onCurrencyContextChange).toHaveBeenLastCalledWith({
       currencyCode: 'USD',
@@ -390,7 +827,7 @@ describe('CashTransactionForm', () => {
     );
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
-    await user.click(screen.getByRole('option', { name: 'NGN bank account' }));
+    await user.click(screen.getByRole('option', { name: /^NGN bank account/ }));
 
     expect(onCurrencyContextChange).toHaveBeenCalledWith({
       currencyCode: 'NGN',
@@ -468,7 +905,7 @@ describe('CashTransactionForm', () => {
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
     await user.click(
-      await screen.findByRole('option', { name: 'NGN bank account' })
+      await screen.findByRole('option', { name: /^NGN bank account/ })
     );
 
     await waitFor(() =>
@@ -518,6 +955,7 @@ describe('CashTransactionForm', () => {
         variant="inflow"
         functionalCurrencyCode="NGN"
         initialValues={validValues}
+        onAddCounterparty={vi.fn()}
         onCurrencyContextChange={() => undefined}
         onSubmit={() => undefined}
         categories={categories}
@@ -532,10 +970,20 @@ describe('CashTransactionForm', () => {
     );
 
     expect(createButton).toBeDisabled();
+    await user.click(screen.getByRole('combobox', { name: 'Payer' }));
+    expect(
+      screen.getByRole('option', { name: 'Add new counterparty' })
+    ).toHaveAttribute('aria-disabled', 'true');
+    await user.keyboard('{Escape}');
 
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
     expect(createButton).toBeEnabled();
+    await user.click(screen.getByRole('combobox', { name: 'Payer' }));
+    expect(
+      screen.getByRole('option', { name: 'Add new counterparty' })
+    ).not.toHaveAttribute('aria-disabled', 'true');
+    await user.keyboard('{Escape}');
 
     await user.click(screen.getByRole('button', { name: 'Edit item 1' }));
 
@@ -602,7 +1050,7 @@ describe('CashTransactionForm', () => {
     expect(createButton).toBeDisabled();
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
-    await user.click(screen.getByRole('option', { name: 'USD bank account' }));
+    await user.click(screen.getByRole('option', { name: /^USD bank account/ }));
 
     expect(createButton).toBeEnabled();
     expect(
@@ -632,7 +1080,7 @@ describe('CashTransactionForm', () => {
     expect(createButton).toBeDisabled();
 
     await user.click(screen.getByRole('combobox', { name: 'Account' }));
-    await user.click(screen.getByRole('option', { name: 'USD bank account' }));
+    await user.click(screen.getByRole('option', { name: /^USD bank account/ }));
 
     expect(createButton).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();

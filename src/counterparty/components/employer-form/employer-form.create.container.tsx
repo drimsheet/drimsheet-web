@@ -13,6 +13,7 @@ import type {
 } from './types';
 
 export function EmployerFormCreateContainer({
+  initialValues,
   onSuccess,
   onBusyChange,
 }: Readonly<EmployerFormCreateContainerProps>) {
@@ -35,9 +36,12 @@ export function EmployerFormCreateContainer({
     }
 
     try {
-      await createCounterparty(counterpartyMapper.toEmployerCreateReq(values));
+      const counterparty = await createCounterparty(
+        counterpartyMapper.toEmployerCreateReq(values)
+      );
+
       toast.success(t('employer_created_success_text'));
-      onSuccess();
+      onSuccess(counterparty);
     } catch (error) {
       handleApiError(error, { showToast: true });
     }
@@ -49,6 +53,7 @@ export function EmployerFormCreateContainer({
 
   return (
     <EmployerForm
+      initialValues={initialValues}
       onSubmit={handleSubmit}
       jurisdictions={jurisdictions}
       loading={isCreating}

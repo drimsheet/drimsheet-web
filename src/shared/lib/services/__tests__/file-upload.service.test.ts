@@ -51,21 +51,6 @@ describe('fileUploadService', () => {
     });
   });
 
-  it('returns attachment metadata for journal-entry rectification', async () => {
-    const file = new File(['file-content'], 'receipt.png', {
-      type: 'image/png',
-    });
-
-    vi.mocked(drimsheetApi.files.preSignUploads).mockResolvedValue({
-      data: [uploadInstruction],
-    } as never);
-    vi.mocked(axios.put).mockResolvedValue({} as never);
-
-    await expect(fileUploadService.uploadAttachment(file)).resolves.toEqual(
-      uploadInstruction.file
-    );
-  });
-
   it('rejects before direct upload when no instruction is returned', async () => {
     const file = new File(['content'], 'receipt.png', { type: 'image/png' });
     vi.mocked(drimsheetApi.files.preSignUploads).mockResolvedValue({

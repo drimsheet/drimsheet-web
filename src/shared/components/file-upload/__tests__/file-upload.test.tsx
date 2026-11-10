@@ -10,9 +10,8 @@ const defaultProps = {
   id: 'receipt-file',
   label: 'Attach receipt',
   onValueChange: vi.fn(),
-  removeText: 'Remove file',
   replaceText: 'Replace file',
-  value: null,
+  value: [],
 };
 
 describe('FileUpload', () => {
@@ -27,7 +26,7 @@ describe('FileUpload', () => {
 
     await user.upload(screen.getByLabelText('Attach receipt'), file);
 
-    expect(onValueChange).toHaveBeenCalledWith(file);
+    expect(onValueChange).toHaveBeenCalledWith([file]);
     expect(screen.getByLabelText('Attach receipt')).toHaveAttribute(
       'accept',
       'image/jpeg,image/png,application/pdf'
@@ -46,14 +45,18 @@ describe('FileUpload', () => {
       <FileUpload
         {...defaultProps}
         onValueChange={onValueChange}
-        value={file}
+        value={[file]}
       />
     );
 
     expect(screen.getByText('receipt.pdf')).toBeVisible();
+    expect(screen.getByText('PDF · 7 B')).toBeVisible();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Replace file' })).toBeVisible();
-    await user.click(screen.getByRole('button', { name: 'Remove file' }));
-    expect(onValueChange).toHaveBeenCalledWith(null);
+    await user.click(
+      screen.getByRole('button', { name: 'Remove file receipt.pdf' })
+    );
+    expect(onValueChange).toHaveBeenCalledWith([]);
   });
 
   it('disables picker and remove actions', () => {
@@ -61,10 +64,12 @@ describe('FileUpload', () => {
       type: 'application/pdf',
     });
 
-    render(<FileUpload {...defaultProps} disabled value={file} />);
+    render(<FileUpload {...defaultProps} disabled value={[file]} />);
 
     expect(screen.getByLabelText('Attach receipt')).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Replace file' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Remove file' })).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: 'Remove file receipt.pdf' })
+    ).toBeDisabled();
   });
 });

@@ -20,6 +20,7 @@ export function ItemizedFields({
   excludeSelectedAccounts = false,
   initialEditItemId,
   onChange,
+  onAddCategory,
   onEditModeChange,
 }: Readonly<ItemizedFieldsProps>) {
   const { t } = useTranslation<'journal-entries'>('journal-entries');
@@ -170,6 +171,18 @@ export function ItemizedFields({
     onChange(nextItems);
   };
 
+  const handleAddCategory = () => {
+    if (!draftItem) {
+      return;
+    }
+
+    const nextItems = draftReplacesCommittedItem
+      ? items.map((item) => (item.id === draftItem.id ? draftItem : item))
+      : [...items, draftItem];
+
+    onAddCategory?.(nextItems, draftItem.id);
+  };
+
   const handleDeleteItem = (itemId: string) => {
     const committedItemExists = items.some((item) => item.id === itemId);
     const activeDraftItemDeleted = draftItem?.id === itemId;
@@ -213,6 +226,7 @@ export function ItemizedFields({
               item={draftItem}
               onChange={handleItemChange}
               onDelete={handleDeleteItem}
+              onAddCategory={onAddCategory ? handleAddCategory : undefined}
             />
           );
         }
@@ -244,6 +258,7 @@ export function ItemizedFields({
           item={draftItem}
           onChange={handleItemChange}
           onDelete={handleDeleteItem}
+          onAddCategory={onAddCategory ? handleAddCategory : undefined}
         />
       )}
 

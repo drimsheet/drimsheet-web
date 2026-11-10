@@ -2,15 +2,15 @@ import { BalanceEffectIcon } from '@/shared/components/balance-effect-icon';
 import { FormattedDate } from '@/shared/components/date';
 import { ItemMedia } from '@/shared/components/item';
 import { Money } from '@/shared/components/money';
+import { UploadedFile } from '@/shared/components/uploaded-file';
 import {
   EJournalEntrySourceType,
   ELedgerAccountBalanceEffect,
   type IMoneyDto,
 } from '@/shared/lib/api/Api';
-import { ArrowLeftRight, Paperclip } from 'lucide-react';
+import { ArrowLeftRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import transactionDetailsHelpers from './helper';
 import { CashTransactionDetails } from './parts/cash-transaction-details';
 import { TransferTransactionDetails } from './parts/transfer-transaction-details';
 import type { TransactionDetailsProps } from './types';
@@ -129,44 +129,11 @@ export function TransactionDetails({
             {attachmentsTitle}
           </h3>
           <ul className="space-y-2">
-            {details.attachments.map((attachment) => {
-              const openAttachmentAction = t(
-                'transaction_details_open_attachment_action',
-                { name: attachment.name }
-              );
-
-              const attachmentType =
-                attachment.type.split('/').at(-1)?.toUpperCase() ||
-                attachment.type;
-
-              return (
-                <li key={`${attachment.url}-${attachment.name}`}>
-                  <a
-                    aria-label={openAttachmentAction}
-                    className="flex items-center gap-3 rounded-lg bg-muted/40 p-3 text-sm outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
-                    href={attachment.url}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    <Paperclip
-                      aria-hidden="true"
-                      className="size-4 shrink-0 text-muted-foreground"
-                    />
-                    <span className="min-w-0">
-                      <span className="block truncate font-medium">
-                        {attachment.name}
-                      </span>
-                      <span className="mt-1 block text-xs text-muted-foreground">
-                        {attachmentType} ·{' '}
-                        {transactionDetailsHelpers.formatFileSize(
-                          attachment.size
-                        )}
-                      </span>
-                    </span>
-                  </a>
-                </li>
-              );
-            })}
+            {details.attachments.map((attachment) => (
+              <li key={`${attachment.url}-${attachment.name}`}>
+                <UploadedFile {...attachment} />
+              </li>
+            ))}
           </ul>
         </section>
       )}
